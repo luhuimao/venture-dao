@@ -1,0 +1,682 @@
+// Whole-script strict mode syntax
+"use strict";
+
+/**
+MIT License
+
+Copyright (c) 2020 Openlaw
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ */
+// const {
+//     toBN,
+//     toWei,
+//     fromUtf8,
+//     fromAscii,
+//     sha3,
+//     unitPrice,
+//     UNITS,
+//     GUILD,
+//     ETH_TOKEN,
+// } = require("../../utils/contract-util");
+
+const {
+    takeChainSnapshot,
+    revertChainSnapshot,
+    proposalIdGenerator,
+    advanceTime,
+    expect,
+    expectRevert,
+    web3,
+} = require("../../utils/oz-util");
+
+const {
+    fundingpoolExtensionAclFlagsMap,
+    bankExtensionAclFlagsMap,
+    daoAccessFlagsMap,
+    entryDao,
+    entryFundingPool,
+    calculateFlagValue
+} = require("../../utils/access-control-util");
+
+const {
+    unitPrice,
+    numberOfUnits,
+    maximumChunks,
+    maxAmount,
+    maxUnits,
+    ETH_TOKEN,
+    UNITS,
+    toBN,
+    toWei,
+    fromUtf8,
+    fromAscii,
+    sha3,
+    GUILD
+} = require("../../utils/contract-util");
+const { extensionsIdsMap, adaptersIdsMap } = require("../../utils/dao-ids-util");
+
+const { checkBalance } = require("../../utils/test-util");
+const { getConfig } = require("../../migrations/configs/contracts.config");
+const hre = require("hardhat");
+
+const remaining = unitPrice.sub(toBN("50000000000000"));
+const expectedGuildBalance = toBN("1200000000000000000");
+const proposalCounter = proposalIdGenerator().generator;
+
+const getDefaultOptions = (options) => {
+    return {
+        minFundsForLP: 100,
+        minFundsForGP: 1000,
+        serviceFeeRatio: 5,
+        unitPrice: unitPrice,
+        nbUnits: numberOfUnits,
+        votingPeriod: 10,
+        gracePeriod: 1,
+        tokenAddr: ETH_TOKEN,
+        maxChunks: maximumChunks,
+        maxAmount,
+        maxUnits,
+        chainId: 1,
+        maxExternalTokens: 100,
+        couponCreatorAddress: "0x7D8cad0bbD68deb352C33e80fccd4D8e88b4aBb8",
+        kycMaxMembers: 1000,
+        kycSignerAddress: "0x7D8cad0bbD68deb352C33e80fccd4D8e88b4aBb8",
+        kycFundTargetAddress: "0x823A19521A76f80EC49670BE32950900E8Cd0ED3",
+        deployTestTokens: true,
+        erc20TokenName: "Test Token",
+        erc20TokenSymbol: "TTK",
+        erc20TokenDecimals: Number(0),
+        erc20TokenAddress: UNITS,
+        supplyTestToken1: 1000000,
+        supplyTestToken2: 1000000,
+        supplyPixelNFT: 100,
+        supplyOLToken: toBN("1000000000000000000000000"),
+        erc1155TestTokenUri: "1155 test token",
+        maintainerTokenAddress: UNITS,
+        // finalize: options.finalize === undefined || !!options.finalize,
+        ...options, // to make sure the options from the tests override the default ones
+        gasPriceLimit: "2000000000000",
+        spendLimitPeriod: "259200",
+        spendLimitEth: "2000000000000000000000",
+        feePercent: "110",
+        gasFixed: "50000",
+        gelato: "0x1000000000000000000000000000000000000000",
+    };
+};
+
+function getProposalCounter() {
+    return proposalCounter().next().value;
+}
+
+describe("Adapter - FundingPool", () => {
+    before("deploy dao", async () => {
+        // const { dao, adapters, extensions } = await deployDefaultDao({
+        //     owner: daoOwner,
+        // });
+
+        let [owner, user1, user2] = await hre.ethers.getSigners();
+        this.owner = owner;
+        this.user1 = user1;
+        this.user2 = user2;
+        console.log(`owner address ${owner.address}; user1 address ${user1.address}; user2 address ${user2.address}`);
+        // console.log(`daoOwner address ${daoOwner}; applicant address ${applicant}; newMember address ${newMember}`);
+
+
+
+        const DaoRegistry = await hre.ethers.getContractFactory("DaoRegistry");
+        const daoRegistry = await DaoRegistry.deploy();
+        await daoRegistry.deployed();
+        console.log("new IdentityDao address: ", daoRegistry.address);
+
+        const DaoFactory = await hre.ethers.getContractFactory("DaoFactory");
+        const daoFactory = await DaoFactory.deploy(daoRegistry.address);
+        await daoFactory.deployed();
+        console.log("new DaoFactory address: ", daoFactory.address);
+
+        await daoFactory.createDao("testdao", owner.address);
+        const _address = await daoFactory.getDaoAddress("testdao");
+        console.log("new testdao address: ", _address);
+
+        const daoInstance = (await hre.ethers.getContractFactory('DaoRegistry')).connect(owner).attach(_address)
+        console.log("dao member 1 addr: ", (await daoInstance.getMemberAddress(0)));
+        console.log("dao member 2 addr: ", (await daoInstance.getMemberAddress(1)));
+
+        const VotingPeriod = sha3("voting.votingPeriod");
+        const GracePeriod = sha3("voting.gracePeriod");
+        await daoInstance.setConfiguration(VotingPeriod, getDefaultOptions().votingPeriod);
+        await daoInstance.setConfiguration(GracePeriod, getDefaultOptions().gracePeriod);
+
+        //deploy  FundingPoolExtension
+        const FundingPool = await hre.ethers.getContractFactory("FundingPoolExtension");
+        const fundingPool = await FundingPool.deploy();
+        await fundingPool.deployed();
+
+        const FundingPoolFactory = await hre.ethers.getContractFactory("FundingPoolFactory");
+        const fundingPoolFactory = await FundingPoolFactory.deploy(fundingPool.address);
+        await fundingPoolFactory.deployed();
+
+        await fundingPoolFactory.create(
+            daoInstance.address,
+            getDefaultOptions().maxExternalTokens,
+            getDefaultOptions().minFundsForLP, getDefaultOptions().minFundsForGP,
+            getDefaultOptions().serviceFeeRatio
+
+        );
+        const _addressFundingPoolExt = await fundingPoolFactory.getExtensionAddress(daoInstance.address);
+        const fundingPoolExtInstance = (await hre.ethers.getContractFactory('FundingPoolExtension')).connect(owner).attach(_addressFundingPoolExt)
+        this.fundingPoolExt = fundingPoolExtInstance;
+        console.log("new fundingPoolExt address: ", fundingPoolExtInstance.address);
+
+        await daoInstance.addExtension(
+            sha3("funding-pool"),
+            fundingPoolExtInstance.address,
+            owner.address);
+
+
+        //crate bank
+        const BankExtension = await hre.ethers.getContractFactory("BankExtension");
+        const bankExtension = await BankExtension.deploy();
+        await bankExtension.deployed();
+
+        const BankFactory = await hre.ethers.getContractFactory("BankFactory");
+        const bankFactory = await BankFactory.deploy(bankExtension.address);
+        await bankFactory.deployed();
+
+        await bankFactory.create(
+            daoInstance.address,
+            getDefaultOptions().maxExternalTokens
+        );
+        const _addressBankExt = await bankFactory.getExtensionAddress(daoInstance.address);
+        const bankExtensionInstance = (await hre.ethers.getContractFactory('BankExtension')).connect(owner).attach(_addressBankExt)
+        this.banklExt = bankExtensionInstance;
+        console.log("new BankExtension address: ", bankExtensionInstance.address);
+
+        await daoInstance.addExtension(
+            sha3("bank"),
+            bankExtensionInstance.address,
+            owner.address);
+
+        //deploy FundingPoolAdapterContract
+        const FundingPoolAdapterContract = await hre.ethers.getContractFactory("FundingPoolAdapterContract");
+        const fundingPoolAdapterContract = await FundingPoolAdapterContract.deploy();
+        await fundingPoolAdapterContract.deployed();
+        console.log("new fundingPoolAdapterContract address: ", fundingPoolAdapterContract.address);
+
+        const VotingContract = await hre.ethers.getContractFactory("VotingContract");
+        const votingContract = await VotingContract.deploy();
+        await votingContract.deployed();
+        console.log("new votingContract address: ", votingContract.address);
+        // await votingContract.configureDAO(daoInstance.address, getDefaultOptions.votingPeriod, getDefaultOptions.gracePeriod);
+
+        const FinancingContract = await hre.ethers.getContractFactory("FinancingContract");
+        const financingContract = await FinancingContract.deploy();
+        await financingContract.deployed();
+        console.log("new financingContract address: ", financingContract.address);
+
+        const OnboardingContract = await hre.ethers.getContractFactory("OnboardingContract");
+        const onboardingContract = await OnboardingContract.deploy();
+        await onboardingContract.deployed();
+        console.log("new onboardingContract address: ", onboardingContract.address);
+
+
+        const TestToken1 = await hre.ethers.getContractFactory("TestToken1");
+        const testToken1 = await TestToken1.deploy(10000000);
+        await testToken1.deployed();
+        console.log("new testToken1 address: ", testToken1.address);
+
+        const ManagingContract = await hre.ethers.getContractFactory("ManagingContract");
+        const managingContract = await ManagingContract.deploy();
+        await managingContract.deployed();
+        console.log("new managingContract address: ", managingContract.address);
+
+        await daoFactory.addAdapters(daoInstance.address,
+            [
+                entryDao(
+                    adaptersIdsMap.FOUNDING_POOL_ADAPTER,
+                    fundingPoolAdapterContract.address,
+                    {
+                        dao: [],
+                        extensions: {
+                            [extensionsIdsMap.FUNDING_POOL_EXT]: [
+                                bankExtensionAclFlagsMap.WITHDRAW,
+                                bankExtensionAclFlagsMap.SUB_FROM_BALANCE,
+                                bankExtensionAclFlagsMap.ADD_TO_BALANCE,
+                                bankExtensionAclFlagsMap.UPDATE_TOKEN,
+                            ],
+                        },
+                    }
+                ),
+                entryDao(
+                    adaptersIdsMap.VOTING_ADAPTER,
+                    votingContract.address,
+                    {
+                        dao: [],
+                        extensions: {},
+                    }
+                ),
+                entryDao(
+                    adaptersIdsMap.FINANCING_ADAPTER,
+                    financingContract.address,
+                    {
+                        dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL],
+                        extensions: {
+                            [extensionsIdsMap.BANK_EXT]: [
+                                bankExtensionAclFlagsMap.INTERNAL_TRANSFER,
+                                bankExtensionAclFlagsMap.SUB_FROM_BALANCE,
+                                bankExtensionAclFlagsMap.ADD_TO_BALANCE,
+                            ],
+                        },
+                    }
+                ),
+                entryDao(
+                    adaptersIdsMap.ONBOARDING_ADAPTER,
+                    onboardingContract.address,
+                    {
+                        dao: [
+                            daoAccessFlagsMap.SUBMIT_PROPOSAL,
+                            daoAccessFlagsMap.UPDATE_DELEGATE_KEY,
+                            daoAccessFlagsMap.NEW_MEMBER,
+                        ],
+                        extensions: {
+                            [extensionsIdsMap.BANK_EXT]: [
+                                bankExtensionAclFlagsMap.ADD_TO_BALANCE,
+                                bankExtensionAclFlagsMap.INTERNAL_TRANSFER,
+                            ],
+                        },
+                    }
+                ),
+                entryDao(
+                    adaptersIdsMap.MANAGING_ADAPTER,
+                    managingContract.address,
+                    {
+                        dao: [
+                            daoAccessFlagsMap.SUBMIT_PROPOSAL,
+                            daoAccessFlagsMap.REPLACE_ADAPTER,
+                            daoAccessFlagsMap.ADD_EXTENSION,
+                            daoAccessFlagsMap.REMOVE_EXTENSION,
+                            daoAccessFlagsMap.SET_CONFIGURATION,
+                        ],
+                        extensions: {},
+                    }
+                )
+            ]);
+
+        const AclFlag = getConfig("FundingPoolExtension").buildAclFlag(
+            fundingPoolAdapterContract.address,
+            getConfig("FundingPoolAdapterContract").acls
+        );
+        await daoFactory.configureExtension(
+            daoInstance.address,
+            fundingPoolExtInstance.address,
+            [AclFlag]
+        );
+        /**
+           * FundingPool flags
+           * 0: ADD_TO_BALANCE
+           * 1: SUB_FROM_BALANCE
+           * 2: INTERNAL_TRANSFER
+           * 3: WITHDRAW
+           * 4: REGISTER_NEW_TOKEN
+           * 5: REGISTER_NEW_INTERNAL_TOKEN
+           * 6: UPDATE_TOKEN
+           */
+        expect(await daoInstance.hasAdapterAccessToExtension(
+            fundingPoolAdapterContract.address,
+            fundingPoolExtInstance.address, 0)).equal(true);
+        // await daoFactory.configureExtension(daoInstance.address, fundingPoolExtInstance.address,)
+
+        await fundingPoolExtInstance.registerPotentialNewToken(testToken1.address);
+
+
+        // await onboardingContract.configureDAO(daoInstance.address, getDefaultOptions., getDefaultOptions.gracePeriod);
+
+        // this.adapters = adapters;
+        // this.extensions = extensions;
+        this.dao = daoInstance;
+        this.fundingPoolExt = fundingPoolExtInstance;
+        this.voting = votingContract;
+        this.testtoken1 = testToken1;
+        this.financing = financingContract;
+        this.onboarding = onboardingContract;
+        this.fundingpoolAdapter = fundingPoolAdapterContract;
+        this.managing = managingContract;
+        this.snapshotId = await takeChainSnapshot();
+    });
+
+    beforeEach(async () => {
+        await revertChainSnapshot(this.snapshotId);
+        this.snapshotId = await takeChainSnapshot();
+    });
+
+    it("should be possible to deposit funds to the fundingpool", async () => {
+        const fundingpoolAdapter = this.fundingpoolAdapter;
+        const dao = this.dao;
+        const testtoken1 = this.testtoken1;
+
+        //add a new adapter and set the acl flags for fundingpool extension
+        const managing = this.managing;
+        const voting = this.voting;
+        const financing = this.financing;
+        const fundingPoolExt = this.fundingPoolExt;
+
+        const newAdapterId = sha3("founding-pool");
+        const newAdapterAddress = fundingpoolAdapter.address;
+        const proposalId = getProposalCounter();
+
+        // await managing.submitProposal(
+        //     dao.address,
+        //     proposalId,
+        //     {
+        //         adapterOrExtensionId: newAdapterId,
+        //         adapterOrExtensionAddr: newAdapterAddress,
+        //         updateType: 1,
+        //         flags: 0,
+        //         keys: [],
+        //         values: [],
+        //         // Set the extension address which will be accessed by the new adapter
+        //         extensionAddresses: [fundingPoolExt.address],
+        //         // Set the acl flags so the new adapter can access the bank extension
+        //         extensionAclFlags: [
+        //             entryFundingPool(fundingpoolAdapter.address, {
+        //                 extensions: {
+        //                     [extensionsIdsMap.FUNDING_POOL_EXT]: [
+        //                         fundingpoolExtensionAclFlagsMap.ADD_TO_BALANCE,
+        //                         fundingpoolExtensionAclFlagsMap.SUB_FROM_BALANCE,
+        //                         fundingpoolExtensionAclFlagsMap.INTERNAL_TRANSFER,
+        //                     ],
+        //                 },
+        //             }).flags,
+        //         ],
+        //     },
+        //     [], //configs
+        //     [], //data
+        //     {
+        //         // from: daoOwner,
+        //         // gasPrice: toBN("0"),
+        //     }
+        // );
+
+
+        // await voting.submitVote(dao.address, proposalId, 1, {
+        //     // from: daoOwner,
+        //     // gasPrice: toBN("0"),
+        // });
+        // console.log("I'm here");
+
+        // await advanceTime(1000);
+
+        // await managing.processProposal(dao.address, proposalId, {
+        //     // from: daoOwner,
+        //     // gasPrice: toBN("0"),
+        // });
+
+        // At this point the adapter should be able access the Bank Extension
+        // We check that by verifying if the ACL flag in the DAO matches the one
+        // submitted in the proposal.
+
+        /**
+         * Bank flags
+         * 0: ADD_TO_BALANCE
+         * 1: SUB_FROM_BALANCE
+         * 2: INTERNAL_TRANSFER
+         * 3: WITHDRAW
+         * 4: REGISTER_NEW_TOKEN
+         * 5: REGISTER_NEW_INTERNAL_TOKEN
+         * 6: UPDATE_TOKEN
+         */
+        // expect(await dao.getAdapterAddress(newAdapterId)).equal(newAdapterAddress);
+        // expect(
+        //     await dao.hasAdapterAccessToExtension(
+        //         newAdapterAddress,
+        //         bankExt.address,
+        //         0 //ADD_TO_BALANCE
+        //     )
+        // ).equal(true);
+        // expect(
+        //     await dao.hasAdapterAccessToExtension(
+        //         newAdapterAddress,
+        //         bankExt.address,
+        //         1 // SUB_FROM_BALANCE
+        //     )
+        // ).equal(true);
+        // expect(
+        //     await dao.hasAdapterAccessToExtension(
+        //         newAdapterAddress,
+        //         bankExt.address,
+        //         2 // INTERNAL_TRANSFER
+        //     )
+        // ).equal(true);
+
+        // expect(
+        //     await dao.hasAdapterAccessToExtension(
+        //         newAdapterAddress,
+        //         bankExt.address,
+        //         3 // WITHDRAW
+        //     )
+        // ).equal(false);
+
+        // expect(
+        //     await dao.hasAdapterAccessToExtension(
+        //         newAdapterAddress,
+        //         bankExt.address,
+        //         4 // REGISTER_NEW_TOKEN
+        //     )
+        // ).equal(false);
+
+        // expect(
+        //     await dao.hasAdapterAccessToExtension(
+        //         newAdapterAddress,
+        //         bankExt.address,
+        //         5 // REGISTER_NEW_INTERNAL_TOKEN
+        //     )
+        // ).equal(false);
+
+        // expect(
+        //     await dao.hasAdapterAccessToExtension(
+        //         newAdapterAddress,
+        //         bankExt.address,
+        //         6 // UPDATE_TOKEN
+        //     )
+        // ).equal(false);
+
+        await testtoken1.transfer(this.user1.address, 2000);
+        console.log("user1 test token balance: ", (await testtoken1.balanceOf(this.user1.address)).toString());
+        await testtoken1.connect(this.user1).approve(fundingpoolAdapter.address, 2000);
+        await fundingpoolAdapter.connect(this.user1).deposit(dao.address, this.user1.address, 100, testtoken1.address);
+
+        console.log("user1 test token balance: ", (await testtoken1.balanceOf(this.user1.address)).toString());
+        console.log("fundingpoolAdapter test token balance: ", (await testtoken1.balanceOf(fundingpoolAdapter.address)).toString());
+
+        expect(await fundingpoolAdapter.balanceOf(
+            dao.address, this.user1.address,
+            testtoken1.address)).equal(100 * (100 - getDefaultOptions().serviceFeeRatio) / 100);
+
+        // expect(await dao.isMember(this.user1.address)).equal(false);
+        expect(await fundingPoolExt.isGeneralPartner(this.user1.address)).equal(false);
+
+        await fundingpoolAdapter.connect(this.user1).deposit(dao.address, this.user1.address, 1000, testtoken1.address);
+
+        expect(await fundingpoolAdapter.balanceOf(
+            dao.address, this.user1.address,
+            testtoken1.address)).equal(1100 * (100 - getDefaultOptions().serviceFeeRatio) / 100);
+
+        expect(await fundingPoolExt.isGeneralPartner(this.user1.address)).equal(true);
+
+
+    })
+
+    it("should be possible to withdraw funds from the fundingpool", async () => {
+        const fundingpoolAdapter = this.fundingpoolAdapter;
+        const dao = this.dao;
+        const testtoken1 = this.testtoken1;
+        const fundingPoolExt = this.fundingPoolExt;
+
+        await fundingpoolAdapter.connect(this.user1).withdraw(dao.address, this.user1.address, testtoken1.address, 10);
+        expect(await fundingpoolAdapter.balanceOf(dao.address, this.user1.address, testtoken1.address)).equal(
+            1100 * (100 - getDefaultOptions().serviceFeeRatio) / 100 - 10);
+
+        expect(await testtoken1.balanceOf(this.user1.address)).equal(2000 - 100 - 1000 + 10);
+
+        await fundingpoolAdapter.connect(this.user1).withdraw(dao.address, this.user1.address, testtoken1.address, 100);
+        expect(await fundingPoolExt.isGeneralPartner(this.user1.address)).equal(false);
+
+
+    })
+
+
+    // it("should be possible to withdraw funds from the fundingpool", async () => {
+    //     const fundingpool = this.fundingPoolExt;
+    //     const voting = this.voting;
+    //     const financing = this.financing;
+    //     const onboarding = this.onboarding;
+    //     const fundingpoolAdapter = this.fundingpoolAdapter;
+
+    //     let proposalId = getProposalCounter();
+    //     //Add funds to the Guild Bank after sponsoring a member to join the Guild
+    //     await onboarding.submitProposal(
+    //         this.dao.address,
+    //         proposalId,
+    //         newMember,
+    //         UNITS,
+    //         unitPrice.mul(toBN(10)).add(remaining),
+    //         [],
+    //         {
+    //             from: daoOwner,
+    //             gasPrice: toBN("0"),
+    //         }
+    //     );
+    //     console.log("onboarding.submitProposal");
+    //     await voting.submitVote(this.dao.address, proposalId, 1, {
+    //         from: daoOwner,
+    //         gasPrice: toBN("0"),
+    //     });
+    //     console.log("voting.submitVote");
+
+    //     //should not be able to process before the voting period has ended
+    //     await expectRevert(
+    //         onboarding.processProposal(this.dao.address, proposalId, {
+    //             from: daoOwner,
+    //             value: unitPrice.mul(toBN(10)).add(remaining),
+    //             gasPrice: toBN("0"),
+    //         }),
+    //         "proposal has not been voted on yet"
+    //     );
+
+    //     await advanceTime(10000);
+    //     await onboarding.processProposal(this.dao.address, proposalId, {
+    //         from: daoOwner,
+    //         value: unitPrice.mul(toBN(10)).add(remaining),
+    //         gasPrice: toBN("0"),
+    //     });
+    //     //Check Guild Bank Balance
+    //     await checkBalance(fundingpool, GUILD, ETH_TOKEN, expectedGuildBalance);
+
+    //     //Create Financing Request
+    //     let requestedAmount = toBN(50000);
+    //     proposalId = getProposalCounter();
+
+    //     await financing.submitProposal(
+    //         this.dao.address,
+    //         proposalId,
+    //         applicant,
+    //         ETH_TOKEN,
+    //         requestedAmount,
+    //         fromUtf8(""),
+    //         { from: daoOwner, gasPrice: toBN("0") }
+    //     );
+
+    //     //Member votes on the Financing proposal
+    //     await voting.submitVote(this.dao.address, proposalId, 1, {
+    //         from: daoOwner,
+    //         gasPrice: toBN("0"),
+    //     });
+
+    //     //Check applicant balance before Financing proposal is processed
+    //     await checkBalance(fundingpool, applicant, ETH_TOKEN, "0");
+
+    //     //Process Financing proposal after voting
+    //     await advanceTime(10000);
+    //     await financing.processProposal(this.dao.address, proposalId, {
+    //         from: daoOwner,
+    //         gasPrice: toBN("0"),
+    //     });
+
+    //     //Check Guild Bank balance to make sure the transfer has happened
+    //     await checkBalance(
+    //         fundingpool,
+    //         GUILD,
+    //         ETH_TOKEN,
+    //         expectedGuildBalance.sub(requestedAmount)
+    //     );
+    //     //Check the applicant token balance to make sure the funds are available in the bank for the applicant account
+    //     await checkBalance(fundingpool, applicant, ETH_TOKEN, requestedAmount);
+
+    //     const ethBalance = await web3.eth.getBalance(applicant);
+    //     // Withdraw the funds from the bank
+    //     await bankAdapter.withdraw(this.dao.address, applicant, ETH_TOKEN, {
+    //         from: daoOwner,
+    //         gasPrice: toBN("0"),
+    //     });
+    //     await checkBalance(fundingpool, applicant, ETH_TOKEN, 0);
+    //     const ethBalance2 = await web3.eth.getBalance(applicant);
+    //     expect(toBN(ethBalance).add(requestedAmount).toString()).equal(
+    //         ethBalance2.toString()
+    //     );
+    // });
+
+    // it("should possible to send eth to the dao bank", async () => {
+    //     const fundingpool = this.fundingPoolExt;
+    //     const fundingpoolAdapter = this.fundingpoolAdapter;
+
+    //     await checkBalance(fundingpool, GUILD, ETH_TOKEN, "0");
+
+    //     await fundingpoolAdapter.sendEth(this.dao.address, { value: toWei("5", "ether") });
+
+    //     await checkBalance(fundingpool, GUILD, ETH_TOKEN, toWei("5", "ether"));
+    // });
+
+    // it("should not be possible to send ETH to the adapter via receive function", async () => {
+    //     const adapter = this.fundingPoolExt;
+    //     await expectRevert(
+    //         web3.eth.sendTransaction({
+    //             to: adapter.address,
+    //             from: daoOwner,
+    //             gasPrice: toBN("0"),
+    //             value: toWei(toBN("1"), "ether"),
+    //         }),
+    //         "revert"
+    //     );
+    // });
+
+    // it("should not be possible to send ETH to the adapter via fallback function", async () => {
+    //     const adapter = this.fundingpoolAdapter;
+    //     // console.log("fundingpoolAdapter address: ", adapter.address);
+    //     await expectRevert(
+    //         web3.eth.sendTransaction({
+    //             to: adapter.address,
+    //             from: daoOwner,
+    //             gasPrice: toBN("0"),
+    //             value: toWei(toBN("1"), "ether"),
+    //             data: fromAscii("should go to fallback func"),
+    //         }),
+    //         "revert"
+    //     );
+    // });
+});
