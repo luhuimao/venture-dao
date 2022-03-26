@@ -48,7 +48,7 @@ abstract contract MemberGuard {
      * @dev Only general partner of the DAO are allowed to execute the function call.
      */
     modifier onlyGeneralPartner(DaoRegistry dao) {
-        _onlyMember(dao, msg.sender);
+        _onlyGeneralPartner(dao, msg.sender);
         _;
     }
 
@@ -66,14 +66,14 @@ abstract contract MemberGuard {
         returns (bool)
     {
         address bankAddress = dao.extensions(DaoHelper.BANK);
-        if (bankAddress != address(0x0)) {
-            address memberAddr = dao.getAddressIfDelegated(_addr);
-            return
-                BankExtension(bankAddress).balanceOf(
-                    memberAddr,
-                    DaoHelper.UNITS
-                ) > 0;
-        }
+        // if (bankAddress != address(0x0)) {
+        //     address memberAddr = dao.getAddressIfDelegated(_addr);
+        //     return
+        //         BankExtension(bankAddress).balanceOf(
+        //             memberAddr,
+        //             DaoHelper.UNITS
+        //         ) > 0;
+        // }
 
         return dao.isMember(_addr);
     }

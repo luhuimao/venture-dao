@@ -31,6 +31,7 @@ library DaoHelper {
     // Adapters
     bytes32 internal constant VOTING = keccak256("voting");
     bytes32 internal constant GPVOTING = keccak256("gp-voting");
+    bytes32 internal constant DISTRIBUTE_FUND = keccak256("distribute-fund");
     bytes32 internal constant ONBOARDING = keccak256("onboarding");
     bytes32 internal constant NONVOTING_ONBOARDING =
         keccak256("nonvoting-onboarding");
@@ -74,8 +75,9 @@ library DaoHelper {
 
     // Reserved Addresses
     address internal constant GUILD = address(0xdead);
-    address internal constant FUNDING_POOL = address(0xdead);
-    address internal constant DAOSQUAREFUNDS = address(0xdead);
+    address internal constant FUNDING_POOL = address(0xFFFF);
+    address internal constant DAOSQUARE_FUNDS = address(0xDDDD);
+    address internal constant DAOSQUARE_TREASURY = address(0xDECD);
     address internal constant ESCROW = address(0x4bec);
     address internal constant TOTAL = address(0xbabe);
     address internal constant UNITS = address(0xFF1CE);
@@ -173,11 +175,11 @@ library DaoHelper {
     ) internal {
         dao.potentialNewMember(memberAddress);
         require(memberAddress != address(0x0), "invalid member address");
-        if (address(bank) != address(0x0)) {
-            if (bank.balanceOf(memberAddress, MEMBER_COUNT) == 0) {
-                bank.addToBalance(memberAddress, MEMBER_COUNT, 1);
-            }
-        }
+        // if (address(bank) != address(0x0)) {
+        //     if (bank.balanceOf(memberAddress, MEMBER_COUNT) == 0) {
+        //         bank.addToBalance(memberAddress, MEMBER_COUNT, 1);
+        //     }
+        // }
     }
 
     /**

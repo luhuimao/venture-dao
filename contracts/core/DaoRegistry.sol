@@ -216,7 +216,6 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         hasAccess(this, AclFlag.SET_CONFIGURATION)
     {
         mainConfiguration[key] = value;
-
         emit ConfigurationUpdated(key, value);
     }
 
@@ -245,13 +244,13 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
             _members.push(memberAddress);
         }
 
-        address bankAddress = extensions[DaoHelper.BANK];
-        if (bankAddress != address(0x0)) {
-            BankExtension bank = BankExtension(bankAddress);
-            if (bank.balanceOf(memberAddress, DaoHelper.MEMBER_COUNT) == 0) {
-                bank.addToBalance(memberAddress, DaoHelper.MEMBER_COUNT, 1);
-            }
-        }
+        // address bankAddress = extensions[DaoHelper.BANK];
+        // if (bankAddress != address(0x0)) {
+        //     BankExtension bank = BankExtension(bankAddress);
+        //     if (bank.balanceOf(memberAddress, DaoHelper.MEMBER_COUNT) == 0) {
+        //         bank.addToBalance(memberAddress, DaoHelper.MEMBER_COUNT, 1);
+        //     }
+        // }
     }
 
     /**

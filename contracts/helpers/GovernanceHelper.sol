@@ -5,8 +5,10 @@ pragma solidity ^0.8.0;
 import "../helpers/DaoHelper.sol";
 import "../core/DaoRegistry.sol";
 import "../extensions/bank/Bank.sol";
+import "../extensions/fundingpool/FundingPool.sol";
 import "../extensions/token/erc20/ERC20TokenExtension.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
 
 /**
 MIT License
@@ -103,5 +105,57 @@ library GovernanceHelper {
         } catch {
             revert("getPriorAmount not implemented");
         }
+    }
+
+    function getGPVotingWeight(
+        DaoRegistry dao,
+        address voterAddr,
+        bytes32 proposalId,
+        uint256 snapshot
+    ) internal view returns (int128) {
+        (address adapterAddress, ) = dao.proposals(proposalId);
+        address governanceToken = dao.getAddressConfiguration(
+            keccak256(abi.encodePacked(ROLE_PREFIX, adapterAddress))
+        );
+
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL)
+        );
+        if (fundingpool.isTokenAllowed(governanceToken)) {
+            return
+                ABDKMath64x64.log_2(
+                    int128(
+                        fundingpool.getPriorAmount(
+                            voterAddr,
+                            governanceToken,
+                            snapshot
+                        )
+                    )
+                ) *
+                int128(fundingpool.votingWeightMultiplier()) +
+                int128(fundingpool.votingWeightAddend());
+            // return
+            //     fundingpool.getPriorAmount(
+            //         voterAddr,
+            //         governanceToken,
+            //         snapshot
+            //     );
+        }
+
+        // The external token must implement the getPriorAmount function,
+        // otherwise this call will fail and revert the voting process.
+        // The actual revert does not show a clear reason, so we catch the error
+        // and revert with a better error message.
+        // slither-disable-next-line unused-return
+        // try
+        //     ERC20Extension(governanceToken).getPriorAmount(voterAddr, snapshot)
+        // returns (
+        //     // slither-disable-next-line uninitialized-local,variable-scope
+        //     int128 votingWeight
+        // ) {
+        //     return votingWeight;
+        // } catch {
+        //     revert("getPriorAmount not implemented");
+        // }
     }
 }

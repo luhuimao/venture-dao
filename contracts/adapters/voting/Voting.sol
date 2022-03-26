@@ -10,6 +10,7 @@ import "../interfaces/IVoting.sol";
 import "../../helpers/DaoHelper.sol";
 import "../modifiers/Reimbursable.sol";
 import "../../helpers/GovernanceHelper.sol";
+import "hardhat/console.sol";
 
 /**
 MIT License
@@ -151,20 +152,22 @@ contract VotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         address memberAddr = dao.getAddressIfDelegated(msg.sender);
 
         require(vote.votes[memberAddr] == 0, "member has already voted");
-        uint256 votingWeight = GovernanceHelper.getVotingWeight(
-            dao,
-            memberAddr,
-            proposalId,
-            vote.blockNumber
-        );
-        if (votingWeight == 0) revert("vote not allowed");
+        // uint256 votingWeight = GovernanceHelper.getVotingWeight(
+        //     dao,
+        //     memberAddr,
+        //     proposalId,
+        //     vote.blockNumber
+        // );
+        // if (votingWeight == 0) revert("vote not allowed");
 
         vote.votes[memberAddr] = voteValue;
 
         if (voteValue == 1) {
-            vote.nbYes = vote.nbYes + votingWeight;
+            // vote.nbYes = vote.nbYes + votingWeight;
+            vote.nbYes += 1;
         } else if (voteValue == 2) {
-            vote.nbNo = vote.nbNo + votingWeight;
+            // vote.nbNo = vote.nbNo + votingWeight;
+            vote.nbNo += 1;
         }
     }
 
@@ -187,9 +190,13 @@ contract VotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         returns (VotingState state)
     {
         Voting storage vote = votes[address(dao)][proposalId];
+
         if (vote.startingTime == 0) {
             return VotingState.NOT_STARTED;
         }
+        console.log("  block.timestamp:", block.timestamp);
+        console.log("vote.startingTime:", vote.startingTime);
+        console.log("vote.VotingPeriod:", dao.getConfiguration(VotingPeriod));
 
         if (
             // slither-disable-next-line timestamp
@@ -198,7 +205,8 @@ contract VotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         ) {
             return VotingState.IN_PROGRESS;
         }
-
+        console.log("vote.nbYes:", vote.nbYes);
+        console.log("vote.nbNo:", vote.nbNo);
         if (
             // slither-disable-next-line timestamp
             block.timestamp <

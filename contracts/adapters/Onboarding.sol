@@ -12,6 +12,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../helpers/DaoHelper.sol";
+import "hardhat/console.sol";
 
 /**
 MIT License
@@ -109,6 +110,7 @@ contract OnboardingContract is IOnboarding, AdapterGuard, Reimbursable {
             maximumChunks
         );
         dao.setConfiguration(_configKey(unitsToMint, ChunkSize), chunkSize);
+
         dao.setConfiguration(
             _configKey(unitsToMint, UnitsPerChunk),
             unitsPerChunk
@@ -213,8 +215,7 @@ contract OnboardingContract is IOnboarding, AdapterGuard, Reimbursable {
                 bank.isInternalToken(unitsToMint),
                 "it can only mint units"
             );
-
-            bank.addToBalance(applicant, unitsToMint, unitsRequested);
+            // bank.addToBalance(applicant, unitsToMint, unitsRequested);
 
             address daoAddress = address(dao);
             if (token == DaoHelper.ETH_TOKEN) {
@@ -230,9 +231,9 @@ contract OnboardingContract is IOnboarding, AdapterGuard, Reimbursable {
                     payable(msg.sender).sendValue(msg.value - amount);
                 }
             } else {
-                bank.addToBalance(DaoHelper.GUILD, token, amount);
-                IERC20 erc20 = IERC20(token);
-                erc20.safeTransferFrom(msg.sender, address(bank), amount);
+                // bank.addToBalance(DaoHelper.GUILD, token, amount);
+                // IERC20 erc20 = IERC20(token);
+                // erc20.safeTransferFrom(msg.sender, address(bank), amount);
             }
 
             uint88 totalUnits = _getUnits(daoAddress, unitsToMint, applicant) +

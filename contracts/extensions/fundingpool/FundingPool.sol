@@ -41,13 +41,6 @@ contract FundingPoolExtension is IExtension, ERC165 {
     using Address for address payable;
     using SafeERC20 for IERC20;
 
-    uint8 public maxExternalTokens; // the maximum number of external tokens that can be stored in the bank
-    uint256 public minFundsForLP; // minimum funds threshold for LP
-    uint256 public minFundsForGP; // minimum funds threshold for GP
-    uint256 serviceFeeRatio; //service fee ratio
-    bool public initialized = false; // internally tracks deployment under eip-1167 proxy pattern
-    DaoRegistry public dao;
-
     enum AclFlag {
         ADD_TO_BALANCE,
         SUB_FROM_BALANCE,
@@ -69,15 +62,15 @@ contract FundingPoolExtension is IExtension, ERC165 {
     }
 
     /// @dev - Events for Bank
-    event NewBalance(address member, address tokenAddr, uint160 amount);
+    event NewBalance(address member, address tokenAddr, uint128 amount);
 
-    event Withdraw(address account, address tokenAddr, uint160 amount);
+    event Withdraw(address account, address tokenAddr, uint128 amount);
 
     event WithdrawTo(
         address accountFrom,
         address accountTo,
         address tokenAddr,
-        uint160 amount
+        uint128 amount
     );
 
     event DistributeFund(
@@ -93,7 +86,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
     struct Checkpoint {
         // A checkpoint for marking number of votes from a given block
         uint96 fromBlock;
-        uint160 amount;
+        uint128 amount;
     }
 
     struct GeneralPartner {
@@ -104,6 +97,17 @@ contract FundingPoolExtension is IExtension, ERC165 {
     /*
      * PUBLIC VARIABLES
      */
+
+    uint8 public maxExternalTokens; // the maximum number of external tokens that can be stored in the bank
+    uint256 public minFundsForLP; // minimum funds threshold for LP
+    uint256 public minFundsForGP; // minimum funds threshold for GP
+    uint256 public serviceFeeRatio; //service fee ratio
+    uint256 public snapFunds; // the maximum accepting funds during voting
+    uint128 public votingWeightRadix = 1; //decimal, default is 1
+    uint128 public votingWeightMultiplier = 1; //   decimal, default is 1
+    uint128 public votingWeightAddend = 0; //decimal, default is 0
+    bool public initialized = false; // internally tracks deployment under eip-1167 proxy pattern
+    DaoRegistry public dao;
     // delegate key => general partner address mapping
     mapping(address => address) public generalPartnerAddressesByDelegatedKey;
     mapping(address => GeneralPartner) public generalPartners; // the map to track all general partners of the DAO
@@ -118,6 +122,10 @@ contract FundingPoolExtension is IExtension, ERC165 {
         public checkpoints;
     // tokenAddress => memberAddress => numCheckpoints
     mapping(address => mapping(address => uint32)) public numCheckpoints;
+
+    // tokenAddress => treasuryAddress => checkpointNum => Checkpoint
+    mapping(address => mapping(address => mapping(uint32 => Checkpoint)))
+        public feeCheckpoints;
 
     /// @notice Clonable contract must have an empty constructor
     constructor() {}
@@ -188,7 +196,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
         }
 
         //slither-disable-next-line reentrancy-events
-        emit Withdraw(member, tokenAddr, uint160(amount));
+        emit Withdraw(member, tokenAddr, uint128(amount));
     }
 
     function withdrawTo(
@@ -209,7 +217,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
         }
 
         //slither-disable-next-line reentrancy-events
-        emit WithdrawTo(memberFrom, memberTo, tokenAddr, uint160(amount));
+        emit WithdrawTo(memberFrom, memberTo, tokenAddr, uint128(amount));
     }
 
     function distributeFunds(
@@ -318,9 +326,10 @@ contract FundingPoolExtension is IExtension, ERC165 {
             tokens.length <= maxExternalTokens,
             "exceeds the maximum tokens allowed"
         );
-
         if (!availableTokens[token]) {
             availableTokens[token] = true;
+            console.log("availableTokens[token]:", availableTokens[token]);
+
             tokens.push(token);
         }
     }
@@ -473,42 +482,32 @@ contract FundingPoolExtension is IExtension, ERC165 {
         uint256 chargedAmount = (amount * serviceFeeRatio) / 100;
         uint256 effectedAmount = amount - chargedAmount;
         uint256 newAmount = balanceOf(member, token) + effectedAmount;
-        uint256 feeNewAmount = balanceOf(address(this), token) + chargedAmount;
-        // console.log("newAmount: ", newAmount);
-        // if (newAmount > minFundsForLP && newAmount < minFundsForGP) {
-        // address needs to be added to the members mappings. ERC20 is doing it for us so no need to do it twice
-        // DaoHelper.potentialNewMember(authorizedMember, dao, address(this));
-        // dao.potentialNewMember(member);
-        // require(member != address(0x0), "invalid member address");
-        // if (balanceOf(member, DaoHelper.MEMBER_COUNT) == 0) {
-        //     addToBalance(member, DaoHelper.MEMBER_COUNT, 1);
-        // }
-        // } else if (newAmount > minFundsForGP) {
-        // address needs to be added to the members mappings. ERC20 is doing it for us so no need to do it twice
-        // DaoHelper.potentialNewMember(authorizedMember, dao, address(this));
-        // DaoHelper.potentialNewMember(
-        //     member,
-        //     dao,
-        //     BankExtension(dao.getExtensionAddress(DaoHelper.BANK))
-        // );
-        // dao.potentialNewMember(member);
-        // require(member != address(0x0), "invalid member address");
-        // if (balanceOf(member, DaoHelper.MEMBER_COUNT) == 0) {
-        //     addToBalance(member, DaoHelper.MEMBER_COUNT, 1);
-        // }
-        // } else {}
+        uint256 feeNewAmount = balanceOf(
+            address(DaoHelper.DAOSQUARE_FUNDS),
+            token
+        ) + chargedAmount;
+        uint256 totalFunds = balanceOf(
+            address(DaoHelper.DAOSQUARE_TREASURY),
+            token
+        ) + effectedAmount;
+
         if (newAmount > minFundsForGP) {
             _newGeneralPartner(member);
         }
         erc20.transferFrom(msg.sender, address(this), amount);
 
-        // uint256 newTotalAmount = balanceOf(DaoHelper.TOTAL, token) +
-        //     effectedAmount;
-
         _createNewAmountCheckpoint(member, token, newAmount);
-        _createNewAmountCheckpoint(address(this), token, feeNewAmount);
+        _createNewAmountCheckpoint(
+            address(DaoHelper.DAOSQUARE_FUNDS),
+            token,
+            feeNewAmount
+        );
 
-        // _createNewAmountCheckpoint(DaoHelper.TOTAL, token, newTotalAmount);
+        _createNewAmountCheckpoint(
+            address(DaoHelper.DAOSQUARE_TREASURY),
+            token,
+            totalFunds
+        );
     }
 
     /**
@@ -557,7 +556,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
     function balanceOf(address member, address tokenAddr)
         public
         view
-        returns (uint160)
+        returns (uint128)
     {
         uint32 nCheckpoints = numCheckpoints[tokenAddr][member];
         return
@@ -577,7 +576,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
         address account,
         address tokenAddr,
         uint256 blockNumber
-    ) external view returns (uint256) {
+    ) external view returns (uint128) {
         require(
             blockNumber < block.number,
             "Uni::getPriorAmount: not yet determined"
@@ -667,12 +666,12 @@ contract FundingPoolExtension is IExtension, ERC165 {
             isValidToken = true;
         } else if (availableTokens[token]) {
             require(
-                amount < type(uint160).max,
+                amount < type(uint128).max,
                 "token amount exceeds the maximum limit for external tokens"
             );
             isValidToken = true;
         }
-        uint160 newAmount = uint160(amount);
+        uint128 newAmount = uint128(amount);
         require(isValidToken, "token not registered");
 
         uint32 nCheckpoints = numCheckpoints[token][member];

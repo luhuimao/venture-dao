@@ -37,8 +37,8 @@ SOFTWARE.
 
 contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
     struct GPVoting {
-        uint256 nbYes;
-        uint256 nbNo;
+        uint128 nbYes;
+        uint128 nbNo;
         uint256 startingTime;
         uint256 blockNumber;
         mapping(address => uint256) votes;
@@ -148,25 +148,25 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
             "vote has already ended"
         );
 
-        address memberAddr = dao.getAddressIfDelegated(msg.sender);
+        address GPAddr = dao.getAddressIfDelegated(msg.sender);
 
-        require(vote.votes[memberAddr] == 0, "member has already voted");
-        // uint256 votingWeight = GovernanceHelper.getVotingWeight(
-        //     dao,
-        //     memberAddr,
-        //     proposalId,
-        //     vote.blockNumber
-        // );
-        // if (votingWeight == 0) revert("vote not allowed");
+        require(vote.votes[GPAddr] == 0, "member has already voted");
+        int128 votingWeight = GovernanceHelper.getGPVotingWeight(
+            dao,
+            GPAddr,
+            proposalId,
+            vote.blockNumber
+        );
+        if (votingWeight == 0) revert("vote not allowed");
 
-        vote.votes[memberAddr] = voteValue;
+        vote.votes[GPAddr] = voteValue;
 
         if (voteValue == 1) {
-            // vote.nbYes = vote.nbYes + votingWeight;
-            vote.nbYes += 1;
+            vote.nbYes = vote.nbYes + uint128(votingWeight);
+            // vote.nbYes += 1;
         } else if (voteValue == 2) {
-            // vote.nbNo = vote.nbNo + votingWeight;
-            vote.nbNo += 1;
+            vote.nbNo = vote.nbNo + uint128(votingWeight);
+            // vote.nbNo += 1;
         }
     }
 
