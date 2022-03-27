@@ -10,6 +10,7 @@ import "../interfaces/IVoting.sol";
 import "../../helpers/DaoHelper.sol";
 import "../modifiers/Reimbursable.sol";
 import "../../helpers/GovernanceHelper.sol";
+import "hardhat/console.sol";
 
 /**
 MIT License
@@ -115,6 +116,7 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
     function submitVote(
         DaoRegistry dao,
         bytes32 proposalId,
+        address token,
         uint256 voteValue
     ) external onlyGeneralPartner(dao) reimbursable(dao) {
         require(
@@ -154,7 +156,7 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         int128 votingWeight = GovernanceHelper.getGPVotingWeight(
             dao,
             GPAddr,
-            proposalId,
+            token,
             vote.blockNumber
         );
         if (votingWeight == 0) revert("vote not allowed");
@@ -210,6 +212,8 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         ) {
             return VotingState.GRACE_PERIOD;
         }
+        console.log("GP vote.nbYes: ", vote.nbYes);
+        console.log("GP vote.nbNo: ", vote.nbNo);
 
         if (vote.nbYes > vote.nbNo) {
             return VotingState.PASS;

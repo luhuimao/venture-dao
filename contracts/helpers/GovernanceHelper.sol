@@ -9,6 +9,7 @@ import "../extensions/fundingpool/FundingPool.sol";
 import "../extensions/token/erc20/ERC20TokenExtension.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
+import "hardhat/console.sol";
 
 /**
 MIT License
@@ -110,26 +111,21 @@ library GovernanceHelper {
     function getGPVotingWeight(
         DaoRegistry dao,
         address voterAddr,
-        bytes32 proposalId,
+        address token,
         uint256 snapshot
     ) internal view returns (int128) {
-        (address adapterAddress, ) = dao.proposals(proposalId);
-        address governanceToken = dao.getAddressConfiguration(
-            keccak256(abi.encodePacked(ROLE_PREFIX, adapterAddress))
-        );
-
+        // (address adapterAddress, ) = dao.proposals(proposalId);
+        // address governanceToken = dao.getAddressConfiguration(
+        //     keccak256(abi.encodePacked(ROLE_PREFIX, adapterAddress))
+        // );
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL)
         );
-        if (fundingpool.isTokenAllowed(governanceToken)) {
+        if (fundingpool.isTokenAllowed(token)) {
             return
                 ABDKMath64x64.log_2(
                     int128(
-                        fundingpool.getPriorAmount(
-                            voterAddr,
-                            governanceToken,
-                            snapshot
-                        )
+                        fundingpool.getPriorAmount(voterAddr, token, snapshot)
                     )
                 ) *
                 int128(fundingpool.votingWeightMultiplier()) +

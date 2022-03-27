@@ -103,9 +103,9 @@ contract FundingPoolExtension is IExtension, ERC165 {
     uint256 public minFundsForGP; // minimum funds threshold for GP
     uint256 public serviceFeeRatio; //service fee ratio
     uint256 public snapFunds; // the maximum accepting funds during voting
-    uint128 public votingWeightRadix = 1; //decimal, default is 1
-    uint128 public votingWeightMultiplier = 1; //   decimal, default is 1
-    uint128 public votingWeightAddend = 0; //decimal, default is 0
+    uint128 public votingWeightRadix; //decimal, default is 1
+    uint128 public votingWeightMultiplier; //   decimal, default is 1
+    uint128 public votingWeightAddend; //decimal, default is 0
     bool public initialized = false; // internally tracks deployment under eip-1167 proxy pattern
     DaoRegistry public dao;
     // delegate key => general partner address mapping
@@ -159,6 +159,9 @@ contract FundingPoolExtension is IExtension, ERC165 {
         dao = _dao;
         initialized = true;
 
+        votingWeightMultiplier = 1;
+        votingWeightAddend = 0;
+        votingWeightRadix = 1;
         availableInternalTokens[DaoHelper.UNITS] = true;
         internalTokens.push(DaoHelper.UNITS);
 

@@ -194,9 +194,6 @@ contract VotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         if (vote.startingTime == 0) {
             return VotingState.NOT_STARTED;
         }
-        console.log("  block.timestamp:", block.timestamp);
-        console.log("vote.startingTime:", vote.startingTime);
-        console.log("vote.VotingPeriod:", dao.getConfiguration(VotingPeriod));
 
         if (
             // slither-disable-next-line timestamp
@@ -205,8 +202,8 @@ contract VotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         ) {
             return VotingState.IN_PROGRESS;
         }
-        console.log("vote.nbYes:", vote.nbYes);
-        console.log("vote.nbNo:", vote.nbNo);
+        console.log("Voting vote.nbYes:", vote.nbYes);
+        console.log("Voting vote.nbNo:", vote.nbNo);
         if (
             // slither-disable-next-line timestamp
             block.timestamp <
