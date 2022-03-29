@@ -6,12 +6,10 @@ import "../../core/DaoRegistry.sol";
 import "../IExtension.sol";
 import "../../guards/AdapterGuard.sol";
 import "../../helpers/DaoHelper.sol";
-import "../bank/Bank.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
 
 /**
@@ -38,10 +36,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract FundingPoolExtension is IExtension, ERC165 {
+contract AllocationExtension is IExtension, ERC165 {
     using Address for address payable;
     using SafeERC20 for IERC20;
-    using EnumerableSet for EnumerableSet.AddressSet;
+
+    uint8 public maxExternalTokens; // the maximum number of external tokens that can be stored in the bank
+
+    bool public initialized = false; // internally tracks deployment under eip-1167 proxy pattern
+    DaoRegistry public dao;
 
     enum AclFlag {
         ADD_TO_BALANCE,
@@ -50,15 +52,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
         WITHDRAW,
         REGISTER_NEW_TOKEN,
         REGISTER_NEW_INTERNAL_TOKEN,
-        UPDATE_TOKEN,
-        DISTRIBUTE_FUNDS,
-        SET_SNAP_FUNDS,
-        SET_PROJECT_SNAP_FUNDS,
-        SET_PROJECT_SNAP_RICE
-    }
-    enum GeneralPartnerFlag {
-        EXISTS,
-        EXITED
+        UPDATE_TOKEN
     }
 
     modifier noProposal() {
@@ -66,22 +60,16 @@ contract FundingPoolExtension is IExtension, ERC165 {
         _;
     }
 
-    /// @dev - Events for FundingPool
-    event NewBalance(address member, address tokenAddr, uint128 amount);
+    /// @dev - Events for Bank
+    event NewBalance(address member, address tokenAddr, uint160 amount);
 
-    event Withdraw(address account, address tokenAddr, uint128 amount);
+    event Withdraw(address account, address tokenAddr, uint160 amount);
 
     event WithdrawTo(
         address accountFrom,
         address accountTo,
         address tokenAddr,
-        uint128 amount
-    );
-
-    event DistributeFund(
-        address distributeTo,
-        address tokenAddr,
-        uint256 amount
+        uint160 amount
     );
 
     /*
@@ -91,44 +79,13 @@ contract FundingPoolExtension is IExtension, ERC165 {
     struct Checkpoint {
         // A checkpoint for marking number of votes from a given block
         uint96 fromBlock;
-        uint128 amount;
+        uint160 amount;
     }
 
-    struct GeneralPartner {
-        // the structure to track all the general partners in the DAO
-        uint256 flags; // flags to track the state of the general partners: exists, etc
-    }
-    struct Investor {
-        // the structure to track all the investor  in the DAO
-        uint256 flags; // flags to track the state of the investor: exists, etc
-    }
-    /*
-     * PUBLIC VARIABLES
-     */
-
-    uint8 public maxExternalTokens; // the maximum number of external tokens that can be stored in the bank
-    uint256 public minFundsForLP; // minimum funds threshold for LP
-    uint256 public minFundsForGP; // minimum funds threshold for GP
-    uint256 public serviceFeeRatio; //service fee ratio
-    uint256 public projectSnapFunds; //
-    uint256 public projectSnapRice; //
-    uint256 public snapFunds; // the maximum accepting funds during voting
-    uint128 public votingWeightRadix; //decimal, default is 1
-    uint128 public votingWeightMultiplier; //   decimal, default is 1
-    uint128 public votingWeightAddend; //decimal, default is 0
-
-    bool public initialized = false; // internally tracks deployment under eip-1167 proxy pattern
-
-    DaoRegistry public dao;
-
-    // delegate key => general partner address mapping
-    mapping(address => address) public generalPartnerAddressesByDelegatedKey;
-    mapping(address => GeneralPartner) public generalPartners; // the map to track all general partners of the DAO
-    address[] private _generalPartners;
+    uint8 public gpAllocationBonusRadio;
+    uint256 public riceStakeAllocationRadio;
     address[] public tokens;
     address[] public internalTokens;
-    mapping(address => Investor) public investors;
-    address[] private _investors;
     // tokenAddress => availability
     mapping(address => bool) public availableTokens;
     mapping(address => bool) public availableInternalTokens;
@@ -137,10 +94,6 @@ contract FundingPoolExtension is IExtension, ERC165 {
         public checkpoints;
     // tokenAddress => memberAddress => numCheckpoints
     mapping(address => mapping(address => uint32)) public numCheckpoints;
-
-    // tokenAddress => treasuryAddress => checkpointNum => Checkpoint
-    mapping(address => mapping(address => mapping(uint32 => Checkpoint)))
-        public feeCheckpoints;
 
     /// @notice Clonable contract must have an empty constructor
     constructor() {}
@@ -156,7 +109,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
                     address(this),
                     uint8(flag)
                 ),
-            "foundingpool::accessDenied:"
+            "bank::accessDenied:"
         );
         _;
     }
@@ -168,29 +121,24 @@ contract FundingPoolExtension is IExtension, ERC165 {
      * @param creator The DAO's creator, who will be an initial member
      */
     function initialize(DaoRegistry _dao, address creator) external override {
-        require(!initialized, "foundingpool already initialized");
-        require(_dao.isMember(creator), "foundingpool::not member");
-
+        require(!initialized, "bank already initialized");
+        require(_dao.isMember(creator), "bank::not member");
         dao = _dao;
-        // initialized = true;
+        initialized = true;
 
-        votingWeightMultiplier = 1;
-        votingWeightAddend = 0;
-        votingWeightRadix = 1;
         availableInternalTokens[DaoHelper.UNITS] = true;
         internalTokens.push(DaoHelper.UNITS);
 
         availableInternalTokens[DaoHelper.MEMBER_COUNT] = true;
         internalTokens.push(DaoHelper.MEMBER_COUNT);
-        // uint256 nbMembers = _dao.getNbMembers();
+        uint256 nbMembers = _dao.getNbMembers();
+        for (uint256 i = 0; i < nbMembers; i++) {
+            //slither-disable-next-line calls-loop
+            addToBalance(_dao.getMemberAddress(i), DaoHelper.MEMBER_COUNT, 1);
+        }
 
-        // for (uint256 i = 0; i < nbMembers; i++) {
-        //     //slither-disable-next-line calls-loop
-        //     addToBalance(_dao.getMemberAddress(i), DaoHelper.MEMBER_COUNT, 1);
-        // }
-
-        // _createNewAmountCheckpoint(creator, DaoHelper.UNITS, 1);
-        // _createNewAmountCheckpoint(DaoHelper.TOTAL, DaoHelper.UNITS, 1);
+        _createNewAmountCheckpoint(creator, DaoHelper.UNITS, 1);
+        _createNewAmountCheckpoint(DaoHelper.TOTAL, DaoHelper.UNITS, 1);
     }
 
     function withdraw(
@@ -200,7 +148,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
     ) external hasExtensionAccess(AclFlag.WITHDRAW) {
         require(
             balanceOf(member, tokenAddr) >= amount,
-            "FundingPool::withdraw::not enough funds"
+            "bank::withdraw::not enough funds"
         );
         subtractFromBalance(member, tokenAddr, amount);
         if (tokenAddr == DaoHelper.ETH_TOKEN) {
@@ -209,12 +157,8 @@ contract FundingPoolExtension is IExtension, ERC165 {
             IERC20(tokenAddr).safeTransfer(member, amount);
         }
 
-        if (balanceOf(member, tokenAddr) <= minFundsForGP) {
-            _removeGneralPartner(member);
-        }
-
         //slither-disable-next-line reentrancy-events
-        emit Withdraw(member, tokenAddr, uint128(amount));
+        emit Withdraw(member, tokenAddr, uint160(amount));
     }
 
     function withdrawTo(
@@ -235,22 +179,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
         }
 
         //slither-disable-next-line reentrancy-events
-        emit WithdrawTo(memberFrom, memberTo, tokenAddr, uint128(amount));
-    }
-
-    function distributeFunds(
-        address recipientAddr,
-        address tokenAddr,
-        uint256 amount
-    ) external hasExtensionAccess(AclFlag.DISTRIBUTE_FUNDS) {
-        require(amount > 0, "FundingPool::distributeFunds::amount must > 0");
-        require(
-            IERC20(tokenAddr).balanceOf(address(this)) >= amount,
-            "FundingPool::withdraw::not enough funds"
-        );
-        IERC20(tokenAddr).safeTransfer(recipientAddr, amount);
-
-        emit DistributeFund(recipientAddr, tokenAddr, amount);
+        emit WithdrawTo(memberFrom, memberTo, tokenAddr, uint160(amount));
     }
 
     /**
@@ -283,95 +212,29 @@ contract FundingPoolExtension is IExtension, ERC165 {
     }
 
     /**
-     * @notice Sets the maximum amount of external tokens allowed in the founding pool
-     * @param minfunds The maximum amount of token allowed
+     * @notice Sets the GP Alloc Bonus Ratio
+     * @param ratio The GP Alloc Bonus Ratio
      */
-    function setMinFundsForGP(uint256 minfunds) external {
-        require(!initialized, "founding pool already initialized");
-        // require(
-        //     minfunds > 0 && minfunds <= DaoHelper.MAX_TOKENS_GUILD_BANK,
-        //     "max number of external tokens should be (0,200)"
-        // );
+    function setGPAllocBonusRatio(uint8 ratio) external {
+        require(!initialized, "Allocation already initialized");
         require(
-            minfunds > 0 && minfunds < 2**256 - 1,
-            "max number of external tokens should be (0,2*256-1)"
+            ratio > 0 && ratio < 100 && riceStakeAllocationRadio + ratio < 100,
+            "GP Alloc Bonus Ratio should be (0,100)"
         );
-        minFundsForGP = minfunds;
+        gpAllocationBonusRadio = ratio;
     }
 
     /**
-     * @notice Sets the service fee ratio
-     * @param serviceFee The service fee ratio
+     * @notice Sets the GP Alloc Bonus Ratio
+     * @param ratio The GP Alloc Bonus Ratio
      */
-    function setServiceFeeRatio(uint256 serviceFee) external {
-        require(!initialized, "founding pool already initialized");
+    function setRiceStakeAllocRatio(uint8 ratio) external {
+        require(!initialized, "Allocation already initialized");
         require(
-            serviceFee > 0 && serviceFee <= 100,
-            "service fee ratio should be (0,100)"
+            ratio > 0 && ratio < 100 && gpAllocationBonusRadio + ratio < 100,
+            "GP Alloc Bonus Ratio should be (0,100)"
         );
-        serviceFeeRatio = serviceFee;
-    }
-
-    /**
-     * @notice Sets the maximum amount of external tokens allowed in the founding pool
-     * @param minfunds The maximum amount of token allowed
-     */
-    function setMinFundsForLP(uint256 minfunds) external {
-        require(!initialized, "founding pool already initialized");
-        require(
-            minfunds > 0 && minfunds <= DaoHelper.MAX_TOKENS_GUILD_BANK,
-            "max number of external tokens should be (0,200)"
-        );
-        minFundsForLP = minfunds;
-    }
-
-    /**
-     * @notice Sets the maximum amount of external tokens allowed in the founding pool
-     * @param weightRadix The maximum amount of token allowed
-     */
-    function setVotingWeightRadix(uint128 weightRadix) external {
-        require(!initialized, "founding pool already initialized");
-
-        votingWeightRadix = weightRadix;
-    }
-
-    /**
-     * @notice Sets the maximum amount of external tokens allowed in the founding pool
-     * @param tokenAddr The maximum amount of token allowed
-     */
-    function setSnapFunds(address tokenAddr)
-        external
-        hasExtensionAccess(AclFlag.SET_SNAP_FUNDS)
-    {
-        snapFunds = balanceOf(address(DaoHelper.DAOSQUARE_TREASURY), tokenAddr);
-    }
-
-    /**
-     * @notice Sets projectSnapFunds to current total funds
-     * @param tokenAddr The maximum amount of token allowed
-     */
-    function setProjectSnapFunds(address tokenAddr)
-        external
-        hasExtensionAccess(AclFlag.SET_PROJECT_SNAP_FUNDS)
-    {
-        projectSnapFunds = balanceOf(
-            address(DaoHelper.DAOSQUARE_TREASURY),
-            tokenAddr
-        );
-    }
-
-    /**
-     * @notice Sets projectSnapRice to current total rice
-     * @param tokenAddr The maximum amount of token allowed
-     */
-    function setProjectSnapRice(address tokenAddr)
-        external
-        hasExtensionAccess(AclFlag.SET_PROJECT_SNAP_RICE)
-    {
-        projectSnapRice = balanceOf(
-            address(DaoHelper.DAOSQUARE_TREASURY),
-            tokenAddr
-        );
+        riceStakeAllocationRadio = ratio;
     }
 
     /*
@@ -393,6 +256,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
             tokens.length <= maxExternalTokens,
             "exceeds the maximum tokens allowed"
         );
+
         if (!availableTokens[token]) {
             availableTokens[token] = true;
             tokens.push(token);
@@ -455,63 +319,6 @@ contract FundingPoolExtension is IExtension, ERC165 {
      */
 
     /**
-     * @return Whether or not a flag is set for a given general partner
-     * @param generalPartnerAddress The general partner to check against flag
-     * @param flag The flag to check in the general partner
-     */
-    function getGeneralPartnerFlag(
-        address generalPartnerAddress,
-        GeneralPartnerFlag flag
-    ) public view returns (bool) {
-        return
-            DaoHelper.getFlag(
-                generalPartners[generalPartnerAddress].flags,
-                uint8(flag)
-            );
-    }
-
-    /**
-     * @return Whether or not a given address is a general partner of the DAO.
-     * @dev it will resolve by delegate key, not member address.
-     * @param addr The address to look up
-     */
-    function isGeneralPartner(address addr) external view returns (bool) {
-        address generalPartnerAddress = generalPartnerAddressesByDelegatedKey[
-            addr
-        ];
-        return
-            getGeneralPartnerFlag(
-                generalPartnerAddress,
-                GeneralPartnerFlag.EXISTS
-            );
-    }
-
-    /**
-     * @return Whether or not a given address is a general partner of the DAO.
-     * @dev it will resolve by delegate key, not member address.
-     * @param tokenAddr The address to look up
-     */
-    function getAllGPFunds(address tokenAddr) external view returns (uint256) {
-        uint256 allGPFunds;
-        for (uint8 i = 0; i < _generalPartners.length; i++) {
-            address generalPartnerAddress = generalPartnerAddressesByDelegatedKey[
-                    _generalPartners[i]
-                ];
-
-            if (
-                getGeneralPartnerFlag(
-                    generalPartnerAddress,
-                    GeneralPartnerFlag.EXISTS
-                )
-            ) {
-                allGPFunds += balanceOf(generalPartnerAddress, tokenAddr);
-            }
-        }
-
-        return allGPFunds;
-    }
-
-    /**
      * Internal bookkeeping
      */
 
@@ -567,38 +374,11 @@ contract FundingPoolExtension is IExtension, ERC165 {
             availableTokens[token] || availableInternalTokens[token],
             "unknown token address"
         );
-        require(amount > 0, "deposit funds must > 0");
-        _newInvestor(member);
-        IERC20 erc20 = IERC20(token);
-        uint256 chargedAmount = (amount * serviceFeeRatio) / 100;
-        uint256 effectedAmount = amount - chargedAmount;
-        uint256 newAmount = balanceOf(member, token) + effectedAmount;
-        uint256 feeNewAmount = balanceOf(
-            address(DaoHelper.DAOSQUARE_FUNDS),
-            token
-        ) + chargedAmount;
-        uint256 totalFunds = balanceOf(
-            address(DaoHelper.DAOSQUARE_TREASURY),
-            token
-        ) + effectedAmount;
-
-        if (newAmount > minFundsForGP) {
-            _newGeneralPartner(member);
-        }
-        erc20.transferFrom(msg.sender, address(this), amount);
+        uint256 newAmount = balanceOf(member, token) + amount;
+        uint256 newTotalAmount = balanceOf(DaoHelper.TOTAL, token) + amount;
 
         _createNewAmountCheckpoint(member, token, newAmount);
-        _createNewAmountCheckpoint(
-            address(DaoHelper.DAOSQUARE_FUNDS),
-            token,
-            feeNewAmount
-        );
-
-        _createNewAmountCheckpoint(
-            address(DaoHelper.DAOSQUARE_TREASURY),
-            token,
-            totalFunds
-        );
+        _createNewAmountCheckpoint(DaoHelper.TOTAL, token, newTotalAmount);
     }
 
     /**
@@ -613,44 +393,10 @@ contract FundingPoolExtension is IExtension, ERC165 {
         uint256 amount
     ) public hasExtensionAccess(AclFlag.SUB_FROM_BALANCE) {
         uint256 newAmount = balanceOf(member, token) - amount;
-        uint256 newTotalFund = balanceOf(DaoHelper.DAOSQUARE_TREASURY, token) -
-            amount;
-        if (newAmount <= 0) {
-            _removeInvestor(member);
-        }
-        _createNewAmountCheckpoint(member, token, newAmount);
-        _createNewAmountCheckpoint(
-            DaoHelper.DAOSQUARE_TREASURY,
-            token,
-            newTotalFund
-        );
-    }
+        uint256 newTotalAmount = balanceOf(DaoHelper.TOTAL, token) - amount;
 
-    /**
-     * @notice Remove from a all investor's balance of a given token
-     * @param token The token to update
-     * @param amount The token amount distribute to a project team
-     */
-    function subtractAllFromBalance(address token, uint256 amount)
-        public
-        hasExtensionAccess(AclFlag.SUB_FROM_BALANCE)
-    {
-        for (uint8 i = 0; i < _investors.length; i++) {
-            address investorAddr = _investors[i];
-            if (
-                DaoHelper.getFlag(
-                    investors[investorAddr].flags,
-                    uint8(GeneralPartnerFlag.EXISTS)
-                ) && balanceOf(investorAddr, token) > 0
-            ) {
-                subtractFromBalance(
-                    investorAddr,
-                    token,
-                    (amount * balanceOf(investorAddr, token)) /
-                        balanceOf(address(DaoHelper.DAOSQUARE_TREASURY), token)
-                );
-            }
-        }
+        _createNewAmountCheckpoint(member, token, newAmount);
+        _createNewAmountCheckpoint(DaoHelper.TOTAL, token, newTotalAmount);
     }
 
     /**
@@ -681,7 +427,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
     function balanceOf(address member, address tokenAddr)
         public
         view
-        returns (uint128)
+        returns (uint160)
     {
         uint32 nCheckpoints = numCheckpoints[tokenAddr][member];
         return
@@ -701,7 +447,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
         address account,
         address tokenAddr,
         uint256 blockNumber
-    ) external view returns (uint128) {
+    ) external view returns (uint256) {
         require(
             blockNumber < block.number,
             "Uni::getPriorAmount: not yet determined"
@@ -791,12 +537,13 @@ contract FundingPoolExtension is IExtension, ERC165 {
             isValidToken = true;
         } else if (availableTokens[token]) {
             require(
-                amount < type(uint128).max,
+                amount < type(uint160).max,
                 "token amount exceeds the maximum limit for external tokens"
             );
             isValidToken = true;
         }
-        uint128 newAmount = uint128(amount);
+        uint160 newAmount = uint160(amount);
+
         require(isValidToken, "token not registered");
 
         uint32 nCheckpoints = numCheckpoints[token][member];
@@ -819,113 +566,5 @@ contract FundingPoolExtension is IExtension, ERC165 {
         }
         //slither-disable-next-line reentrancy-events
         emit NewBalance(member, token, newAmount);
-    }
-
-    /**
-     * @notice Registers a general partner address in the DAO if it is not registered or invalid.
-     * @dev Reverts if the generalPartnerAddress has been register
-     * @param generalPartnerAddress The member whose checkpoints will be added to
-     */
-    function _newGeneralPartner(address generalPartnerAddress) internal {
-        require(
-            generalPartnerAddress != address(0x0),
-            "invalid generalPartner address"
-        );
-
-        GeneralPartner storage generalPartner = generalPartners[
-            generalPartnerAddress
-        ];
-        if (
-            !DaoHelper.getFlag(
-                generalPartner.flags,
-                uint8(GeneralPartnerFlag.EXISTS)
-            )
-        ) {
-            require(
-                generalPartnerAddressesByDelegatedKey[generalPartnerAddress] ==
-                    address(0x0),
-                "general partner address already taken as delegated key"
-            );
-            generalPartner.flags = DaoHelper.setFlag(
-                generalPartner.flags,
-                uint8(GeneralPartnerFlag.EXISTS),
-                true
-            );
-            generalPartnerAddressesByDelegatedKey[
-                generalPartnerAddress
-            ] = generalPartnerAddress;
-
-            _generalPartners.push(generalPartnerAddress);
-        }
-
-        // address bankAddress = extensions[DaoHelper.BANK];
-        // if (bankAddress != address(0x0)) {
-        //     BankExtension bank = BankExtension(bankAddress);
-        //     if (bank.balanceOf(memberAddress, DaoHelper.MEMBER_COUNT) == 0) {
-        //         bank.addToBalance(memberAddress, DaoHelper.MEMBER_COUNT, 1);
-        //     }
-        // }
-    }
-
-    /**
-     * @notice remove a general partner address in the DAO.
-     * @dev Reverts if the generalPartnerAddress has not register
-     * @param generalPartnerAddress The member whose checkpoints will be added to
-     */
-    function _removeGneralPartner(address generalPartnerAddress) internal {
-        require(
-            generalPartnerAddress != address(0x0),
-            "invalid generalPartner address"
-        );
-
-        GeneralPartner storage generalPartner = generalPartners[
-            generalPartnerAddress
-        ];
-        generalPartner.flags = DaoHelper.setFlag(
-            generalPartner.flags,
-            uint8(GeneralPartnerFlag.EXISTS),
-            false
-        );
-        generalPartner.flags = DaoHelper.setFlag(
-            generalPartner.flags,
-            uint8(GeneralPartnerFlag.EXITED),
-            true
-        );
-    }
-
-    function _newInvestor(address investorAddr) internal {
-        require(investorAddr != address(0x0), "invalid investor address");
-
-        Investor storage inverstor = investors[investorAddr];
-        if (
-            !DaoHelper.getFlag(
-                inverstor.flags,
-                uint8(GeneralPartnerFlag.EXISTS)
-            )
-        ) {
-            inverstor.flags = DaoHelper.setFlag(
-                inverstor.flags,
-                uint8(GeneralPartnerFlag.EXISTS),
-                true
-            );
-
-            _investors.push(investorAddr);
-        }
-    }
-
-    function _removeInvestor(address investorAddr) internal {
-        require(investorAddr != address(0x0), "invalid generalPartner address");
-
-        Investor storage investor = investors[investorAddr];
-        investor.flags = DaoHelper.setFlag(
-            investor.flags,
-            uint8(GeneralPartnerFlag.EXISTS),
-            false
-        );
-        investor.flags = DaoHelper.setFlag(
-            investor.flags,
-            uint8(GeneralPartnerFlag.EXITED),
-            true
-        );
     }
 }

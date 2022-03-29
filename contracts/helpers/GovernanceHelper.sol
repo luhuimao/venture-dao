@@ -122,14 +122,31 @@ library GovernanceHelper {
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL)
         );
         if (fundingpool.isTokenAllowed(token)) {
-            return
-                ABDKMath64x64.log_2(
+            if (
+                fundingpool.votingWeightRadix() == 1 ||
+                fundingpool.votingWeightRadix() <= 0
+            ) {
+                return
                     int128(
                         fundingpool.getPriorAmount(voterAddr, token, snapshot)
-                    )
-                ) *
-                int128(fundingpool.votingWeightMultiplier()) +
-                int128(fundingpool.votingWeightAddend());
+                    ) *
+                    int128(fundingpool.votingWeightMultiplier()) +
+                    int128(fundingpool.votingWeightAddend());
+            } else {
+                return
+                    ABDKMath64x64.log_2(
+                        int128(
+                            fundingpool.getPriorAmount(
+                                voterAddr,
+                                token,
+                                snapshot
+                            )
+                        )
+                    ) *
+                    int128(fundingpool.votingWeightMultiplier()) +
+                    int128(fundingpool.votingWeightAddend());
+            }
+
             // return
             //     fundingpool.getPriorAmount(
             //         voterAddr,

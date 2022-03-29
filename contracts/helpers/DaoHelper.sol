@@ -78,6 +78,7 @@ library DaoHelper {
     address internal constant FUNDING_POOL = address(0xFFFF);
     address internal constant DAOSQUARE_FUNDS = address(0xDDDD);
     address internal constant DAOSQUARE_TREASURY = address(0xDECD);
+    address internal constant GP_POOL = address(0x1111);
     address internal constant ESCROW = address(0x4bec);
     address internal constant TOTAL = address(0xbabe);
     address internal constant UNITS = address(0xFF1CE);

@@ -150,6 +150,8 @@ contract DistributeFundContract is
         // Starts the voting process for the proposal.
         gpVotingContract.startNewVotingForProposal(dao, proposalId, data);
 
+        // snap funds
+        fundingpool.setSnapFunds(token);
         // Sponsors the proposal.
         dao.sponsorProposal(proposalId, submittedBy, address(gpVotingContract));
     }
@@ -203,21 +205,17 @@ contract DistributeFundContract is
             distribution.blockNumber = block.number;
             ongoingDistributions[address(dao)] = proposalId;
 
-            // BankExtension bank = BankExtension(
-            //     dao.getExtensionAddress(DaoHelper.BANK)
-            // );
-
-            // bank.internalTransfer(
-            //     DaoHelper.GUILD,
-            //     DaoHelper.ESCROW,
-            //     distribution.token,
-            //     distribution.amount
-            // );
-
             FundingPoolExtension fundingpool = FundingPoolExtension(
                 dao.getExtensionAddress(DaoHelper.FUNDINGPOOL)
             );
+            //set project sanp funds to total funds
+            address token = fundingpool.getToken(0);
+            fundingpool.setProjectSnapFunds(token);
 
+            //substract from funding pool
+            fundingpool.subtractAllFromBalance(token, distribution.amount);
+
+            //distribute fund to project team
             fundingpool.distributeFunds(
                 distribution.recipientAddr,
                 distribution.token,

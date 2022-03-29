@@ -206,7 +206,7 @@ contract OnboardingContract is IOnboarding, AdapterGuard, Reimbursable {
         uint256 amount = proposal.amount;
         if (voteResult == IVoting.VotingState.PASS) {
             address unitsToMint = proposal.unitsToMint;
-            uint256 unitsRequested = proposal.unitsRequested;
+            // uint256 unitsRequested = proposal.unitsRequested;
             address applicant = proposal.applicant;
             BankExtension bank = BankExtension(
                 dao.getExtensionAddress(DaoHelper.BANK)
