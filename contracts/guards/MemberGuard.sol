@@ -65,16 +65,6 @@ abstract contract MemberGuard {
         view
         returns (bool)
     {
-        address bankAddress = dao.extensions(DaoHelper.BANK);
-        // if (bankAddress != address(0x0)) {
-        //     address memberAddr = dao.getAddressIfDelegated(_addr);
-        //     return
-        //         BankExtension(bankAddress).balanceOf(
-        //             memberAddr,
-        //             DaoHelper.UNITS
-        //         ) > 0;
-        // }
-
         return dao.isMember(_addr);
     }
 

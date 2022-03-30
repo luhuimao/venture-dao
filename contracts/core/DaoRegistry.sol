@@ -83,7 +83,8 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         SET_CONFIGURATION,
         ADD_EXTENSION,
         REMOVE_EXTENSION,
-        NEW_MEMBER
+        NEW_MEMBER,
+        REMOVE_MEMBER
     }
 
     /*
@@ -243,14 +244,30 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
             memberAddressesByDelegatedKey[memberAddress] = memberAddress;
             _members.push(memberAddress);
         }
+    }
 
-        // address bankAddress = extensions[DaoHelper.BANK];
-        // if (bankAddress != address(0x0)) {
-        //     BankExtension bank = BankExtension(bankAddress);
-        //     if (bank.balanceOf(memberAddress, DaoHelper.MEMBER_COUNT) == 0) {
-        //         bank.addToBalance(memberAddress, DaoHelper.MEMBER_COUNT, 1);
-        //     }
-        // }
+    /**
+     * @notice unRegisters a member address in the DAO if it is  registered .
+     */
+    function removeMember(address memberAddress)
+        public
+        hasAccess(this, AclFlag.REMOVE_MEMBER)
+    {
+        require(memberAddress != address(0x0), "invalid member address");
+
+        Member storage member = members[memberAddress];
+        if (DaoHelper.getFlag(member.flags, uint8(MemberFlag.EXISTS))) {
+            require(
+                memberAddressesByDelegatedKey[memberAddress] != address(0x0),
+                "member address has not taken as delegated key"
+            );
+            member.flags = DaoHelper.setFlag(
+                member.flags,
+                uint8(MemberFlag.EXISTS),
+                false
+            );
+            memberAddressesByDelegatedKey[memberAddress] = address(0x0);
+        }
     }
 
     /**

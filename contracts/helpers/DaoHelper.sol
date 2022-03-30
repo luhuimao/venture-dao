@@ -169,18 +169,21 @@ library DaoHelper {
         return addr != address(0x0);
     }
 
-    function potentialNewMember(
-        address memberAddress,
-        DaoRegistry dao,
-        BankExtension bank
-    ) internal {
-        dao.potentialNewMember(memberAddress);
+    function potentialNewMember(address memberAddress, DaoRegistry dao)
+        internal
+    {
         require(memberAddress != address(0x0), "invalid member address");
+        dao.potentialNewMember(memberAddress);
         // if (address(bank) != address(0x0)) {
         //     if (bank.balanceOf(memberAddress, MEMBER_COUNT) == 0) {
         //         bank.addToBalance(memberAddress, MEMBER_COUNT, 1);
         //     }
         // }
+    }
+
+    function removeMember(address memberAddress, DaoRegistry dao) internal {
+        require(memberAddress != address(0x0), "invalid member address");
+        dao.removeMember(memberAddress);
     }
 
     /**

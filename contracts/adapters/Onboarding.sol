@@ -149,11 +149,7 @@ contract OnboardingContract is IOnboarding, AdapterGuard, Reimbursable {
             "applicant is reserved address"
         );
 
-        DaoHelper.potentialNewMember(
-            applicant,
-            dao,
-            BankExtension(dao.getExtensionAddress(DaoHelper.BANK))
-        );
+        DaoHelper.potentialNewMember(applicant, dao);
 
         address tokenAddr = dao.getAddressConfiguration(
             _configKey(tokenToMint, TokenAddr)
