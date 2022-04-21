@@ -221,6 +221,20 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     }
 
     /**
+     * @notice Sets a configuration value
+     * @dev Changes the value of a key in the configuration mapping
+     * @param key The configuration key for which the value will be set
+     * @param value The value to set the key
+     */
+    function setConfigurationByMember(bytes32 key, uint256 value)
+        external
+        onlyMember(this)
+    {
+        mainConfiguration[key] = value;
+        emit ConfigurationUpdated(key, value);
+    }
+
+    /**
      * @notice Registers a member address in the DAO if it is not registered or invalid.
      * @notice A potential new member is a member that holds no shares, and its registration still needs to be voted on.
      */

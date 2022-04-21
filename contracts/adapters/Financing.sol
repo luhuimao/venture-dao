@@ -83,7 +83,7 @@ contract FinancingContract is IFinancing, AdapterGuard, Reimbursable {
         proposal.token = token;
 
         IVoting votingContract = IVoting(
-            dao.getAdapterAddress(DaoHelper.VOTING)
+            dao.getAdapterAddress(DaoHelper.VOTING_ADAPT)
         );
         address sponsoredBy = votingContract.getSenderAddress(
             dao,

@@ -114,61 +114,48 @@ library GovernanceHelper {
         address token,
         uint256 snapshot
     ) internal view returns (int128) {
-        // (address adapterAddress, ) = dao.proposals(proposalId);
-        // address governanceToken = dao.getAddressConfiguration(
-        //     keccak256(abi.encodePacked(ROLE_PREFIX, adapterAddress))
-        // );
         FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL)
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
+        int128 weight;
         if (fundingpool.isTokenAllowed(token)) {
             if (
                 fundingpool.votingWeightRadix() == 1 ||
                 fundingpool.votingWeightRadix() <= 0
             ) {
-                return
-                    int128(
-                        fundingpool.getPriorAmount(voterAddr, token, snapshot)
-                    ) *
+                // weight =
+                //     int128(
+                //         fundingpool.getPriorAmount(voterAddr, token, snapshot)
+                //     ) *
+                //     int128(fundingpool.votingWeightMultiplier()) +
+                //     int128(fundingpool.votingWeightAddend());
+
+                weight =
+                    int128(fundingpool.balanceOf(voterAddr, token)) *
                     int128(fundingpool.votingWeightMultiplier()) +
                     int128(fundingpool.votingWeightAddend());
             } else {
-                return
+                // weight =
+                //     ABDKMath64x64.log_2(
+                //         int128(
+                //             fundingpool.getPriorAmount(
+                //                 voterAddr,
+                //                 token,
+                //                 snapshot
+                //             )
+                //         )
+                //     ) *
+                //     int128(fundingpool.votingWeightMultiplier()) +
+                //     int128(fundingpool.votingWeightAddend());
+
+                weight =
                     ABDKMath64x64.log_2(
-                        int128(
-                            fundingpool.getPriorAmount(
-                                voterAddr,
-                                token,
-                                snapshot
-                            )
-                        )
+                        int128(fundingpool.balanceOf(voterAddr, token))
                     ) *
                     int128(fundingpool.votingWeightMultiplier()) +
                     int128(fundingpool.votingWeightAddend());
             }
-
-            // return
-            //     fundingpool.getPriorAmount(
-            //         voterAddr,
-            //         governanceToken,
-            //         snapshot
-            //     );
         }
-
-        // The external token must implement the getPriorAmount function,
-        // otherwise this call will fail and revert the voting process.
-        // The actual revert does not show a clear reason, so we catch the error
-        // and revert with a better error message.
-        // slither-disable-next-line unused-return
-        // try
-        //     ERC20Extension(governanceToken).getPriorAmount(voterAddr, snapshot)
-        // returns (
-        //     // slither-disable-next-line uninitialized-local,variable-scope
-        //     int128 votingWeight
-        // ) {
-        //     return votingWeight;
-        // } catch {
-        //     revert("getPriorAmount not implemented");
-        // }
+        return weight;
     }
 }

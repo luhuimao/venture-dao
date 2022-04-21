@@ -258,7 +258,7 @@ contract OnboardingContract is IOnboarding, AdapterGuard, Reimbursable {
         bytes memory data
     ) internal {
         IVoting votingContract = IVoting(
-            dao.getAdapterAddress(DaoHelper.VOTING)
+            dao.getAdapterAddress(DaoHelper.VOTING_ADAPT)
         );
         address sponsoredBy = votingContract.getSenderAddress(
             dao,

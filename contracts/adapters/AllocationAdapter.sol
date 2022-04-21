@@ -5,6 +5,8 @@ pragma solidity ^0.8.0;
 import "../helpers/DaoHelper.sol";
 import "hardhat/console.sol";
 import "../extensions/fundingpool/FundingPool.sol";
+import "../extensions/gpdao/GPDao.sol";
+import "./streaming_payment/interfaces/ISablier.sol";
 
 /**
 MIT License
@@ -45,20 +47,21 @@ contract AllocationAdapterContract {
         DaoRegistry dao,
         address recipient,
         uint256 tokenAmount
-    ) external view returns (uint256) {
+    ) public view returns (uint256) {
         FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL)
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
         uint256 fundingRewards = (tokenAmount *
             (100 - gpAllocationBonusRadio - riceStakeAllocationRadio)) / 100;
         uint256 projectSanpFunds = fundingpool.projectSnapFunds();
-        if (projectSanpFunds == 0) {
-            return 0;
-        }
+
         uint256 fund = fundingpool.balanceOf(
             recipient,
             fundingpool.getToken(0)
         );
+        if (projectSanpFunds <= 0 || fund <= 0 || fundingRewards <= 0) {
+            return 0;
+        }
         return (fund * fundingRewards) / projectSanpFunds;
     }
 
@@ -66,11 +69,15 @@ contract AllocationAdapterContract {
         DaoRegistry dao,
         address recipient,
         uint256 tokenAmount
-    ) external view returns (uint256) {
+    ) public view returns (uint256) {
         FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL)
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        if (!fundingpool.isGeneralPartner(recipient)) {
+
+        GPDaoExtension gpdao = GPDaoExtension(
+            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
+        );
+        if (!gpdao.isGeneralPartner(recipient)) {
             return 0;
         }
         uint256 GPBonus = (tokenAmount * gpAllocationBonusRadio) / 100;
@@ -78,13 +85,69 @@ contract AllocationAdapterContract {
             recipient,
             fundingpool.getToken(0)
         );
-        uint256 allGPFunds = fundingpool.getAllGPFunds(fundingpool.getToken(0));
+        uint256 allGPFunds;
+        for (uint8 i = 0; i < gpdao.getAllGPs().length; i++) {
+            if (gpdao.isGeneralPartner(gpdao.getAllGPs()[i])) {
+                allGPFunds += fundingpool.balanceOf(
+                    gpdao.getAllGPs()[i],
+                    fundingpool.getToken(0)
+                );
+            }
+        }
+        if (GPBonus <= 0 || myFund <= 0 || allGPFunds <= 0) {
+            return 0;
+        }
         return (GPBonus * myFund) / allGPFunds;
     }
 
-    function getRiceRewards(address recipient)
-        external
-        view
-        returns (uint128)
-    {}
+    function getRiceRewards(
+        DaoRegistry dao,
+        address recipient,
+        uint256 tokenAmount
+    ) public view returns (uint128) {
+        return 0;
+    }
+
+    function allocateProjectToken(
+        DaoRegistry dao,
+        uint256 tokenAmount,
+        address tokenAddress,
+        uint256 startTime,
+        uint256 stopTime
+    ) external {
+        ISablier streamingPaymentContract = ISablier(
+            dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT)
+        );
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        IERC20(tokenAddress).transferFrom(
+            dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPT),
+            dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPT),
+            tokenAmount
+        );
+        // approve from Allocation adapter contract to streaming payment contract
+        IERC20(tokenAddress).approve(
+            dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT),
+            tokenAmount
+        );
+        address[] memory allInvestors = fundingpool.getInvestors();
+        require(allInvestors.length > 0, "no valid investor");
+        for (uint8 i = 0; i < allInvestors.length; i++) {
+            uint256 allRewards = getFundingRewards(
+                dao,
+                allInvestors[i],
+                tokenAmount
+            ) +
+                getGPBonus(dao, allInvestors[i], tokenAmount) +
+                getRiceRewards(dao, allInvestors[i], tokenAmount);
+            streamingPaymentContract.createStream(
+                allInvestors[i],
+                allRewards,
+                tokenAddress,
+                startTime,
+                stopTime
+            );
+        }
+    }
 }

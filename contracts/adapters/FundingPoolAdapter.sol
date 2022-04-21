@@ -4,11 +4,15 @@ pragma solidity ^0.8.0;
 
 import "../core/DaoRegistry.sol";
 import "../extensions/fundingpool/FundingPool.sol";
+import "../extensions/gpdao/GPDao.sol";
 import "../extensions/bank/Bank.sol";
 import "../guards/AdapterGuard.sol";
+import "../guards/MemberGuard.sol";
 import "../adapters/interfaces/IVoting.sol";
 import "../helpers/DaoHelper.sol";
 import "./modifiers/Reimbursable.sol";
+import "./voting/GPVoting.sol";
+import "./DistributeFund.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
@@ -35,42 +39,54 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract FundingPoolAdapterContract is AdapterGuard, Reimbursable {
+contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
     /**
      * @notice Allows the member/advisor of the DAO to withdraw the funds from their internal foundingpool account.
      * @notice Only accounts that are not reserved can withdraw the funds.
      * @notice If theres is no available balance in the user's account, the transaction is reverted.
      * @param dao The DAO address.
-     * @param account The account to receive the funds.
-     * @param token The token address to receive the funds.
+     * @param amount The amount to withdraw.
      */
-    function withdraw(
-        DaoRegistry dao,
-        address payable account,
-        address token,
-        uint256 amount
-    ) external reimbursable(dao) {
-        require(
-            DaoHelper.isNotReservedAddress(account),
-            "withdraw::reserved address"
-        );
-
-        // We do not need to check if the token is supported by the bank,
-        // because if it is not, the balance will always be zero.
-        // BankExtension bank = BankExtension(
-        //     dao.getExtensionAddress(DaoHelper.BANK)
+    function withdraw(DaoRegistry dao, uint256 amount)
+        external
+        reimbursable(dao)
+    {
+        // require(
+        //     DaoHelper.isNotReservedAddress(account),
+        //     "withdraw::reserved address"
         // );
+
         FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL)
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        uint256 balance = fundingpool.balanceOf(account, token);
-        require(balance > 0, "nothing to withdraw");
+        address token = fundingpool.getToken(0);
+        uint256 balance = fundingpool.balanceOf(msg.sender, token);
+        require(balance > 0, "insufficient balance");
         require(
             amount > 0 && amount <= balance,
             "withdraw amount insufficient"
         );
 
-        fundingpool.withdraw(account, token, amount);
+        fundingpool.withdraw(msg.sender, token, amount);
+
+        GPDaoExtension gpdaoExt = GPDaoExtension(
+            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
+        );
+        DistributeFundContract distributeFundAda = DistributeFundContract(
+            dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPT)
+        );
+        GPVotingContract gpVotingAda = GPVotingContract(
+            dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
+        );
+        //check if gp
+        if (gpdaoExt.isGeneralPartner(msg.sender)) {
+            //update voting weight
+            gpVotingAda.updateVoteWeight(
+                dao,
+                distributeFundAda.ongoingDistributions(address(dao)),
+                msg.sender
+            );
+        }
     }
 
     /**
@@ -79,74 +95,84 @@ contract FundingPoolAdapterContract is AdapterGuard, Reimbursable {
      * @notice If theres is no available balance in the user's account, the transaction is reverted.
      * @param dao The DAO address.
      * @param amount The amount user depoist to foundingpool.
-     * @param token The token address to depoist the funds.
      */
-    function deposit(
-        DaoRegistry dao,
-        address investor,
-        uint256 amount,
-        address token
-    ) external reimbursable(dao) {
+    function deposit(DaoRegistry dao, uint256 amount)
+        external
+        reimbursable(dao)
+    {
         FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL)
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
+        address token = fundingpool.getToken(0);
         IERC20(token).transferFrom(msg.sender, address(this), amount);
         IERC20(token).approve(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL),
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT),
             amount
         );
-        fundingpool.addToBalance(investor, token, amount);
+        fundingpool.addToBalance(msg.sender, token, amount);
 
-        // if (
-        //     fundingpool.balanceOf(investor, token) > fundingpool.minFundsForGP()
-        // ) {
-        //     DaoHelper.potentialNewMember(
-        //         investor,
-        //         dao,
-        //         BankExtension(address(0x0))
-        //     );
-        // }
+        GPDaoExtension gpdaoExt = GPDaoExtension(
+            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
+        );
+        DistributeFundContract distributeAda = DistributeFundContract(
+            dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPT)
+        );
+        GPVotingContract gpVotingAda = GPVotingContract(
+            dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
+        );
+        //check if gp
+        if (
+            gpdaoExt.isGeneralPartner(msg.sender) &&
+            distributeAda.ongoingDistributions(address(dao)) != bytes32(0) &&
+            gpVotingAda.checkIfVoted(
+                dao,
+                distributeAda.ongoingDistributions(address(dao)),
+                msg.sender
+            )
+        ) {
+            //update voting weight
+            gpVotingAda.updateVoteWeight(
+                dao,
+                distributeAda.ongoingDistributions(address(dao)),
+                msg.sender
+            );
+        }
     }
 
-    /**
-     * @notice Allows anyone to update the token balance in the bank extension
-     * @notice If theres is no available balance in the user's account, the transaction is reverted.
-     * @param dao The DAO address.
-     * @param token The token address to update.
-     */
-    function updateToken(DaoRegistry dao, address token)
+    function registerPotentialNewToken(DaoRegistry dao, address _tokenAddr)
         external
-        reentrancyGuard(dao)
+        onlyMember(dao)
+        reimbursable(dao)
     {
-        // We do not need to check if the token is supported by the bank,
-        // because if it is not, the balance will always be zero.
-        FundingPoolExtension(dao.getExtensionAddress(DaoHelper.FUNDINGPOOL))
-            .updateToken(token);
-    }
-
-    /*
-     * @notice Allows anyone to send eth to the bank extension
-     * @param dao The DAO address.
-     */
-    function sendEth(DaoRegistry dao) external payable reimbursable(dao) {
-        require(msg.value > 0, "no eth sent!");
-        FundingPoolExtension(dao.getExtensionAddress(DaoHelper.FUNDINGPOOL))
-            .addToBalance{value: msg.value}(
-            DaoHelper.GUILD,
-            DaoHelper.ETH_TOKEN,
-            msg.value
-        );
-    }
-
-    function balanceOf(
-        DaoRegistry dao,
-        address member,
-        address tokenAddr
-    ) public view returns (uint160) {
         FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL)
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
+        fundingpool.registerPotentialNewToken(_tokenAddr);
+    }
 
+    // /*
+    //  * @notice Allows anyone to send eth to the bank extension
+    //  * @param dao The DAO address.
+    //  */
+    // function sendEth(DaoRegistry dao) external payable reimbursable(dao) {
+    //     require(msg.value > 0, "no eth sent!");
+    //     FundingPoolExtension(dao.getExtensionAddress(DaoHelper.FUNDINGPOOL))
+    //         .addToBalance{value: msg.value}(
+    //         DaoHelper.GUILD,
+    //         DaoHelper.ETH_TOKEN,
+    //         msg.value
+    //     );
+    // }
+
+    function balanceOf(DaoRegistry dao, address member)
+        public
+        view
+        returns (uint160)
+    {
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        address tokenAddr = fundingpool.getToken(0);
         return fundingpool.balanceOf(member, tokenAddr);
     }
 }

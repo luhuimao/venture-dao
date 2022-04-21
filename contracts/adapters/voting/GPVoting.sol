@@ -10,6 +10,8 @@ import "../interfaces/IVoting.sol";
 import "../../helpers/DaoHelper.sol";
 import "../modifiers/Reimbursable.sol";
 import "../../helpers/GovernanceHelper.sol";
+import "../../extensions/fundingpool/FundingPool.sol";
+import "../../helpers/DaoHelper.sol";
 import "hardhat/console.sol";
 
 /**
@@ -48,6 +50,8 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
     bytes32 constant VotingPeriod = keccak256("voting.votingPeriod");
     bytes32 constant GracePeriod = keccak256("voting.gracePeriod");
 
+    mapping(address => mapping(bytes32 => mapping(address => int128)))
+        public voteWeights;
     mapping(address => mapping(bytes32 => GPVoting)) public votes;
 
     string public constant ADAPTER_NAME = "GPVotingContract";
@@ -116,7 +120,6 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
     function submitVote(
         DaoRegistry dao,
         bytes32 proposalId,
-        address token,
         uint256 voteValue
     ) external onlyGeneralPartner(dao) reimbursable(dao) {
         require(
@@ -153,14 +156,20 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         address GPAddr = dao.getAddressIfDelegated(msg.sender);
 
         require(vote.votes[GPAddr] == 0, "member has already voted");
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        address token = fundingpool.getToken(0);
+
         int128 votingWeight = GovernanceHelper.getGPVotingWeight(
             dao,
             GPAddr,
             token,
             vote.blockNumber
         );
-        if (votingWeight == 0) revert("vote not allowed");
+        // if (votingWeight == 0) revert("vote not allowed");
 
+        voteWeights[address(dao)][proposalId][msg.sender] = votingWeight;
         vote.votes[GPAddr] = voteValue;
 
         if (voteValue == 1) {
@@ -170,6 +179,125 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
             vote.nbNo = vote.nbNo + uint128(votingWeight);
             // vote.nbNo += 1;
         }
+    }
+
+    /**
+     * @notice Update voter's voting weight when he's balance changing.
+     * @notice Vote has to be submitted after the starting time defined in startNewVotingForProposal.
+     * @notice The vote needs to be submitted within the voting period.
+     * @notice A member can not vote twice or more.
+     * @param dao The DAO address.
+     * @param proposalId The proposal needs to be sponsored, and not processed.
+     * @param voter The voter address whose voting weight being update.
+     */
+    // The function is protected against reentrancy with the reimbursable modifier
+    //slither-disable-next-line reentrancy-no-eth,reentrancy-benign
+    function updateVoteWeight(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        address voter
+    ) external {
+        require(
+            msg.sender == dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT),
+            "only call from FUNDING_POOL_ADAPT"
+        );
+        require(
+            dao.getProposalFlag(proposalId, DaoRegistry.ProposalFlag.SPONSORED),
+            "the proposal has not been sponsored yet"
+        );
+
+        require(
+            !dao.getProposalFlag(
+                proposalId,
+                DaoRegistry.ProposalFlag.PROCESSED
+            ),
+            "the proposal has already been processed"
+        );
+        GPVoting storage vote = votes[address(dao)][proposalId];
+        // slither-disable-next-line timestamp
+        require(
+            vote.startingTime > 0,
+            "this proposalId has no vote going on at the moment"
+        );
+        // slither-disable-next-line timestamp
+        require(
+            block.timestamp <
+                vote.startingTime + dao.getConfiguration(VotingPeriod),
+            "vote has already ended"
+        );
+
+        address GPAddr = dao.getAddressIfDelegated(voter);
+        require(vote.votes[GPAddr] != 0, "voter has not voted");
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        address token = fundingpool.getToken(0);
+        int128 newVotingWeight = GovernanceHelper.getGPVotingWeight(
+            dao,
+            GPAddr,
+            token,
+            vote.blockNumber
+        );
+        //old voting weight
+        int128 oldVotingWeight = voteWeights[address(dao)][proposalId][voter];
+        //record new voting weight
+        voteWeights[address(dao)][proposalId][voter] = newVotingWeight;
+
+        uint256 voteValue = vote.votes[GPAddr];
+        if (voteValue == 1) {
+            vote.nbYes -= uint128(oldVotingWeight);
+            vote.nbYes += uint128(newVotingWeight);
+        } else if (voteValue == 2) {
+            vote.nbNo -= uint128(oldVotingWeight);
+            vote.nbNo += uint128(newVotingWeight);
+        }
+    }
+
+    /**
+     * @notice Revoke a vote.
+     * @notice Vote has to be submitted after the starting time defined in startNewVotingForProposal.
+     * @notice The vote needs to be submitted within the voting period.
+     * @notice A member can not vote twice or more.
+     * @param dao The DAO address.
+     * @param proposalId The proposal needs to be sponsored, and not processed.
+     */
+    // The function is protected against reentrancy with the reimbursable modifier
+    //slither-disable-next-line reentrancy-no-eth,reentrancy-benign
+    function revokeVote(DaoRegistry dao, bytes32 proposalId)
+        external
+        onlyGeneralPartner(dao)
+        reimbursable(dao)
+    {
+        require(
+            dao.getProposalFlag(proposalId, DaoRegistry.ProposalFlag.SPONSORED),
+            "the proposal has not been sponsored yet"
+        );
+
+        GPVoting storage vote = votes[address(dao)][proposalId];
+
+        // slither-disable-next-line timestamp
+        require(
+            block.timestamp <
+                vote.startingTime + dao.getConfiguration(VotingPeriod),
+            "vote has already ended"
+        );
+
+        address GPAddr = dao.getAddressIfDelegated(msg.sender);
+
+        require(vote.votes[GPAddr] != 0, "member has not voted");
+        int128 votingWeight = voteWeights[address(dao)][proposalId][msg.sender];
+        if (votingWeight == 0) revert("voting weight is 0");
+
+        uint256 voteValue = vote.votes[GPAddr];
+
+        //substract voting weight according to vote value
+        if (voteValue == 1) {
+            vote.nbYes -= uint128(votingWeight);
+        } else if (voteValue == 2) {
+            vote.nbNo -= uint128(votingWeight);
+        }
+        //reset vote value to 0;
+        vote.votes[GPAddr] = 0;
     }
 
     /**
@@ -212,8 +340,8 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         ) {
             return VotingState.GRACE_PERIOD;
         }
-        console.log("GP vote.nbYes: ", vote.nbYes);
-        console.log("GP vote.nbNo: ", vote.nbNo);
+        // console.log("GP vote.nbYes: ", vote.nbYes);
+        // console.log("GP vote.nbNo: ", vote.nbNo);
 
         if (vote.nbYes > vote.nbNo) {
             return VotingState.PASS;
@@ -221,6 +349,20 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
             return VotingState.NOT_PASS;
         } else {
             return VotingState.TIE;
+        }
+    }
+
+    function checkIfVoted(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        address voterAddr
+    ) external returns (bool) {
+        // GPVoting storage vote = votes[address(dao)][proposalId];
+        address GPAddr = dao.getAddressIfDelegated(voterAddr);
+        if (votes[address(dao)][proposalId].votes[GPAddr] == 0) {
+            return false;
+        } else {
+            return true;
         }
     }
 }

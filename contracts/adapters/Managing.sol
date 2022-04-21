@@ -95,7 +95,7 @@ contract ManagingContract is IManaging, AdapterGuard, Reimbursable {
         }
 
         IVoting votingContract = IVoting(
-            dao.getAdapterAddress(DaoHelper.VOTING)
+            dao.getAdapterAddress(DaoHelper.VOTING_ADAPT)
         );
         address senderAddress = votingContract.getSenderAddress(
             dao,

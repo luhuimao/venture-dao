@@ -2,7 +2,14 @@ pragma solidity ^0.8.0;
 
 // SPDX-License-Identifier: MIT
 
-import "../../core/DaoRegistry.sol";
+import "../core/DaoRegistry.sol";
+import "../extensions/gpdao/GPDao.sol";
+import "../guards/AdapterGuard.sol";
+import "../guards/MemberGuard.sol";
+import "../adapters/interfaces/IVoting.sol";
+import "../helpers/DaoHelper.sol";
+import "./modifiers/Reimbursable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
 MIT License
@@ -28,16 +35,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-interface IFunding {
-    function submitProposal(
-        DaoRegistry dao,
-        bytes32 proposalId,
-        address[] calldata _addressArgs,
-        uint256[] calldata _uint256ArgsProposal,
-        bytes calldata data
-    ) external;
+contract GPDaoAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
+    function registerNewGP(DaoRegistry dao, address newGPAddr)
+        external
+        onlyMember(dao)
+        reimbursable(dao)
+    {
+        GPDaoExtension gpdao = GPDaoExtension(
+            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
+        );
 
-    function processProposal(DaoRegistry dao, bytes32 proposalId) external;
+        gpdao.registerGeneralPartner(newGPAddr);
+    }
 
-    // function distribute(DaoRegistry dao, uint256 toIndex) external;
+    function removeGP(DaoRegistry dao, address gpAddr)
+        external
+        onlyMember(dao)
+        reimbursable(dao)
+    {
+        GPDaoExtension gpdao = GPDaoExtension(
+            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
+        );
+        gpdao.removeGneralPartner(gpAddr);
+    }
 }

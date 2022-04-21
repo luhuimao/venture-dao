@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "../core/DaoRegistry.sol";
 import "../extensions/bank/Bank.sol";
 import "../extensions/fundingpool/FundingPool.sol";
+import "../extensions/gpdao/GPDao.sol";
 import "../helpers/DaoHelper.sol";
 
 /**
@@ -73,15 +74,12 @@ abstract contract MemberGuard {
         view
         returns (bool)
     {
-        address fudningPoolAddress = dao.extensions(DaoHelper.FUNDINGPOOL);
-        if (fudningPoolAddress != address(0x0)) {
-            address memberAddr = dao.getAddressIfDelegated(_addr);
-            return
-                FundingPoolExtension(fudningPoolAddress).isGeneralPartner(
-                    _addr
-                );
+        address gpDAOAddress = dao.extensions(DaoHelper.GPDAO_EXT);
+
+        if (gpDAOAddress != address(0x0)) {
+            return GPDaoExtension(gpDAOAddress).isGeneralPartner(_addr);
         }
 
-        return dao.isMember(_addr);
+        return false;
     }
 }

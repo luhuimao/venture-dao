@@ -29,9 +29,13 @@ SOFTWARE.
  */
 library DaoHelper {
     // Adapters
-    bytes32 internal constant VOTING = keccak256("voting");
-    bytes32 internal constant GPVOTING = keccak256("gp-voting");
-    bytes32 internal constant DISTRIBUTE_FUND = keccak256("distribute-fund");
+    bytes32 internal constant FUNDING_POOL_ADAPT = keccak256("founding-pool");
+    bytes32 internal constant ALLOCATION_ADAPT = keccak256("allocation");
+    bytes32 internal constant STREAMING_PAYMENT_ADAPT =
+        keccak256("streaming-payment");
+    bytes32 internal constant VOTING_ADAPT = keccak256("voting");
+    bytes32 internal constant GPVOTING_ADAPT = keccak256("gp-voting");
+    bytes32 internal constant DISTRIBUTE_FUND_ADAPT = keccak256("distribute-fund");
     bytes32 internal constant ONBOARDING = keccak256("onboarding");
     bytes32 internal constant NONVOTING_ONBOARDING =
         keccak256("nonvoting-onboarding");
@@ -64,7 +68,8 @@ library DaoHelper {
 
     // Extensions
     bytes32 internal constant BANK = keccak256("bank");
-    bytes32 internal constant FUNDINGPOOL = keccak256("funding-pool");
+    bytes32 internal constant FUNDINGPOOL_EXT = keccak256("funding-pool-ext");
+    bytes32 internal constant GPDAO_EXT = keccak256("gp-dao-ext");
     bytes32 internal constant ERC1271 = keccak256("erc1271");
     bytes32 internal constant NFT = keccak256("nft");
     bytes32 internal constant EXECUTOR_EXT = keccak256("executor-ext");

@@ -33,7 +33,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract ManageMemberContract is MemberGuard, Reimbursable {
+contract ManageMemberAdapterContract is MemberGuard, Reimbursable {
     function registerNewMember(DaoRegistry dao, address payable applicant)
         external
         reimbursable(dao)
