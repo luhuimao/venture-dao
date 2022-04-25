@@ -152,42 +152,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
 
         votingWeightMultiplier = 1;
         votingWeightAddend = 0;
-        votingWeightRadix = 1;
-    }
-
-    function withdraw(
-        address recipientAddr,
-        address tokenAddr,
-        uint256 amount
-    ) external hasExtensionAccess(AclFlag.WITHDRAW) {
-        require(
-            balanceOf(recipientAddr, tokenAddr) >= amount,
-            "FundingPool::withdraw::not enough funds"
-        );
-        subtractFromBalance(recipientAddr, tokenAddr, amount);
-        // if (tokenAddr == DaoHelper.ETH_TOKEN) {
-        //     member.sendValue(amount);
-        // } else {
-        IERC20(tokenAddr).safeTransfer(recipientAddr, amount);
-        // }
-
-        //slither-disable-next-line reentrancy-events
-        emit Withdraw(recipientAddr, tokenAddr, uint128(amount));
-    }
-
-    function distributeFunds(
-        address recipientAddr,
-        address tokenAddr,
-        uint256 amount
-    ) external hasExtensionAccess(AclFlag.DISTRIBUTE_FUNDS) {
-        require(amount > 0, "FundingPool::distributeFunds::amount must > 0");
-        require(
-            IERC20(tokenAddr).balanceOf(address(this)) >= amount,
-            "FundingPool::withdraw::not enough funds"
-        );
-        IERC20(tokenAddr).safeTransfer(recipientAddr, amount);
-
-        emit DistributeFund(recipientAddr, tokenAddr, amount);
+        votingWeightRadix = 2;
     }
 
     /**
@@ -377,8 +342,14 @@ contract FundingPoolExtension is IExtension, ERC165 {
         address token,
         uint256 amount
     ) public payable hasExtensionAccess(AclFlag.ADD_TO_BALANCE) {
-        require(availableTokens[token], "unknown token address");
-        require(amount > 0, "deposit funds must > 0");
+        require(
+            availableTokens[token],
+            "FundingPool::addToBalance::unknown token address"
+        );
+        require(
+            amount > 0,
+            "FundingPool::addToBalance::deposit funds must > 0"
+        );
         //While begins a vote, set snapFunds = totalFunds,
         //as an investor, you can still withdraw your balance;
         // by doing that, there’ll be a room made in totalFunds so anyone could deposit funds to fill it until totalFunds reaches snapFunds.
@@ -386,7 +357,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
             snapFunds > 0 &&
             balanceOf(address(DaoHelper.DAOSQUARE_TREASURY), token) >= snapFunds
         ) {
-            revert("total funds exceed snap funds");
+            revert("FundingPool::addToBalance::total funds exceed snap funds");
         }
         _newInvestor(member);
         IERC20 erc20 = IERC20(token);
@@ -418,6 +389,38 @@ contract FundingPoolExtension is IExtension, ERC165 {
         );
     }
 
+    function withdraw(
+        address recipientAddr,
+        address tokenAddr,
+        uint256 amount
+    ) external hasExtensionAccess(AclFlag.WITHDRAW) {
+        require(
+            balanceOf(recipientAddr, tokenAddr) >= amount,
+            "FundingPool::withdraw::not enough funds"
+        );
+        subtractFromBalance(recipientAddr, tokenAddr, amount);
+
+        IERC20(tokenAddr).safeTransfer(recipientAddr, amount);
+
+        //slither-disable-next-line reentrancy-events
+        emit Withdraw(recipientAddr, tokenAddr, uint128(amount));
+    }
+
+    function distributeFunds(
+        address recipientAddr,
+        address tokenAddr,
+        uint256 amount
+    ) external hasExtensionAccess(AclFlag.DISTRIBUTE_FUNDS) {
+        require(amount > 0, "FundingPool::distributeFunds::amount must > 0");
+        require(
+            IERC20(tokenAddr).balanceOf(address(this)) >= amount,
+            "FundingPool::withdraw::not enough funds"
+        );
+        IERC20(tokenAddr).safeTransfer(recipientAddr, amount);
+
+        emit DistributeFund(recipientAddr, tokenAddr, amount);
+    }
+
     /**
      * @notice Remove from a member's balance of a given token
      * @param member The member whose balance will be updated
@@ -432,21 +435,20 @@ contract FundingPoolExtension is IExtension, ERC165 {
         require(
             balanceOf(member, token) >= amount &&
                 balanceOf(DaoHelper.DAOSQUARE_TREASURY, token) >= amount,
-            "Insufficient Fund"
+            "FundingPool::subtractFromBalance::Insufficient Fund"
         );
         uint256 newAmount = balanceOf(member, token) - amount;
         uint256 newTotalFund = balanceOf(DaoHelper.DAOSQUARE_TREASURY, token) -
             amount;
-
-        if (newAmount <= 0) {
-            _removeInvestor(member);
-        }
-        _createNewAmountCheckpoint(member, token, newAmount);
         _createNewAmountCheckpoint(
             DaoHelper.DAOSQUARE_TREASURY,
             token,
             newTotalFund
         );
+        if (newAmount <= 0) {
+            _removeInvestor(member);
+        }
+        _createNewAmountCheckpoint(member, token, newAmount);
     }
 
     /**
@@ -458,6 +460,10 @@ contract FundingPoolExtension is IExtension, ERC165 {
         public
         hasExtensionAccess(AclFlag.SUB_FROM_BALANCE)
     {
+        uint256 treasuryBalance = balanceOf(
+            address(DaoHelper.DAOSQUARE_TREASURY),
+            token
+        );
         for (uint8 i = 0; i < _investors.length; i++) {
             address investorAddr = _investors[i];
             if (
@@ -469,8 +475,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
                 subtractFromBalance(
                     investorAddr,
                     token,
-                    (amount * balanceOf(investorAddr, token)) /
-                        balanceOf(address(DaoHelper.DAOSQUARE_TREASURY), token)
+                    (amount * balanceOf(investorAddr, token)) / treasuryBalance
                 );
             }
         }
@@ -485,7 +490,7 @@ contract FundingPoolExtension is IExtension, ERC165 {
     function balanceOf(address member, address tokenAddr)
         public
         view
-        returns (uint128)
+        returns (uint256)
     {
         uint32 nCheckpoints = numCheckpoints[tokenAddr][member];
         return

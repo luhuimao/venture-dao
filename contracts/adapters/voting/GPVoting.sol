@@ -50,7 +50,7 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
     bytes32 constant VotingPeriod = keccak256("voting.votingPeriod");
     bytes32 constant GracePeriod = keccak256("voting.gracePeriod");
 
-    mapping(address => mapping(bytes32 => mapping(address => int128)))
+    mapping(address => mapping(bytes32 => mapping(address => uint128)))
         public voteWeights;
     mapping(address => mapping(bytes32 => GPVoting)) public votes;
 
@@ -161,7 +161,7 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         );
         address token = fundingpool.getToken(0);
 
-        int128 votingWeight = GovernanceHelper.getGPVotingWeight(
+        uint128 votingWeight = GovernanceHelper.getGPVotingWeight(
             dao,
             GPAddr,
             token,
@@ -173,10 +173,10 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         vote.votes[GPAddr] = voteValue;
 
         if (voteValue == 1) {
-            vote.nbYes = vote.nbYes + uint128(votingWeight);
+            vote.nbYes = vote.nbYes + votingWeight;
             // vote.nbYes += 1;
         } else if (voteValue == 2) {
-            vote.nbNo = vote.nbNo + uint128(votingWeight);
+            vote.nbNo = vote.nbNo + votingWeight;
             // vote.nbNo += 1;
         }
     }
@@ -232,24 +232,24 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
         address token = fundingpool.getToken(0);
-        int128 newVotingWeight = GovernanceHelper.getGPVotingWeight(
+        uint128 newVotingWeight = GovernanceHelper.getGPVotingWeight(
             dao,
             GPAddr,
             token,
             vote.blockNumber
         );
         //old voting weight
-        int128 oldVotingWeight = voteWeights[address(dao)][proposalId][voter];
+        uint128 oldVotingWeight = voteWeights[address(dao)][proposalId][voter];
         //record new voting weight
         voteWeights[address(dao)][proposalId][voter] = newVotingWeight;
 
         uint256 voteValue = vote.votes[GPAddr];
         if (voteValue == 1) {
-            vote.nbYes -= uint128(oldVotingWeight);
-            vote.nbYes += uint128(newVotingWeight);
+            vote.nbYes -= oldVotingWeight;
+            vote.nbYes += newVotingWeight;
         } else if (voteValue == 2) {
-            vote.nbNo -= uint128(oldVotingWeight);
-            vote.nbNo += uint128(newVotingWeight);
+            vote.nbNo -= oldVotingWeight;
+            vote.nbNo += newVotingWeight;
         }
     }
 
@@ -285,16 +285,18 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         address GPAddr = dao.getAddressIfDelegated(msg.sender);
 
         require(vote.votes[GPAddr] != 0, "member has not voted");
-        int128 votingWeight = voteWeights[address(dao)][proposalId][msg.sender];
+        uint128 votingWeight = voteWeights[address(dao)][proposalId][
+            msg.sender
+        ];
         if (votingWeight == 0) revert("voting weight is 0");
 
         uint256 voteValue = vote.votes[GPAddr];
 
         //substract voting weight according to vote value
         if (voteValue == 1) {
-            vote.nbYes -= uint128(votingWeight);
+            vote.nbYes -= votingWeight;
         } else if (voteValue == 2) {
-            vote.nbNo -= uint128(votingWeight);
+            vote.nbNo -= votingWeight;
         }
         //reset vote value to 0;
         vote.votes[GPAddr] = 0;

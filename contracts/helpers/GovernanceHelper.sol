@@ -113,47 +113,36 @@ library GovernanceHelper {
         address voterAddr,
         address token,
         uint256 snapshot
-    ) internal view returns (int128) {
+    ) internal view returns (uint128) {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        int128 weight;
+        uint256 balanceInEther = fundingpool.balanceOf(voterAddr, token) /
+            10**18;
+        console.log(balanceInEther);
+        require(
+            balanceInEther > 0 && balanceInEther < 9223372036854775807,
+            "Helper::getGPVotingWeight::gp balance out of range"
+        );
+        uint128 weight;
         if (fundingpool.isTokenAllowed(token)) {
             if (
                 fundingpool.votingWeightRadix() == 1 ||
                 fundingpool.votingWeightRadix() <= 0
             ) {
                 // weight =
-                //     int128(
-                //         fundingpool.getPriorAmount(voterAddr, token, snapshot)
-                //     ) *
-                //     int128(fundingpool.votingWeightMultiplier()) +
-                //     int128(fundingpool.votingWeightAddend());
-
-                weight =
-                    int128(fundingpool.balanceOf(voterAddr, token)) *
-                    int128(fundingpool.votingWeightMultiplier()) +
-                    int128(fundingpool.votingWeightAddend());
+                //     fundingpool.balanceOf(voterAddr, token) *
+                //     fundingpool.votingWeightMultiplier() +
+                //     fundingpool.votingWeightAddend();
             } else {
-                // weight =
-                //     ABDKMath64x64.log_2(
-                //         int128(
-                //             fundingpool.getPriorAmount(
-                //                 voterAddr,
-                //                 token,
-                //                 snapshot
-                //             )
-                //         )
-                //     ) *
-                //     int128(fundingpool.votingWeightMultiplier()) +
-                //     int128(fundingpool.votingWeightAddend());
-
                 weight =
-                    ABDKMath64x64.log_2(
-                        int128(fundingpool.balanceOf(voterAddr, token))
+                    ABDKMath64x64.toUInt(
+                        ABDKMath64x64.log_2(
+                            ABDKMath64x64.fromUInt(balanceInEther)
+                        )
                     ) *
-                    int128(fundingpool.votingWeightMultiplier()) +
-                    int128(fundingpool.votingWeightAddend());
+                    fundingpool.votingWeightMultiplier() +
+                    fundingpool.votingWeightAddend();
             }
         }
         return weight;

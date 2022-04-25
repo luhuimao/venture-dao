@@ -167,7 +167,7 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
     function balanceOf(DaoRegistry dao, address member)
         public
         view
-        returns (uint160)
+        returns (uint256)
     {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
