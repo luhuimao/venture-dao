@@ -1,13 +1,13 @@
 pragma solidity ^0.8.0;
+
 // SPDX-License-Identifier: MIT
 
-import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
-import "hardhat/console.sol";
+import "../../core/DaoRegistry.sol";
 
 /**
 MIT License
 
-Copyright (c) 2022 Benjamin
+Copyright (c) 2020 Openlaw
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,20 +27,37 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-contract TestMath {
-    function log_2(uint256 x) external pure returns (uint128) {
-        return
-            ABDKMath64x64.toUInt(
-                ABDKMath64x64.log_2(ABDKMath64x64.fromUInt(x))
-            );
+
+interface IGPVoting {
+    enum VotingState {
+        NOT_STARTED,
+        TIE,
+        PASS,
+        NOT_PASS,
+        IN_PROGRESS,
+        GRACE_PERIOD
     }
 
-    function ln(uint256 x) external pure returns (uint128) {
-        return
-            ABDKMath64x64.toUInt(ABDKMath64x64.ln(ABDKMath64x64.fromUInt(x)));
-    }
+    function getAdapterName() external pure returns (string memory);
 
-    function fromUInt(uint256 x) external pure returns (int128) {
-        return ABDKMath64x64.fromUInt(x);
-    }
+    function startNewVotingForProposal(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        bytes calldata data
+    ) external;
+
+    function getSenderAddress(
+        DaoRegistry dao,
+        address actionId,
+        bytes memory data,
+        address sender
+    ) external returns (address);
+
+    function voteResult(DaoRegistry dao, bytes32 proposalId)
+        external
+        returns (
+            VotingState state,
+            uint128 nbYes,
+            uint128 nbNo
+        );
 }

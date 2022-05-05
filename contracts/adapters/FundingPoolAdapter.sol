@@ -8,7 +8,7 @@ import "../extensions/gpdao/GPDao.sol";
 import "../extensions/bank/Bank.sol";
 import "../guards/AdapterGuard.sol";
 import "../guards/MemberGuard.sol";
-import "../adapters/interfaces/IVoting.sol";
+import "../adapters/interfaces/IGPVoting.sol";
 import "../helpers/DaoHelper.sol";
 import "./modifiers/Reimbursable.sol";
 import "./voting/GPVoting.sol";

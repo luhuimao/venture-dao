@@ -228,6 +228,11 @@ contract FundingPoolExtension is IExtension, ERC165 {
         external
         hasExtensionAccess(AclFlag.SET_PROJECT_SNAP_FUNDS)
     {
+        require(
+            availableTokens[tokenAddr],
+            "FundingPool::setProjectSnapRice::unknown deposit token address"
+        );
+
         projectSnapFunds = balanceOf(
             address(DaoHelper.DAOSQUARE_TREASURY),
             tokenAddr
@@ -236,15 +241,20 @@ contract FundingPoolExtension is IExtension, ERC165 {
 
     /**
      * @notice Sets projectSnapRice to current total rice
-     * @param tokenAddr The maximum amount of token allowed
+     * @param riceAddr The rice token address
      */
-    function setProjectSnapRice(address tokenAddr)
+    function setProjectSnapRice(address riceAddr)
         external
         hasExtensionAccess(AclFlag.SET_PROJECT_SNAP_RICE)
     {
+        require(
+            availableTokens[riceAddr],
+            "FundingPool::setProjectSnapRice::unknown rice token address"
+        );
+
         projectSnapRice = balanceOf(
             address(DaoHelper.DAOSQUARE_TREASURY),
-            tokenAddr
+            riceAddr
         );
     }
 

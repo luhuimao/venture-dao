@@ -6,7 +6,7 @@ import "../../core/DaoRegistry.sol";
 import "../../extensions/bank/Bank.sol";
 import "../../guards/MemberGuard.sol";
 import "../../guards/AdapterGuard.sol";
-import "../interfaces/IVoting.sol";
+import "../interfaces/IGPVoting.sol";
 import "../../helpers/DaoHelper.sol";
 import "../modifiers/Reimbursable.sol";
 import "../../helpers/GovernanceHelper.sol";
@@ -38,7 +38,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
+contract GPVotingContract is
+    IGPVoting,
+    MemberGuard,
+    AdapterGuard,
+    Reimbursable
+{
     struct GPVoting {
         uint128 nbYes;
         uint128 nbNo;
@@ -153,9 +158,9 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
             "vote has already ended"
         );
 
-        address GPAddr = dao.getAddressIfDelegated(msg.sender);
+        // address GPAddr = dao.getAddressIfDelegated(msg.sender);
 
-        require(vote.votes[GPAddr] == 0, "member has already voted");
+        require(vote.votes[msg.sender] == 0, "member has already voted");
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
@@ -163,14 +168,13 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
 
         uint128 votingWeight = GovernanceHelper.getGPVotingWeight(
             dao,
-            GPAddr,
-            token,
-            vote.blockNumber
+            msg.sender,
+            token
         );
         // if (votingWeight == 0) revert("vote not allowed");
 
         voteWeights[address(dao)][proposalId][msg.sender] = votingWeight;
-        vote.votes[GPAddr] = voteValue;
+        vote.votes[msg.sender] = voteValue;
 
         if (voteValue == 1) {
             vote.nbYes = vote.nbYes + votingWeight;
@@ -199,11 +203,11 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
     ) external {
         require(
             msg.sender == dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT),
-            "only call from FUNDING_POOL_ADAPT"
+            "GPVoting::updateVoteWeight::only call from FUNDING_POOL_ADAPT"
         );
         require(
             dao.getProposalFlag(proposalId, DaoRegistry.ProposalFlag.SPONSORED),
-            "the proposal has not been sponsored yet"
+            "GPVoting::updateVoteWeight::the proposal has not been sponsored yet"
         );
 
         require(
@@ -211,7 +215,7 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
                 proposalId,
                 DaoRegistry.ProposalFlag.PROCESSED
             ),
-            "the proposal has already been processed"
+            "GPVoting::updateVoteWeight::the proposal has already been processed"
         );
         GPVoting storage vote = votes[address(dao)][proposalId];
         // slither-disable-next-line timestamp
@@ -223,27 +227,29 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         require(
             block.timestamp <
                 vote.startingTime + dao.getConfiguration(VotingPeriod),
-            "vote has already ended"
+            "GPVoting::updateVoteWeight::vote has already ended"
         );
 
-        address GPAddr = dao.getAddressIfDelegated(voter);
-        require(vote.votes[GPAddr] != 0, "voter has not voted");
+        // address GPAddr = dao.getAddressIfDelegated(voter);
+        require(
+            vote.votes[voter] != 0,
+            "GPVoting::updateVoteWeight::voter has not voted"
+        );
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
         address token = fundingpool.getToken(0);
         uint128 newVotingWeight = GovernanceHelper.getGPVotingWeight(
             dao,
-            GPAddr,
-            token,
-            vote.blockNumber
+            voter,
+            token
         );
         //old voting weight
         uint128 oldVotingWeight = voteWeights[address(dao)][proposalId][voter];
         //record new voting weight
         voteWeights[address(dao)][proposalId][voter] = newVotingWeight;
 
-        uint256 voteValue = vote.votes[GPAddr];
+        uint256 voteValue = vote.votes[voter];
         if (voteValue == 1) {
             vote.nbYes -= oldVotingWeight;
             vote.nbYes += newVotingWeight;
@@ -270,7 +276,7 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
     {
         require(
             dao.getProposalFlag(proposalId, DaoRegistry.ProposalFlag.SPONSORED),
-            "the proposal has not been sponsored yet"
+            "GPVoting::revokeVote::the proposal has not been sponsored yet"
         );
 
         GPVoting storage vote = votes[address(dao)][proposalId];
@@ -279,18 +285,22 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         require(
             block.timestamp <
                 vote.startingTime + dao.getConfiguration(VotingPeriod),
-            "vote has already ended"
+            "GPVoting::revokeVote::vote has already ended"
         );
 
-        address GPAddr = dao.getAddressIfDelegated(msg.sender);
+        // address GPAddr = dao.getAddressIfDelegated(msg.sender);
 
-        require(vote.votes[GPAddr] != 0, "member has not voted");
+        require(
+            vote.votes[msg.sender] != 0,
+            "GPVoting::revokeVote::member has not voted"
+        );
         uint128 votingWeight = voteWeights[address(dao)][proposalId][
             msg.sender
         ];
-        if (votingWeight == 0) revert("voting weight is 0");
+        if (votingWeight == 0)
+            revert("GPVoting::revokeVote::voting weight is 0");
 
-        uint256 voteValue = vote.votes[GPAddr];
+        uint256 voteValue = vote.votes[msg.sender];
 
         //substract voting weight according to vote value
         if (voteValue == 1) {
@@ -299,7 +309,7 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
             vote.nbNo -= votingWeight;
         }
         //reset vote value to 0;
-        vote.votes[GPAddr] = 0;
+        vote.votes[msg.sender] = 0;
     }
 
     /**
@@ -318,11 +328,15 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         external
         view
         override
-        returns (VotingState state)
+        returns (
+            VotingState state,
+            uint128 nbYes,
+            uint128 nbNo
+        )
     {
         GPVoting storage vote = votes[address(dao)][proposalId];
         if (vote.startingTime == 0) {
-            return VotingState.NOT_STARTED;
+            return (VotingState.NOT_STARTED, vote.nbYes, vote.nbNo);
         }
 
         if (
@@ -330,7 +344,7 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
             block.timestamp <
             vote.startingTime + dao.getConfiguration(VotingPeriod)
         ) {
-            return VotingState.IN_PROGRESS;
+            return (VotingState.IN_PROGRESS, vote.nbYes, vote.nbNo);
         }
 
         if (
@@ -340,17 +354,15 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
                 dao.getConfiguration(VotingPeriod) +
                 dao.getConfiguration(GracePeriod)
         ) {
-            return VotingState.GRACE_PERIOD;
+            return (VotingState.GRACE_PERIOD, vote.nbYes, vote.nbNo);
         }
-        // console.log("GP vote.nbYes: ", vote.nbYes);
-        // console.log("GP vote.nbNo: ", vote.nbNo);
 
         if (vote.nbYes > vote.nbNo) {
-            return VotingState.PASS;
+            return (VotingState.PASS, vote.nbYes, vote.nbNo);
         } else if (vote.nbYes < vote.nbNo) {
-            return VotingState.NOT_PASS;
+            return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
         } else {
-            return VotingState.TIE;
+            return (VotingState.TIE, vote.nbYes, vote.nbNo);
         }
     }
 
@@ -358,10 +370,9 @@ contract GPVotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         DaoRegistry dao,
         bytes32 proposalId,
         address voterAddr
-    ) external returns (bool) {
-        // GPVoting storage vote = votes[address(dao)][proposalId];
-        address GPAddr = dao.getAddressIfDelegated(voterAddr);
-        if (votes[address(dao)][proposalId].votes[GPAddr] == 0) {
+    ) external view returns (bool) {
+        GPVoting storage vote = votes[address(dao)][proposalId];
+        if (vote.votes[voterAddr] == 0) {
             return false;
         } else {
             return true;

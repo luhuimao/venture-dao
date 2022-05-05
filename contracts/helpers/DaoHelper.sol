@@ -35,7 +35,8 @@ library DaoHelper {
         keccak256("streaming-payment");
     bytes32 internal constant VOTING_ADAPT = keccak256("voting");
     bytes32 internal constant GPVOTING_ADAPT = keccak256("gp-voting");
-    bytes32 internal constant DISTRIBUTE_FUND_ADAPT = keccak256("distribute-fund");
+    bytes32 internal constant DISTRIBUTE_FUND_ADAPT =
+        keccak256("distribute-fund");
     bytes32 internal constant ONBOARDING = keccak256("onboarding");
     bytes32 internal constant NONVOTING_ONBOARDING =
         keccak256("nonvoting-onboarding");
@@ -68,6 +69,7 @@ library DaoHelper {
 
     // Extensions
     bytes32 internal constant BANK = keccak256("bank");
+    bytes32 internal constant RICE_STAKING_EXT = keccak256("rice-staking-ext");
     bytes32 internal constant FUNDINGPOOL_EXT = keccak256("funding-pool-ext");
     bytes32 internal constant GPDAO_EXT = keccak256("gp-dao-ext");
     bytes32 internal constant ERC1271 = keccak256("erc1271");
@@ -79,6 +81,8 @@ library DaoHelper {
     bytes32 internal constant ERC20_EXT = keccak256("erc20-ext");
 
     // Reserved Addresses
+    address internal constant STAKING_RICE_POOL = address(0xDCEAC);
+    address internal constant STAKING_RICE_MEMBER = address(0x12345678);
     address internal constant GUILD = address(0xdead);
     address internal constant FUNDING_POOL = address(0xFFFF);
     address internal constant DAOSQUARE_FUNDS = address(0xDDDD);

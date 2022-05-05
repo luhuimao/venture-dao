@@ -104,7 +104,7 @@ contract AllocationAdapterContract {
         DaoRegistry dao,
         address recipient,
         uint256 tokenAmount
-    ) public view returns (uint128) {
+    ) public pure returns (uint128) {
         return 0;
     }
 

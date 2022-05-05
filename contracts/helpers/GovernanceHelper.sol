@@ -111,8 +111,7 @@ library GovernanceHelper {
     function getGPVotingWeight(
         DaoRegistry dao,
         address voterAddr,
-        address token,
-        uint256 snapshot
+        address token
     ) internal view returns (uint128) {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)

@@ -6,13 +6,14 @@ import "../core/DaoRegistry.sol";
 import "../guards/AdapterGuard.sol";
 import "../guards/MemberGuard.sol";
 import "./modifiers/Reimbursable.sol";
-import "../adapters/interfaces/IVoting.sol";
+import "../adapters/interfaces/IGPVoting.sol";
 import "./AllocationAdapter.sol";
 import "../adapters/interfaces/IFunding.sol";
 import "../helpers/FairShareHelper.sol";
 import "../helpers/DaoHelper.sol";
 import "../extensions/bank/Bank.sol";
 import "../extensions/fundingpool/FundingPool.sol";
+import "../extensions/ricestaking/RiceStaking.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "hardhat/console.sol";
 
@@ -55,6 +56,14 @@ contract DistributeFundContract is
         address receiver
     );
 
+    event ProposalCreated(
+        bytes32 proposalId,
+        address projectTokenAddress,
+        address projectTeamAddress,
+        uint256 tradingOffTokenAmount,
+        uint256 requestedFundAmount
+    );
+
     // The distribution status
     enum DistributionStatus {
         NOT_STARTED,
@@ -84,6 +93,7 @@ contract DistributeFundContract is
         // The block number in which the proposal has been created.
         uint256 blockNumber;
     }
+    bytes32 constant RiceTokenAddr = keccak256("rice.token.address");
 
     // Keeps track of all the distributions executed per DAO.
     mapping(address => mapping(bytes32 => Distribution)) public distributions;
@@ -131,14 +141,14 @@ contract DistributeFundContract is
             erc20.balanceOf(address(this)) >= lockedTokenAmount,
             "Insufficient Fund"
         );
-        IVoting votingContract = IVoting(dao.votingAdapter(proposalId));
-        IVoting.VotingState voteResult = votingContract.voteResult(
+        IGPVoting votingContract = IGPVoting(dao.votingAdapter(proposalId));
+        (IGPVoting.VotingState voteResult, , ) = votingContract.voteResult(
             dao,
             proposalId
         );
         require(
-            voteResult == IVoting.VotingState.NOT_PASS ||
-                voteResult == IVoting.VotingState.TIE,
+            voteResult == IGPVoting.VotingState.NOT_PASS ||
+                voteResult == IGPVoting.VotingState.TIE,
             "voting result must be not pass or tie"
         );
         erc20.transfer(msg.sender, lockedTokenAmount);
@@ -146,7 +156,7 @@ contract DistributeFundContract is
 
     struct SubmitProposalLocalVars {
         bytes32 ongoingProposalId;
-        IVoting gpVotingContract;
+        IGPVoting gpVotingContract;
         FundingPoolExtension fundingpool;
         address submittedBy;
     }
@@ -173,7 +183,10 @@ contract DistributeFundContract is
         uint256[] calldata _uint256ArgsProposal,
         bytes calldata data
     ) external override onlyMember(dao) reimbursable(dao) {
-        require(proposalId != bytes32(0), "invalid proposalId");
+        require(
+            proposalId != bytes32(0),
+            "DistributeFund::submitProposal::invalid proposalId"
+        );
         SubmitProposalLocalVars memory vars;
 
         // Checks if there is an ongoing proposal, only one proposal can be submited at time.
@@ -185,10 +198,10 @@ contract DistributeFundContract is
                 DistributionStatus.DONE ||
                 distributions[address(dao)][vars.ongoingProposalId].status ==
                 DistributionStatus.FAILED,
-            "another proposal already in progress"
+            "DistributeFund::submitProposal::another proposal already in progress"
         );
 
-        vars.gpVotingContract = IVoting(
+        vars.gpVotingContract = IGPVoting(
             dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
         );
         vars.fundingpool = FundingPoolExtension(
@@ -199,7 +212,7 @@ contract DistributeFundContract is
                 DaoHelper.DAOSQUARE_TREASURY,
                 vars.fundingpool.getToken(0)
             ) > _uint256ArgsProposal[0],
-            "requested fund amount > total fund"
+            "DistributeFund::submitProposal::requested fund amount > total fund"
         );
         vars.submittedBy = vars.gpVotingContract.getSenderAddress(
             dao,
@@ -209,14 +222,20 @@ contract DistributeFundContract is
         );
         require(
             _uint256ArgsProposal[2] >= _uint256ArgsProposal[3],
-            "fully released date must >= lock-up date"
+            "DistributeFund::submitProposal::fully released date must >= lock-up date"
         );
         require(
             _uint256ArgsProposal[1] > 0,
-            "invalid trading-Off Token Amount"
+            "DistributeFund::submitProposal::invalid trading-Off Token Amount"
         );
-        require(_uint256ArgsProposal[0] > 0, "invalid requested Fund Amount");
-        require(_addressArgs[0] != address(0x0), "invalid receiver address");
+        require(
+            _uint256ArgsProposal[0] > 0,
+            "DistributeFund::submitProposal::invalid requested Fund Amount"
+        );
+        require(
+            _addressArgs[0] != address(0x0),
+            "DistributeFund::submitProposal::invalid receiver address"
+        );
 
         //lock project token
         _lockProjectTeamToken(
@@ -252,6 +271,13 @@ contract DistributeFundContract is
         );
 
         ongoingDistributions[address(dao)] = proposalId;
+        emit ProposalCreated(
+            proposalId,
+            _addressArgs[1],
+            _addressArgs[0],
+            _uint256ArgsProposal[1],
+            _uint256ArgsProposal[0]
+        );
     }
 
     function createNewDistribution(
@@ -293,6 +319,9 @@ contract DistributeFundContract is
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
+        StakingRiceExtension stakingrice = StakingRiceExtension(
+            dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
+        );
         // Checks if the proposal exists or is not in progress yet.
         Distribution storage distribution = distributions[address(dao)][
             proposalId
@@ -312,21 +341,24 @@ contract DistributeFundContract is
         );
 
         // Checks if the proposal has passed.
-        IVoting votingContract = IVoting(dao.votingAdapter(proposalId));
+        IGPVoting votingContract = IGPVoting(dao.votingAdapter(proposalId));
         require(address(votingContract) != address(0), "adapter not found");
 
-        IVoting.VotingState voteResult = votingContract.voteResult(
+        (IGPVoting.VotingState voteResult, , ) = votingContract.voteResult(
             dao,
             proposalId
         );
-        if (voteResult == IVoting.VotingState.PASS) {
+        if (voteResult == IGPVoting.VotingState.PASS) {
             distribution.status = DistributionStatus.IN_PROGRESS;
             distribution.blockNumber = block.number;
             ongoingDistributions[address(dao)] = proposalId;
 
-            //set project sanp funds to total funds
+            //set project sanp funds/rice to total funds/rice
             address token = fundingpool.getToken(0);
             fundingpool.setProjectSnapFunds(token);
+            stakingrice.setProjectSnapRice(
+                dao.getAddressConfiguration(RiceTokenAddr)
+            );
 
             //process1. substract from funding pool
             fundingpool.subtractAllFromBalance(
@@ -356,8 +388,8 @@ contract DistributeFundContract is
 
             distribution.status = DistributionStatus.DONE;
         } else if (
-            voteResult == IVoting.VotingState.NOT_PASS ||
-            voteResult == IVoting.VotingState.TIE
+            voteResult == IGPVoting.VotingState.NOT_PASS ||
+            voteResult == IGPVoting.VotingState.TIE
         ) {
             distribution.status = DistributionStatus.FAILED;
         } else {
