@@ -295,7 +295,6 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         hasAccess(this, AclFlag.SET_CONFIGURATION)
     {
         addressConfiguration[key] = value;
-        console.log("setAddressConfiguration");
         emit AddressConfigurationUpdated(key, value);
     }
 

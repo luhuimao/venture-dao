@@ -39,6 +39,7 @@ SOFTWARE.
 
 contract RiceStakingAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
     using SafeERC20 for IERC20;
+    bytes32 constant RiceTokenAddr = keccak256("rice.token.address");
 
     /**
      * @notice Allows the member/advisor of the DAO to withdraw the funds from their internal bank account.
@@ -46,14 +47,13 @@ contract RiceStakingAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
      * @notice If theres is no available balance in the user's account, the transaction is reverted.
      * @param dao The DAO address.
      * @param account The account to receive the funds.
-     * @param token The token address to receive the funds.
      * @param amount The token address to receive the funds.
      */
     function withdraw(
         DaoRegistry dao,
         address account,
-        address token,
-        uint256 amount
+        uint256 amount,
+        address riceAddr
     ) external reimbursable(dao) {
         require(
             DaoHelper.isNotReservedAddress(account),
@@ -63,30 +63,40 @@ contract RiceStakingAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         StakingRiceExtension riceStaking = StakingRiceExtension(
             dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
         );
-        uint256 balance = riceStaking.balanceOf(account, token);
+        // address riceAddr = dao.getAddressConfiguration(RiceTokenAddr);
+        // require(
+        //     riceAddr != address(0x0),
+        //     "rice staking::withdraw::invalid rice address"
+        // );
+        uint256 balance = riceStaking.balanceOf(account, riceAddr);
         require(balance > 0, "nothing to withdraw");
 
-        riceStaking.withdraw(account, token, balance);
+        riceStaking.withdraw(account, riceAddr, balance);
     }
 
     /**
      * @notice Allows the investors to deposit rice token.
      * @param dao The DAO address.
      * @param amount The amount to deposit.
-     * @param token The rice token address to receive the funds.
      */
     function deposit(
         DaoRegistry dao,
         uint256 amount,
-        address token
+        address riceAddr
     ) external reimbursable(dao) {
         StakingRiceExtension riceStaking = StakingRiceExtension(
             dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
         );
         require(amount > 0, "nothing to deposit");
+        // address riceAddr = dao.getAddressConfiguration(RiceTokenAddr);
+        // console.log("riceAddr", riceAddr);
+        // require(
+        //     riceAddr != address(0x0),
+        //     "rice staking::deposit::invalid rice address"
+        // );
+        riceStaking.addToBalance(msg.sender, riceAddr, amount);
+        IERC20 erc20 = IERC20(address(riceAddr));
 
-        riceStaking.addToBalance(msg.sender, token, amount);
-        IERC20 erc20 = IERC20(token);
         erc20.safeTransferFrom(msg.sender, address(this), amount);
         erc20.safeTransfer(address(riceStaking), amount);
     }
@@ -95,39 +105,48 @@ contract RiceStakingAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
      * @notice  DAOSquare members should deposit RICEs periodically as the mining reward
      * @param dao The DAO address.
      * @param amount The amount to deposit.
-     * @param token The rice token address to receive the funds.
      */
     function memberDeposit(
         DaoRegistry dao,
         uint256 amount,
-        address token
+        address riceAddr
     ) external onlyMember(dao) reimbursable(dao) {
         StakingRiceExtension riceStaking = StakingRiceExtension(
             dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
         );
         require(amount > 0, "nothing to deposit");
-
-        riceStaking.addToMemberBalance(token, amount);
-        IERC20 erc20 = IERC20(token);
+        // address riceAddr = dao.getAddressConfiguration(RiceTokenAddr);
+        // require(
+        //     riceAddr != address(0x0),
+        //     "rice staking::memberDeposit::invalid rice address"
+        // );
+        riceStaking.addToMemberBalance(riceAddr, amount);
+        IERC20 erc20 = IERC20(riceAddr);
         erc20.safeTransferFrom(msg.sender, address(this), amount);
         erc20.safeTransfer(address(riceStaking), amount);
     }
 
     function memberWithdraw(
         DaoRegistry dao,
-        address token,
-        uint256 amount
+        uint256 amount,
+        address riceAddr
     ) external onlyMember(dao) reimbursable(dao) {
         require(amount > 0, "invalid amount");
+        // address riceAddr = dao.getAddressConfiguration(RiceTokenAddr);
+        // require(
+        //     riceAddr != address(0x0),
+        //     "rice staking::memberWithdraw::invalid rice address"
+        // );
         StakingRiceExtension riceStaking = StakingRiceExtension(
             dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
         );
+
         uint256 balance = riceStaking.balanceOf(
             DaoHelper.STAKING_RICE_MEMBER,
-            token
+            riceAddr
         );
         require(balance > 0, "nothing to withdraw");
 
-        riceStaking.memberWithdraw(msg.sender, token, amount);
+        riceStaking.memberWithdraw(msg.sender, riceAddr, amount);
     }
 }

@@ -51,7 +51,12 @@ contract GPVotingContract is
         uint256 blockNumber;
         mapping(address => uint256) votes;
     }
-
+    event ConfigureDao(uint256 votingPeriod, uint256 gracePeriod);
+    event StartNewVotingForProposal(
+        uint256 votestartingTime,
+        uint256 voteblockNumber
+    );
+   
     bytes32 constant VotingPeriod = keccak256("voting.votingPeriod");
     bytes32 constant GracePeriod = keccak256("voting.gracePeriod");
 
@@ -80,6 +85,7 @@ contract GPVotingContract is
     ) external onlyAdapter(dao) {
         dao.setConfiguration(VotingPeriod, votingPeriod);
         dao.setConfiguration(GracePeriod, gracePeriod);
+        emit ConfigureDao(votingPeriod, gracePeriod);
     }
 
     /**
@@ -95,6 +101,7 @@ contract GPVotingContract is
         GPVoting storage vote = votes[address(dao)][proposalId];
         vote.startingTime = block.timestamp;
         vote.blockNumber = block.number;
+        emit StartNewVotingForProposal(block.timestamp, block.number);
     }
 
     /**

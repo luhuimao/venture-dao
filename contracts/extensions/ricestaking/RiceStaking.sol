@@ -36,6 +36,7 @@ SOFTWARE.
 
 contract StakingRiceExtension is IExtension {
     using SafeERC20 for IERC20;
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     enum AclFlag {
         ADD_TO_BALANCE,
@@ -56,10 +57,17 @@ contract StakingRiceExtension is IExtension {
     event NewBalance(address member, address tokenAddr, uint160 amount);
 
     event Withdraw(address account, address tokenAddr, uint160 amount);
+
+    /*
+     * PRIVATE VARIABLES
+     */
+    // All the NFTs addresses collected and stored in the GUILD collection
+    EnumerableSet.AddressSet private _riceStakeres;
+    uint256 private projectSnapRice;
+
     /*
      * PUBLIC VARIABLES
      */
-    uint256 private projectSnapRice;
     // tokenAddress => memberAddress => checkpointNum => Checkpoint
     mapping(address => mapping(address => mapping(uint32 => Checkpoint)))
         public checkpoints;
@@ -110,7 +118,13 @@ contract StakingRiceExtension is IExtension {
         subtractFromBalance(receipientAddr, tokenAddr, amount);
 
         IERC20(tokenAddr).safeTransfer(receipientAddr, amount);
-
+        // If receipientAddr dont hold rice from this address anymore, we can remove it
+        if (balanceOf(receipientAddr, tokenAddr) <= 0) {
+            require(
+                _riceStakeres.remove(receipientAddr),
+                "rice staking::withdraw::can not remove rice staker"
+            );
+        }
         //slither-disable-next-line reentrancy-events
         emit Withdraw(receipientAddr, tokenAddr, uint160(amount));
     }
@@ -132,8 +146,11 @@ contract StakingRiceExtension is IExtension {
         emit Withdraw(receipientAddr, tokenAddr, uint160(amount));
     }
 
-    function setProjectSnapRice(address tokenAddr) external hasExtensionAccess(AclFlag.SET_PROJECT_SNAP_RICE){
-        projectSnapRice = balanceOf(DaoHelper.TOTAL, tokenAddr);
+    function setProjectSnapRice(address tokenAddr)
+        external
+        hasExtensionAccess(AclFlag.SET_PROJECT_SNAP_RICE)
+    {
+        projectSnapRice = balanceOf(DaoHelper.STAKING_RICE_POOL, tokenAddr);
     }
 
     /**
@@ -160,6 +177,12 @@ contract StakingRiceExtension is IExtension {
             token,
             newTotalAmount
         );
+        if (!_riceStakeres.contains(stakerAddr)) {
+            require(
+                _riceStakeres.add(stakerAddr),
+                "RiceStaking::addToBalance::can not add rice staker"
+            );
+        }
     }
 
     /**
@@ -283,5 +306,13 @@ contract StakingRiceExtension is IExtension {
             nCheckpoints > 0
                 ? checkpoints[tokenAddr][member][nCheckpoints - 1].amount
                 : 0;
+    }
+
+    function getProjectSnapRice() external view returns (uint256) {
+        return projectSnapRice;
+    }
+
+    function getAllRiceStakers() external view returns (address[] memory) {
+        return _riceStakeres.values();
     }
 }

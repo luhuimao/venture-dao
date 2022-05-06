@@ -61,9 +61,17 @@ contract DistributeFundContract is
         address projectTokenAddress,
         address projectTeamAddress,
         uint256 tradingOffTokenAmount,
-        uint256 requestedFundAmount
+        uint256 requestedFundAmount,
+        uint256 fullyReleasedDate,
+        uint256 lockupDate,
+        uint256 voteStartingTime
     );
-
+    event VoteResult(
+        bytes32 proposalID,
+        IGPVoting.VotingState state,
+        uint128 nbYes,
+        uint128 nbNo
+    );
     // The distribution status
     enum DistributionStatus {
         NOT_STARTED,
@@ -276,7 +284,10 @@ contract DistributeFundContract is
             _addressArgs[1],
             _addressArgs[0],
             _uint256ArgsProposal[1],
-            _uint256ArgsProposal[0]
+            _uint256ArgsProposal[0],
+            _uint256ArgsProposal[2],
+            _uint256ArgsProposal[3],
+            block.timestamp
         );
     }
 
@@ -344,10 +355,11 @@ contract DistributeFundContract is
         IGPVoting votingContract = IGPVoting(dao.votingAdapter(proposalId));
         require(address(votingContract) != address(0), "adapter not found");
 
-        (IGPVoting.VotingState voteResult, , ) = votingContract.voteResult(
-            dao,
-            proposalId
-        );
+        (
+            IGPVoting.VotingState voteResult,
+            uint128 nbYes,
+            uint128 nbNo
+        ) = votingContract.voteResult(dao, proposalId);
         if (voteResult == IGPVoting.VotingState.PASS) {
             distribution.status = DistributionStatus.IN_PROGRESS;
             distribution.blockNumber = block.number;
@@ -360,24 +372,17 @@ contract DistributeFundContract is
                 dao.getAddressConfiguration(RiceTokenAddr)
             );
 
-            //process1. substract from funding pool
-            fundingpool.subtractAllFromBalance(
-                token,
-                distribution.requestedFundAmount
-            );
-
-            //process2. distribute fund to project team address
+            //process1. distribute fund to project team address
             fundingpool.distributeFunds(
                 distribution.recipientAddr,
                 token,
                 distribution.requestedFundAmount
             );
 
-            //process3. streaming pay for all valid investor
+            //process2. streaming pay for all valid investor
             AllocationAdapterContract allocAda = AllocationAdapterContract(
                 dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPT)
             );
-
             allocAda.allocateProjectToken(
                 dao,
                 distribution.tradingOffTokenAmount,
@@ -385,7 +390,11 @@ contract DistributeFundContract is
                 distribution.lockupDate,
                 distribution.fullyReleasedDate
             );
-
+            //process3. substract from funding pool
+            fundingpool.subtractAllFromBalance(
+                token,
+                distribution.requestedFundAmount
+            );
             distribution.status = DistributionStatus.DONE;
         } else if (
             voteResult == IGPVoting.VotingState.NOT_PASS ||
@@ -398,6 +407,8 @@ contract DistributeFundContract is
         ongoingDistributions[address(dao)] = bytes32(0);
         //vote finished reset snapfunds to 0
         fundingpool.resetSnapFunds();
+
+        emit VoteResult(proposalId, voteResult, nbYes, nbNo);
     }
 
     /**

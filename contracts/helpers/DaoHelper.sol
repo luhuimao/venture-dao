@@ -80,6 +80,10 @@ library DaoHelper {
     bytes32 internal constant ERC1155_EXT = keccak256("erc1155-ext");
     bytes32 internal constant ERC20_EXT = keccak256("erc20-ext");
 
+    //rice
+    bytes32 internal constant RICE_TOKEN_ADDRESS =
+        keccak256("rice.token.address");
+
     // Reserved Addresses
     address internal constant STAKING_RICE_POOL = address(0xDCEAC);
     address internal constant STAKING_RICE_MEMBER = address(0x12345678);

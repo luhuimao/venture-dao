@@ -5,8 +5,10 @@ pragma solidity ^0.8.0;
 import "../helpers/DaoHelper.sol";
 import "hardhat/console.sol";
 import "../extensions/fundingpool/FundingPool.sol";
+import "../extensions/ricestaking/RiceStaking.sol";
 import "../extensions/gpdao/GPDao.sol";
 import "./streaming_payment/interfaces/ISablier.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 /**
 MIT License
@@ -33,6 +35,9 @@ SOFTWARE.
  */
 
 contract AllocationAdapterContract {
+    using EnumerableSet for EnumerableSet.AddressSet;
+    EnumerableSet.AddressSet private tem;
+
     /*
      * STRUCTURES
      */
@@ -54,7 +59,6 @@ contract AllocationAdapterContract {
         uint256 fundingRewards = (tokenAmount *
             (100 - gpAllocationBonusRadio - riceStakeAllocationRadio)) / 100;
         uint256 projectSanpFunds = fundingpool.projectSnapFunds();
-
         uint256 fund = fundingpool.balanceOf(
             recipient,
             fundingpool.getToken(0)
@@ -104,8 +108,24 @@ contract AllocationAdapterContract {
         DaoRegistry dao,
         address recipient,
         uint256 tokenAmount
-    ) public pure returns (uint128) {
-        return 0;
+    ) public view returns (uint256) {
+        StakingRiceExtension stakingRice = StakingRiceExtension(
+            dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
+        );
+        uint256 riceStakingRewards = (tokenAmount * riceStakeAllocationRadio) /
+            100;
+        uint256 projectSanpRice = stakingRice.getProjectSnapRice();
+
+        address riceAddr = dao.getAddressConfiguration(
+            DaoHelper.RICE_TOKEN_ADDRESS
+        );
+        uint256 riceBalance = stakingRice.balanceOf(recipient, riceAddr);
+        if (
+            projectSanpRice <= 0 || riceBalance <= 0 || riceStakingRewards <= 0
+        ) {
+            return 0;
+        }
+        return (riceBalance * riceStakingRewards) / projectSanpRice;
     }
 
     function allocateProjectToken(
@@ -121,6 +141,9 @@ contract AllocationAdapterContract {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
+        StakingRiceExtension ricestaking = StakingRiceExtension(
+            dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
+        );
         IERC20(tokenAddress).transferFrom(
             dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPT),
             dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPT),
@@ -132,6 +155,17 @@ contract AllocationAdapterContract {
             tokenAmount
         );
         address[] memory allInvestors = fundingpool.getInvestors();
+        address[] memory riceStakeres = ricestaking.getAllRiceStakers();
+        // for (uint8 i = 0; i < allInvestors.length; i++) {
+        //     if (!tem.contains(allInvestors[i])) {
+        //         tem.add(allInvestors[i]);
+        //     }
+        // }
+        // for (uint8 i = 0; i < riceStakeres.length; i++) {
+        //     if (!tem.contains(riceStakeres[i])) {
+        //         tem.add(riceStakeres[i]);
+        //     }
+        // }
         require(allInvestors.length > 0, "no valid investor");
         for (uint8 i = 0; i < allInvestors.length; i++) {
             uint256 allRewards = getFundingRewards(
@@ -141,6 +175,7 @@ contract AllocationAdapterContract {
             ) +
                 getGPBonus(dao, allInvestors[i], tokenAmount) +
                 getRiceRewards(dao, allInvestors[i], tokenAmount);
+
             streamingPaymentContract.createStream(
                 allInvestors[i],
                 allRewards,
@@ -148,6 +183,23 @@ contract AllocationAdapterContract {
                 startTime,
                 stopTime
             );
+        }
+        if (riceStakeres.length > 0) {
+            for (uint8 i = 0; i < riceStakeres.length; i++) {
+                uint256 riceStakingRewards = getRiceRewards(
+                    dao,
+                    riceStakeres[i],
+                    tokenAmount
+                );
+
+                streamingPaymentContract.createStream(
+                    riceStakeres[i],
+                    riceStakingRewards,
+                    tokenAddress,
+                    startTime,
+                    stopTime
+                );
+            }
         }
     }
 }
