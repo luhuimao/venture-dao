@@ -53,10 +53,35 @@ contract GPVotingContract is
     }
     event ConfigureDao(uint256 votingPeriod, uint256 gracePeriod);
     event StartNewVotingForProposal(
+        bytes32 proposalId,
         uint256 votestartingTime,
         uint256 voteblockNumber
     );
-   
+    event SubmitVote(
+        bytes32 proposalId,
+        uint256 blocktime,
+        address voter,
+        uint256 voteValue,
+        uint128 votingWeight,
+        uint128 nbYes,
+        uint128 nbNo
+    );
+    event UpdateVoteWeight(
+        bytes32 proposalId,
+        uint256 blocktime,
+        address voter,
+        uint128 oldVotingWeight,
+        uint128 newVotingWeight,
+        uint128 nbYes,
+        uint128 nbNo
+    );
+    event RevokeVote(
+        bytes32 proposalId,
+        uint256 blocktime,
+        address voter,
+        uint128 origenalVotingWeight,
+        uint256 origenalVoteValue
+    );
     bytes32 constant VotingPeriod = keccak256("voting.votingPeriod");
     bytes32 constant GracePeriod = keccak256("voting.gracePeriod");
 
@@ -101,7 +126,11 @@ contract GPVotingContract is
         GPVoting storage vote = votes[address(dao)][proposalId];
         vote.startingTime = block.timestamp;
         vote.blockNumber = block.number;
-        emit StartNewVotingForProposal(block.timestamp, block.number);
+        emit StartNewVotingForProposal(
+            proposalId,
+            block.timestamp,
+            block.number
+        );
     }
 
     /**
@@ -190,6 +219,15 @@ contract GPVotingContract is
             vote.nbNo = vote.nbNo + votingWeight;
             // vote.nbNo += 1;
         }
+        emit SubmitVote(
+            proposalId,
+            block.timestamp,
+            msg.sender,
+            voteValue,
+            votingWeight,
+            vote.nbYes,
+            vote.nbNo
+        );
     }
 
     /**
@@ -264,6 +302,16 @@ contract GPVotingContract is
             vote.nbNo -= oldVotingWeight;
             vote.nbNo += newVotingWeight;
         }
+
+        emit UpdateVoteWeight(
+            proposalId,
+            block.timestamp,
+            voter,
+            oldVotingWeight,
+            newVotingWeight,
+            vote.nbYes,
+            vote.nbNo
+        );
     }
 
     /**
@@ -317,6 +365,14 @@ contract GPVotingContract is
         }
         //reset vote value to 0;
         vote.votes[msg.sender] = 0;
+
+        emit RevokeVote(
+            proposalId,
+            block.timestamp,
+            msg.sender,
+            votingWeight,
+            voteValue
+        );
     }
 
     /**

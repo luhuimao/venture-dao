@@ -101,52 +101,52 @@ contract RiceStakingAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         erc20.safeTransfer(address(riceStaking), amount);
     }
 
-    /**
-     * @notice  DAOSquare members should deposit RICEs periodically as the mining reward
-     * @param dao The DAO address.
-     * @param amount The amount to deposit.
-     */
-    function memberDeposit(
-        DaoRegistry dao,
-        uint256 amount,
-        address riceAddr
-    ) external onlyMember(dao) reimbursable(dao) {
-        StakingRiceExtension riceStaking = StakingRiceExtension(
-            dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
-        );
-        require(amount > 0, "nothing to deposit");
-        // address riceAddr = dao.getAddressConfiguration(RiceTokenAddr);
-        // require(
-        //     riceAddr != address(0x0),
-        //     "rice staking::memberDeposit::invalid rice address"
-        // );
-        riceStaking.addToMemberBalance(riceAddr, amount);
-        IERC20 erc20 = IERC20(riceAddr);
-        erc20.safeTransferFrom(msg.sender, address(this), amount);
-        erc20.safeTransfer(address(riceStaking), amount);
-    }
+    // /**
+    //  * @notice  DAOSquare members should deposit RICEs periodically as the mining reward
+    //  * @param dao The DAO address.
+    //  * @param amount The amount to deposit.
+    //  */
+    // function memberDeposit(
+    //     DaoRegistry dao,
+    //     uint256 amount,
+    //     address riceAddr
+    // ) external onlyMember(dao) reimbursable(dao) {
+    //     StakingRiceExtension riceStaking = StakingRiceExtension(
+    //         dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
+    //     );
+    //     require(amount > 0, "nothing to deposit");
+    //     // address riceAddr = dao.getAddressConfiguration(RiceTokenAddr);
+    //     // require(
+    //     //     riceAddr != address(0x0),
+    //     //     "rice staking::memberDeposit::invalid rice address"
+    //     // );
+    //     riceStaking.addToMemberBalance(riceAddr, amount);
+    //     IERC20 erc20 = IERC20(riceAddr);
+    //     erc20.safeTransferFrom(msg.sender, address(this), amount);
+    //     erc20.safeTransfer(address(riceStaking), amount);
+    // }
 
-    function memberWithdraw(
-        DaoRegistry dao,
-        uint256 amount,
-        address riceAddr
-    ) external onlyMember(dao) reimbursable(dao) {
-        require(amount > 0, "invalid amount");
-        // address riceAddr = dao.getAddressConfiguration(RiceTokenAddr);
-        // require(
-        //     riceAddr != address(0x0),
-        //     "rice staking::memberWithdraw::invalid rice address"
-        // );
-        StakingRiceExtension riceStaking = StakingRiceExtension(
-            dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
-        );
+    // function memberWithdraw(
+    //     DaoRegistry dao,
+    //     uint256 amount,
+    //     address riceAddr
+    // ) external onlyMember(dao) reimbursable(dao) {
+    //     require(amount > 0, "invalid amount");
+    //     // address riceAddr = dao.getAddressConfiguration(RiceTokenAddr);
+    //     // require(
+    //     //     riceAddr != address(0x0),
+    //     //     "rice staking::memberWithdraw::invalid rice address"
+    //     // );
+    //     StakingRiceExtension riceStaking = StakingRiceExtension(
+    //         dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
+    //     );
 
-        uint256 balance = riceStaking.balanceOf(
-            DaoHelper.STAKING_RICE_MEMBER,
-            riceAddr
-        );
-        require(balance > 0, "nothing to withdraw");
+    //     uint256 balance = riceStaking.balanceOf(
+    //         DaoHelper.STAKING_RICE_MEMBER,
+    //         riceAddr
+    //     );
+    //     require(balance > 0, "nothing to withdraw");
 
-        riceStaking.memberWithdraw(msg.sender, riceAddr, amount);
-    }
+    //     riceStaking.memberWithdraw(msg.sender, riceAddr, amount);
+    // }
 }

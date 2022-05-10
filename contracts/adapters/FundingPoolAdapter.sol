@@ -150,6 +150,57 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         fundingpool.registerPotentialNewToken(_tokenAddr);
     }
 
+    function getRiceReward(DaoRegistry dao) external {
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        fundingpool.getReward(msg.sender);
+    }
+
+    function notifyRewardAmount(DaoRegistry dao, uint256 rewardRiceAmount)
+        external
+        onlyMember(dao)
+        reimbursable(dao)
+    {
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        fundingpool.notifyRewardAmount(rewardRiceAmount);
+    }
+
+    function recoverERC20(
+        DaoRegistry dao,
+        address tokenAddress,
+        uint256 tokenAmount
+    ) external onlyMember(dao) reimbursable(dao) {
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        fundingpool.recoverERC20(tokenAddress, tokenAmount, msg.sender);
+    }
+
+    function setRewardsDuration(DaoRegistry dao, uint256 _rewardsDuration)
+        external
+        onlyMember(dao)
+        reimbursable(dao)
+    {
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        fundingpool.setRewardsDuration(_rewardsDuration);
+    }
+
+    function setRiceTokenAddress(DaoRegistry dao, address riceAddr)
+        external
+        onlyMember(dao)
+        reimbursable(dao)
+    {
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        fundingpool.setRiceTokenAddress(riceAddr);
+    }
+
     // /*
     //  * @notice Allows anyone to send eth to the bank extension
     //  * @param dao The DAO address.

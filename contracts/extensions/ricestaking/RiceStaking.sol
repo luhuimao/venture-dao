@@ -129,22 +129,22 @@ contract StakingRiceExtension is IExtension {
         emit Withdraw(receipientAddr, tokenAddr, uint160(amount));
     }
 
-    function memberWithdraw(
-        address receipientAddr,
-        address tokenAddr,
-        uint256 amount
-    ) external hasExtensionAccess(AclFlag.WITHDRAW) {
-        require(
-            balanceOf(DaoHelper.STAKING_RICE_MEMBER, tokenAddr) >= amount,
-            "staking::withdraw::not enough funds"
-        );
-        subtractFromMemberBalance(tokenAddr, amount);
+    // function memberWithdraw(
+    //     address receipientAddr,
+    //     address tokenAddr,
+    //     uint256 amount
+    // ) external hasExtensionAccess(AclFlag.WITHDRAW) {
+    //     require(
+    //         balanceOf(DaoHelper.STAKING_RICE_MEMBER, tokenAddr) >= amount,
+    //         "staking::withdraw::not enough funds"
+    //     );
+    //     subtractFromMemberBalance(tokenAddr, amount);
 
-        IERC20(tokenAddr).safeTransfer(receipientAddr, amount);
+    //     IERC20(tokenAddr).safeTransfer(receipientAddr, amount);
 
-        //slither-disable-next-line reentrancy-events
-        emit Withdraw(receipientAddr, tokenAddr, uint160(amount));
-    }
+    //     //slither-disable-next-line reentrancy-events
+    //     emit Withdraw(receipientAddr, tokenAddr, uint160(amount));
+    // }
 
     function setProjectSnapRice(address tokenAddr)
         external
@@ -185,27 +185,27 @@ contract StakingRiceExtension is IExtension {
         }
     }
 
-    /**
-     * @notice Adds to a member's balance of a given token
-     * @param token The token to update
-     * @param amount The new balance
-     */
-    function addToMemberBalance(address token, uint256 amount)
-        public
-        payable
-        hasExtensionAccess(AclFlag.ADD_TO_BALANCE)
-    {
-        uint256 newTotalAmount = balanceOf(
-            DaoHelper.STAKING_RICE_MEMBER,
-            token
-        ) + amount;
+    // /**
+    //  * @notice Adds to a member's balance of a given token
+    //  * @param token The token to update
+    //  * @param amount The new balance
+    //  */
+    // function addToMemberBalance(address token, uint256 amount)
+    //     public
+    //     payable
+    //     hasExtensionAccess(AclFlag.ADD_TO_BALANCE)
+    // {
+    //     uint256 newTotalAmount = balanceOf(
+    //         DaoHelper.STAKING_RICE_MEMBER,
+    //         token
+    //     ) + amount;
 
-        _createNewAmountCheckpoint(
-            DaoHelper.STAKING_RICE_MEMBER,
-            token,
-            newTotalAmount
-        );
-    }
+    //     _createNewAmountCheckpoint(
+    //         DaoHelper.STAKING_RICE_MEMBER,
+    //         token,
+    //         newTotalAmount
+    //     );
+    // }
 
     /**
      * @notice Remove from a staker's balance of a given token
@@ -230,26 +230,26 @@ contract StakingRiceExtension is IExtension {
         );
     }
 
-    /**
-     * @notice Remove from a member's balance of a given token
-     * @param token The token to update
-     * @param amount The new balance
-     */
-    function subtractFromMemberBalance(address token, uint256 amount)
-        public
-        hasExtensionAccess(AclFlag.SUB_FROM_BALANCE)
-    {
-        uint256 newTotalAmount = balanceOf(
-            DaoHelper.STAKING_RICE_MEMBER,
-            token
-        ) - amount;
+    // /**
+    //  * @notice Remove from a member's balance of a given token
+    //  * @param token The token to update
+    //  * @param amount The new balance
+    //  */
+    // function subtractFromMemberBalance(address token, uint256 amount)
+    //     public
+    //     hasExtensionAccess(AclFlag.SUB_FROM_BALANCE)
+    // {
+    //     uint256 newTotalAmount = balanceOf(
+    //         DaoHelper.STAKING_RICE_MEMBER,
+    //         token
+    //     ) - amount;
 
-        _createNewAmountCheckpoint(
-            DaoHelper.STAKING_RICE_MEMBER,
-            token,
-            newTotalAmount
-        );
-    }
+    //     _createNewAmountCheckpoint(
+    //         DaoHelper.STAKING_RICE_MEMBER,
+    //         token,
+    //         newTotalAmount
+    //     );
+    // }
 
     /**
      * @notice Creates a new amount checkpoint for a token of a certain member

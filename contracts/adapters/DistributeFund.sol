@@ -49,12 +49,12 @@ contract DistributeFundContract is
 {
     // Event to indicate the distribution process has been completed
     // if the unitHolder address is 0x0, then the amount were distributed to all members of the DAO.
-    event Distributed(
-        address daoAddress,
-        address token,
-        uint256 amount,
-        address receiver
-    );
+    // event Distributed(
+    //     address daoAddress,
+    //     address token,
+    //     uint256 amount,
+    //     address receiver
+    // );
 
     event ProposalCreated(
         bytes32 proposalId,
@@ -68,7 +68,7 @@ contract DistributeFundContract is
     );
     event VoteResult(
         bytes32 proposalID,
-        IGPVoting.VotingState state,
+        uint256 state,
         uint128 nbYes,
         uint128 nbNo
     );
@@ -408,119 +408,6 @@ contract DistributeFundContract is
         //vote finished reset snapfunds to 0
         fundingpool.resetSnapFunds();
 
-        emit VoteResult(proposalId, voteResult, nbYes, nbNo);
+        emit VoteResult(proposalId, uint256(voteResult), nbYes, nbNo);
     }
-
-    /**
-     * @notice Transfers the funds from the Guild account to the member's internal accounts.
-     * @notice The amount of funds is caculated using the historical number of units of each member.
-     * @dev A distribution proposal must be in progress.
-     * @dev Only proposals that have passed the voting can be completed.
-     * @dev Only active members can receive funds.
-     * @param dao The dao address.
-     * @param toIndex The index to control the cached for-loop.
-     */
-    // slither-disable-next-line reentrancy-benign
-    // function distribute(DaoRegistry dao, uint256 toIndex)
-    //     external
-    //     override
-    //     reimbursable(dao)
-    // {
-    //     // Checks if the proposal does not exist or is not completed yet
-    //     bytes32 ongoingProposalId = ongoingDistributions[address(dao)];
-    //     Distribution storage distribution = distributions[address(dao)][
-    //         ongoingProposalId
-    //     ];
-    //     uint256 blockNumber = distribution.blockNumber;
-    //     require(
-    //         distribution.status == DistributionStatus.IN_PROGRESS,
-    //         "distrib completed or not exist"
-    //     );
-
-    //     // Check if the given index was already processed
-    //     uint256 currentIndex = distribution.currentIndex;
-    //     require(currentIndex <= toIndex, "toIndex too low");
-
-    //     address token = distribution.token;
-    //     uint256 amount = distribution.amount;
-
-    //     // Get the total number of units when the proposal was processed.
-    //     BankExtension bank = BankExtension(
-    //         dao.getExtensionAddress(DaoHelper.BANK)
-    //     );
-
-    //     address recipientAddr = distribution.recipientAddr;
-    //     if (recipientAddr != address(0x0)) {
-    //         distribution.status = DistributionStatus.DONE;
-    //         _distributeOne(bank, recipientAddr, blockNumber, token, amount);
-    //         //slither-disable-next-line reentrancy-events
-    //         emit Distributed(address(dao), token, amount, recipientAddr);
-    //     }
-    // }
-
-    /**
-     * @notice Updates the holder account with the amount based on the token parameter.
-     * @notice It is an internal transfer only that happens in the Bank extension.
-     */
-    // function _distributeOne(
-    //     BankExtension bank,
-    //     address unitHolderAddr,
-    //     uint256 blockNumber,
-    //     address token,
-    //     uint256 amount
-    // ) internal {
-    //     uint256 memberTokens = DaoHelper.priorMemberTokens(
-    //         bank,
-    //         unitHolderAddr,
-    //         blockNumber
-    //     );
-    //     require(memberTokens != 0, "not enough tokens");
-    //     // Distributes the funds to 1 unit holder only
-    //     bank.internalTransfer(DaoHelper.ESCROW, unitHolderAddr, token, amount);
-    // }
-
-    /**
-     * @notice Updates all the holder accounts with the amount based on the token parameter.
-     * @notice It is an internal transfer only that happens in the Bank extension.
-     */
-    // function _distributeAll(
-    //     DaoRegistry dao,
-    //     BankExtension bank,
-    //     uint256 currentIndex,
-    //     uint256 maxIndex,
-    //     uint256 blockNumber,
-    //     address token,
-    //     uint256 amount
-    // ) internal {
-    //     uint256 totalTokens = DaoHelper.priorTotalTokens(bank, blockNumber);
-    //     // Distributes the funds to all unit holders of the DAO and ignores non-active members.
-    //     for (uint256 i = currentIndex; i < maxIndex; i++) {
-    //         //slither-disable-next-line calls-loop
-    //         address memberAddr = dao.getMemberAddress(i);
-    //         //slither-disable-next-line calls-loop
-    //         uint256 memberUnits = bank.getPriorAmount(
-    //             memberAddr,
-    //             DaoHelper.UNITS,
-    //             blockNumber
-    //         );
-    //         if (memberUnits > 0) {
-    //             //slither-disable-next-line calls-loop
-    //             uint256 amountToDistribute = FairShareHelper.calc(
-    //                 amount,
-    //                 memberUnits,
-    //                 totalTokens
-    //             );
-
-    //             if (amountToDistribute > 0) {
-    //                 //slither-disable-next-line calls-loop
-    //                 bank.internalTransfer(
-    //                     DaoHelper.ESCROW,
-    //                     memberAddr,
-    //                     token,
-    //                     amountToDistribute
-    //                 );
-    //             }
-    //         }
-    //     }
-    // }
 }
