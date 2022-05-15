@@ -208,7 +208,6 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
         uint256 startTime,
         uint256 stopTime
     ) public override returns (uint256) {
-        console.log(startTime);
         require(recipient != address(0x00), "stream to the zero address");
         require(recipient != address(this), "stream to the contract itself");
         require(recipient != msg.sender, "stream to the caller");

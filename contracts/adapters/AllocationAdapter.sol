@@ -9,11 +9,12 @@ import "../extensions/ricestaking/RiceStaking.sol";
 import "../extensions/gpdao/GPDao.sol";
 import "./streaming_payment/interfaces/ISablier.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
 MIT License
 
-Copyright (c) 2020 DaoSquare
+Copyright (c) 2022 DaoSquare
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -128,6 +129,17 @@ contract AllocationAdapterContract {
         return (riceBalance * riceStakingRewards) / projectSanpRice;
     }
 
+    struct allocateProjectTokenLocalVars {
+        ISablier streamingPaymentContract;
+        FundingPoolExtension fundingpool;
+        StakingRiceExtension ricestaking;
+        GPDaoExtension gpdao;
+        address[] allInvestors;
+        address[] riceStakeres;
+        address[] gps;
+        uint256 totalReward;
+    }
+
     function allocateProjectToken(
         DaoRegistry dao,
         uint256 tokenAmount,
@@ -135,54 +147,72 @@ contract AllocationAdapterContract {
         uint256 startTime,
         uint256 stopTime
     ) external {
-        ISablier streamingPaymentContract = ISablier(
+        require(
+            msg.sender ==
+                address(dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPT)),
+            "allocateProjectToken::access deny"
+        );
+        allocateProjectTokenLocalVars memory vars;
+
+        vars.streamingPaymentContract = ISablier(
             dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT)
         );
-        FundingPoolExtension fundingpool = FundingPoolExtension(
+        vars.fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        StakingRiceExtension ricestaking = StakingRiceExtension(
+        vars.ricestaking = StakingRiceExtension(
             dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
         );
-        IERC20(tokenAddress).transferFrom(
-            dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPT),
-            dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPT),
-            tokenAmount
+        GPDaoExtension gpdao = GPDaoExtension(
+            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
         );
+        require(
+            IERC20(tokenAddress).transferFrom(
+                dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPT),
+                dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPT),
+                tokenAmount
+            ),
+            "allocAdapt::allocateProjectToken::transfer failed"
+        );
+
         // approve from Allocation adapter contract to streaming payment contract
         IERC20(tokenAddress).approve(
             dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT),
             tokenAmount
         );
-        address[] memory allInvestors = fundingpool.getInvestors();
-        address[] memory riceStakeres = ricestaking.getAllRiceStakers();
-        // for (uint8 i = 0; i < allInvestors.length; i++) {
-        //     if (!tem.contains(allInvestors[i])) {
-        //         tem.add(allInvestors[i]);
-        //     }
-        // }
-        // for (uint8 i = 0; i < riceStakeres.length; i++) {
-        //     if (!tem.contains(riceStakeres[i])) {
-        //         tem.add(riceStakeres[i]);
-        //     }
-        // }
-        require(allInvestors.length > 0, "no valid investor");
-        for (uint8 i = 0; i < allInvestors.length; i++) {
-            uint256 allRewards = getFundingRewards(
-                dao,
-                allInvestors[i],
-                tokenAmount
-            ) +
-                getGPBonus(dao, allInvestors[i], tokenAmount) +
-                getRiceRewards(dao, allInvestors[i], tokenAmount);
-
-            streamingPaymentContract.createStream(
-                allInvestors[i],
-                allRewards,
-                tokenAddress,
-                startTime,
-                stopTime
-            );
+        address[] memory allInvestors = vars.fundingpool.getInvestors();
+        address[] memory riceStakeres = vars.ricestaking.getAllRiceStakers();
+        address[] memory gps = gpdao.getAllGPs();
+        vars.totalReward = 0;
+        if (allInvestors.length > 0) {
+            for (uint8 i = 0; i < allInvestors.length; i++) {
+                uint256 fundingRewards = getFundingRewards(
+                    dao,
+                    allInvestors[i],
+                    tokenAmount
+                );
+                vars.totalReward += fundingRewards;
+                vars.streamingPaymentContract.createStream(
+                    allInvestors[i],
+                    fundingRewards,
+                    tokenAddress,
+                    startTime,
+                    stopTime
+                );
+            }
+        }
+        if (gps.length > 0) {
+            for (uint8 i = 0; i < gps.length; i++) {
+                uint256 gpBonus = getGPBonus(dao, gps[i], tokenAmount);
+                vars.totalReward += gpBonus;
+                vars.streamingPaymentContract.createStream(
+                    gps[i],
+                    gpBonus,
+                    tokenAddress,
+                    startTime,
+                    stopTime
+                );
+            }
         }
         if (riceStakeres.length > 0) {
             for (uint8 i = 0; i < riceStakeres.length; i++) {
@@ -191,8 +221,8 @@ contract AllocationAdapterContract {
                     riceStakeres[i],
                     tokenAmount
                 );
-
-                streamingPaymentContract.createStream(
+                vars.totalReward += riceStakingRewards;
+                vars.streamingPaymentContract.createStream(
                     riceStakeres[i],
                     riceStakingRewards,
                     tokenAddress,
@@ -201,5 +231,9 @@ contract AllocationAdapterContract {
                 );
             }
         }
+        require(
+            vars.totalReward <= tokenAmount,
+            "allocateProjectToken::distribute token amount exceeds tranding off amount"
+        );
     }
 }

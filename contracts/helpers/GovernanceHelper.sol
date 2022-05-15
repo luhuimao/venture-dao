@@ -118,7 +118,6 @@ library GovernanceHelper {
         );
         uint256 balanceInEther = fundingpool.balanceOf(voterAddr, token) /
             10**18;
-        console.log(balanceInEther);
         require(
             balanceInEther > 0 && balanceInEther < 9223372036854775807,
             "Helper::getGPVotingWeight::gp balance out of range"

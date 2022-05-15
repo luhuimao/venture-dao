@@ -139,7 +139,10 @@ contract DistributeFundContract is
         uint256 lockedTokenAmount = projectTeamLockedTokens[address(dao)][
             proposalId
         ][msg.sender];
-        require(lockedTokenAmount > 0, "no fund to unlock");
+        require(
+            lockedTokenAmount > 0,
+            "unLockProjectTeamToken::no fund to unlock"
+        );
 
         Distribution storage distribution = distributions[address(dao)][
             proposalId
@@ -147,18 +150,22 @@ contract DistributeFundContract is
         IERC20 erc20 = IERC20(distribution.tokenAddr);
         require(
             erc20.balanceOf(address(this)) >= lockedTokenAmount,
-            "Insufficient Fund"
+            "unLockProjectTeamToken::Insufficient Fund"
         );
         IGPVoting votingContract = IGPVoting(dao.votingAdapter(proposalId));
         (IGPVoting.VotingState voteResult, , ) = votingContract.voteResult(
             dao,
             proposalId
         );
+
         require(
-            voteResult == IGPVoting.VotingState.NOT_PASS ||
-                voteResult == IGPVoting.VotingState.TIE,
-            "voting result must be not pass or tie"
+            distribution.status == DistributionStatus.FAILED &&
+                (voteResult == IGPVoting.VotingState.NOT_PASS ||
+                    voteResult == IGPVoting.VotingState.TIE ||
+                    voteResult == IGPVoting.VotingState.PASS),
+            "unLockProjectTeamToken::not satisfied"
         );
+        projectTeamLockedTokens[address(dao)][proposalId][msg.sender] = 0;
         erc20.transfer(msg.sender, lockedTokenAmount);
     }
 
@@ -219,7 +226,7 @@ contract DistributeFundContract is
             vars.fundingpool.balanceOf(
                 DaoHelper.DAOSQUARE_TREASURY,
                 vars.fundingpool.getToken(0)
-            ) > _uint256ArgsProposal[0],
+            ) >= _uint256ArgsProposal[0],
             "DistributeFund::submitProposal::requested fund amount > total fund"
         );
         vars.submittedBy = vars.gpVotingContract.getSenderAddress(
@@ -310,6 +317,17 @@ contract DistributeFundContract is
         );
     }
 
+    struct ProcessProposalLocalVars {
+        bytes32 ongoingProposalId;
+        IGPVoting votingContract;
+        StakingRiceExtension stakingrice;
+        FundingPoolExtension fundingpool;
+        IGPVoting.VotingState voteResult;
+        AllocationAdapterContract allocAda;
+        uint128 nbYes;
+        uint128 nbNo;
+    }
+
     /**
      * @notice Process the distribution proposal, calculates the fair amount of funds to distribute to the project team.
      * @dev A distribution proposal proposal must be in progress.
@@ -326,11 +344,12 @@ contract DistributeFundContract is
         override
         reimbursable(dao)
     {
+        ProcessProposalLocalVars memory vars;
         dao.processProposal(proposalId);
-        FundingPoolExtension fundingpool = FundingPoolExtension(
+        vars.fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        StakingRiceExtension stakingrice = StakingRiceExtension(
+        vars.stakingrice = StakingRiceExtension(
             dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
         );
         // Checks if the proposal exists or is not in progress yet.
@@ -343,71 +362,83 @@ contract DistributeFundContract is
         );
 
         // Checks if there is an ongoing proposal, only one proposal can be executed at time.
-        bytes32 ongoingProposalId = ongoingDistributions[address(dao)];
+        vars.ongoingProposalId = ongoingDistributions[address(dao)];
         require(
-            ongoingProposalId == bytes32(0) ||
-                distributions[address(dao)][ongoingProposalId].status !=
+            vars.ongoingProposalId == bytes32(0) ||
+                distributions[address(dao)][vars.ongoingProposalId].status !=
                 DistributionStatus.IN_PROGRESS,
             "another proposal already in progress"
         );
 
         // Checks if the proposal has passed.
-        IGPVoting votingContract = IGPVoting(dao.votingAdapter(proposalId));
-        require(address(votingContract) != address(0), "adapter not found");
+        vars.votingContract = IGPVoting(dao.votingAdapter(proposalId));
+        require(address(vars.votingContract) != address(0), "adapter not found");
 
-        (
-            IGPVoting.VotingState voteResult,
-            uint128 nbYes,
-            uint128 nbNo
-        ) = votingContract.voteResult(dao, proposalId);
-        if (voteResult == IGPVoting.VotingState.PASS) {
+        (vars.voteResult, vars.nbYes, vars.nbNo) = vars.votingContract.voteResult(
+            dao,
+            proposalId
+        );
+        if (vars.voteResult == IGPVoting.VotingState.PASS) {
             distribution.status = DistributionStatus.IN_PROGRESS;
             distribution.blockNumber = block.number;
             ongoingDistributions[address(dao)] = proposalId;
 
             //set project sanp funds/rice to total funds/rice
-            address token = fundingpool.getToken(0);
-            fundingpool.setProjectSnapFunds(token);
-            stakingrice.setProjectSnapRice(
+            address token = vars.fundingpool.getToken(0);
+            vars.fundingpool.setProjectSnapFunds(token);
+            vars.stakingrice.setProjectSnapRice(
                 dao.getAddressConfiguration(RiceTokenAddr)
             );
 
-            //process1. distribute fund to project team address
-            fundingpool.distributeFunds(
-                distribution.recipientAddr,
-                token,
+            //insufficient funds failed the distribution
+            if (
+                vars.fundingpool.totalSupply() <
                 distribution.requestedFundAmount
-            );
+            ) {
+                distribution.status = DistributionStatus.FAILED;
+            } else {
+                //process1. distribute fund to project team address
+                vars.fundingpool.distributeFunds(
+                    distribution.recipientAddr,
+                    token,
+                    distribution.requestedFundAmount
+                );
 
-            //process2. streaming pay for all valid investor
-            AllocationAdapterContract allocAda = AllocationAdapterContract(
-                dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPT)
-            );
-            allocAda.allocateProjectToken(
-                dao,
-                distribution.tradingOffTokenAmount,
-                distribution.tokenAddr,
-                distribution.lockupDate,
-                distribution.fullyReleasedDate
-            );
-            //process3. substract from funding pool
-            fundingpool.subtractAllFromBalance(
-                token,
-                distribution.requestedFundAmount
-            );
-            distribution.status = DistributionStatus.DONE;
+                //process2. streaming pay for all valid investor
+                vars.allocAda = AllocationAdapterContract(
+                    dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPT)
+                );
+                vars.allocAda.allocateProjectToken(
+                    dao,
+                    distribution.tradingOffTokenAmount,
+                    distribution.tokenAddr,
+                    distribution.lockupDate,
+                    distribution.fullyReleasedDate
+                );
+                //process3. substract from funding pool
+                vars.fundingpool.subtractAllFromBalance(
+                    token,
+                    distribution.requestedFundAmount
+                );
+                //process4. set  projectTeamLockedToken to 0
+                projectTeamLockedTokens[address(dao)][proposalId][
+                    distribution.recipientAddr
+                ] = 0;
+
+                distribution.status = DistributionStatus.DONE;
+            }
         } else if (
-            voteResult == IGPVoting.VotingState.NOT_PASS ||
-            voteResult == IGPVoting.VotingState.TIE
+            vars.voteResult == IGPVoting.VotingState.NOT_PASS ||
+            vars.voteResult == IGPVoting.VotingState.TIE
         ) {
             distribution.status = DistributionStatus.FAILED;
         } else {
-            revert("proposal has not been voted on");
+            revert("voting not finalized");
         }
         ongoingDistributions[address(dao)] = bytes32(0);
         //vote finished reset snapfunds to 0
-        fundingpool.resetSnapFunds();
+        vars.fundingpool.resetSnapFunds();
 
-        emit VoteResult(proposalId, uint256(voteResult), nbYes, nbNo);
+        emit VoteResult(proposalId, uint256(vars.voteResult), vars.nbYes, vars.nbNo);
     }
 }

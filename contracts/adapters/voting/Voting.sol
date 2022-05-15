@@ -202,8 +202,6 @@ contract VotingContract is IVoting, MemberGuard, AdapterGuard, Reimbursable {
         ) {
             return VotingState.IN_PROGRESS;
         }
-        console.log("Voting vote.nbYes:", vote.nbYes);
-        console.log("Voting vote.nbNo:", vote.nbNo);
         if (
             // slither-disable-next-line timestamp
             block.timestamp <

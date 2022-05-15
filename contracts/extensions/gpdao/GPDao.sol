@@ -38,29 +38,17 @@ SOFTWARE.
  */
 
 contract GPDaoExtension is IExtension {
+    using EnumerableSet for EnumerableSet.AddressSet;
     enum AclFlag {
         REGISTER_NEW_GP,
         REMOVE_GP
-    }
-
-    enum GeneralPartnerFlag {
-        EXISTS,
-        EXITED
-    }
-
-    struct GeneralPartner {
-        // the structure to track all the general partners in the DAO
-        uint256 flags; // flags to track the state of the general partners: exists, etc
     }
 
     bool public initialized = false; // internally tracks deployment under eip-1167 proxy pattern
 
     DaoRegistry public dao;
 
-    // delegate key => general partner address mapping
-    mapping(address => address) public generalPartnerAddressesByDelegatedKey;
-    mapping(address => GeneralPartner) public generalPartners; // the map to track all general partners of the DAO
-    address[] private _generalPartners;
+    EnumerableSet.AddressSet private _generalPartners;
 
     /// @notice Clonable contract must have an empty constructor
     constructor() {}
@@ -98,41 +86,19 @@ contract GPDaoExtension is IExtension {
     /**
      * @notice Registers a general partner address in the DAO if it is not registered or invalid.
      * @dev Reverts if the generalPartnerAddress has been register
-     * @param generalPartnerAddress The member whose checkpoints will be added to
+     * @param newGeneralPartnerAddress The member whose checkpoints will be added to
      */
-    function registerGeneralPartner(address generalPartnerAddress)
+    function registerGeneralPartner(address newGeneralPartnerAddress)
         external
         hasExtensionAccess(AclFlag.REGISTER_NEW_GP)
     {
         require(
-            generalPartnerAddress != address(0x0),
+            newGeneralPartnerAddress != address(0x0),
             "invalid generalPartner address"
         );
 
-        GeneralPartner storage generalPartner = generalPartners[
-            generalPartnerAddress
-        ];
-        if (
-            !DaoHelper.getFlag(
-                generalPartner.flags,
-                uint8(GeneralPartnerFlag.EXISTS)
-            )
-        ) {
-            require(
-                generalPartnerAddressesByDelegatedKey[generalPartnerAddress] ==
-                    address(0x0),
-                "general partner address already taken as delegated key"
-            );
-            generalPartner.flags = DaoHelper.setFlag(
-                generalPartner.flags,
-                uint8(GeneralPartnerFlag.EXISTS),
-                true
-            );
-            generalPartnerAddressesByDelegatedKey[
-                generalPartnerAddress
-            ] = generalPartnerAddress;
-
-            _generalPartners.push(generalPartnerAddress);
+        if (!_generalPartners.contains(newGeneralPartnerAddress)) {
+            _generalPartners.add(newGeneralPartnerAddress);
         }
     }
 
@@ -150,39 +116,12 @@ contract GPDaoExtension is IExtension {
             "invalid generalPartner address"
         );
 
-        GeneralPartner storage generalPartner = generalPartners[
-            generalPartnerAddress
-        ];
-        generalPartner.flags = DaoHelper.setFlag(
-            generalPartner.flags,
-            uint8(GeneralPartnerFlag.EXISTS),
-            false
-        );
-        generalPartner.flags = DaoHelper.setFlag(
-            generalPartner.flags,
-            uint8(GeneralPartnerFlag.EXITED),
-            true
-        );
+        _generalPartners.remove(generalPartnerAddress);
     }
 
     /**
      * Public read-only functions
      */
-    /**
-     * @return Whether or not a flag is set for a given general partner
-     * @param generalPartnerAddress The general partner to check against flag
-     * @param flag The flag to check in the general partner
-     */
-    function getGeneralPartnerFlag(
-        address generalPartnerAddress,
-        GeneralPartnerFlag flag
-    ) public view returns (bool) {
-        return
-            DaoHelper.getFlag(
-                generalPartners[generalPartnerAddress].flags,
-                uint8(flag)
-            );
-    }
 
     /**
      * @return Whether or not a given address is a general partner of the DAO.
@@ -190,21 +129,10 @@ contract GPDaoExtension is IExtension {
      * @param addr The address to look up
      */
     function isGeneralPartner(address addr) external view returns (bool) {
-        address generalPartnerAddress = generalPartnerAddressesByDelegatedKey[
-            addr
-        ];
-        if (generalPartnerAddress == address(0x0)) {
-            return false;
-        } else {
-            return
-                getGeneralPartnerFlag(
-                    generalPartnerAddress,
-                    GeneralPartnerFlag.EXISTS
-                );
-        }
+        return _generalPartners.contains(addr);
     }
 
     function getAllGPs() external view returns (address[] memory) {
-        return _generalPartners;
+        return _generalPartners.values();
     }
 }

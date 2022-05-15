@@ -425,15 +425,7 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
             amount > 0,
             "FundingPool::addToBalance::deposit funds must > 0"
         );
-        //While begins a vote, set snapFunds = totalFunds,
-        //as an investor, you can still withdraw your balance;
-        // by doing that, there’ll be a room made in totalFunds so anyone could deposit funds to fill it until totalFunds reaches snapFunds.
-        if (
-            snapFunds > 0 &&
-            balanceOf(address(DaoHelper.DAOSQUARE_TREASURY), token) >= snapFunds
-        ) {
-            revert("FundingPool::addToBalance::total funds exceed snap funds");
-        }
+
         _newInvestor(member);
         IERC20 erc20 = IERC20(token);
         uint256 chargedAmount = (amount * serviceFeeRatio) / 100;
@@ -447,7 +439,17 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
             address(DaoHelper.DAOSQUARE_TREASURY),
             token
         ) + effectedAmount;
-
+        //While begins a vote, set snapFunds = totalFunds,
+        //as an investor, you can still withdraw your balance;
+        // by doing that, there’ll be a room made in totalFunds so anyone could deposit funds to fill it until totalFunds reaches snapFunds.
+        if (
+            snapFunds > 0 &&
+            balanceOf(address(DaoHelper.DAOSQUARE_TREASURY), token) +
+                effectedAmount >
+            snapFunds
+        ) {
+            revert("FundingPool::addToBalance::total funds exceed snap funds");
+        }
         erc20.transferFrom(msg.sender, address(this), amount);
 
         _createNewAmountCheckpoint(member, token, newAmount);
@@ -621,15 +623,10 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
             address(DaoHelper.DAOSQUARE_TREASURY),
             token
         );
-        for (uint8 i = 0; i < _investors.length(); i++) {
-            address investorAddr = _investors.at(i);
-            if (
-                // DaoHelper.getFlag(
-                //     investors[investorAddr].flags,
-                //     uint8(InvestorFlag.EXISTS)
-                // ) &&
-                balanceOf(investorAddr, token) > 0
-            ) {
+        address[] memory tem = _investors.values();
+        for (uint8 i = 0; i < tem.length; i++) {
+            address investorAddr = tem[i];
+            if (balanceOf(investorAddr, token) > 0) {
                 subtractFromBalance(
                     investorAddr,
                     token,
@@ -771,19 +768,6 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
 
     function _removeInvestor(address investorAddr) internal {
         require(investorAddr != address(0x0), "invalid generalPartner address");
-
-        // Investor storage investor = investors[investorAddr];
-        // investor.flags = DaoHelper.setFlag(
-        //     investor.flags,
-        //     uint8(InvestorFlag.EXISTS),
-        //     false
-        // );
-        // investor.flags = DaoHelper.setFlag(
-        //     investor.flags,
-        //     uint8(InvestorFlag.EXITED),
-        //     true
-        // );
-
         _investors.remove(investorAddr);
     }
 }

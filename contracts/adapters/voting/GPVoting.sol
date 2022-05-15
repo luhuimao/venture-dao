@@ -246,72 +246,57 @@ contract GPVotingContract is
         bytes32 proposalId,
         address voter
     ) external {
-        require(
-            msg.sender == dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT),
-            "GPVoting::updateVoteWeight::only call from FUNDING_POOL_ADAPT"
-        );
-        require(
-            dao.getProposalFlag(proposalId, DaoRegistry.ProposalFlag.SPONSORED),
-            "GPVoting::updateVoteWeight::the proposal has not been sponsored yet"
-        );
-
-        require(
+        GPVoting storage vote = votes[address(dao)][proposalId];
+        if (
+            block.timestamp <
+            vote.startingTime + dao.getConfiguration(VotingPeriod) && //vote must not ended
+            vote.votes[voter] != 0 && //voter must voted
+            vote.startingTime > 0 && //voting must started
             !dao.getProposalFlag(
                 proposalId,
                 DaoRegistry.ProposalFlag.PROCESSED
-            ),
-            "GPVoting::updateVoteWeight::the proposal has already been processed"
-        );
-        GPVoting storage vote = votes[address(dao)][proposalId];
-        // slither-disable-next-line timestamp
-        require(
-            vote.startingTime > 0,
-            "this proposalId has no vote going on at the moment"
-        );
-        // slither-disable-next-line timestamp
-        require(
-            block.timestamp <
-                vote.startingTime + dao.getConfiguration(VotingPeriod),
-            "GPVoting::updateVoteWeight::vote has already ended"
-        );
+            ) && //the proposal must not process
+            dao.getProposalFlag(
+                proposalId,
+                DaoRegistry.ProposalFlag.SPONSORED
+            ) && //the proposal must been sponsored
+            msg.sender == dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT) //only call from FUNDING_POOL_ADAPT
+        ) {
+            FundingPoolExtension fundingpool = FundingPoolExtension(
+                dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+            );
+            address token = fundingpool.getToken(0);
+            uint128 newVotingWeight = GovernanceHelper.getGPVotingWeight(
+                dao,
+                voter,
+                token
+            );
+            //old voting weight
+            uint128 oldVotingWeight = voteWeights[address(dao)][proposalId][
+                voter
+            ];
+            //record new voting weight
+            voteWeights[address(dao)][proposalId][voter] = newVotingWeight;
 
-        // address GPAddr = dao.getAddressIfDelegated(voter);
-        require(
-            vote.votes[voter] != 0,
-            "GPVoting::updateVoteWeight::voter has not voted"
-        );
-        FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        );
-        address token = fundingpool.getToken(0);
-        uint128 newVotingWeight = GovernanceHelper.getGPVotingWeight(
-            dao,
-            voter,
-            token
-        );
-        //old voting weight
-        uint128 oldVotingWeight = voteWeights[address(dao)][proposalId][voter];
-        //record new voting weight
-        voteWeights[address(dao)][proposalId][voter] = newVotingWeight;
+            uint256 voteValue = vote.votes[voter];
+            if (voteValue == 1) {
+                vote.nbYes -= oldVotingWeight;
+                vote.nbYes += newVotingWeight;
+            } else if (voteValue == 2) {
+                vote.nbNo -= oldVotingWeight;
+                vote.nbNo += newVotingWeight;
+            }
 
-        uint256 voteValue = vote.votes[voter];
-        if (voteValue == 1) {
-            vote.nbYes -= oldVotingWeight;
-            vote.nbYes += newVotingWeight;
-        } else if (voteValue == 2) {
-            vote.nbNo -= oldVotingWeight;
-            vote.nbNo += newVotingWeight;
+            emit UpdateVoteWeight(
+                proposalId,
+                block.timestamp,
+                voter,
+                oldVotingWeight,
+                newVotingWeight,
+                vote.nbYes,
+                vote.nbNo
+            );
         }
-
-        emit UpdateVoteWeight(
-            proposalId,
-            block.timestamp,
-            voter,
-            oldVotingWeight,
-            newVotingWeight,
-            vote.nbYes,
-            vote.nbNo
-        );
     }
 
     /**
