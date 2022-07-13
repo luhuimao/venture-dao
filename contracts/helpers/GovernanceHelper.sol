@@ -118,10 +118,17 @@ library GovernanceHelper {
         );
         uint256 balanceInEther = fundingpool.balanceOf(voterAddr, token) /
             10**18;
-        require(
-            balanceInEther > 0 && balanceInEther < 9223372036854775807,
-            "Helper::getGPVotingWeight::gp balance out of range"
-        );
+        //need to fix 2022.6.14
+        if (balanceInEther <= 0) {
+            return 0;
+        }
+        if (balanceInEther >= 9223372036854775807) {
+            return 50;
+        }
+        // require(
+        //     balanceInEther > 0 && balanceInEther < 9223372036854775807,
+        //     "Helper::getGPVotingWeight::gp balance out of range"
+        // );
         uint128 weight;
         if (fundingpool.isTokenAllowed(token)) {
             if (

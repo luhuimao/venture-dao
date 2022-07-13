@@ -418,6 +418,10 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         updateReward(member)
     {
         require(
+            snapFunds <= 0,
+            "FundingPool::Withdraw::unable to deposit during proposal prcessing"
+        );
+        require(
             availableTokens[token],
             "FundingPool::addToBalance::unknown token address"
         );
@@ -475,6 +479,10 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
             balanceOf(recipientAddr, tokenAddr) >= amount,
             "FundingPool::withdraw::not enough funds"
         );
+        require(
+            snapFunds <= 0,
+            "FundingPool::Withdraw::unable to withdraw during proposal prcessing"
+        );
         subtractFromBalance(recipientAddr, tokenAddr, amount);
 
         IERC20(tokenAddr).safeTransfer(recipientAddr, amount);
@@ -490,6 +498,10 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         hasExtensionAccess(AclFlag.GET_REWARDS)
     {
         uint256 reward = rewards[recipientAddr];
+        require(
+            riceTokenAddress != address(0x0),
+            "getReward::invalid rice address"
+        );
         if (reward > 0) {
             rewards[recipientAddr] = 0;
             IERC20(riceTokenAddress).safeTransfer(recipientAddr, reward);
@@ -521,6 +533,10 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         // This keeps the reward rate in the right range, preventing overflows due to
         // very high values of rewardRate in the earned and rewardsPerToken functions;
         // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
+        require(
+            riceTokenAddress != address(0x0),
+            "notifyRewardAmount::invalid rice address"
+        );
         uint256 balance = IERC20(riceTokenAddress).balanceOf(address(this));
         require(
             rewardRate <= balance.div(rewardsDuration),

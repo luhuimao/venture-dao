@@ -28,15 +28,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 library DaoHelper {
+    enum VoteType {
+        SIMPLE_MAJORITY,
+        SIMPLE_MAJORITY_QUORUM_REQUIRED,
+        SUPERMAJORITY,
+        SUPERMAJORITY_QUORUM_REQUIRED
+    }
+
     // Adapters
+    bytes32 internal constant GP_ONBOARDING_ADAPT =
+        keccak256("gp-dao-onboarding");
     bytes32 internal constant FUNDING_POOL_ADAPT = keccak256("founding-pool");
     bytes32 internal constant ALLOCATION_ADAPT = keccak256("allocation");
+    bytes32 internal constant ALLOCATION_ADAPTV2 = keccak256("allocationv2");
     bytes32 internal constant STREAMING_PAYMENT_ADAPT =
         keccak256("streaming-payment");
     bytes32 internal constant VOTING_ADAPT = keccak256("voting");
     bytes32 internal constant GPVOTING_ADAPT = keccak256("gp-voting");
+    bytes32 internal constant GPONBOARDVOTING_ADAPT =
+        keccak256("gp-onboard-voting");
     bytes32 internal constant DISTRIBUTE_FUND_ADAPT =
         keccak256("distribute-fund");
+    bytes32 internal constant DISTRIBUTE_FUND_ADAPTV2 =
+        keccak256("distribute-fundv2");
     bytes32 internal constant ONBOARDING = keccak256("onboarding");
     bytes32 internal constant NONVOTING_ONBOARDING =
         keccak256("nonvoting-onboarding");
@@ -84,6 +98,16 @@ library DaoHelper {
     bytes32 internal constant RICE_TOKEN_ADDRESS =
         keccak256("rice.token.address");
 
+    bytes32 internal constant QUORUM = keccak256("voting.quorum");
+    bytes32 internal constant SUPER_MAJORITY =
+        keccak256("voting.supermajority");
+
+    bytes32 internal constant PROPOSAL_DURATION =
+        keccak256("distributeFund.proposalDuration");
+    bytes32 internal constant PROPOSAL_INTERVAL =
+        keccak256("distributeFund.proposalInterval");
+    bytes32 internal constant PROPOSAL_EXECUTE_DURATION =
+        keccak256("distributeFund.proposalExecuteDuration");
     // Reserved Addresses
     address internal constant STAKING_RICE_POOL = address(0xDCEAC);
     address internal constant STAKING_RICE_MEMBER = address(0x12345678);

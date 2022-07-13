@@ -36,6 +36,8 @@ SOFTWARE.
  */
 
 contract GPDaoAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
+   
+
     function registerNewGP(DaoRegistry dao, address newGPAddr)
         external
         onlyMember(dao)
@@ -48,14 +50,15 @@ contract GPDaoAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         gpdao.registerGeneralPartner(newGPAddr);
     }
 
-    function removeGP(DaoRegistry dao, address gpAddr)
+    function gpQuit(DaoRegistry dao)
         external
-        onlyMember(dao)
+        onlyGeneralPartner(dao)
         reimbursable(dao)
     {
         GPDaoExtension gpdao = GPDaoExtension(
             dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
         );
-        gpdao.removeGneralPartner(gpAddr);
+        require(msg.sender != gpdao.sponsor(), "dao summonor must reserved");
+        gpdao.removeGneralPartner(msg.sender);
     }
 }

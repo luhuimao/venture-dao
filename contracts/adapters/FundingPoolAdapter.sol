@@ -59,6 +59,7 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
+
         address token = fundingpool.getToken(0);
         uint256 balance = fundingpool.balanceOf(msg.sender, token);
         require(balance > 0, "insufficient balance");
@@ -79,14 +80,14 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
             dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
         );
         //check if gp
-        if (gpdaoExt.isGeneralPartner(msg.sender)) {
-            //update voting weight
-            gpVotingAda.updateVoteWeight(
-                dao,
-                distributeFundAda.ongoingDistributions(address(dao)),
-                msg.sender
-            );
-        }
+        // if (gpdaoExt.isGeneralPartner(msg.sender)) {
+        //     //update voting weight
+        //     gpVotingAda.updateVoteWeight(
+        //         dao,
+        //         distributeFundAda.ongoingDistributions(address(dao)),
+        //         msg.sender
+        //     );
+        // }
     }
 
     /**
@@ -121,22 +122,22 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
             dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
         );
         //check if gp
-        if (
-            gpdaoExt.isGeneralPartner(msg.sender) &&
-            distributeAda.ongoingDistributions(address(dao)) != bytes32(0) &&
-            gpVotingAda.checkIfVoted(
-                dao,
-                distributeAda.ongoingDistributions(address(dao)),
-                msg.sender
-            )
-        ) {
-            //update voting weight
-            gpVotingAda.updateVoteWeight(
-                dao,
-                distributeAda.ongoingDistributions(address(dao)),
-                msg.sender
-            );
-        }
+        // if (
+        //     gpdaoExt.isGeneralPartner(msg.sender) &&
+        //     distributeAda.ongoingDistributions(address(dao)) != bytes32(0) &&
+        //     gpVotingAda.checkIfVoted(
+        //         dao,
+        //         distributeAda.ongoingDistributions(address(dao)),
+        //         msg.sender
+        //     )
+        // ) {
+        //     //update voting weight
+        //     gpVotingAda.updateVoteWeight(
+        //         dao,
+        //         distributeAda.ongoingDistributions(address(dao)),
+        //         msg.sender
+        //     );
+        // }
     }
 
     function registerPotentialNewToken(DaoRegistry dao, address _tokenAddr)

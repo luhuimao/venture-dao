@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 
 import "../../core/DaoRegistry.sol";
+import "../../helpers/DaoHelper.sol";
 
 /**
 MIT License
@@ -34,7 +35,7 @@ interface IFunding {
         bytes32 proposalId,
         address[] calldata _addressArgs,
         uint256[] calldata _uint256ArgsProposal,
-        bytes calldata data
+        DaoHelper.VoteType voteType
     ) external;
 
     function processProposal(DaoRegistry dao, bytes32 proposalId) external;

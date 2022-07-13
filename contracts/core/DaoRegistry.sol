@@ -84,9 +84,15 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         ADD_EXTENSION,
         REMOVE_EXTENSION,
         NEW_MEMBER,
-        REMOVE_MEMBER
+        REMOVE_MEMBER,
+        SET_VOTE_TYPE
     }
-
+    enum VoteType {
+        SIMPLE_MAJORITY,
+        SIMPLE_MAJORITY_QUORUM_REQUIRED,
+        SUPERMAJORITY,
+        SUPERMAJORITY_QUORUM_REQUIRED
+    }
     /*
      * STRUCTURES
      */
@@ -155,7 +161,8 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     /// @notice The map that keeps track of configuration parameters for the DAO and adapters
     mapping(bytes32 => uint256) public mainConfiguration;
     mapping(bytes32 => address) public addressConfiguration;
-
+    // vote types for proposal
+    mapping(bytes32 => VoteType) public proposalVoteTypes;
     uint256 public lockedAt;
 
     /// @notice Clonable contract must have an empty constructor
@@ -204,6 +211,19 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         if (isAdapter(msg.sender) || isExtension(msg.sender)) {
             lockedAt = 0;
         }
+    }
+
+    /**
+     * @notice Sets  vote type value for a proposal
+     * @dev Changes the value of a key in the configuration mapping
+     * @param proposalId The proposalId
+     * @param voteType the vote type
+     */
+    function setVoteType(bytes32 proposalId, uint32 voteType)
+        external
+        hasAccess(this, AclFlag.SET_VOTE_TYPE)
+    {
+        proposalVoteTypes[proposalId] = VoteType(voteType);
     }
 
     /**
@@ -296,6 +316,18 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     {
         addressConfiguration[key] = value;
         emit AddressConfigurationUpdated(key, value);
+    }
+
+    /**
+     * @return The configuration value of a particular key
+     * @param proposalId The key to look up in the configuration mapping
+     */
+    function getProposalVoteType(bytes32 proposalId)
+        external
+        view
+        returns (uint32)
+    {
+        return uint32(proposalVoteTypes[proposalId]);
     }
 
     /**
@@ -532,7 +564,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         bytes32 proposalId,
         address sponsoringMember,
         address votingAdapterAddr
-    ) external onlyMember2(this, sponsoringMember) {
+    ) external {
         // also checks if the flag was already set
         Proposal storage proposal = _setProposalFlag(
             proposalId,

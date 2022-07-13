@@ -71,7 +71,7 @@ contract RiceStakingAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         uint256 balance = riceStaking.balanceOf(account, riceAddr);
         require(balance > 0, "nothing to withdraw");
 
-        riceStaking.withdraw(account, riceAddr, balance);
+        riceStaking.withdraw(account, riceAddr, amount);
     }
 
     /**

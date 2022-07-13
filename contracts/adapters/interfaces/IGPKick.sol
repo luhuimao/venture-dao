@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 
 import "../../core/DaoRegistry.sol";
+import "../../helpers/DaoHelper.sol";
 
 /**
 MIT License
@@ -28,37 +29,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-interface IGPVoting {
-    enum VotingState {
-        NOT_STARTED,
-        TIE,
-        PASS,
-        NOT_PASS,
-        IN_PROGRESS,
-        GRACE_PERIOD
-    }
-
-    function getAdapterName() external pure returns (string memory);
-
-    function startNewVotingForProposal(
+interface IGPKick {
+    function submitProposal(
         DaoRegistry dao,
         bytes32 proposalId,
-        uint256 projectVotingTimestamp,
-        bytes calldata data
+        address gpToKick,
+        DaoHelper.VoteType voteType
     ) external;
 
-    function getSenderAddress(
-        DaoRegistry dao,
-        address actionId,
-        bytes memory data,
-        address sender
-    ) external returns (address);
-
-    function voteResult(DaoRegistry dao, bytes32 proposalId)
-        external
-        returns (
-            VotingState state,
-            uint128 nbYes,
-            uint128 nbNo
-        );
+    function processProposal(DaoRegistry dao, bytes32 proposalId) external;
 }

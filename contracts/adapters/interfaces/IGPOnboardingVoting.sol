@@ -28,7 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-interface IGPVoting {
+interface IGPOnboardingVoting {
     enum VotingState {
         NOT_STARTED,
         TIE,
@@ -43,12 +43,11 @@ interface IGPVoting {
     function startNewVotingForProposal(
         DaoRegistry dao,
         bytes32 proposalId,
-        uint256 projectVotingTimestamp,
         bytes calldata data
     ) external;
 
     function getSenderAddress(
-        DaoRegistry dao,
+        DaoRegistry dao, 
         address actionId,
         bytes memory data,
         address sender
@@ -56,9 +55,5 @@ interface IGPVoting {
 
     function voteResult(DaoRegistry dao, bytes32 proposalId)
         external
-        returns (
-            VotingState state,
-            uint128 nbYes,
-            uint128 nbNo
-        );
+        returns (VotingState state);
 }

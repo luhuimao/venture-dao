@@ -36,7 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract AllocationAdapterContract is AdapterGuard {
+contract AllocationAdapterContractV2 is AdapterGuard {
     using EnumerableSet for EnumerableSet.AddressSet;
     EnumerableSet.AddressSet private tem;
 
@@ -186,7 +186,9 @@ contract AllocationAdapterContract is AdapterGuard {
     ) external {
         require(
             msg.sender ==
-                address(dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPT)),
+                address(
+                    dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPTV2)
+                ),
             "allocateProjectToken::access deny"
         );
         allocateProjectTokenLocalVars memory vars;
@@ -205,8 +207,8 @@ contract AllocationAdapterContract is AdapterGuard {
         );
         require(
             IERC20(tokenAddress).transferFrom(
-                dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPT),
-                dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPT),
+                dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPTV2),
+                address(this),
                 tokenAmount
             ),
             "allocAdapt::allocateProjectToken::transfer failed"
@@ -223,52 +225,9 @@ contract AllocationAdapterContract is AdapterGuard {
         address[] memory targetAddressArr = new address[](
             allInvestors.length + riceStakeres.length + gps.length
         );
-        //Concatenate allInvestors, riceStakeres, gps Arrays
-        // vars.k = 0;
-        // vars.l = 0;
-        // vars.m = 0;
-        // for (; vars.k < allInvestors.length; vars.k++) {
-        //     targetAddressArr[vars.k] = allInvestors[vars.k];
-        // }
 
-        // while (vars.l < riceStakeres.length) {
-        //     vars.contained = false;
-        //     for (uint8 i = 0; i < targetAddressArr.length; i++) {
-        //         if (targetAddressArr[i] == riceStakeres[vars.l]) {
-        //             vars.contained = true;
-        //             break;
-        //         }
-        //     }
-        //     if (!vars.contained) targetAddressArr[vars.k++] = riceStakeres[vars.l++];
-        // }
-
-        // while (vars.m < gps.length) {
-        //     vars.contained = false;
-        //     for (uint8 i = 0; i < targetAddressArr.length; i++) {
-        //         if (targetAddressArr[i] == gps[vars.m]) {
-        //             vars.contained = true;
-        //             break;
-        //         }
-        //     }
-        //     if (!vars.contained) targetAddressArr[vars.k++] = riceStakeres[vars.m++];
-        // }
         vars.totalReward = 0;
-        // for (uint8 i = 0; i < targetAddressArr.length; i++) {
-        //     if (targetAddressArr[i] != address(0x0)) {
-        //         vars.allRewards =
-        //             getFundingRewards(dao, allInvestors[i], tokenAmount) +
-        //             getGPBonus(dao, gps[i], tokenAmount) +
-        //             getRiceRewards(dao, riceStakeres[i], tokenAmount);
-        //         vars.totalReward += vars.allRewards;
-        //         vars.streamingPaymentContract.createStream(
-        //             targetAddressArr[i],
-        //             vars.allRewards,
-        //             tokenAddress,
-        //             startTime,
-        //             stopTime
-        //         );
-        //     }
-        // }
+
         if (allInvestors.length > 0) {
             for (uint8 i = 0; i < allInvestors.length; i++) {
                 uint256 fundingRewards = getFundingRewards(

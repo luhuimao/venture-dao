@@ -45,7 +45,7 @@ contract GPDaoExtension is IExtension {
     }
 
     bool public initialized = false; // internally tracks deployment under eip-1167 proxy pattern
-
+    address public sponsor; //dao sponsor
     DaoRegistry public dao;
 
     EnumerableSet.AddressSet private _generalPartners;
@@ -78,8 +78,10 @@ contract GPDaoExtension is IExtension {
     function initialize(DaoRegistry _dao, address creator) external override {
         require(!initialized, "gpdao already initialized");
         require(_dao.isMember(creator), "gpdao::not member");
-
         dao = _dao;
+        sponsor = creator;
+        registerGeneralPartner(creator);
+
         initialized = true;
     }
 
@@ -89,7 +91,7 @@ contract GPDaoExtension is IExtension {
      * @param newGeneralPartnerAddress The member whose checkpoints will be added to
      */
     function registerGeneralPartner(address newGeneralPartnerAddress)
-        external
+        public
         hasExtensionAccess(AclFlag.REGISTER_NEW_GP)
     {
         require(
@@ -112,7 +114,8 @@ contract GPDaoExtension is IExtension {
         hasExtensionAccess(AclFlag.REMOVE_GP)
     {
         require(
-            generalPartnerAddress != address(0x0),
+            generalPartnerAddress != address(0x0) &&
+                generalPartnerAddress != sponsor,
             "invalid generalPartner address"
         );
 

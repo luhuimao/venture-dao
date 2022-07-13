@@ -49,6 +49,7 @@ contract GPVotingContract is
         uint128 nbNo;
         uint256 startingTime;
         uint256 blockNumber;
+        uint256 voters;
         mapping(address => uint256) votes;
     }
     event ConfigureDao(uint256 votingPeriod, uint256 gracePeriod);
@@ -84,6 +85,8 @@ contract GPVotingContract is
     );
     bytes32 constant VotingPeriod = keccak256("voting.votingPeriod");
     bytes32 constant GracePeriod = keccak256("voting.gracePeriod");
+    bytes32 constant ProposalDuration =
+        keccak256("distributeFund.proposalDuration");
 
     mapping(address => mapping(bytes32 => mapping(address => uint128)))
         public voteWeights;
@@ -121,10 +124,11 @@ contract GPVotingContract is
     function startNewVotingForProposal(
         DaoRegistry dao,
         bytes32 proposalId,
+        uint256 projectVotingTimestamp,
         bytes calldata
     ) external override onlyAdapter(dao) {
         GPVoting storage vote = votes[address(dao)][proposalId];
-        vote.startingTime = block.timestamp;
+        vote.startingTime = projectVotingTimestamp;
         vote.blockNumber = block.number;
         emit StartNewVotingForProposal(
             proposalId,
@@ -184,17 +188,16 @@ contract GPVotingContract is
         GPVoting storage vote = votes[address(dao)][proposalId];
         // slither-disable-next-line timestamp
         require(
-            vote.startingTime > 0,
-            "this proposalId has no vote going on at the moment"
+            block.timestamp > vote.startingTime && vote.startingTime > 0,
+            "GPVoting::submitVote::this proposalId has not start voting"
         );
         // slither-disable-next-line timestamp
         require(
             block.timestamp <
-                vote.startingTime + dao.getConfiguration(VotingPeriod),
-            "vote has already ended"
+                vote.startingTime +
+                    dao.getConfiguration(DaoHelper.PROPOSAL_DURATION),
+            "voting ended"
         );
-
-        // address GPAddr = dao.getAddressIfDelegated(msg.sender);
 
         require(vote.votes[msg.sender] == 0, "member has already voted");
         FundingPoolExtension fundingpool = FundingPoolExtension(
@@ -211,13 +214,11 @@ contract GPVotingContract is
 
         voteWeights[address(dao)][proposalId][msg.sender] = votingWeight;
         vote.votes[msg.sender] = voteValue;
-
+        vote.voters += 1;
         if (voteValue == 1) {
             vote.nbYes = vote.nbYes + votingWeight;
-            // vote.nbYes += 1;
         } else if (voteValue == 2) {
             vote.nbNo = vote.nbNo + votingWeight;
-            // vote.nbNo += 1;
         }
         emit SubmitVote(
             proposalId,
@@ -350,6 +351,7 @@ contract GPVotingContract is
         }
         //reset vote value to 0;
         vote.votes[msg.sender] = 0;
+        vote.voters -= 1;
 
         emit RevokeVote(
             proposalId,
@@ -383,14 +385,14 @@ contract GPVotingContract is
         )
     {
         GPVoting storage vote = votes[address(dao)][proposalId];
-        if (vote.startingTime == 0) {
+        if (block.timestamp <= vote.startingTime) {
             return (VotingState.NOT_STARTED, vote.nbYes, vote.nbNo);
         }
 
         if (
             // slither-disable-next-line timestamp
             block.timestamp <
-            vote.startingTime + dao.getConfiguration(VotingPeriod)
+            vote.startingTime + dao.getConfiguration(ProposalDuration)
         ) {
             return (VotingState.IN_PROGRESS, vote.nbYes, vote.nbNo);
         }
@@ -399,18 +401,55 @@ contract GPVotingContract is
             // slither-disable-next-line timestamp
             block.timestamp <
             vote.startingTime +
-                dao.getConfiguration(VotingPeriod) +
+                dao.getConfiguration(ProposalDuration) +
                 dao.getConfiguration(GracePeriod)
         ) {
             return (VotingState.GRACE_PERIOD, vote.nbYes, vote.nbNo);
         }
 
-        if (vote.nbYes > vote.nbNo) {
-            return (VotingState.PASS, vote.nbYes, vote.nbNo);
-        } else if (vote.nbYes < vote.nbNo) {
-            return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
+        DaoHelper.VoteType voteType = DaoHelper.VoteType(
+            dao.getProposalVoteType(proposalId)
+        );
+        uint256 gpAmount = GPDaoExtension(
+            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
+        ).getAllGPs().length;
+
+        // rule out any failed quorums
+        if (
+            voteType == DaoHelper.VoteType.SIMPLE_MAJORITY_QUORUM_REQUIRED ||
+            voteType == DaoHelper.VoteType.SUPERMAJORITY_QUORUM_REQUIRED
+        ) {
+            uint256 minVoters = (gpAmount *
+                dao.getConfiguration(DaoHelper.QUORUM)) / 100;
+
+            unchecked {
+                if (vote.voters < minVoters)
+                    return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
+            }
+        }
+
+        // simple majority check
+        if (
+            voteType == DaoHelper.VoteType.SIMPLE_MAJORITY ||
+            voteType == DaoHelper.VoteType.SIMPLE_MAJORITY_QUORUM_REQUIRED
+        ) {
+            if (vote.nbYes > vote.nbNo)
+                return (VotingState.PASS, vote.nbYes, vote.nbNo);
+            else if (vote.nbYes < vote.nbNo) {
+                return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
+            } else {
+                return (VotingState.TIE, vote.nbYes, vote.nbNo);
+            }
+            // supermajority check
         } else {
-            return (VotingState.TIE, vote.nbYes, vote.nbNo);
+            // example: 7 yes, 2 no, supermajority = 66
+            // ((7+2) * 66) / 100 = 5.94; 7 yes will pass
+            uint256 minYes = ((vote.nbYes + vote.nbNo) *
+                dao.getConfiguration(DaoHelper.SUPER_MAJORITY)) / 100;
+
+            if (vote.nbYes >= minYes)
+                return (VotingState.PASS, vote.nbYes, vote.nbNo);
+            else return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
         }
     }
 
