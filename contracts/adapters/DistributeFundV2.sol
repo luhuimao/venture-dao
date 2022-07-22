@@ -14,8 +14,10 @@ import "../helpers/DaoHelper.sol";
 import "../extensions/bank/Bank.sol";
 import "../extensions/fundingpool/FundingPool.sol";
 import "../extensions/ricestaking/RiceStaking.sol";
+import "../utils/TypeConver.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "hardhat/console.sol";
 
 /**
@@ -66,8 +68,10 @@ contract DistributeFundContractV2 is
         uint256 requestedFundAmount,
         uint256 fullyReleasedDate,
         uint256 lockupDate,
-        uint256 voteStartingTime,
-        uint256 projectDisplayTimestamp
+        uint256 inQueueTimestamp,
+        uint256 voteStartingTimestamp,
+        uint256 voteEndTimestamp,
+        uint256 proposalExecuteTimestamp
     );
     event ProposalExecuted(
         bytes32 proposalID,
@@ -87,28 +91,18 @@ contract DistributeFundContractV2 is
 
     // State of the distribution proposal
     struct Distribution {
-        // The token in which the project team to trade off.
-        address tokenAddr;
-        //project token amount for trading off
-        uint256 tradingOffTokenAmount;
-        // The amount project team requested.
-        uint256 requestedFundAmount;
-        //  tokens will be fully released due to this time linearly. Must be equal or later than Tokens lock-up date
-        uint256 fullyReleasedDate;
-        //tokens will be locked untill this specific time.
-        uint256 lockupDate;
-        // The receiver address that will receive the funds.
-        address recipientAddr;
-        // The distribution status.
-        DistributionStatus status;
-        // Current iteration index to control the cached for-loop.
-        uint256 currentIndex;
-        // The block number in which the proposal has been created.
-        uint256 blockNumber;
-        //project start voting timestamp
-        uint256 projectVotingTimestamp;
+        address tokenAddr; // The token in which the project team to trade off.
+        uint256 tradingOffTokenAmount; //project token amount for trading off
+        uint256 requestedFundAmount; // The amount project team requested.
+        uint256 fullyReleasedDate; //  tokens will be fully released due to this time linearly. Must be equal or later than Tokens lock-up date
+        uint256 lockupDate; //tokens will be locked untill this specific time.
+        address recipientAddr; // The receiver address that will receive the funds.
+        DistributionStatus status; // The distribution status.
+        uint256 inQueueTimestamp;
+        uint256 proposalStartVotingTimestamp; //project start voting timestamp
+        uint256 proposalStopVotingTimestamp;
+        uint256 proposalExecuteTimestamp;
         //project display timestamp
-        uint256 projectDisplayTimestamp;
     }
     // bytes32 constant RiceTokenAddr = keccak256("rice.token.address");
     // bytes32 constant ProposalDuration =
@@ -126,6 +120,9 @@ contract DistributeFundContractV2 is
     mapping(bytes32 => DaoHelper.VoteType) public proposalVoteTypes;
 
     DoubleEndedQueue.Bytes32Deque public proposalQueue;
+
+    string constant PROPOSALID_PREFIX = "TFP";
+    uint256 public proposalIds = 100000;
 
     /**
      * @notice Configures the DAO with the Voting and Gracing periods.
@@ -215,8 +212,12 @@ contract DistributeFundContractV2 is
         IGPVoting gpVotingContract;
         FundingPoolExtension fundingpool;
         address submittedBy;
-        uint256 projectVotingTimestamp;
+        bytes32 proposalId;
+        uint256 proposalInQueueTimestamp;
         uint256 projectDisplayTimestamp;
+        uint256 proposalStartVotingTimestamp;
+        uint256 proposalEndVotingTimestamp;
+        uint256 proposalExecuteTimestamp;
     }
 
     /**
@@ -225,7 +226,6 @@ contract DistributeFundContractV2 is
      * @dev Proposal ids can not be reused.
      * @dev The amount must be greater than zero.
      * @param dao The dao address.
-     * @param proposalId The distribution proposal id.
      * @param _addressArgs _addressArgs[0]:recipientAddr,_addressArgs[1]:tokenAddr
      * @param _uint256ArgsProposal _uint256ArgsProposal[0]:requestedFundAmount,
                                     _uint256ArgsProposal[1]:tradingOffTokenAmount,
@@ -235,15 +235,21 @@ contract DistributeFundContractV2 is
     // slither-disable-next-line reentrancy-benign
     function submitProposal(
         DaoRegistry dao,
-        bytes32 proposalId,
+        // bytes32 proposalId,
         address[] calldata _addressArgs,
         uint256[] calldata _uint256ArgsProposal,
         DaoHelper.VoteType voteType
-    ) external override onlyGeneralPartner(dao) reimbursable(dao) {
-        require(
-            proposalId != bytes32(0),
-            "DistributeFund::submitProposal::invalid proposalId"
-        );
+    )
+        external
+        override
+        onlyGeneralPartner(dao)
+        reimbursable(dao)
+        returns (bytes32 proposalId)
+    {
+        // require(
+        //     proposalId != bytes32(0),
+        //     "DistributeFund::submitProposal::invalid proposalId"
+        // );
         SubmitProposalLocalVars memory vars;
 
         vars.gpVotingContract = IGPVoting(
@@ -272,44 +278,59 @@ contract DistributeFundContractV2 is
             _addressArgs[0] != address(0x0),
             "DistributeFund::submitProposal::invalid receiver address"
         );
+
+        vars.proposalId = TypeConver.bytesToBytes32(
+            abi.encodePacked("TFP", Strings.toString(proposalIds))
+        );
         //set vote type
-        dao.setVoteType(proposalId, uint32(voteType));
+        dao.setVoteType(vars.proposalId, uint32(voteType));
         // Creates the distribution proposal.
-        dao.submitProposal(proposalId);
+        dao.submitProposal(vars.proposalId);
 
         // Saves the state of the proposal.
         createNewDistribution(
             dao,
-            proposalId,
+            vars.proposalId,
             _addressArgs,
             _uint256ArgsProposal
         );
-        vars.projectDisplayTimestamp = distributions[address(dao)][proposalId]
-            .projectDisplayTimestamp;
-        vars.projectVotingTimestamp = distributions[address(dao)][proposalId]
-            .projectVotingTimestamp;
 
+        vars.proposalInQueueTimestamp = block.timestamp;
+        vars.proposalStartVotingTimestamp = distributions[address(dao)][
+            vars.proposalId
+        ].proposalStartVotingTimestamp;
+        vars.proposalEndVotingTimestamp =
+            vars.proposalStartVotingTimestamp +
+            dao.getConfiguration(DaoHelper.PROPOSAL_DURATION);
+        vars.proposalExecuteTimestamp =
+            vars.proposalEndVotingTimestamp +
+            dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION);
+
+        // Sponsors the proposal.
         dao.sponsorProposal(
-            // Sponsors the proposal.
-            proposalId,
+            vars.proposalId,
             vars.submittedBy,
             address(vars.gpVotingContract)
         );
 
         //Inserts proposal at the end of the queue.
-        proposalQueue.pushBack(proposalId);
-        distributions[address(dao)][proposalId].status = DistributionStatus
+        proposalQueue.pushBack(vars.proposalId);
+        distributions[address(dao)][vars.proposalId].status = DistributionStatus
             .IN_QUEUE;
+
+        proposalIds += 1;
         emit ProposalCreated(
-            proposalId,
+            vars.proposalId,
             _addressArgs[1],
             _addressArgs[0],
             _uint256ArgsProposal[1],
             _uint256ArgsProposal[0],
             _uint256ArgsProposal[2],
             _uint256ArgsProposal[3],
-            vars.projectVotingTimestamp,
-            vars.projectDisplayTimestamp
+            vars.proposalInQueueTimestamp,
+            vars.proposalStartVotingTimestamp,
+            vars.proposalEndVotingTimestamp,
+            vars.proposalExecuteTimestamp
         );
     }
 
@@ -319,10 +340,13 @@ contract DistributeFundContractV2 is
         address[] calldata _addressArgs,
         uint256[] calldata _uint256ArgsProposal
     ) internal {
-        uint256 _projectVotingTimestamp = computeProjectVotingTimestamp(dao);
-        // uint256 _projectDisplayTimestamp = _projectVotingTimestamp -
-        //     dao.getConfiguration(ProposalInterval);
-        uint256 _projectDisplayTimestamp = _projectVotingTimestamp;
+        uint256 _propsalStartVotingTimestamp = computeProjectVotingTimestamp(
+            dao
+        );
+        uint256 _propsalStopVotingTimestamp = _propsalStartVotingTimestamp +
+            dao.getConfiguration(DaoHelper.PROPOSAL_DURATION);
+        uint256 _proposalExecuteTimestamp = _propsalStopVotingTimestamp +
+            dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION);
         distributions[address(dao)][proposalId] = Distribution(
             _addressArgs[1],
             _uint256ArgsProposal[1],
@@ -331,10 +355,10 @@ contract DistributeFundContractV2 is
             _uint256ArgsProposal[3],
             _addressArgs[0],
             DistributionStatus.IN_QUEUE,
-            0,
             block.timestamp,
-            _projectVotingTimestamp,
-            _projectDisplayTimestamp
+            _propsalStartVotingTimestamp,
+            _propsalStopVotingTimestamp,
+            _proposalExecuteTimestamp
         );
     }
 
@@ -360,7 +384,7 @@ contract DistributeFundContractV2 is
             proposalId
         ];
         require(
-            block.timestamp > distribution.projectDisplayTimestamp,
+            block.timestamp > distribution.proposalStartVotingTimestamp,
             "DistributeFund::startVotingProcess::in project display process"
         );
 
@@ -416,7 +440,7 @@ contract DistributeFundContractV2 is
         gpVotingContract.startNewVotingForProposal(
             dao,
             proposalId,
-            distribution.projectVotingTimestamp,
+            distribution.proposalStartVotingTimestamp,
             bytes("")
         );
         // snap funds
@@ -495,7 +519,7 @@ contract DistributeFundContractV2 is
 
         if (vars.voteResult == IGPVoting.VotingState.PASS) {
             distribution.status = DistributionStatus.IN_EXECUTE_PROGRESS;
-            distribution.blockNumber = block.number;
+            // distribution.blockNumber = block.number;
             ongoingDistributions[address(dao)] = proposalId;
 
             //set project sanp funds/rice to total funds/rice
@@ -571,9 +595,7 @@ contract DistributeFundContractV2 is
         if (proposalQueue.length() > 0) {
             bytes32 lastProposalId = proposalQueue.back();
             uint256 timestamp = distributions[address(dao)][lastProposalId]
-                .projectVotingTimestamp +
-                dao.getConfiguration(DaoHelper.PROPOSAL_DURATION) +
-                dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION) +
+                .proposalExecuteTimestamp +
                 dao.getConfiguration(DaoHelper.PROPOSAL_INTERVAL);
             return timestamp;
         }

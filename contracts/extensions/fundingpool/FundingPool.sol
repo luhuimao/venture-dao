@@ -439,6 +439,7 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
             address(DaoHelper.DAOSQUARE_FUNDS),
             token
         ) + chargedAmount;
+        uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL), token);
         uint256 totalFunds = balanceOf(
             address(DaoHelper.DAOSQUARE_TREASURY),
             token
@@ -453,6 +454,14 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
             snapFunds
         ) {
             revert("FundingPool::addToBalance::total funds exceed snap funds");
+        }
+
+        if (DaoHelper.ifGP(member, dao)) {
+            _createNewAmountCheckpoint(
+                address(DaoHelper.GP_POOL),
+                token,
+                totalGPFunds + effectedAmount
+            );
         }
         erc20.transferFrom(msg.sender, address(this), amount);
 
@@ -620,6 +629,14 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
             token,
             newTotalFund
         );
+        if (DaoHelper.ifGP(member, dao)) {
+            uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL), token);
+            _createNewAmountCheckpoint(
+                address(DaoHelper.GP_POOL),
+                token,
+                totalGPFunds - amount
+            );
+        }
         if (newAmount <= 0) {
             _removeInvestor(member);
         }

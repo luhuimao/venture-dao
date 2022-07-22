@@ -1,5 +1,6 @@
 pragma solidity ^0.8.0;
 import "../extensions/bank/Bank.sol";
+import "../extensions/gpdao/GPDao.sol";
 import "../core/DaoRegistry.sol";
 
 // SPDX-License-Identifier: MIT
@@ -221,6 +222,16 @@ library DaoHelper {
     function removeMember(address memberAddress, DaoRegistry dao) internal {
         require(memberAddress != address(0x0), "invalid member address");
         dao.removeMember(memberAddress);
+    }
+
+    function ifGP(address memberAddress, DaoRegistry dao)
+        internal
+        view
+        returns (bool)
+    {
+        return
+            GPDaoExtension(dao.getExtensionAddress(DaoHelper.GPDAO_EXT))
+                .isGeneralPartner(memberAddress);
     }
 
     /**

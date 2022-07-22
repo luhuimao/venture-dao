@@ -32,11 +32,11 @@ SOFTWARE.
 interface IFunding {
     function submitProposal(
         DaoRegistry dao,
-        bytes32 proposalId,
+        // bytes32 proposalId,
         address[] calldata _addressArgs,
         uint256[] calldata _uint256ArgsProposal,
         DaoHelper.VoteType voteType
-    ) external;
+    ) external returns (bytes32 proposalId);
 
     function processProposal(DaoRegistry dao, bytes32 proposalId) external;
 
