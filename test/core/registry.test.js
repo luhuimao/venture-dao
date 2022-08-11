@@ -27,6 +27,7 @@ const {
   fromAscii,
   fromUtf8,
   ETH_TOKEN,
+  sha3
 } = require("../../utils/contract-util");
 
 const {
@@ -37,7 +38,46 @@ const {
   accounts,
 } = require("../../utils/oz-util");
 
+import { deployDefaultDao, takeChainSnapshot, revertChainSnapshot, proposalIdGenerator, expect, expectRevert, web3 } from "../../utils/hh-util";
+
+const hre = require("hardhat");
+
 describe("Core - Registry", () => {
+  before("deploy dao", async () => {
+    let [owner, user1, user2, investor1, investor2, gp1, gp2, project_team1, project_team2] = await hre.ethers.getSigners();
+    this.owner = owner;
+    this.user1 = user1;
+    this.user2 = user2;
+    this.investor1 = investor1;
+    this.investor2 = investor2;
+    this.gp1 = gp1;
+    this.gp2 = gp2;
+    this.project_team1 = project_team1;
+    this.project_team2 = project_team2;
+
+    const { dao, adapters, extensions, testContracts } = await deployDefaultDao({
+      owner: owner,
+    });
+    this.adapters = adapters;
+    this.extensions = extensions;
+    this.dao = dao;
+    this.testContracts = testContracts;
+    this.testtoken1 = testContracts.testToken1.instance
+    this.testtoken2 = testContracts.testToken2.instance
+    this.fundingPoolExt = this.extensions.fundingpoolExt.functions;
+    this.gpdaoExt = this.extensions.gpDaoExt.functions;
+    this.streamingPayment = this.adapters.sablierAdapter.instance;
+    // this.manageMember = this.adapters.manageMemberAdapter.instance;
+    this.allocationAdapter = this.adapters.allocation.instance;
+    this.gpvoting = this.adapters.gpVotingAdapter.instance;
+    // this.distributefund = this.adapters.distributeFundAdapter.instance;
+    this.fundingpoolAdapter = this.adapters.fundingpoolAdapter.instance;
+    this.gpdaoAdapter = this.adapters.gpdaoAdapter.instance;
+    this.snapshotId = await takeChainSnapshot();
+
+    console.log("dao member 1 addr: ", (await dao.getMemberAddress(0)));
+    console.log("dao member 2 addr: ", (await dao.getMemberAddress(1)));
+  });
   it("should not be possible to add a module with invalid id", async () => {
     let moduleId = fromUtf8("");
     let moduleAddress = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57";
@@ -127,7 +167,7 @@ describe("Core - Registry", () => {
         to: registry.address,
         from: accounts[0],
         gasPrice: toBN("0"),
-        value: toWei(toBN("1"), "ether"),
+        value: toWei("1", "ether"),
       }),
       "revert"
     );
@@ -140,10 +180,36 @@ describe("Core - Registry", () => {
         to: registry.address,
         from: accounts[0],
         gasPrice: toBN("0"),
-        value: toWei(toBN("1"), "ether"),
+        value: toWei("1", "ether"),
         data: fromAscii("should go to fallback func"),
       }),
       "revert"
     );
   });
+
+  it("should be possible to set configuration", async () => {
+    await this.dao.setConfigurationByMember(sha3("voting.votingPeriod"), 60 * 5);
+    console.log(`voting.votingPeriod: ${await this.dao.getConfiguration(sha3("voting.votingPeriod"))}`);
+    expect(await this.dao.getConfiguration(sha3("voting.votingPeriod"))).equal(60 * 5);
+  });
+
+  it("should be no possible to set configuration by non member", async () => {
+    console.log("key voting.votingPeriod: ", sha3("voting.votingPeriod"));
+    console.log(`key voting.gracePeriod: ${sha3("voting.gracePeriod")}`);
+    console.log(`key allocation.gpAllocationBonusRadio: ${sha3("allocation.gpAllocationBonusRadio")}`);
+    console.log(`key allocation.riceStakeAllocationRadio: ${sha3("allocation.riceStakeAllocationRadio")}`);
+    console.log("key voting.gpOnboardingVotingPeriod: ", sha3("voting.gpOnboardingVotingPeriod"));
+    console.log(`key voting.gpOnboardingVotingGracePeriod: ${sha3("voting.gpOnboardingVotingGracePeriod")}`);
+
+    console.log(`key distributeFund.proposalDuration: ${sha3("distributeFund.proposalDuration")}`);
+    console.log(`key distributeFund.proposalInterval: ${sha3("distributeFund.proposalInterval")}`);
+    console.log(`key distributeFund.proposalExecuteDuration: ${sha3("distributeFund.proposalExecuteDuration")}`);
+
+    console.log(`voting.votingPeriod: ${await this.dao.getConfiguration(sha3("voting.votingPeriod"))}`);
+    console.log(`voting.gracePeriod: ${await this.dao.getConfiguration(sha3("voting.gracePeriod"))}`);
+    console.log(`allocation.gpAllocationBonusRadio: ${await this.dao.getConfiguration(sha3("allocation.gpAllocationBonusRadio"))}`);
+    console.log(`allocation.riceStakeAllocationRadio: ${await this.dao.getConfiguration(sha3("allocation.riceStakeAllocationRadio"))}`);
+    await expectRevert(this.dao.connect(this.user1).setConfigurationByMember(sha3("voting.votingPeriod"), 60 * 5), "revert");
+  });
+
 });
