@@ -202,8 +202,7 @@ contract DistributeFundContract is
         DaoRegistry dao,
         bytes32 proposalId,
         address[] calldata _addressArgs,
-        uint256[] calldata _uint256ArgsProposal,
-        DaoHelper.VoteType voteType
+        uint256[] calldata _uint256ArgsProposal
     ) external override onlyMember(dao) reimbursable(dao) {
         require(
             proposalId != bytes32(0),
@@ -269,8 +268,7 @@ contract DistributeFundContract is
         projectTeamLockedTokens[address(dao)][proposalId][
             _addressArgs[0]
         ] = _uint256ArgsProposal[1];
-        //set vote type
-        dao.setVoteType(proposalId, uint32(voteType));
+      
         // Creates the distribution proposal.
         dao.submitProposal(proposalId);
 

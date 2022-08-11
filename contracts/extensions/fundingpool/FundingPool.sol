@@ -121,7 +121,7 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
     /* ========== STATE VARIABLES ========== */
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
-    uint256 public rewardsDuration = 7 days;
+    uint256 public rewardsDuration = 604800; //7 days;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
 
@@ -530,6 +530,10 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         updateReward(address(0))
         hasExtensionAccess(AclFlag.NOTIFY_REWARD_AMOUNT)
     {
+        require(
+            rewardsDuration > 0,
+            "FundingPool Ext::notifyRewardAmount::rewardsDuration Invalid"
+        );
         if (block.timestamp >= periodFinish) {
             rewardRate = reward.div(rewardsDuration);
         } else {

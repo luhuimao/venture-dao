@@ -47,7 +47,7 @@ interface IGPOnboardingVoting {
     ) external;
 
     function getSenderAddress(
-        DaoRegistry dao, 
+        DaoRegistry dao,
         address actionId,
         bytes memory data,
         address sender
@@ -55,5 +55,9 @@ interface IGPOnboardingVoting {
 
     function voteResult(DaoRegistry dao, bytes32 proposalId)
         external
-        returns (VotingState state);
+        returns (
+            VotingState state,
+            uint128 nbYes,
+            uint128 nbNo
+        );
 }

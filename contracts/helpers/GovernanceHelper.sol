@@ -6,6 +6,7 @@ import "../helpers/DaoHelper.sol";
 import "../core/DaoRegistry.sol";
 import "../extensions/bank/Bank.sol";
 import "../extensions/fundingpool/FundingPool.sol";
+import "../extensions/gpdao/GPDao.sol";
 import "../extensions/token/erc20/ERC20TokenExtension.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
@@ -108,6 +109,22 @@ library GovernanceHelper {
         }
     }
 
+    function getAllGPVotingWeight(DaoRegistry dao, address token)
+        internal
+        view
+        returns (uint128)
+    {
+        address[] memory gps = GPDaoExtension(
+            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
+        ).getAllGPs();
+
+        uint128 allGPweight;
+        for (uint8 i = 0; i < gps.length; i++) {
+            allGPweight += getGPVotingWeight(dao, gps[i], token);
+        }
+        return allGPweight;
+    }
+
     function getGPVotingWeight(
         DaoRegistry dao,
         address voterAddr,
@@ -125,10 +142,7 @@ library GovernanceHelper {
         if (balanceInEther >= 9223372036854775807) {
             return 50;
         }
-        // require(
-        //     balanceInEther > 0 && balanceInEther < 9223372036854775807,
-        //     "Helper::getGPVotingWeight::gp balance out of range"
-        // );
+
         uint128 weight;
         if (fundingpool.isTokenAllowed(token)) {
             if (

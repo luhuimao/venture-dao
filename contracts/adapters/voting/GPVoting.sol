@@ -408,7 +408,7 @@ contract GPVotingContract is
         }
 
         DaoHelper.VoteType voteType = DaoHelper.VoteType(
-            dao.getProposalVoteType(proposalId)
+            dao.getProposalVoteType(DaoHelper.ProposalType.FUNDING)
         );
         uint256 gpAmount = GPDaoExtension(
             dao.getExtensionAddress(DaoHelper.GPDAO_EXT)

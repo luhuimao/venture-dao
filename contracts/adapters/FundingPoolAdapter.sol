@@ -150,7 +150,7 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         fundingpool.registerPotentialNewToken(_tokenAddr);
     }
 
-    function getRiceReward(DaoRegistry dao) external {
+    function claimeRiceReward(DaoRegistry dao) external {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );

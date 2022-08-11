@@ -35,7 +35,21 @@ library DaoHelper {
         SUPERMAJORITY,
         SUPERMAJORITY_QUORUM_REQUIRED
     }
-
+    enum ProposalType {
+        FUNDING, // funding proposal
+        MEMBERSHIP, // add membership
+        KICK, // revoke membership
+        CALL, // call contracts
+        VPERIOD, // set `votingPeriod`
+        GPERIOD, // set `gracePeriod`
+        QUORUM, // set `quorum`
+        SUPERMAJORITY, // set `supermajority`
+        TYPE, // set `VoteType` to `ProposalType`
+        PAUSE, // flip membership transferability
+        EXTENSION, // flip `extensions` whitelisting
+        ESCAPE, // delete pending proposal in case of revert
+        DOCS // amend org docs
+    }
     // Adapters
     bytes32 internal constant GP_ONBOARDING_ADAPT =
         keccak256("gp-dao-onboarding");

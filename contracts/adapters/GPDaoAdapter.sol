@@ -36,20 +36,6 @@ SOFTWARE.
  */
 
 contract GPDaoAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
-   
-
-    function registerNewGP(DaoRegistry dao, address newGPAddr)
-        external
-        onlyMember(dao)
-        reimbursable(dao)
-    {
-        GPDaoExtension gpdao = GPDaoExtension(
-            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
-        );
-
-        gpdao.registerGeneralPartner(newGPAddr);
-    }
-
     function gpQuit(DaoRegistry dao)
         external
         onlyGeneralPartner(dao)

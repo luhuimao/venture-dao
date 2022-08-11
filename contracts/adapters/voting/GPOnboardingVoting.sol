@@ -44,14 +44,22 @@ contract GPOnboardVotingContract is
     Reimbursable
 {
     struct Voting {
-        uint256 nbYes;
-        uint256 nbNo;
+        uint128 nbYes;
+        uint128 nbNo;
         uint256 startingTime;
         uint256 blockNumber;
         mapping(address => uint256) votes;
     }
 
-    event SubmitVote(bytes32 proposalId, uint256 voteValue);
+    event SubmitVote(
+        bytes32 proposalId,
+        uint256 voteTime,
+        address voter,
+        uint256 voteValue,
+        uint128 votingWeight,
+        uint128 nbYes,
+        uint128 nbNo
+    );
 
     bytes32 constant VotingPeriod =
         keccak256("voting.gpOnboardingVotingPeriod");
@@ -166,12 +174,31 @@ contract GPOnboardVotingContract is
 
         vote.votes[memberAddr] = voteValue;
 
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        address token = fundingpool.getToken(0);
+
+        uint128 votingWeight = GovernanceHelper.getGPVotingWeight(
+            dao,
+            msg.sender,
+            token
+        );
+
         if (voteValue == 1) {
-            vote.nbYes += 1;
+            vote.nbYes = vote.nbYes + votingWeight;
         } else if (voteValue == 2) {
-            vote.nbNo += 1;
+            vote.nbNo = vote.nbNo + votingWeight;
         }
-        emit SubmitVote(proposalId, voteValue);
+        emit SubmitVote(
+            proposalId,
+            block.timestamp,
+            msg.sender,
+            voteValue,
+            votingWeight,
+            vote.nbYes,
+            vote.nbNo
+        );
     }
 
     /**
@@ -190,12 +217,16 @@ contract GPOnboardVotingContract is
         external
         view
         override
-        returns (VotingState state)
+        returns (
+            VotingState state,
+            uint128 nbYes,
+            uint128 nbNo
+        )
     {
         Voting storage vote = votes[address(dao)][proposalId];
 
         if (vote.startingTime == 0) {
-            return VotingState.NOT_STARTED;
+            return (VotingState.NOT_STARTED, vote.nbYes, vote.nbNo);
         }
 
         if (
@@ -203,7 +234,7 @@ contract GPOnboardVotingContract is
             block.timestamp <
             vote.startingTime + dao.getConfiguration(VotingPeriod)
         ) {
-            return VotingState.IN_PROGRESS;
+            return (VotingState.IN_PROGRESS, vote.nbYes, vote.nbNo);
         }
         if (
             // slither-disable-next-line timestamp
@@ -212,30 +243,36 @@ contract GPOnboardVotingContract is
                 dao.getConfiguration(VotingPeriod) +
                 dao.getConfiguration(GracePeriod)
         ) {
-            return VotingState.GRACE_PERIOD;
+            return (VotingState.GRACE_PERIOD, vote.nbYes, vote.nbNo);
         }
 
         DaoHelper.VoteType voteType = DaoHelper.VoteType(
-            dao.getProposalVoteType(proposalId)
+            dao.getProposalVoteType(DaoHelper.ProposalType.MEMBERSHIP)
         );
-        uint256 gpAmount = GPDaoExtension(
-            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
-        ).getAllGPs().length;
+        // uint256 gpAmount = GPDaoExtension(
+        //     dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
+        // ).getAllGPs().length;
 
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        address token = fundingpool.getToken(0);
+        uint128 allGPsWeight = GovernanceHelper.getAllGPVotingWeight(
+            dao,
+            token
+        );
         // rule out any failed quorums
         if (
             voteType == DaoHelper.VoteType.SIMPLE_MAJORITY_QUORUM_REQUIRED ||
             voteType == DaoHelper.VoteType.SUPERMAJORITY_QUORUM_REQUIRED
         ) {
-            uint256 minVotes = (gpAmount *
+            uint256 minVotes = (allGPsWeight *
                 dao.getConfiguration(DaoHelper.QUORUM)) / 100;
 
-            // this is safe from overflow because `yesVotes` and `noVotes`
-            // supply are checked in `KaliDAOtoken` contract
             unchecked {
                 uint256 votes = vote.nbYes + vote.nbNo;
-
-                if (votes < minVotes) return VotingState.NOT_PASS;
+                if (votes < minVotes)
+                    return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
             }
         }
 
@@ -244,11 +281,12 @@ contract GPOnboardVotingContract is
             voteType == DaoHelper.VoteType.SIMPLE_MAJORITY ||
             voteType == DaoHelper.VoteType.SIMPLE_MAJORITY_QUORUM_REQUIRED
         ) {
-            if (vote.nbYes > vote.nbNo) return VotingState.PASS;
+            if (vote.nbYes > vote.nbNo)
+                return (VotingState.PASS, vote.nbYes, vote.nbNo);
             else if (vote.nbYes < vote.nbNo) {
-                return VotingState.NOT_PASS;
+                return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
             } else {
-                return VotingState.TIE;
+                return (VotingState.TIE, vote.nbYes, vote.nbNo);
             }
             // supermajority check
         } else {
@@ -257,16 +295,9 @@ contract GPOnboardVotingContract is
             uint256 minYes = ((vote.nbYes + vote.nbNo) *
                 dao.getConfiguration(DaoHelper.SUPER_MAJORITY)) / 100;
 
-            if (vote.nbYes >= minYes) return VotingState.PASS;
-            else return VotingState.NOT_PASS;
+            if (vote.nbYes >= minYes)
+                return (VotingState.PASS, vote.nbYes, vote.nbNo);
+            else return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
         }
-
-        // if (vote.nbYes > vote.nbNo) {
-        //     return VotingState.PASS;
-        // } else if (vote.nbYes < vote.nbNo) {
-        //     return VotingState.NOT_PASS;
-        // } else {
-        //     return VotingState.TIE;
-        // }
     }
 }

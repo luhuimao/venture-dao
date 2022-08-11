@@ -32,9 +32,7 @@ SOFTWARE.
 interface IGPKick {
     function submitProposal(
         DaoRegistry dao,
-        bytes32 proposalId,
-        address gpToKick,
-        DaoHelper.VoteType voteType
+        address gpToKick
     ) external;
 
     function processProposal(DaoRegistry dao, bytes32 proposalId) external;

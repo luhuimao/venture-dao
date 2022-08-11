@@ -9,6 +9,8 @@ import "./interfaces/IGPKick.sol";
 import "../adapters/interfaces/IGPOnboardingVoting.sol";
 import "../helpers/DaoHelper.sol";
 import "../extensions/gpdao/GPDao.sol";
+import "../utils/TypeConver.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "hardhat/console.sol";
 
 /**
@@ -35,20 +37,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract GPKickAdapterContract is IGPKick, AdapterGuard, Reimbursable {
+contract GPKickAdapterContract is
+    IGPKick,
+    AdapterGuard,
+    Reimbursable,
+    MemberGuard
+{
+    enum ProposalState {
+        Voting,
+        Executing,
+        Done,
+        Failed
+    }
     // State of the gp kick proposal
-    struct GPKick {
+    struct GPKickProposal {
         // The address of the GP to kick out of the DAO.
         address gpToKick;
+        ProposalState state;
+        uint256 creationTime;
+        uint256 stopVoteTime;
     }
 
-    event ProposalCreated(bytes32 proposalId, address gpToKick);
+    event ProposalCreated(
+        bytes32 proposalId,
+        address gpToKick,
+        uint256 creationTime,
+        uint256 stopVoteTime
+    );
     event ProposalProcessed(
         bytes32 proposalId,
-        IGPOnboardingVoting.VotingState voteRelsult
+        IGPOnboardingVoting.VotingState voteRelsult,
+        ProposalState state,
+        uint128 nbYes,
+        uint128 nbNo
     );
     // Keeps track of all the kicks executed per DAO.
-    mapping(address => mapping(bytes32 => GPKick)) public kicks;
+    mapping(address => mapping(bytes32 => GPKickProposal)) public kickProposals;
+    uint256 public proposalIds = 100001;
 
     /**
      * @notice Creates a gp kick proposal, opens it for voting, and sponsors it.
@@ -57,16 +82,15 @@ contract GPKickAdapterContract is IGPKick, AdapterGuard, Reimbursable {
      * @dev Only members that have units or loot can be kicked out.
      * @dev Proposal ids can not be reused.
      * @param dao The dao address.
-     * @param proposalId The guild kick proposal id.
      * @param gpToKick The gp address that should be kicked out of the DAO.
      */
     // slither-disable-next-line reentrancy-benign
-    function submitProposal(
-        DaoRegistry dao,
-        bytes32 proposalId,
-        address gpToKick,
-        DaoHelper.VoteType voteType
-    ) external override reimbursable(dao) {
+    function submitProposal(DaoRegistry dao, address gpToKick)
+        external
+        override
+        reimbursable(dao)
+        onlyGeneralPartner(dao)
+    {
         IGPOnboardingVoting gpVotingContract = IGPOnboardingVoting(
             dao.getAdapterAddress(DaoHelper.GPONBOARDVOTING_ADAPT)
         );
@@ -88,13 +112,24 @@ contract GPKickAdapterContract is IGPKick, AdapterGuard, Reimbursable {
             submittedBy != gpToKick,
             "GPKick::submitProposal::use ragequit"
         );
-        //set vote type
-        dao.setVoteType(proposalId, uint32(voteType));
+        bytes32 proposalId = TypeConver.bytesToBytes32(
+            abi.encodePacked("TKP", Strings.toString(proposalIds))
+        );
+
         // Creates a guild kick proposal.
         dao.submitProposal(proposalId);
 
+        uint256 creationTime = block.timestamp;
+        uint256 stopVoteTime = creationTime +
+            dao.getConfiguration(DaoHelper.PROPOSAL_DURATION);
+
         // Saves the state of the gp kick proposal.
-        kicks[address(dao)][proposalId] = GPKick(gpToKick);
+        kickProposals[address(dao)][proposalId] = GPKickProposal(
+            gpToKick,
+            ProposalState.Voting,
+            creationTime,
+            stopVoteTime
+        );
 
         // Starts the voting process for the gp kick proposal.
         gpVotingContract.startNewVotingForProposal(dao, proposalId, bytes(""));
@@ -103,8 +138,9 @@ contract GPKickAdapterContract is IGPKick, AdapterGuard, Reimbursable {
 
         // Sponsors the guild kick proposal.
         dao.sponsorProposal(proposalId, submittedBy, address(gpVotingContract));
+        proposalIds += 1;
 
-        emit ProposalCreated(proposalId, gpToKick);
+        emit ProposalCreated(proposalId, gpToKick, creationTime, stopVoteTime);
     }
 
     /**
@@ -125,15 +161,23 @@ contract GPKickAdapterContract is IGPKick, AdapterGuard, Reimbursable {
             dao.votingAdapter(proposalId)
         );
         require(address(votingContract) != address(0), "adapter not found");
-        IGPOnboardingVoting.VotingState votingState = votingContract.voteResult(
-            dao,
+        IGPOnboardingVoting.VotingState votingState;
+        uint128 nbYes;
+        uint128 nbNo;
+        (votingState, nbYes, nbNo) = votingContract.voteResult(dao, proposalId);
+        GPKickProposal storage proposal = kickProposals[address(dao)][
             proposalId
-        );
+        ];
+
         if (votingState == IGPOnboardingVoting.VotingState.PASS) {
+            proposal.state = ProposalState.Executing;
             GPDaoExtension gpdao = GPDaoExtension(
                 dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
             );
-            gpdao.removeGneralPartner(kicks[address(dao)][proposalId].gpToKick);
+            gpdao.removeGneralPartner(
+                kickProposals[address(dao)][proposalId].gpToKick
+            );
+            proposal.state = ProposalState.Done;
             // GuildKickHelper.rageKick(
             //     dao,
             //     kicks[address(dao)][proposalId].memberToKick
@@ -143,10 +187,17 @@ contract GPKickAdapterContract is IGPKick, AdapterGuard, Reimbursable {
             votingState == IGPOnboardingVoting.VotingState.TIE
         ) {
             // dao.unjailMember(kicks[address(dao)][proposalId].memberToKick);
+            proposal.state = ProposalState.Failed;
         } else {
             revert("voting is still in progress");
         }
 
-        emit ProposalProcessed(proposalId, votingState);
+        emit ProposalProcessed(
+            proposalId,
+            votingState,
+            proposal.state,
+            nbYes,
+            nbNo
+        );
     }
 }

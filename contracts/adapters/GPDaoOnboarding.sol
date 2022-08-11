@@ -8,6 +8,8 @@ import "../adapters/interfaces/IGPOnboardingVoting.sol";
 import "../adapters/modifiers/Reimbursable.sol";
 import "../guards/AdapterGuard.sol";
 import "../helpers/DaoHelper.sol";
+import "../utils/TypeConver.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "hardhat/console.sol";
 
 /**
@@ -34,23 +36,47 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract GPDaoOnboardingAdapterContract is AdapterGuard, Reimbursable {
+contract GPDaoOnboardingAdapterContract is
+    AdapterGuard,
+    Reimbursable,
+    MemberGuard
+{
+    enum ProposalState {
+        Voting,
+        Executing,
+        Done,
+        Failed
+    }
     struct ProposalDetails {
         bytes32 id;
         address applicant;
+        uint256 creationTime;
+        uint256 stopVoteTime;
+        ProposalState state;
     }
 
-    event ProposalCreated(bytes32 proposalId, address applicant);
+    event ProposalCreated(
+        bytes32 proposalId,
+        address applicant,
+        uint256 creationTime,
+        uint256 stopVoteTime
+    );
     event ProposalProcessed(
         bytes32 proposalId,
-        IGPOnboardingVoting.VotingState voteRelsult
+        IGPOnboardingVoting.VotingState voteRelsult,
+        ProposalState state,
+        uint128 nbYes,
+        uint128 nbNo
     );
 
     // proposals per dao
     mapping(DaoRegistry => mapping(bytes32 => ProposalDetails))
         public proposals;
     // vote types for proposal
-    mapping(bytes32 => DaoHelper.VoteType) public proposalVoteTypes;
+    // mapping(bytes32 => DaoHelper.VoteType) public proposalVoteTypes;
+
+    // string constant PROPOSALID_PREFIX = "TMP";
+    uint256 public proposalIds = 100000;
 
     /**
      * @notice Updates the DAO registry with the new configurations if valid.
@@ -74,27 +100,44 @@ contract GPDaoOnboardingAdapterContract is AdapterGuard, Reimbursable {
 
     /**
      * @notice Submits and sponsors the proposal. Only members can call this function.
-     * @param proposalId The proposal id to submit to the DAO Registry.
      * @param applicant The applicant address.
      */
     // slither-disable-next-line reentrancy-benign
-    function submitProposal(
-        DaoRegistry dao,
-        bytes32 proposalId,
-        address applicant,
-        DaoHelper.VoteType voteType
-    ) external reimbursable(dao) {
+    function submitProposal(DaoRegistry dao, address applicant)
+        external
+        reimbursable(dao)
+        onlyGeneralPartner(dao)
+        returns (bytes32 proposalId)
+    {
         require(
             DaoHelper.isNotReservedAddress(applicant),
             "applicant is reserved address"
         );
-        //set vote type
-        dao.setVoteType(proposalId, uint32(voteType));
-        _submitMembershipProposal(dao, proposalId, applicant);
+        bytes32 proposalId = TypeConver.bytesToBytes32(
+            abi.encodePacked("TMP", Strings.toString(proposalIds))
+        );
+
+        uint256 startVoteTime = block.timestamp;
+        uint256 stopVoteTime = startVoteTime +
+            dao.getConfiguration(DaoHelper.PROPOSAL_DURATION);
+
+        _submitMembershipProposal(
+            dao,
+            proposalId,
+            applicant,
+            startVoteTime,
+            stopVoteTime
+        );
 
         _sponsorProposal(dao, proposalId, bytes(""));
+        proposalIds += 1;
 
-        emit ProposalCreated(proposalId, applicant);
+        emit ProposalCreated(
+            proposalId,
+            applicant,
+            startVoteTime,
+            stopVoteTime
+        );
     }
 
     /**
@@ -121,30 +164,38 @@ contract GPDaoOnboardingAdapterContract is AdapterGuard, Reimbursable {
         // IVoting votingContract = IVoting(dao.votingAdapter(proposalId));
         require(address(votingContract) != address(0), "adapter not found");
 
-        IGPOnboardingVoting.VotingState voteResult = votingContract.voteResult(
-            dao,
-            proposalId
-        );
+        IGPOnboardingVoting.VotingState voteResult;
+        uint128 nbYes;
+        uint128 nbNo;
+        (voteResult, nbYes, nbNo) = votingContract.voteResult(dao, proposalId);
 
         dao.processProposal(proposalId);
 
         if (voteResult == IGPOnboardingVoting.VotingState.PASS) {
+            proposal.state = ProposalState.Executing;
             address applicant = proposal.applicant;
             GPDaoExtension gpdao = GPDaoExtension(
                 dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
             );
 
             gpdao.registerGeneralPartner(applicant);
+            proposal.state = ProposalState.Done;
         } else if (
             voteResult == IGPOnboardingVoting.VotingState.NOT_PASS ||
             voteResult == IGPOnboardingVoting.VotingState.TIE
         ) {
-            //do nothing
+            proposal.state = ProposalState.Failed;
         } else {
             revert("proposal has not been voted on yet");
         }
 
-        emit ProposalProcessed(proposalId, voteResult);
+        emit ProposalProcessed(
+            proposalId,
+            voteResult,
+            proposal.state,
+            nbYes,
+            nbNo
+        );
     }
 
     /**
@@ -176,7 +227,9 @@ contract GPDaoOnboardingAdapterContract is AdapterGuard, Reimbursable {
     function _submitMembershipProposal(
         DaoRegistry dao,
         bytes32 proposalId,
-        address applicant
+        address applicant,
+        uint256 startVoteTime,
+        uint256 stopVoteTime
     ) internal {
         GPDaoExtension gpdao = GPDaoExtension(
             dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
@@ -186,7 +239,13 @@ contract GPDaoOnboardingAdapterContract is AdapterGuard, Reimbursable {
             "GPDaoOnboarding::submitProposal::applicant existed"
         );
 
-        proposals[dao][proposalId] = ProposalDetails(proposalId, applicant);
+        proposals[dao][proposalId] = ProposalDetails(
+            proposalId,
+            applicant,
+            startVoteTime,
+            stopVoteTime,
+            ProposalState.Voting
+        );
 
         dao.submitProposal(proposalId);
     }

@@ -93,6 +93,21 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         SUPERMAJORITY,
         SUPERMAJORITY_QUORUM_REQUIRED
     }
+    enum ProposalType {
+        FUNDING, // funding proposal
+        MINT, // add membership
+        BURN, // revoke membership
+        CALL, // call contracts
+        VPERIOD, // set `votingPeriod`
+        GPERIOD, // set `gracePeriod`
+        QUORUM, // set `quorum`
+        SUPERMAJORITY, // set `supermajority`
+        TYPE, // set `VoteType` to `ProposalType`
+        PAUSE, // flip membership transferability
+        EXTENSION, // flip `extensions` whitelisting
+        ESCAPE, // delete pending proposal in case of revert
+        DOCS // amend org docs
+    }
     /*
      * STRUCTURES
      */
@@ -135,6 +150,8 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
      */
     mapping(address => Member) public members; // the map to track all members of the DAO
     address[] private _members;
+    mapping(DaoHelper.ProposalType => DaoHelper.VoteType)
+        public proposalVoteTypes;
 
     // delegate key => member address mapping
     mapping(address => address) public memberAddressesByDelegatedKey;
@@ -162,7 +179,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     mapping(bytes32 => uint256) public mainConfiguration;
     mapping(bytes32 => address) public addressConfiguration;
     // vote types for proposal
-    mapping(bytes32 => VoteType) public proposalVoteTypes;
+    // mapping(bytes32 => VoteType) public proposalVoteTypes;
     uint256 public lockedAt;
 
     /// @notice Clonable contract must have an empty constructor
@@ -182,6 +199,16 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         potentialNewMember(msg.sender);
         potentialNewMember(payer);
         potentialNewMember(creator);
+
+        proposalVoteTypes[DaoHelper.ProposalType.FUNDING] = DaoHelper
+            .VoteType
+            .SUPERMAJORITY_QUORUM_REQUIRED;
+        proposalVoteTypes[DaoHelper.ProposalType.MEMBERSHIP] = DaoHelper
+            .VoteType
+            .SUPERMAJORITY_QUORUM_REQUIRED;
+        proposalVoteTypes[DaoHelper.ProposalType.KICK] = DaoHelper
+            .VoteType
+            .SUPERMAJORITY_QUORUM_REQUIRED;
     }
 
     /**
@@ -211,19 +238,6 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         if (isAdapter(msg.sender) || isExtension(msg.sender)) {
             lockedAt = 0;
         }
-    }
-
-    /**
-     * @notice Sets  vote type value for a proposal
-     * @dev Changes the value of a key in the configuration mapping
-     * @param proposalId The proposalId
-     * @param voteType the vote type
-     */
-    function setVoteType(bytes32 proposalId, uint32 voteType)
-        external
-        hasAccess(this, AclFlag.SET_VOTE_TYPE)
-    {
-        proposalVoteTypes[proposalId] = VoteType(voteType);
     }
 
     /**
@@ -320,14 +334,14 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
 
     /**
      * @return The configuration value of a particular key
-     * @param proposalId The key to look up in the configuration mapping
+     * @param _proposalType The key to look up in the configuration mapping
      */
-    function getProposalVoteType(bytes32 proposalId)
+    function getProposalVoteType(DaoHelper.ProposalType _proposalType)
         external
         view
         returns (uint32)
     {
-        return uint32(proposalVoteTypes[proposalId]);
+        return uint32(proposalVoteTypes[_proposalType]);
     }
 
     /**
