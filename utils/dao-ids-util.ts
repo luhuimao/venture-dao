@@ -4,7 +4,20 @@
 
 /** Adapters */
 export const adaptersIdsMap: Record<string, string> = {
+  GP_KICK_ADAPTER:"gp-kick",
+  GP_DAO_ONBOARDING_ADAPTER: "gp-dao-onboarding",
+  GP_DAO_ADAPTER: "gp-dao",
+  STREAMING_PAYMENT_ADAPTER: "streaming-payment",
+  MANAGE_MEMBER_ADAPTER: "manage-member",
+  ALLOCATION_ADAPTER: "allocation",
+  ALLOCATION_ADAPTERV2: "allocationv2",
   VOTING_ADAPTER: "voting",
+  GPVOTING_ADAPTER: "gp-voting",
+  GP_ONBOARD_VOTING_ADAPTER: "gp-onboard-voting",
+  DISTRIBUTE_FUND_ADAPTER: "distribute-fund",
+  DISTRIBUTE_FUND_ADAPTERV2: "distribute-fundv2",
+  FOUNDING_POOL_ADAPTER: "founding-pool",
+  RICE_STAKING_ADAPTER: "rice-staking",
   ONBOARDING_ADAPTER: "onboarding",
   NONVOTING_ONBOARDING_ADAPTER: "nonvoting-onboarding",
   TRIBUTE_ADAPTER: "tribute",
@@ -13,13 +26,10 @@ export const adaptersIdsMap: Record<string, string> = {
   RAGEQUIT_ADAPTER: "ragequit",
   GUILDKICK_ADAPTER: "guildkick",
   CONFIGURATION_ADAPTER: "configuration",
-  DISTRIBUTE_ADAPTER: "distribute",
   TRIBUTE_NFT_ADAPTER: "tribute-nft",
   TRANSFER_STRATEGY_ADAPTER: "erc20-transfer-strategy",
   DAO_REGISTRY_ADAPTER: "daoRegistry",
   BANK_ADAPTER: "bank",
-  FOUNDING_POOL_ADAPTER: "founding-pool",
-  DISTRIBUTE_FUND_ADAPTER:"distribute-fund",
   ERC721_ADAPTER: "nft",
   ERC1155_ADAPTER: "erc1155-adpt",
   ERC1271_ADAPTER: "signatures",
@@ -37,10 +47,12 @@ export const adaptersIdsMap: Record<string, string> = {
 export const extensionsIdsMap: Record<string, string> = {
   BANK_EXT: "bank",
   FUNDING_POOL_EXT: "funding-pool-ext",
+  RICE_STAKING_EXT: "rice-staking-ext",
   ERC1271_EXT: "erc1271",
   ERC721_EXT: "nft",
   EXECUTOR_EXT: "executor-ext",
   VESTING_EXT: "internal-token-vesting-ext",
   ERC1155_EXT: "erc1155-ext",
   ERC20_EXT: "erc20-ext",
+  GP_DAO_EXT: "gp-dao-ext"
 };

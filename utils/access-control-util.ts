@@ -25,6 +25,8 @@ export const daoAccessFlagsMap: Record<string, string> = {
   ADD_EXTENSION: "ADD_EXTENSION",
   REMOVE_EXTENSION: "REMOVE_EXTENSION",
   NEW_MEMBER: "NEW_MEMBER",
+  REMOVE_MEMBER: "REMOVE_MEMBER",
+  SET_VOTE_TYPE: "SET_VOTE_TYPE",
 };
 
 export const daoAccessFlags: Array<string> = Object.values(daoAccessFlagsMap);
@@ -46,16 +48,42 @@ export const bankExtensionAclFlags: Array<string> = Object.values(
 export const fundingpoolExtensionAclFlagsMap: Record<string, string> = {
   ADD_TO_BALANCE: "ADD_TO_BALANCE",
   SUB_FROM_BALANCE: "SUB_FROM_BALANCE",
-  INTERNAL_TRANSFER: "INTERNAL_TRANSFER",
   WITHDRAW: "WITHDRAW",
   REGISTER_NEW_TOKEN: "REGISTER_NEW_TOKEN",
-  REGISTER_NEW_INTERNAL_TOKEN: "REGISTER_NEW_INTERNAL_TOKEN",
-  UPDATE_TOKEN: "UPDATE_TOKEN",
-  DISTRIBUTE_FUNDS:"DISTRIBUTE_FUNDS",
+  DISTRIBUTE_FUNDS: "DISTRIBUTE_FUNDS",
+  SET_SNAP_FUNDS: "SET_SNAP_FUNDS",
+  SET_PROJECT_SNAP_FUNDS: "SET_PROJECT_SNAP_FUNDS",
+  SET_PROJECT_SNAP_RICE: "SET_PROJECT_SNAP_RICE",
+  UNLOCK_PROJECT_TOKEN: "UNLOCK_PROJECT_TOKEN",
+  GET_REWARDS: "GET_REWARDS",
+  NOTIFY_REWARD_AMOUNT: "GET_REWARDS",
+  RECOVER_ERC20: "GET_REWARDS",
+  SET_REWARDS_DURATION: "GET_REWARDS",
+  SET_RICE_ADDRESS: "SET_RICE_ADDRESS"
+};
+
+export const ricestakingExtensionAclFlagsMap: Record<string, string> = {
+  ADD_TO_BALANCE: "ADD_TO_BALANCE",
+  SUB_FROM_BALANCE: "SUB_FROM_BALANCE",
+  WITHDRAW: "WITHDRAW",
+  SET_PROJECT_SNAP_RICE: "SET_PROJECT_SNAP_RICE",
+};
+
+export const gpdaoExtensionAclFlagsMap: Record<string, string> = {
+  REGISTER_NEW_GP: "REGISTER_NEW_GP",
+  REMOVE_GP: "REMOVE_GP",
 };
 
 export const fundingpoolExtensionAclFlags: Array<string> = Object.values(
   fundingpoolExtensionAclFlagsMap
+);
+
+export const ricestakingExtensionAclFlags: Array<string> = Object.values(
+  ricestakingExtensionAclFlagsMap
+);
+
+export const gpdaoExtensionAclFlags: Array<string> = Object.values(
+  gpdaoExtensionAclFlagsMap
 );
 
 export const erc20ExtensionAclFlagsMap: Record<string, string> = {};
@@ -184,6 +212,30 @@ export const entryFundingPool = (
   );
 };
 
+export const entryRiceStaking = (
+  contractAddress: string,
+  selectedAcls: SelectedACLs
+): ACLValue => {
+  return getEnabledExtensionFlags(
+    ricestakingExtensionAclFlags,
+    extensionsIdsMap.RICE_STAKING_EXT,
+    contractAddress,
+    selectedAcls
+  );
+};
+
+export const entryGPDao = (
+  contractAddress: string,
+  selectedAcls: SelectedACLs
+): ACLValue => {
+  return getEnabledExtensionFlags(
+    gpdaoExtensionAclFlags,
+    extensionsIdsMap.GP_DAO_EXT,
+    contractAddress,
+    selectedAcls
+  );
+};
+
 export const entryERC1271 = (
   contractAddress: string,
   selectedAcls: SelectedACLs
@@ -225,7 +277,7 @@ export const entryDao = (
   contractAddress: string,
   selectedAcls: SelectedACLs
 ): ACLValue => {
-  const flags = daoAccessFlags.flatMap((flag) => {
+  const flags = daoAccessFlags.flatMap((flag: any) => {
     return selectedAcls.dao.some((f) => f === flag);
   });
   return {

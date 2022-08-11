@@ -64,6 +64,7 @@ const submitNewMemberProposal = async (
   token,
   desiredUnits = toBN(10)
 ) => {
+  console.log(unitPrice.mul(desiredUnits));
   await onboarding.submitProposal(
     dao.address,
     proposalId,
@@ -99,7 +100,6 @@ const onboardingNewMember = async (
     token,
     desiredUnits
   );
-
   //vote and process it
   await voting.submitVote(dao.address, proposalId, 1, {
     from: sponsor,

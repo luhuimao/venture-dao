@@ -66,8 +66,6 @@ const deployFunction = async (contractInterface, args, from) => {
       { from: f }
     );
   } else {
-    // console.log("contractInterface.contractName: ", contractInterface.contractName);
-
     if (args) {
 
       instance = await contractInterface.new(...args, { from: f });
@@ -223,9 +221,7 @@ const proposalIdGenerator = () => {
 
 module.exports = (() => {
   const ozContracts = getOpenZeppelinContracts(allContractConfigs);
-  // console.log("ozContracts FundingPoolExtension: ", ozContracts.FundingPoolExtension);
   const deployDefaultDao = async (options) => {
-    // console.log("deployDefaultDao options: ", options);
     const { WETH } = ozContracts;
     const weth = await WETH.new();
 
