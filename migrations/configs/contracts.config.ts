@@ -2,12 +2,16 @@ import {
   daoAccessFlagsMap,
   bankExtensionAclFlagsMap,
   fundingpoolExtensionAclFlagsMap,
+  ricestakingExtensionAclFlagsMap,
+  gpdaoExtensionAclFlagsMap,
   erc721ExtensionAclFlagsMap,
   erc1155ExtensionAclFlagsMap,
   erc1271ExtensionAclFlagsMap,
   vestingExtensionAclFlagsMap,
   entryBank,
+  entryRiceStaking,
   entryFundingPool,
+  entryGPDao,
   entryERC20,
   entryERC721,
   entryERC1155,
@@ -142,7 +146,7 @@ export const contracts: Array<ContractConfig> = [
     id: "weth",
     name: "WETH",
     path: "../../contracts/helpers/WETH",
-    enabled: true,
+    enabled: false,
     skipAutoDeploy: true,
     version: "1.0.0",
     type: ContractType.Test,
@@ -169,7 +173,7 @@ export const contracts: Array<ContractConfig> = [
     name: "TestToken1",
     alias: "testToken1",
     path: "../../contracts/test/TestToken1",
-    enabled: false,
+    enabled: true,
     version: "1.0.0",
     type: ContractType.Test,
     acls: {
@@ -183,7 +187,7 @@ export const contracts: Array<ContractConfig> = [
     name: "TestToken2",
     alias: "testToken2",
     path: "../../contracts/test/TestToken2",
-    enabled: false,
+    enabled: true,
     version: "1.0.0",
     type: ContractType.Test,
     acls: {
@@ -191,6 +195,20 @@ export const contracts: Array<ContractConfig> = [
       extensions: {},
     },
     deploymentArgs: ["supplyTestToken2"],
+  },
+  {
+    id: "test-rice-token",
+    name: "TestRiceToken",
+    alias: "testRiceToken",
+    path: "../../contracts/test/TestRiceToken",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Test,
+    acls: {
+      dao: [],
+      extensions: {},
+    },
+    deploymentArgs: ["supplyTestRiceToken"],
   },
   {
     id: "test-fairshare-calc",
@@ -307,7 +325,7 @@ export const contracts: Array<ContractConfig> = [
     name: "BankFactory",
     alias: "bankExtFactory",
     path: "../../contracts/extensions/bank/BankFactory",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Factory,
     acls: {
@@ -321,16 +339,46 @@ export const contracts: Array<ContractConfig> = [
     id: "funding-pool-factory",
     name: "FundingPoolFactory",
     alias: "fundingPoolExtFactory",
-    path: "../../contracts/extensions/bank/FundingPoolFactory",
-    enabled: false,
+    path: "../../contracts/extensions/fundingpool/FundingPoolFactory",
+    enabled: true,
     version: "1.0.0",
     type: ContractType.Factory,
     acls: {
       dao: [],
       extensions: {},
     },
-    deploymentArgs: ["daoAddress", "maxExternalTokens", "minFundsForLP", "minFundsForGP", "serviceFeeRatio"],
+    deploymentArgs: ["daoAddress", "maxExternalTokens", "serviceFeeRatio"],
     generatesExtensionId: extensionsIdsMap.FUNDING_POOL_EXT,
+  },
+  {
+    id: "rice-staking-factory",
+    name: "RiceStakingFactory",
+    alias: "riceStakingExtFactory",
+    path: "../../contracts/extensions/ricestaking/RiceStakingFactory",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Factory,
+    acls: {
+      dao: [],
+      extensions: {},
+    },
+    deploymentArgs: ["daoAddress"],
+    generatesExtensionId: extensionsIdsMap.RICE_STAKING_EXT,
+  },
+  {
+    id: "gp-dao-factory",
+    name: "GPDaoFactory",
+    alias: "gpDaoExtFactory",
+    path: "../../contracts/extensions/gpdao/GPDaoFactory",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Factory,
+    acls: {
+      dao: [],
+      extensions: {},
+    },
+    deploymentArgs: ["daoAddress"],
+    generatesExtensionId: extensionsIdsMap.GP_DAO_EXT,
   },
   {
     id: "erc20-extension-factory",
@@ -422,7 +470,7 @@ export const contracts: Array<ContractConfig> = [
     name: "NFTExtension",
     alias: "erc721Ext",
     path: "../../contracts/extensions/nft/NFTExtension",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Extension,
     buildAclFlag: entryERC721,
@@ -436,7 +484,7 @@ export const contracts: Array<ContractConfig> = [
     name: "BankExtension",
     alias: "bankExt",
     path: "../../contracts/extensions/bank/BankExtension",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Extension,
     buildAclFlag: entryBank,
@@ -450,12 +498,40 @@ export const contracts: Array<ContractConfig> = [
     name: "FundingPoolExtension",
     alias: "fundingpoolExt",
     path: "../../contracts/extensions/fundingpool/FundingPoolExtension",
-    enabled: false,
+    enabled: true,
     version: "1.0.0",
     type: ContractType.Extension,
     buildAclFlag: entryFundingPool,
     acls: {
       dao: [daoAccessFlagsMap.NEW_MEMBER],
+      extensions: {},
+    },
+  },
+  {
+    id: extensionsIdsMap.RICE_STAKING_EXT,
+    name: "StakingRiceExtension",
+    alias: "ricestakingExt",
+    path: "../../contracts/extensions/ricestaking/StakingRiceExtension",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Extension,
+    buildAclFlag: entryRiceStaking,
+    acls: {
+      dao: [],
+      extensions: {},
+    },
+  },
+  {
+    id: extensionsIdsMap.GP_DAO_EXT,
+    name: "GPDaoExtension",
+    alias: "gpDaoExt",
+    path: "../../contracts/extensions/gpdao/GPDaoExtension",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Extension,
+    buildAclFlag: entryGPDao,
+    acls: {
+      dao: [],
       extensions: {},
     },
   },
@@ -496,7 +572,7 @@ export const contracts: Array<ContractConfig> = [
     name: "ERC1271Extension",
     alias: "erc1271Ext",
     path: "../../contracts/extensions/erc1271/ERC1271Extension",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Extension,
     buildAclFlag: entryERC1271,
@@ -538,6 +614,41 @@ export const contracts: Array<ContractConfig> = [
    * Adapters
    */
   {
+    id: adaptersIdsMap.GP_KICK_ADAPTER,
+    name: "GPKickAdapterContract",
+    alias: "gpKickAdapter",
+    path: "../../contracts/adapters/GPKickAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_VOTE_TYPE],
+      extensions: {
+        [extensionsIdsMap.GP_DAO_EXT]: [
+          gpdaoExtensionAclFlagsMap.REMOVE_GP,
+        ],
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.GP_DAO_ONBOARDING_ADAPTER,
+    name: "GPDaoOnboardingAdapterContract",
+    alias: "gpDaoOnboardingAdapter",
+    path: "../../contracts/adapters/GPDaoOnboardingAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_VOTE_TYPE],
+      extensions: {
+        [extensionsIdsMap.GP_DAO_EXT]: [
+          gpdaoExtensionAclFlagsMap.REGISTER_NEW_GP,
+        ],
+      },
+    },
+    daoConfigs: [["daoAddress", "quorum", "sumperMajority"]],
+  },
+  {
     id: adaptersIdsMap.DAO_REGISTRY_ADAPTER,
     name: "DaoRegistryAdapterContract",
     alias: "daoRegistryAdapter",
@@ -555,7 +666,7 @@ export const contracts: Array<ContractConfig> = [
     name: "BankAdapterContract",
     alias: "bankAdapter",
     path: "../../contracts/adapters/BankAdapterContract",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -575,7 +686,7 @@ export const contracts: Array<ContractConfig> = [
     name: "FundingPoolAdapterContract",
     alias: "fundingpoolAdapter",
     path: "../../contracts/adapters/FundingPoolAdapterContract",
-    enabled: false,
+    enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -586,7 +697,76 @@ export const contracts: Array<ContractConfig> = [
           fundingpoolExtensionAclFlagsMap.SUB_FROM_BALANCE,
           fundingpoolExtensionAclFlagsMap.ADD_TO_BALANCE,
           fundingpoolExtensionAclFlagsMap.UPDATE_TOKEN,
+          fundingpoolExtensionAclFlagsMap.REGISTER_NEW_TOKEN,
+          fundingpoolExtensionAclFlagsMap.GET_REWARDS,
+          fundingpoolExtensionAclFlagsMap.NOTIFY_REWARD_AMOUNT,
+          fundingpoolExtensionAclFlagsMap.RECOVER_ERC20,
+          fundingpoolExtensionAclFlagsMap.SET_REWARDS_DURATION,
+          fundingpoolExtensionAclFlagsMap.SET_RICE_ADDRESS,
         ],
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.RICE_STAKING_ADAPTER,
+    name: "RiceStakingAdapterContract",
+    alias: "ricestakingAdapter",
+    path: "../../contracts/adapters/RiceStakingAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+        [extensionsIdsMap.RICE_STAKING_EXT]: [
+          ricestakingExtensionAclFlagsMap.WITHDRAW,
+          ricestakingExtensionAclFlagsMap.ADD_TO_BALANCE,
+        ],
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.GP_DAO_ADAPTER,
+    name: "GPDaoAdapterContract",
+    alias: "gpdaoAdapter",
+    path: "../../contracts/adapters/GPDaoAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+        [extensionsIdsMap.GP_DAO_EXT]: [
+          gpdaoExtensionAclFlagsMap.REMOVE_GP,
+        ],
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.STREAMING_PAYMENT_ADAPTER,
+    name: "Sablier",
+    alias: "sablierAdapter",
+    path: "../../contracts/adapters/streaming_payment/Sablier",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.MANAGE_MEMBER_ADAPTER,
+    name: "ManageMemberAdapterContract",
+    alias: "manageMemberAdapter",
+    path: "../../contracts/adapters/ManageMemberAdapterContract",
+    enabled: false,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.NEW_MEMBER, daoAccessFlagsMap.REMOVE_MEMBER],
+      extensions: {
       },
     },
   },
@@ -599,13 +779,46 @@ export const contracts: Array<ContractConfig> = [
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
-      dao: [],
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_CONFIGURATION],
       extensions: {
         [extensionsIdsMap.FUNDING_POOL_EXT]: [
           fundingpoolExtensionAclFlagsMap.DISTRIBUTE_FUNDS,
+          fundingpoolExtensionAclFlagsMap.SET_SNAP_FUNDS,
+          fundingpoolExtensionAclFlagsMap.SET_PROJECT_SNAP_FUNDS,
+          fundingpoolExtensionAclFlagsMap.SET_PROJECT_SNAP_RICE,
+          fundingpoolExtensionAclFlagsMap.SUB_FROM_BALANCE,
+        ],
+        [extensionsIdsMap.RICE_STAKING_EXT]: [
+          ricestakingExtensionAclFlagsMap.SET_PROJECT_SNAP_RICE,
         ],
       },
     },
+    daoConfigs: [],
+  },
+  {
+    id: adaptersIdsMap.DISTRIBUTE_FUND_ADAPTERV2,
+    name: "DistributeFundContractV2",
+    alias: "distributeFundAdapterv2",
+    path: "../../contracts/adapters/DistributeFundContractV2",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_CONFIGURATION, daoAccessFlagsMap.SET_VOTE_TYPE],
+      extensions: {
+        [extensionsIdsMap.FUNDING_POOL_EXT]: [
+          fundingpoolExtensionAclFlagsMap.DISTRIBUTE_FUNDS,
+          fundingpoolExtensionAclFlagsMap.SET_SNAP_FUNDS,
+          fundingpoolExtensionAclFlagsMap.SET_PROJECT_SNAP_FUNDS,
+          fundingpoolExtensionAclFlagsMap.SET_PROJECT_SNAP_RICE,
+          fundingpoolExtensionAclFlagsMap.SUB_FROM_BALANCE,
+        ],
+        [extensionsIdsMap.RICE_STAKING_EXT]: [
+          ricestakingExtensionAclFlagsMap.SET_PROJECT_SNAP_RICE,
+        ],
+      },
+    },
+    daoConfigs: [["daoAddress", "proposalDuration", "proposalInterval", "proposalExecuteDurantion"]],
   },
   {
     id: adaptersIdsMap.CONFIGURATION_ADAPTER,
@@ -655,7 +868,7 @@ export const contracts: Array<ContractConfig> = [
     name: "ManagingContract",
     alias: "managing",
     path: "../../contracts/adapters/ManagingContract",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -689,21 +902,77 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
-
+  // gp onborad voting adapter
+  {
+    id: adaptersIdsMap.GP_ONBOARD_VOTING_ADAPTER,
+    name: "GPOnboardVotingContract",
+    alias: "gpOnboardVotingAdapter",
+    path: "../../contracts/adapters/GPOnboardVotingContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SET_CONFIGURATION,],
+      extensions: {},
+    },
+    daoConfigs: [["daoAddress", "votingPeriod", "gracePeriod"]],
+  },
   // Voting Adapters
   {
     id: adaptersIdsMap.VOTING_ADAPTER,
     name: "VotingContract",
     alias: "voting",
     path: "../../contracts/adapters/VotingContract",
+    enabled: false,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SET_CONFIGURATION,],
+      extensions: {},
+    },
+    daoConfigs: [["daoAddress", "votingPeriod", "gracePeriod"]],
+  },
+  {
+    id: adaptersIdsMap.GPVOTING_ADAPTER,
+    name: "GPVotingContract",
+    alias: "gpVotingAdapter",
+    path: "../../contracts/adapters/voting/GPVotingContract",
     enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
-      dao: [],
+      dao: [daoAccessFlagsMap.SET_CONFIGURATION,],
       extensions: {},
     },
     daoConfigs: [["daoAddress", "votingPeriod", "gracePeriod"]],
+  },
+  {
+    id: adaptersIdsMap.ALLOCATION_ADAPTER,
+    name: "AllocationAdapterContract",
+    alias: "allocation",
+    path: "../../contracts/adapters/AllocationAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SET_CONFIGURATION,],
+      extensions: {},
+    },
+    daoConfigs: [["daoAddress", "gpAllocationBonusRadio", "riceStakeAllocationRadio"]],
+  },
+  {
+    id: adaptersIdsMap.ALLOCATION_ADAPTERV2,
+    name: "AllocationAdapterContractV2",
+    alias: "allocationv2",
+    path: "../../contracts/adapters/AllocationAdapterContractV2",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SET_CONFIGURATION,],
+      extensions: {},
+    },
+    daoConfigs: [["daoAddress", "gpAllocationBonusRadio", "riceStakeAllocationRadio"]],
   },
   {
     id: adaptersIdsMap.SNAPSHOT_PROPOSAL_ADAPTER,
@@ -825,23 +1094,6 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
-  {
-    id: adaptersIdsMap.DISTRIBUTE_ADAPTER,
-    name: "DistributeContract",
-    alias: "distribute",
-    path: "../../contracts/adapters/DistributeContract",
-    enabled: false,
-    version: "1.0.0",
-    type: ContractType.Adapter,
-    acls: {
-      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL],
-      extensions: {
-        [extensionsIdsMap.BANK_EXT]: [
-          bankExtensionAclFlagsMap.INTERNAL_TRANSFER,
-        ],
-      },
-    },
-  },
 
   // Funding/Onboarding Adapters
   {
@@ -849,7 +1101,7 @@ export const contracts: Array<ContractConfig> = [
     name: "FinancingContract",
     alias: "financing",
     path: "../../contracts/adapters/FinancingContract",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -893,7 +1145,7 @@ export const contracts: Array<ContractConfig> = [
     name: "OnboardingContract",
     alias: "onboarding",
     path: "../../contracts/adapters/OnboardingContract",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -1117,11 +1369,11 @@ export const contracts: Array<ContractConfig> = [
   },
 ];
 
-export const getConfig = (name: string) => {
-  return contracts.find((c) => c.name === name);
-};
+// export const getConfig = (name: string) => {
+//   return contracts.find((c: any) => c.name === name);
+// };
 
-export const isDeployable = (name: string) => {
-  const c = getConfig(name);
-  return c && c.enabled;
-};
+// export const isDeployable = (name: string) => {
+//   const c = getConfig(name);
+//   return c && c.enabled;
+// };
