@@ -227,7 +227,7 @@ contract DistributeFundContractV2 is
      * @dev Proposal ids can not be reused.
      * @dev The amount must be greater than zero.
      * @param dao The dao address.
-     * @param _addressArgs _addressArgs[0]:recipientAddr,_addressArgs[1]:tokenAddr
+     * @param recipientAddr _addressArgs:recipientAddr
      * @param _uint256ArgsProposal _uint256ArgsProposal[0]:requestedFundAmount,
                                     _uint256ArgsProposal[1]:tradingOffTokenAmount,
                                     _uint256ArgsProposal[2]:fullyReleasedDate,
@@ -236,7 +236,7 @@ contract DistributeFundContractV2 is
     // slither-disable-next-line reentrancy-benign
     function submitProposal(
         DaoRegistry dao,
-        address[] calldata _addressArgs,
+        address recipientAddr,
         uint256[] calldata _uint256ArgsProposal
     )
         external
@@ -270,7 +270,7 @@ contract DistributeFundContractV2 is
             "DistributeFund::submitProposal::invalid requested Fund Amount"
         );
         require(
-            _addressArgs[0] != address(0x0),
+            recipientAddr != address(0x0),
             "DistributeFund::submitProposal::invalid receiver address"
         );
 
@@ -292,12 +292,12 @@ contract DistributeFundContractV2 is
         vars.proposalStartVotingTimestamp = distributions[address(dao)][
             vars.proposalId
         ].proposalStartVotingTimestamp;
-        vars.proposalEndVotingTimestamp =
-            vars.proposalStartVotingTimestamp +
-            dao.getConfiguration(DaoHelper.PROPOSAL_DURATION);
-        vars.proposalExecuteTimestamp =
-            vars.proposalEndVotingTimestamp +
-            dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION);
+        vars.proposalEndVotingTimestamp = distributions[address(dao)][
+            vars.proposalId
+        ].proposalStopVotingTimestamp;
+        vars.proposalExecuteTimestamp = distributions[address(dao)][
+            vars.proposalId
+        ].proposalExecuteTimestamp;
 
         // Sponsors the proposal.
         dao.sponsorProposal(
@@ -355,47 +355,47 @@ contract DistributeFundContractV2 is
         );
     }
 
-    function startFillFundsProcess(DaoRegistry dao, bytes32 proposalId)
-        external
-        reimbursable(dao)
-        returns (bool)
-    {
-        //queue is empty
-        if (proposalQueue.length() <= 0) {
-            return false;
-        }
-        //proposalId must get from begining of the queue
-        require(
-            proposalId == proposalQueue.front(),
-            "DistributeFund::startVotingProcess::Invalid ProposalId"
-        );
+    // function startFillFundsProcess(DaoRegistry dao, bytes32 proposalId)
+    //     external
+    //     reimbursable(dao)
+    //     returns (bool)
+    // {
+    //     //queue is empty
+    //     if (proposalQueue.length() <= 0) {
+    //         return false;
+    //     }
+    //     //proposalId must get from begining of the queue
+    //     require(
+    //         proposalId == proposalQueue.front(),
+    //         "DistributeFund::startVotingProcess::Invalid ProposalId"
+    //     );
 
-        Distribution storage distribution = distributions[address(dao)][
-            proposalId
-        ];
-        // require(
-        //     block.timestamp < distribution.proposalStartVotingTimestamp,
-        //     "DistributeFund::startFillFundsProcess::fill funds time is end"
-        // );
+    //     Distribution storage distribution = distributions[address(dao)][
+    //         proposalId
+    //     ];
+    //     // require(
+    //     //     block.timestamp < distribution.proposalStartVotingTimestamp,
+    //     //     "DistributeFund::startFillFundsProcess::fill funds time is end"
+    //     // );
 
-        // Checks if there is proposal in voting process, only one proposal can be in voting process.
-        bytes32 ongoingProposalId = ongoingDistributions[address(dao)];
-        require(
-            ongoingProposalId == bytes32(0) ||
-                distributions[address(dao)][ongoingProposalId].status ==
-                DistributionStatus.DONE ||
-                distributions[address(dao)][ongoingProposalId].status ==
-                DistributionStatus.FAILED,
-            "DistributeFund::submitProposal::there is proposal not finished"
-        );
-        ongoingDistributions[address(dao)] = proposalId;
-        // set to fill funds state;
-        distributions[address(dao)][proposalId].status = DistributionStatus
-            .IN_FILL_FUNDS_PROGRESS;
-        //Removes the proposalId at the beginning of the queue
-        proposalQueue.popFront();
-        return true;
-    }
+    //     // Checks if there is proposal in voting process, only one proposal can be in voting process.
+    //     bytes32 ongoingProposalId = ongoingDistributions[address(dao)];
+    //     require(
+    //         ongoingProposalId == bytes32(0) ||
+    //             distributions[address(dao)][ongoingProposalId].status ==
+    //             DistributionStatus.DONE ||
+    //             distributions[address(dao)][ongoingProposalId].status ==
+    //             DistributionStatus.FAILED,
+    //         "DistributeFund::submitProposal::there is proposal not finished"
+    //     );
+    //     ongoingDistributions[address(dao)] = proposalId;
+    //     // set to fill funds state;
+    //     distributions[address(dao)][proposalId].status = DistributionStatus
+    //         .IN_FILL_FUNDS_PROGRESS;
+    //     //Removes the proposalId at the beginning of the queue
+    //     proposalQueue.popFront();
+    //     return true;
+    // }
 
     /**
      * @notice Start voting process when period for project team to approval is end.
@@ -410,13 +410,17 @@ contract DistributeFundContractV2 is
         reimbursable(dao)
         returns (bool)
     {
-        bytes32 ongoingProposalId = ongoingDistributions[address(dao)];
-
+        //  queue is empty
+        if (proposalQueue.length() <= 0) {
+            return false;
+        }
         //proposalId must get from begining of the queue
         require(
-            proposalId == ongoingProposalId,
+            proposalId == proposalQueue.front(),
             "DistributeFund::startVotingProcess::Invalid ProposalId"
         );
+        // ongoingDistributions[address(dao)] = proposalId;
+
         Distribution storage distribution = distributions[address(dao)][
             proposalId
         ];
@@ -427,11 +431,15 @@ contract DistributeFundContractV2 is
         // );
 
         // Checks if there is proposal in voting process, only one proposal can be in voting process.
-        require(
-            distributions[address(dao)][ongoingProposalId].status ==
-                DistributionStatus.IN_FILL_FUNDS_PROGRESS,
-            "DistributeFund::startVotingProcess::proposal not in fill funds state"
-        );
+        // require(
+        //     distributions[address(dao)][ongoingProposalId].status ==
+        //         DistributionStatus.IN_QUEUE,
+        //     "DistributeFund::startVotingProcess::proposal not in fill funds state"
+        // );
+        if (
+            distributions[address(dao)][proposalId].status !=
+            DistributionStatus.IN_QUEUE
+        ) return false;
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
@@ -473,9 +481,9 @@ contract DistributeFundContractV2 is
             bytes("")
         );
         // snap funds
-        fundingpool.setSnapFunds(fundingpool.getToken(0));
+        // fundingpool.setSnapFunds(fundingpool.fundRaisingTokenAddress());
 
-        // ongoingDistributions[address(dao)] = proposalId;
+        ongoingDistributions[address(dao)] = proposalId;
         distribution.status = DistributionStatus.IN_VOTING_PROGRESS;
         return true;
     }
@@ -517,9 +525,9 @@ contract DistributeFundContractV2 is
         vars.fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        vars.stakingrice = StakingRiceExtension(
-            dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
-        );
+        // vars.stakingrice = StakingRiceExtension(
+        //     dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
+        // );
         // Checks if the proposal exists or is not in progress yet.
         Distribution storage distribution = distributions[address(dao)][
             proposalId
@@ -551,11 +559,11 @@ contract DistributeFundContractV2 is
             ongoingDistributions[address(dao)] = proposalId;
 
             //set project sanp funds/rice to total funds/rice
-            address token = vars.fundingpool.getToken(0);
-            vars.fundingpool.setProjectSnapFunds(token);
-            vars.stakingrice.setProjectSnapRice(
-                dao.getAddressConfiguration(DaoHelper.RICE_TOKEN_ADDRESS)
-            );
+            address token = vars.fundingpool.fundRaisingTokenAddress();
+            // vars.fundingpool.setProjectSnapFunds(token);
+            // vars.stakingrice.setProjectSnapRice(
+            //     dao.getAddressConfiguration(DaoHelper.RICE_TOKEN_ADDRESS)
+            // );
 
             //insufficient funds failed the distribution
             if (
@@ -604,8 +612,6 @@ contract DistributeFundContractV2 is
         }
 
         ongoingDistributions[address(dao)] = bytes32(0);
-        //vote finished reset snapfunds to 0
-        vars.fundingpool.resetSnapFunds();
 
         emit ProposalExecuted(
             proposalId,
@@ -623,13 +629,18 @@ contract DistributeFundContractV2 is
     {
         if (proposalQueue.length() > 0) {
             bytes32 lastProposalId = proposalQueue.back();
-            uint256 timestamp = distributions[address(dao)][lastProposalId]
-                .proposalExecuteTimestamp +
-                dao.getConfiguration(DaoHelper.PROPOSAL_INTERVAL);
-            return timestamp;
+            // uint256 timestamp = distributions[address(dao)][lastProposalId]
+            //     .proposalExecuteTimestamp +
+            //     dao.getConfiguration(DaoHelper.PROPOSAL_INTERVAL);
+
+            uint256 startVoteTimeStamp = distributions[address(dao)][
+                lastProposalId
+            ].proposalExecuteTimestamp;
+            return startVoteTimeStamp;
         }
-        return
-            block.timestamp + dao.getConfiguration(DaoHelper.PROPOSAL_INTERVAL);
+        return block.timestamp;
+        // return
+        // block.timestamp + dao.getConfiguration(DaoHelper.PROPOSAL_INTERVAL);
     }
 
     /**

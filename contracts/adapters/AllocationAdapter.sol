@@ -91,10 +91,7 @@ contract AllocationAdapterContract is AdapterGuard {
                 dao.getConfiguration(GPAllocationBonusRadio) -
                 dao.getConfiguration(RiceStakeAllocationRadio))) / 100;
         uint256 projectSanpFunds = fundingpool.projectSnapFunds();
-        uint256 fund = fundingpool.balanceOf(
-            recipient,
-            fundingpool.getToken(0)
-        );
+        uint256 fund = fundingpool.balanceOf(recipient);
         if (projectSanpFunds <= 0 || fund <= 0 || fundingRewards <= 0) {
             return 0;
         }
@@ -118,17 +115,11 @@ contract AllocationAdapterContract is AdapterGuard {
         }
         uint256 GPBonus = (tokenAmount *
             dao.getConfiguration(GPAllocationBonusRadio)) / 100;
-        uint256 myFund = fundingpool.balanceOf(
-            recipient,
-            fundingpool.getToken(0)
-        );
+        uint256 myFund = fundingpool.balanceOf(recipient);
         uint256 allGPFunds;
         for (uint8 i = 0; i < gpdao.getAllGPs().length; i++) {
             if (gpdao.isGeneralPartner(gpdao.getAllGPs()[i])) {
-                allGPFunds += fundingpool.balanceOf(
-                    gpdao.getAllGPs()[i],
-                    fundingpool.getToken(0)
-                );
+                allGPFunds += fundingpool.balanceOf(gpdao.getAllGPs()[i]);
             }
         }
         if (GPBonus <= 0 || myFund <= 0 || allGPFunds <= 0) {

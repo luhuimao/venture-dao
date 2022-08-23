@@ -40,6 +40,26 @@ SOFTWARE.
 
 contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
     /**
+     * @notice Updates the DAO registry with the new configurations if valid.
+     * @notice Updated the Bank extension with the new potential tokens if valid.
+     */
+    function configureDao(
+        DaoRegistry dao,
+        uint32 quorum,
+        uint32 superMajority
+    ) external onlyAdapter(dao) {
+        require(
+            quorum <= 100 &&
+                quorum >= 1 &&
+                superMajority >= 1 &&
+                superMajority <= 100,
+            "GPDaoOnboarding::configureDao::invalid quorum, superMajority"
+        );
+        dao.setConfiguration(DaoHelper.QUORUM, quorum);
+        dao.setConfiguration(DaoHelper.SUPER_MAJORITY, superMajority);
+    }
+
+    /**
      * @notice Allows the member/advisor of the DAO to withdraw the funds from their internal foundingpool account.
      * @notice Only accounts that are not reserved can withdraw the funds.
      * @notice If theres is no available balance in the user's account, the transaction is reverted.
@@ -50,16 +70,11 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         external
         reimbursable(dao)
     {
-        // require(
-        //     DaoHelper.isNotReservedAddress(account),
-        //     "withdraw::reserved address"
-        // );
-
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
 
-        address token = fundingpool.getToken(0);
+        address token = fundingpool.fundRaisingTokenAddress();
         uint256 balance = balanceOf(dao, msg.sender);
         require(balance > 0, "insufficient balance");
         require(
@@ -67,26 +82,7 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
             "withdraw amount insufficient"
         );
 
-        fundingpool.withdraw(msg.sender, token, amount);
-
-        // GPDaoExtension gpdaoExt = GPDaoExtension(
-        //     dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
-        // );
-        // DistributeFundContract distributeFundAda = DistributeFundContract(
-        //     dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPT)
-        // );
-        // GPVotingContract gpVotingAda = GPVotingContract(
-        //     dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
-        // );
-        //check if gp
-        // if (gpdaoExt.isGeneralPartner(msg.sender)) {
-        //     //update voting weight
-        //     gpVotingAda.updateVoteWeight(
-        //         dao,
-        //         distributeFundAda.ongoingDistributions(address(dao)),
-        //         msg.sender
-        //     );
-        // }
+        fundingpool.withdraw(msg.sender, amount);
     }
 
     /**
@@ -103,70 +99,32 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        address token = fundingpool.getToken(0);
+        address token = fundingpool.getFundRaisingTokenAddress();
         IERC20(token).transferFrom(msg.sender, address(this), amount);
         IERC20(token).approve(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT),
             amount
         );
-        fundingpool.addToBalance(msg.sender, token, amount);
-
-        // GPDaoExtension gpdaoExt = GPDaoExtension(
-        //     dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
-        // );
-        // DistributeFundContract distributeAda = DistributeFundContract(
-        //     dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPT)
-        // );
-        // GPVotingContract gpVotingAda = GPVotingContract(
-        //     dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
-        // );
-        //check if gp
-        // if (
-        //     gpdaoExt.isGeneralPartner(msg.sender) &&
-        //     distributeAda.ongoingDistributions(address(dao)) != bytes32(0) &&
-        //     gpVotingAda.checkIfVoted(
-        //         dao,
-        //         distributeAda.ongoingDistributions(address(dao)),
-        //         msg.sender
-        //     )
-        // ) {
-        //     //update voting weight
-        //     gpVotingAda.updateVoteWeight(
-        //         dao,
-        //         distributeAda.ongoingDistributions(address(dao)),
-        //         msg.sender
-        //     );
-        // }
+        fundingpool.addToBalance(msg.sender, amount);
     }
 
-    function registerPotentialNewToken(DaoRegistry dao, address _tokenAddr)
-        external
-        onlyMember(dao)
-        reimbursable(dao)
-    {
-        FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        );
-        fundingpool.registerPotentialNewToken(_tokenAddr);
-    }
+    // function claimeRiceReward(DaoRegistry dao) external {
+    //     FundingPoolExtension fundingpool = FundingPoolExtension(
+    //         dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+    //     );
+    //     fundingpool.getReward(msg.sender);
+    // }
 
-    function claimeRiceReward(DaoRegistry dao) external {
-        FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        );
-        fundingpool.getReward(msg.sender);
-    }
-
-    function notifyRewardAmount(DaoRegistry dao, uint256 rewardRiceAmount)
-        external
-        onlyMember(dao)
-        reimbursable(dao)
-    {
-        FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        );
-        fundingpool.notifyRewardAmount(rewardRiceAmount);
-    }
+    // function notifyRewardAmount(DaoRegistry dao, uint256 rewardRiceAmount)
+    //     external
+    //     onlyMember(dao)
+    //     reimbursable(dao)
+    // {
+    //     FundingPoolExtension fundingpool = FundingPoolExtension(
+    //         dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+    //     );
+    //     fundingpool.notifyRewardAmount(rewardRiceAmount);
+    // }
 
     function recoverERC20(
         DaoRegistry dao,
@@ -179,16 +137,16 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         fundingpool.recoverERC20(tokenAddress, tokenAmount, msg.sender);
     }
 
-    function setRewardsDuration(DaoRegistry dao, uint256 _rewardsDuration)
-        external
-        onlyMember(dao)
-        reimbursable(dao)
-    {
-        FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        );
-        fundingpool.setRewardsDuration(_rewardsDuration);
-    }
+    // function setRewardsDuration(DaoRegistry dao, uint256 _rewardsDuration)
+    //     external
+    //     onlyMember(dao)
+    //     reimbursable(dao)
+    // {
+    //     FundingPoolExtension fundingpool = FundingPoolExtension(
+    //         dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+    //     );
+    //     fundingpool.setRewardsDuration(_rewardsDuration);
+    // }
 
     function setRiceTokenAddress(DaoRegistry dao, address riceAddr)
         external
@@ -215,7 +173,7 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
     //     );
     // }
 
-    function balanceOf(DaoRegistry dao, address member)
+    function balanceOf(DaoRegistry dao, address investorAddr)
         public
         view
         returns (uint256)
@@ -223,28 +181,47 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        address tokenAddr = fundingpool.getToken(0);
-        return fundingpool.balanceOf(member, tokenAddr);
+        return fundingpool.balanceOf(investorAddr);
     }
 
     function lpBalance(DaoRegistry dao) public view returns (uint256) {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        address tokenAddr = fundingpool.getToken(0);
-        return
-            fundingpool.balanceOf(
-                address(DaoHelper.DAOSQUARE_TREASURY),
-                tokenAddr
-            );
+        return fundingpool.balanceOf(address(DaoHelper.DAOSQUARE_TREASURY));
     }
 
     function gpBalance(DaoRegistry dao) public view returns (uint256) {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        address tokenAddr = fundingpool.getToken(0);
+        return fundingpool.balanceOf(address(DaoHelper.GP_POOL));
+    }
 
-        return fundingpool.balanceOf(address(DaoHelper.GP_POOL), tokenAddr);
+    function getFundRaisingMaxAmount(DaoRegistry dao)
+        external
+        view
+        returns (uint256)
+    {
+        return dao.getConfiguration(DaoHelper.FUND_RAISING_MAX);
+    }
+
+    function getMinInvestmentForLP(DaoRegistry dao)
+        external
+        view
+        returns (uint256)
+    {
+        return
+            dao.getConfiguration(
+                DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP
+            );
+    }
+
+    function getFundRaisingTarget(DaoRegistry dao)
+        external
+        view
+        returns (uint256)
+    {
+        return dao.getConfiguration(DaoHelper.FUND_RAISING_TARGET);
     }
 }

@@ -61,12 +61,6 @@ contract GPOnboardVotingContract is
         uint128 nbNo
     );
 
-    bytes32 constant VotingPeriod =
-        keccak256("voting.gpOnboardingVotingPeriod");
-    bytes32 constant GracePeriod =
-        keccak256("voting.gpOnboardingVotingGracePeriod");
-    bytes32 constant Quorum = keccak256("voting.quorum");
-    bytes32 constant Supermajority = keccak256("voting.supermajority");
     mapping(address => mapping(bytes32 => Voting)) public votes;
 
     string public constant ADAPTER_NAME = "GPOnboardingVotingContract";
@@ -88,8 +82,8 @@ contract GPOnboardVotingContract is
         uint256 votingPeriod,
         uint256 gracePeriod
     ) external onlyAdapter(dao) {
-        dao.setConfiguration(VotingPeriod, votingPeriod);
-        dao.setConfiguration(GracePeriod, gracePeriod);
+        dao.setConfiguration(DaoHelper.VotingPeriod, votingPeriod);
+        dao.setConfiguration(DaoHelper.GracePeriod, gracePeriod);
     }
 
     /**
@@ -164,7 +158,8 @@ contract GPOnboardVotingContract is
         // slither-disable-next-line timestamp
         require(
             block.timestamp <
-                vote.startingTime + dao.getConfiguration(VotingPeriod),
+                vote.startingTime +
+                    dao.getConfiguration(DaoHelper.PROPOSAL_DURATION),
             "vote has already ended"
         );
 
@@ -177,7 +172,7 @@ contract GPOnboardVotingContract is
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        address token = fundingpool.getToken(0);
+        address token = fundingpool.fundRaisingTokenAddress();
 
         uint128 votingWeight = GovernanceHelper.getGPVotingWeight(
             dao,
@@ -232,7 +227,7 @@ contract GPOnboardVotingContract is
         if (
             // slither-disable-next-line timestamp
             block.timestamp <
-            vote.startingTime + dao.getConfiguration(VotingPeriod)
+            vote.startingTime + dao.getConfiguration(DaoHelper.PROPOSAL_DURATION)
         ) {
             return (VotingState.IN_PROGRESS, vote.nbYes, vote.nbNo);
         }
@@ -240,8 +235,8 @@ contract GPOnboardVotingContract is
             // slither-disable-next-line timestamp
             block.timestamp <
             vote.startingTime +
-                dao.getConfiguration(VotingPeriod) +
-                dao.getConfiguration(GracePeriod)
+                dao.getConfiguration(DaoHelper.PROPOSAL_DURATION) +
+                dao.getConfiguration(DaoHelper.GracePeriod)
         ) {
             return (VotingState.GRACE_PERIOD, vote.nbYes, vote.nbNo);
         }
@@ -256,7 +251,7 @@ contract GPOnboardVotingContract is
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        address token = fundingpool.getToken(0);
+        address token = fundingpool.fundRaisingTokenAddress();
         uint128 allGPsWeight = GovernanceHelper.getAllGPVotingWeight(
             dao,
             token

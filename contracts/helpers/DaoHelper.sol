@@ -50,6 +50,77 @@ library DaoHelper {
         ESCAPE, // delete pending proposal in case of revert
         DOCS // amend org docs
     }
+
+    enum RedemptionType {
+        WEEKLY,
+        BI_WEEKLY,
+        MONTHLY,
+        QUARTERLY
+    }
+
+    uint256 internal constant ONE_WEEK = 60 * 60 * 24 * 7;
+    uint256 internal constant TWO_WEEK = 60 * 60 * 24 * 14;
+    uint256 internal constant ONE_MONTH = 60 * 60 * 24 * 30;
+    uint256 internal constant TWO_MONTH = 60 * 60 * 24 * 60;
+    uint256 internal constant THREE_MONTH = 60 * 60 * 24 * 90;
+    uint256 internal constant ONE_YEAR = 60 * 60 * 24 * 365;
+
+    //PPM
+    bytes32 internal constant DAO_SQUARE_ADDRESS =
+        keccak256("DAO_SQUARE_ADDRESS");
+    bytes32 internal constant GP_ADDRESS = keccak256("GP_ADDRESS");
+    bytes32 internal constant FUND_RAISING_CURRENCY_ADDRESS =
+        keccak256("FUND_RAISING_CURRENCY_ADDRESS");
+    bytes32 internal constant FUND_RAISING_TARGET =
+        keccak256("FUND_RAISING_TARGET");
+    bytes32 internal constant FUND_RAISING_MAX = keccak256("FUND_RAISING_MAX");
+    bytes32 internal constant FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP =
+        keccak256("FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP");
+    bytes32 internal constant FUND_RAISING_WINDOW_BEGIN =
+        keccak256("FUND_RAISING_WINDOW_BEGIN");
+    bytes32 internal constant FUND_RAISING_WINDOW_END =
+        keccak256("FUND_RAISING_WINDOW_END");
+    bytes32 internal constant FUND_RAISING_LOCKUP_PERIOD =
+        keccak256("FUND_RAISING_LOCKUP_PERIOD");
+    bytes32 internal constant FUND_RAISING_REDEMPTION =
+        keccak256("FUND_RAISING_REDEMPTION");
+    bytes32 internal constant FUND_RAISING_REDEMPTION_PERIOD =
+        keccak256("FUND_RAISING_REDEMPTION_PERIOD");
+    bytes32 internal constant FUND_RAISING_TERM =
+        keccak256("FUND_RAISING_TERM");
+    bytes32 internal constant FUND_START_TIME = keccak256("FUND_START_TIME");
+    bytes32 internal constant FUND_END_TIME = keccak256("FUND_END_TIME");
+    bytes32 internal constant REWARD_FOR_PROPOSER =
+        keccak256("REWARD_FOR_PROPOSER");
+    bytes32 internal constant REWARD_FOR_GP = keccak256("REWARD_FOR_GP");
+    bytes32 internal constant MANAGEMENT_FEE = keccak256("MANAGEMENT_FEE");
+    bytes32 internal constant MANAGEMENT_FEE_PER_YEAR =
+        keccak256("MANAGEMENT_FEE_PER_YEAR");
+    bytes32 internal constant REDEMPTION_FEE = keccak256("REDEMPTION_FEE");
+    bytes32 internal constant PROTOCOL_FEE = keccak256("PROTOCOL_FEE");
+
+    //voting
+    bytes32 internal constant QUORUM = keccak256("voting.quorum");
+    bytes32 internal constant SUPER_MAJORITY =
+        keccak256("voting.supermajority");
+    bytes32 constant VotingPeriod =
+        keccak256("voting.gpOnboardingVotingPeriod");
+    bytes32 constant GracePeriod =
+        keccak256("voting.gpOnboardingVotingGracePeriod");
+
+    //Token
+    //rice
+    bytes32 internal constant RICE_TOKEN_ADDRESS =
+        keccak256("rice.token.address");
+
+    //funding proposal
+    bytes32 internal constant PROPOSAL_DURATION =
+        keccak256("distributeFund.proposalDuration");
+    bytes32 internal constant PROPOSAL_INTERVAL =
+        keccak256("distributeFund.proposalInterval");
+    bytes32 internal constant PROPOSAL_EXECUTE_DURATION =
+        keccak256("distributeFund.proposalExecuteDuration");
+
     // Adapters
     bytes32 internal constant GP_ONBOARDING_ADAPT =
         keccak256("gp-dao-onboarding");
@@ -109,20 +180,6 @@ library DaoHelper {
     bytes32 internal constant ERC1155_EXT = keccak256("erc1155-ext");
     bytes32 internal constant ERC20_EXT = keccak256("erc20-ext");
 
-    //rice
-    bytes32 internal constant RICE_TOKEN_ADDRESS =
-        keccak256("rice.token.address");
-
-    bytes32 internal constant QUORUM = keccak256("voting.quorum");
-    bytes32 internal constant SUPER_MAJORITY =
-        keccak256("voting.supermajority");
-
-    bytes32 internal constant PROPOSAL_DURATION =
-        keccak256("distributeFund.proposalDuration");
-    bytes32 internal constant PROPOSAL_INTERVAL =
-        keccak256("distributeFund.proposalInterval");
-    bytes32 internal constant PROPOSAL_EXECUTE_DURATION =
-        keccak256("distributeFund.proposalExecuteDuration");
     // Reserved Addresses
     address internal constant STAKING_RICE_POOL = address(0xDCEAC);
     address internal constant STAKING_RICE_MEMBER = address(0x12345678);

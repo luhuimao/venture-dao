@@ -203,7 +203,7 @@ contract GPVotingContract is
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        address token = fundingpool.getToken(0);
+        address token = fundingpool.fundRaisingTokenAddress();
 
         uint128 votingWeight = GovernanceHelper.getGPVotingWeight(
             dao,
@@ -266,7 +266,7 @@ contract GPVotingContract is
             FundingPoolExtension fundingpool = FundingPoolExtension(
                 dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
             );
-            address token = fundingpool.getToken(0);
+            address token = fundingpool.fundRaisingTokenAddress();
             uint128 newVotingWeight = GovernanceHelper.getGPVotingWeight(
                 dao,
                 voter,

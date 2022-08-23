@@ -91,10 +91,18 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         address tokenAddr,
         uint256 amount
     );
-
+    enum FundRaiseState {
+        IN_PROGRESS,
+        DONE,
+        FAILED
+    }
     /*
      * STRUCTURES
      */
+
+    struct FundRaise {
+        FundRaiseState state;
+    }
 
     struct Checkpoint {
         // A checkpoint for marking number of votes from a given block
@@ -118,6 +126,7 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
     uint128 public votingWeightAddend; //decimal, default is 0
     bool public initialized = false; // internally tracks deployment under eip-1167 proxy pattern
     address public riceTokenAddress; // rice token contract address
+    address public fundRaisingTokenAddress;
     /* ========== STATE VARIABLES ========== */
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
@@ -125,6 +134,7 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
 
+    FundRaiseState public fundRaisingState;
     DaoRegistry public dao;
 
     address[] public tokens;
@@ -146,21 +156,23 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
 
+    mapping(address => FundRaise) public fundRaises;
+
     /// @notice Clonable contract must have an empty constructor
     constructor() {}
 
     // slither-disable-next-line calls-loop
     /* ========== MODIFIERS ========== */
 
-    modifier updateReward(address account) {
-        rewardPerTokenStored = rewardPerToken();
-        lastUpdateTime = lastTimeRewardApplicable();
-        if (account != address(0)) {
-            rewards[account] = earned(account);
-            userRewardPerTokenPaid[account] = rewardPerTokenStored;
-        }
-        _;
-    }
+    // modifier updateReward(address account) {
+    //     rewardPerTokenStored = rewardPerToken();
+    //     lastUpdateTime = lastTimeRewardApplicable();
+    //     if (account != address(0)) {
+    //         rewards[account] = earned(account);
+    //         userRewardPerTokenPaid[account] = rewardPerTokenStored;
+    //     }
+    //     _;
+    // }
     modifier hasExtensionAccess(AclFlag flag) {
         require(
             address(this) == msg.sender ||
@@ -187,11 +199,11 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         require(_dao.isMember(creator), "foundingpool::not member");
 
         dao = _dao;
-        // initialized = true;
-
+        fundRaisingState = FundRaiseState.IN_PROGRESS;
         votingWeightMultiplier = 1;
         votingWeightAddend = 0;
         votingWeightRadix = 2;
+        initialized = true;
     }
 
     /**
@@ -238,126 +250,54 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         votingWeightRadix = weightRadix;
     }
 
-    /**
-     * @notice Sets the maximum amount of external tokens allowed in the founding pool
-     * @param tokenAddr The maximum amount of token allowed
-     */
-    function setSnapFunds(address tokenAddr)
-        external
-        hasExtensionAccess(AclFlag.SET_SNAP_FUNDS)
-    {
-        snapFunds = balanceOf(address(DaoHelper.DAOSQUARE_TREASURY), tokenAddr);
-    }
-
-    /**
-     * @notice Reset the maximum amount of external tokens allowed in the founding pool
-     */
-    function resetSnapFunds()
-        external
-        hasExtensionAccess(AclFlag.SET_SNAP_FUNDS)
-    {
-        snapFunds = 0;
-    }
-
-    /**
-     * @notice Sets projectSnapFunds to current total funds
-     * @param tokenAddr The maximum amount of token allowed
-     */
-    function setProjectSnapFunds(address tokenAddr)
-        external
-        hasExtensionAccess(AclFlag.SET_PROJECT_SNAP_FUNDS)
-    {
-        require(
-            availableTokens[tokenAddr],
-            "FundingPool::setProjectSnapRice::unknown deposit token address"
-        );
-
-        projectSnapFunds = balanceOf(
-            address(DaoHelper.DAOSQUARE_TREASURY),
-            tokenAddr
-        );
-    }
-
-    /**
-     * @notice Sets projectSnapRice to current total rice
-     * @param riceAddr The rice token address
-     */
-    function setProjectSnapRice(address riceAddr)
-        external
-        hasExtensionAccess(AclFlag.SET_PROJECT_SNAP_RICE)
-    {
-        require(
-            availableTokens[riceAddr],
-            "FundingPool::setProjectSnapRice::unknown rice token address"
-        );
-
-        projectSnapRice = balanceOf(
-            address(DaoHelper.DAOSQUARE_TREASURY),
-            riceAddr
-        );
-    }
-
     /*
      * BANK
      */
 
     /**
-     * @notice Registers a potential new token in the bank
-     * @dev Cannot be a reserved token or an available internal token
-     * @param token The address of the token
-     */
-    function registerPotentialNewToken(address token)
-        external
-        hasExtensionAccess(AclFlag.REGISTER_NEW_TOKEN)
-    {
-        require(DaoHelper.isNotReservedAddress(token), "reservedToken");
-        require(
-            tokens.length <= maxExternalTokens,
-            "exceeds the maximum tokens allowed"
-        );
-        if (!availableTokens[token]) {
-            availableTokens[token] = true;
-            tokens.push(token);
-        }
-    }
-
-    /**
      * Public read-only functions
      */
 
-    function totalSupply() public view returns (uint256) {
-        return balanceOf(address(DaoHelper.DAOSQUARE_TREASURY), tokens[0]);
-    }
-
-    function lastTimeRewardApplicable() public view returns (uint256) {
-        return block.timestamp < periodFinish ? block.timestamp : periodFinish;
-    }
-
-    function rewardPerToken() public view returns (uint256) {
-        if (totalSupply() == 0) {
-            return rewardPerTokenStored;
-        }
+    function getFundRaisingTokenAddress() public view returns (address) {
         return
-            rewardPerTokenStored.add(
-                lastTimeRewardApplicable()
-                    .sub(lastUpdateTime)
-                    .mul(rewardRate)
-                    .mul(1e18)
-                    .div(totalSupply())
+            dao.getAddressConfiguration(
+                DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
             );
     }
 
-    function earned(address account) public view returns (uint256) {
-        return
-            balanceOf(account, tokens[0])
-                .mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
-                .div(1e18)
-                .add(rewards[account]);
+    function totalSupply() public view returns (uint256) {
+        return balanceOf(address(DaoHelper.DAOSQUARE_TREASURY));
     }
 
-    function getRewardForDuration() external view returns (uint256) {
-        return rewardRate.mul(rewardsDuration);
-    }
+    // function lastTimeRewardApplicable() public view returns (uint256) {
+    //     return block.timestamp < periodFinish ? block.timestamp : periodFinish;
+    // }
+
+    // function rewardPerToken() public view returns (uint256) {
+    //     if (totalSupply() == 0) {
+    //         return rewardPerTokenStored;
+    //     }
+    //     return
+    //         rewardPerTokenStored.add(
+    //             lastTimeRewardApplicable()
+    //                 .sub(lastUpdateTime)
+    //                 .mul(rewardRate)
+    //                 .mul(1e18)
+    //                 .div(totalSupply())
+    //         );
+    // }
+
+    // function earned(address account) public view returns (uint256) {
+    //     return
+    //         balanceOf(account, tokens[0])
+    //             .mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
+    //             .div(1e18)
+    //             .add(rewards[account]);
+    // }
+
+    // function getRewardForDuration() external view returns (uint256) {
+    //     return rewardRate.mul(rewardsDuration);
+    // }
 
     /**
      * @return Whether or not a given address is a Investor of the DAO.
@@ -368,31 +308,58 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         // return getInvestorFlag(addr, InvestorFlag.EXISTS);
     }
 
+    function ifInRedemption() public view returns (bool) {
+        uint256 fundStartTime = dao.getConfiguration(DaoHelper.FUND_START_TIME);
+        uint256 fundEndTime = dao.getConfiguration(DaoHelper.FUND_END_TIME);
+        uint256 redemptionPeriod = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_REDEMPTION_PERIOD
+        );
+        uint256 fundDuration = fundEndTime - fundStartTime;
+        DaoHelper.RedemptionType redemptionT = DaoHelper.RedemptionType(
+            dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION)
+        );
+        uint256 steps;
+        uint256 redemption;
+        if (redemptionT == DaoHelper.RedemptionType.WEEKLY) {
+            steps = fundDuration / DaoHelper.ONE_WEEK;
+            redemption = DaoHelper.ONE_WEEK;
+        }
+        if (redemptionT == DaoHelper.RedemptionType.BI_WEEKLY) {
+            steps = fundDuration / DaoHelper.TWO_WEEK;
+            redemption = DaoHelper.TWO_WEEK;
+        }
+        if (redemptionT == DaoHelper.RedemptionType.MONTHLY) {
+            steps = fundDuration / DaoHelper.ONE_MONTH;
+            redemption = DaoHelper.ONE_MONTH;
+        }
+        if (redemptionT == DaoHelper.RedemptionType.QUARTERLY) {
+            steps = fundDuration / DaoHelper.THREE_MONTH;
+            steps = fundDuration / DaoHelper.THREE_MONTH;
+        }
+        uint256 redemptionEndTime;
+        uint256 redemptionStartTime;
+        uint256 i = 0;
+        while (i <= steps) {
+            redemptionEndTime = redemptionEndTime == 0
+                ? fundStartTime + redemption
+                : redemptionEndTime + redemption;
+            redemptionStartTime = redemptionEndTime - redemptionPeriod;
+            if (
+                block.timestamp > redemptionStartTime &&
+                block.timestamp < redemptionEndTime &&
+                block.timestamp > fundStartTime &&
+                block.timestamp < fundEndTime
+            ) {
+                return true;
+            }
+            i += 1;
+        }
+        return false;
+    }
+
     /**
      * Internal bookkeeping
      */
-
-    /**
-     * @return The token from the bank of a given index
-     * @param index The index to look up in the bank's tokens
-     */
-    function getToken(uint256 index) external view returns (address) {
-        return tokens[index];
-    }
-
-    /**
-     * @return The amount of token addresses in the bank
-     */
-    function nbTokens() external view returns (uint256) {
-        return tokens.length;
-    }
-
-    /**
-     * @return All the tokens registered in the bank.
-     */
-    function getTokens() external view returns (address[] memory) {
-        return tokens;
-    }
 
     /**
      * @return The amount of internal token addresses in the bank
@@ -401,122 +368,158 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         return _investors.values();
     }
 
+    function processFundRaising() external nonReentrant returns (bool) {
+        if (fundRaisingState != FundRaiseState.IN_PROGRESS) return false;
+
+        if (
+            dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN) <
+            block.timestamp &&
+            dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) >
+            block.timestamp
+        ) return false;
+
+        if (
+            totalSupply() < dao.getConfiguration(DaoHelper.FUND_RAISING_TARGET)
+        ) {
+            fundRaisingState = FundRaiseState.FAILED;
+            return false;
+        }
+        address fundTokenAddr = getFundRaisingTokenAddress();
+        //distribute protocol fee to DAOSquare and managed fee to GP
+        uint256 protocolFee = (totalSupply() *
+            dao.getConfiguration(DaoHelper.PROTOCOL_FEE)) / 100;
+        uint256 managedFee = (totalSupply() *
+            dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) / 100;
+
+        subtractAllFromBalance(fundTokenAddr, protocolFee + managedFee);
+
+        IERC20(fundTokenAddr).safeTransfer(
+            address(dao.getAddressConfiguration(DaoHelper.DAO_SQUARE_ADDRESS)),
+            protocolFee
+        );
+
+        IERC20(fundTokenAddr).safeTransfer(
+            address(dao.getAddressConfiguration(DaoHelper.GP_ADDRESS)),
+            managedFee
+        );
+        fundRaisingState = FundRaiseState.DONE;
+        return true;
+    }
+
     /**
      * @notice Adds to a member's balance of a given token
-     * @param member The member whose balance will be updated
-     * @param token The token to update
+     * @param depositer The depositer whose balance will be updated
      * @param amount The new balance
      */
-    function addToBalance(
-        address member,
-        address token,
-        uint256 amount
-    )
+    function addToBalance(address depositer, uint256 amount)
         public
         nonReentrant
         hasExtensionAccess(AclFlag.ADD_TO_BALANCE)
-        updateReward(member)
     {
         require(
-            snapFunds <= 0,
-            "FundingPool::Withdraw::unable to deposit during proposal prcessing"
+            dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN) <
+                block.timestamp &&
+                dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) >
+                block.timestamp,
+            "FundingPool::Deposit::not in fundraise window"
         );
         require(
-            availableTokens[token],
-            "FundingPool::addToBalance::unknown token address"
+            amount > 0 &&
+                amount >=
+                dao.getConfiguration(
+                    DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP
+                ),
+            "FundingPool::Deposit::invalid amount"
         );
+
         require(
-            amount > 0,
-            "FundingPool::addToBalance::deposit funds must > 0"
+            totalSupply() + amount <
+                dao.getConfiguration(DaoHelper.FUND_RAISING_MAX),
+            "FundingPool::Deposit::Fundraise max amount reach"
         );
+        address fundTokenAddr = getFundRaisingTokenAddress();
+        _newInvestor(depositer);
+        IERC20 erc20 = IERC20(fundTokenAddr);
 
-        _newInvestor(member);
-        IERC20 erc20 = IERC20(token);
-        uint256 chargedAmount = (amount * serviceFeeRatio) / 100;
-        uint256 effectedAmount = amount - chargedAmount;
-        uint256 newAmount = balanceOf(member, token) + effectedAmount;
-        uint256 feeNewAmount = balanceOf(
-            address(DaoHelper.DAOSQUARE_FUNDS),
-            token
-        ) + chargedAmount;
-        uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL), token);
-        uint256 totalFunds = balanceOf(
-            address(DaoHelper.DAOSQUARE_TREASURY),
-            token
-        ) + effectedAmount;
-        //While begins a vote, set snapFunds = totalFunds,
-        //as an investor, you can still withdraw your balance;
-        // by doing that, there’ll be a room made in totalFunds so anyone could deposit funds to fill it until totalFunds reaches snapFunds.
-        if (
-            snapFunds > 0 &&
-            balanceOf(address(DaoHelper.DAOSQUARE_TREASURY), token) +
-                effectedAmount >
-            snapFunds
-        ) {
-            revert("FundingPool::addToBalance::total funds exceed snap funds");
-        }
-
-        if (DaoHelper.ifGP(member, dao)) {
+        uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL));
+        uint256 validTotalFunds = balanceOf(
+            address(DaoHelper.DAOSQUARE_TREASURY)
+        );
+        if (DaoHelper.ifGP(depositer, dao)) {
             _createNewAmountCheckpoint(
                 address(DaoHelper.GP_POOL),
-                token,
-                totalGPFunds + effectedAmount
+                fundTokenAddr,
+                totalGPFunds + amount
             );
         }
-        erc20.transferFrom(msg.sender, address(this), amount);
-
-        _createNewAmountCheckpoint(member, token, newAmount);
-        _createNewAmountCheckpoint(
-            address(DaoHelper.DAOSQUARE_FUNDS),
-            token,
-            feeNewAmount
-        );
+        _createNewAmountCheckpoint(depositer, fundTokenAddr, amount);
 
         _createNewAmountCheckpoint(
             address(DaoHelper.DAOSQUARE_TREASURY),
-            token,
-            totalFunds
+            fundTokenAddr,
+            validTotalFunds + amount
         );
+        erc20.transferFrom(msg.sender, address(this), amount);
     }
 
-    function withdraw(
-        address recipientAddr,
-        address tokenAddr,
-        uint256 amount
-    ) external nonReentrant hasExtensionAccess(AclFlag.WITHDRAW) {
+    function withdraw(address recipientAddr, uint256 amount)
+        external
+        nonReentrant
+        hasExtensionAccess(AclFlag.WITHDRAW)
+    {
         require(
-            balanceOf(recipientAddr, tokenAddr) >= amount,
+            fundRaisingState == FundRaiseState.FAILED ||
+                (fundRaisingState == FundRaiseState.DONE && ifInRedemption()) ||
+                (fundRaisingState == FundRaiseState.DONE &&
+                    block.timestamp >
+                    dao.getConfiguration(DaoHelper.FUND_END_TIME)),
+            "FundingPool::Withdraw::Cant withdraw at this time"
+        );
+        address fundTokenAddr = getFundRaisingTokenAddress();
+        require(
+            balanceOf(recipientAddr) >= amount,
             "FundingPool::withdraw::not enough funds"
         );
-        require(
-            snapFunds <= 0,
-            "FundingPool::Withdraw::unable to withdraw during proposal prcessing"
-        );
-        subtractFromBalance(recipientAddr, tokenAddr, amount);
+        uint256 redemptionFee = 0;
+        if (fundRaisingState == FundRaiseState.DONE && ifInRedemption()) {
+            //distribute redemption fee to GP
+            redemptionFee =
+                (dao.getConfiguration(DaoHelper.REDEMPTION_FEE) * amount) /
+                1000;
+            IERC20(fundTokenAddr).safeTransfer(
+                address(dao.getAddressConfiguration(DaoHelper.GP_ADDRESS)),
+                redemptionFee
+            );
+        }
 
-        IERC20(tokenAddr).safeTransfer(recipientAddr, amount);
+        subtractFromBalance(recipientAddr, fundTokenAddr, amount);
+
+        IERC20(fundTokenAddr).safeTransfer(
+            recipientAddr,
+            amount - redemptionFee
+        );
 
         //slither-disable-next-line reentrancy-events
-        emit Withdraw(recipientAddr, tokenAddr, uint128(amount));
+        emit Withdraw(recipientAddr, fundTokenAddr, uint128(amount));
     }
 
-    function getReward(address recipientAddr)
-        public
-        nonReentrant
-        updateReward(recipientAddr)
-        hasExtensionAccess(AclFlag.GET_REWARDS)
-    {
-        uint256 reward = rewards[recipientAddr];
-        require(
-            riceTokenAddress != address(0x0),
-            "getReward::invalid rice address"
-        );
-        if (reward > 0) {
-            rewards[recipientAddr] = 0;
-            IERC20(riceTokenAddress).safeTransfer(recipientAddr, reward);
-            emit RewardPaid(recipientAddr, reward);
-        }
-    }
+    // function getReward(address recipientAddr)
+    //     public
+    //     nonReentrant
+    //     updateReward(recipientAddr)
+    //     hasExtensionAccess(AclFlag.GET_REWARDS)
+    // {
+    //     uint256 reward = rewards[recipientAddr];
+    //     require(
+    //         riceTokenAddress != address(0x0),
+    //         "getReward::invalid rice address"
+    //     );
+    //     if (reward > 0) {
+    //         rewards[recipientAddr] = 0;
+    //         IERC20(riceTokenAddress).safeTransfer(recipientAddr, reward);
+    //         emit RewardPaid(recipientAddr, reward);
+    //     }
+    // }
 
     // function exit(address recipientAddr) external {
     //     withdraw(_balances[recipientAddr]);
@@ -525,40 +528,40 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
 
     /* ========== RESTRICTED FUNCTIONS ========== */
 
-    function notifyRewardAmount(uint256 reward)
-        external
-        updateReward(address(0))
-        hasExtensionAccess(AclFlag.NOTIFY_REWARD_AMOUNT)
-    {
-        require(
-            rewardsDuration > 0,
-            "FundingPool Ext::notifyRewardAmount::rewardsDuration Invalid"
-        );
-        if (block.timestamp >= periodFinish) {
-            rewardRate = reward.div(rewardsDuration);
-        } else {
-            uint256 remaining = periodFinish.sub(block.timestamp);
-            uint256 leftover = remaining.mul(rewardRate);
-            rewardRate = reward.add(leftover).div(rewardsDuration);
-        }
+    // function notifyRewardAmount(uint256 reward)
+    //     external
+    //     updateReward(address(0))
+    //     hasExtensionAccess(AclFlag.NOTIFY_REWARD_AMOUNT)
+    // {
+    //     require(
+    //         rewardsDuration > 0,
+    //         "FundingPool Ext::notifyRewardAmount::rewardsDuration Invalid"
+    //     );
+    //     if (block.timestamp >= periodFinish) {
+    //         rewardRate = reward.div(rewardsDuration);
+    //     } else {
+    //         uint256 remaining = periodFinish.sub(block.timestamp);
+    //         uint256 leftover = remaining.mul(rewardRate);
+    //         rewardRate = reward.add(leftover).div(rewardsDuration);
+    //     }
 
-        // Ensure the provided reward amount is not more than the balance in the contract.
-        // This keeps the reward rate in the right range, preventing overflows due to
-        // very high values of rewardRate in the earned and rewardsPerToken functions;
-        // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
-        require(
-            riceTokenAddress != address(0x0),
-            "notifyRewardAmount::invalid rice address"
-        );
-        uint256 balance = IERC20(riceTokenAddress).balanceOf(address(this));
-        require(
-            rewardRate <= balance.div(rewardsDuration),
-            "Provided reward too high"
-        );
-        lastUpdateTime = block.timestamp;
-        periodFinish = block.timestamp.add(rewardsDuration);
-        emit RewardAdded(reward);
-    }
+    //     // Ensure the provided reward amount is not more than the balance in the contract.
+    //     // This keeps the reward rate in the right range, preventing overflows due to
+    //     // very high values of rewardRate in the earned and rewardsPerToken functions;
+    //     // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
+    //     require(
+    //         riceTokenAddress != address(0x0),
+    //         "notifyRewardAmount::invalid rice address"
+    //     );
+    //     uint256 balance = IERC20(riceTokenAddress).balanceOf(address(this));
+    //     require(
+    //         rewardRate <= balance.div(rewardsDuration),
+    //         "Provided reward too high"
+    //     );
+    //     lastUpdateTime = block.timestamp;
+    //     periodFinish = block.timestamp.add(rewardsDuration);
+    //     emit RewardAdded(reward);
+    // }
 
     // Added to support recovering LP Rewards from other systems such as BAL to be distributed to holders
     function recoverERC20(
@@ -571,17 +574,17 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         emit Recovered(tokenAddress, tokenAmount);
     }
 
-    function setRewardsDuration(uint256 _rewardsDuration)
-        external
-        hasExtensionAccess(AclFlag.SET_REWARDS_DURATION)
-    {
-        require(
-            block.timestamp > periodFinish,
-            "Previous rewards period must be complete before changing the duration for the new period"
-        );
-        rewardsDuration = _rewardsDuration;
-        emit RewardsDurationUpdated(rewardsDuration);
-    }
+    // function setRewardsDuration(uint256 _rewardsDuration)
+    //     external
+    //     hasExtensionAccess(AclFlag.SET_REWARDS_DURATION)
+    // {
+    //     require(
+    //         block.timestamp > periodFinish,
+    //         "Previous rewards period must be complete before changing the duration for the new period"
+    //     );
+    //     rewardsDuration = _rewardsDuration;
+    //     emit RewardsDurationUpdated(rewardsDuration);
+    // }
 
     function setRiceTokenAddress(address riceAddr)
         external
@@ -619,22 +622,21 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         address member,
         address token,
         uint256 amount
-    ) public hasExtensionAccess(AclFlag.SUB_FROM_BALANCE) updateReward(member) {
+    ) public hasExtensionAccess(AclFlag.SUB_FROM_BALANCE) {
         require(
-            balanceOf(member, token) >= amount &&
-                balanceOf(DaoHelper.DAOSQUARE_TREASURY, token) >= amount,
+            balanceOf(member) >= amount &&
+                balanceOf(DaoHelper.DAOSQUARE_TREASURY) >= amount,
             "FundingPool::subtractFromBalance::Insufficient Fund"
         );
-        uint256 newAmount = balanceOf(member, token) - amount;
-        uint256 newTotalFund = balanceOf(DaoHelper.DAOSQUARE_TREASURY, token) -
-            amount;
+        uint256 newAmount = balanceOf(member) - amount;
+        uint256 newTotalFund = balanceOf(DaoHelper.DAOSQUARE_TREASURY) - amount;
         _createNewAmountCheckpoint(
             DaoHelper.DAOSQUARE_TREASURY,
             token,
             newTotalFund
         );
         if (DaoHelper.ifGP(member, dao)) {
-            uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL), token);
+            uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL));
             _createNewAmountCheckpoint(
                 address(DaoHelper.GP_POOL),
                 token,
@@ -657,17 +659,16 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         hasExtensionAccess(AclFlag.SUB_FROM_BALANCE)
     {
         uint256 treasuryBalance = balanceOf(
-            address(DaoHelper.DAOSQUARE_TREASURY),
-            token
+            address(DaoHelper.DAOSQUARE_TREASURY)
         );
         address[] memory tem = _investors.values();
         for (uint8 i = 0; i < tem.length; i++) {
             address investorAddr = tem[i];
-            if (balanceOf(investorAddr, token) > 0) {
+            if (balanceOf(investorAddr) > 0) {
                 subtractFromBalance(
                     investorAddr,
                     token,
-                    (amount * balanceOf(investorAddr, token)) / treasuryBalance
+                    (amount * balanceOf(investorAddr)) / treasuryBalance
                 );
             }
         }
@@ -675,19 +676,16 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
 
     /**
      * @notice Returns an member's balance of a given token
-     * @param member The address to look up
-     * @param tokenAddr The token where the member's balance of which will be returned
+     * @param investorAddr The address to look up
      * @return The amount in account's tokenAddr balance
      */
-    function balanceOf(address member, address tokenAddr)
-        public
-        view
-        returns (uint256)
-    {
-        uint32 nCheckpoints = numCheckpoints[tokenAddr][member];
+    function balanceOf(address investorAddr) public view returns (uint256) {
+        address fundTokenaddr = getFundRaisingTokenAddress();
+        uint32 nCheckpoints = numCheckpoints[fundTokenaddr][investorAddr];
         return
             nCheckpoints > 0
-                ? checkpoints[tokenAddr][member][nCheckpoints - 1].amount
+                ? checkpoints[fundTokenaddr][investorAddr][nCheckpoints - 1]
+                    .amount
                 : 0;
     }
 
@@ -755,7 +753,7 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         uint256 amount
     ) internal {
         bool isValidToken = false;
-        if (availableTokens[token]) {
+        if (token != address(0x0)) {
             require(
                 amount < type(uint128).max,
                 "token amount exceeds the maximum limit for external tokens"

@@ -133,8 +133,7 @@ library GovernanceHelper {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        uint256 balanceInEther = fundingpool.balanceOf(voterAddr, token) /
-            10**18;
+        uint256 balanceInEther = fundingpool.balanceOf(voterAddr) / 10**18;
         //need to fix 2022.6.14
         if (balanceInEther <= 0) {
             return 0;
