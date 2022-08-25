@@ -98,6 +98,7 @@ contract DistributeFundContractV2 is
         uint256 fullyReleasedDate; //  tokens will be fully released due to this time linearly. Must be equal or later than Tokens lock-up date
         uint256 lockupDate; //tokens will be locked untill this specific time.
         address recipientAddr; // The receiver address that will receive the funds.
+        address proposer;
         DistributionStatus status; // The distribution status.
         uint256 inQueueTimestamp;
         uint256 proposalStartVotingTimestamp; //project start voting timestamp
@@ -279,7 +280,13 @@ contract DistributeFundContractV2 is
         );
         // Creates the distribution proposal.
         dao.submitProposal(vars.proposalId);
-
+        address[3] memory _addressArgs = [
+            recipientAddr,
+            dao.getAddressConfiguration(
+                DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+            ),
+            msg.sender
+        ];
         // Saves the state of the proposal.
         createNewDistribution(
             dao,
@@ -330,7 +337,7 @@ contract DistributeFundContractV2 is
     function createNewDistribution(
         DaoRegistry dao,
         bytes32 proposalId,
-        address[] calldata _addressArgs,
+        address[3] memory _addressArgs,
         uint256[] calldata _uint256ArgsProposal
     ) internal {
         uint256 _propsalStartVotingTimestamp = computeProjectVotingTimestamp(
@@ -347,6 +354,7 @@ contract DistributeFundContractV2 is
             _uint256ArgsProposal[2],
             _uint256ArgsProposal[3],
             _addressArgs[0],
+            _addressArgs[2],
             DistributionStatus.IN_QUEUE,
             block.timestamp,
             _propsalStartVotingTimestamp,

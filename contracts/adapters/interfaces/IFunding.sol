@@ -32,8 +32,7 @@ SOFTWARE.
 interface IFunding {
     function submitProposal(
         DaoRegistry dao,
-        // bytes32 proposalId,
-        address[] calldata _addressArgs,
+        address recipientAddr,
         uint256[] calldata _uint256ArgsProposal
     ) external returns (bytes32 proposalId);
 

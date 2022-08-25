@@ -55,7 +55,8 @@ library DaoHelper {
         WEEKLY,
         BI_WEEKLY,
         MONTHLY,
-        QUARTERLY
+        QUARTERLY,
+        YEARLY
     }
 
     uint256 internal constant ONE_WEEK = 60 * 60 * 24 * 7;
