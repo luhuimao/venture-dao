@@ -410,20 +410,21 @@ contract GPVotingContract is
         DaoHelper.VoteType voteType = DaoHelper.VoteType(
             dao.getProposalVoteType(DaoHelper.ProposalType.FUNDING)
         );
-        uint256 gpAmount = GPDaoExtension(
-            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
-        ).getAllGPs().length;
+        // uint256 gpAmount = GPDaoExtension(
+        //     dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
+        // ).getAllGPs().length;
+        uint128 allGPsWeight = getAllGPWeight(dao);
 
         // rule out any failed quorums
         if (
             voteType == DaoHelper.VoteType.SIMPLE_MAJORITY_QUORUM_REQUIRED ||
             voteType == DaoHelper.VoteType.SUPERMAJORITY_QUORUM_REQUIRED
         ) {
-            uint256 minVoters = (gpAmount *
+            uint256 minVotes = (allGPsWeight *
                 dao.getConfiguration(DaoHelper.QUORUM)) / 100;
 
             unchecked {
-                if (vote.voters < minVoters)
+                if (vote.voters < minVotes)
                     return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
             }
         }
@@ -464,5 +465,17 @@ contract GPVotingContract is
         } else {
             return true;
         }
+    }
+
+    function getAllGPWeight(DaoRegistry dao) public view returns (uint128) {
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        address token = fundingpool.fundRaisingTokenAddress();
+        uint128 allGPsWeight = GovernanceHelper.getAllGPVotingWeight(
+            dao,
+            token
+        );
+        return allGPsWeight;
     }
 }

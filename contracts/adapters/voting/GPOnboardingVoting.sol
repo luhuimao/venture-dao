@@ -227,7 +227,8 @@ contract GPOnboardVotingContract is
         if (
             // slither-disable-next-line timestamp
             block.timestamp <
-            vote.startingTime + dao.getConfiguration(DaoHelper.PROPOSAL_DURATION)
+            vote.startingTime +
+                dao.getConfiguration(DaoHelper.PROPOSAL_DURATION)
         ) {
             return (VotingState.IN_PROGRESS, vote.nbYes, vote.nbNo);
         }
@@ -248,14 +249,11 @@ contract GPOnboardVotingContract is
         //     dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
         // ).getAllGPs().length;
 
-        FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        );
-        address token = fundingpool.fundRaisingTokenAddress();
-        uint128 allGPsWeight = GovernanceHelper.getAllGPVotingWeight(
-            dao,
-            token
-        );
+        // FundingPoolExtension fundingpool = FundingPoolExtension(
+        //     dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        // );
+        // address token = fundingpool.fundRaisingTokenAddress();
+        uint128 allGPsWeight = getAllGPWeight(dao);
         // rule out any failed quorums
         if (
             voteType == DaoHelper.VoteType.SIMPLE_MAJORITY_QUORUM_REQUIRED ||
@@ -294,5 +292,17 @@ contract GPOnboardVotingContract is
                 return (VotingState.PASS, vote.nbYes, vote.nbNo);
             else return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
         }
+    }
+
+    function getAllGPWeight(DaoRegistry dao) public view returns (uint128) {
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        address token = fundingpool.fundRaisingTokenAddress();
+        uint128 allGPsWeight = GovernanceHelper.getAllGPVotingWeight(
+            dao,
+            token
+        );
+        return allGPsWeight;
     }
 }
