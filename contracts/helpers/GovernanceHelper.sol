@@ -143,26 +143,24 @@ library GovernanceHelper {
         }
 
         uint128 weight;
-        if (fundingpool.isTokenAllowed(token)) {
-            if (
-                fundingpool.votingWeightRadix() == 1 ||
-                fundingpool.votingWeightRadix() <= 0
-            ) {
-                // weight =
-                //     fundingpool.balanceOf(voterAddr, token) *
-                //     fundingpool.votingWeightMultiplier() +
-                //     fundingpool.votingWeightAddend();
-            } else {
-                weight =
-                    ABDKMath64x64.toUInt(
-                        ABDKMath64x64.log_2(
-                            ABDKMath64x64.fromUInt(balanceInEther)
-                        )
-                    ) *
-                    fundingpool.votingWeightMultiplier() +
-                    fundingpool.votingWeightAddend();
-            }
+        // if (fundingpool.isTokenAllowed(token)) {
+        if (
+            fundingpool.votingWeightRadix() == 1 ||
+            fundingpool.votingWeightRadix() <= 0
+        ) {
+            // weight =
+            //     fundingpool.balanceOf(voterAddr, token) *
+            //     fundingpool.votingWeightMultiplier() +
+            //     fundingpool.votingWeightAddend();
+        } else {
+            weight =
+                ABDKMath64x64.toUInt(
+                    ABDKMath64x64.log_2(ABDKMath64x64.fromUInt(balanceInEther))
+                ) *
+                fundingpool.votingWeightMultiplier() +
+                fundingpool.votingWeightAddend();
         }
+        // }
         return weight;
     }
 }

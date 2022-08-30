@@ -51,15 +51,6 @@ function getProposalCounter() {
     return proposalCounter().next().value;
 }
 
-async function advanceTime(addr1, addr2, token) {
-
-    for (var i = 0; i < 10; i++) {
-        await token.transfer(addr2.address, 1);
-
-        await token.connect(addr2).transfer(addr1.address, 1);
-
-    }
-}
 
 
 describe("Adapter - GPKick", () => {

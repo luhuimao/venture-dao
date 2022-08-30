@@ -9,6 +9,7 @@ import "../extensions/fundingpool/FundingPool.sol";
 import "../extensions/ricestaking/RiceStaking.sol";
 import "../extensions/gpdao/GPDao.sol";
 import "./streaming_payment/interfaces/ISablier.sol";
+import "./FundingPoolAdapter.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -88,14 +89,14 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         );
         uint256 fundingRewards = (tokenAmount *
             (100 -
-                dao.getConfiguration(GPAllocationBonusRadio) -
-                dao.getConfiguration(RiceStakeAllocationRadio))) / 100;
-        uint256 projectSanpFunds = fundingpool.projectSnapFunds();
+                dao.getConfiguration(DaoHelper.REWARD_FOR_PROPOSER) -
+                dao.getConfiguration(DaoHelper.REWARD_FOR_GP))) / 100;
+        uint256 totalFund = fundingpool.totalSupply();
         uint256 fund = fundingpool.balanceOf(recipient);
-        if (projectSanpFunds <= 0 || fund <= 0 || fundingRewards <= 0) {
+        if (totalFund <= 0 || fund <= 0 || fundingRewards <= 0) {
             return 0;
         }
-        return (fund * fundingRewards) / projectSanpFunds;
+        return (fund * fundingRewards) / totalFund;
     }
 
     function getGPBonus(
@@ -103,10 +104,12 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         address recipient,
         uint256 tokenAmount
     ) public view returns (uint256) {
-        FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        // FundingPoolExtension fundingpool = FundingPoolExtension(
+        //     dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        // );
+        FundingPoolAdapterContract fundpoolAdapt = FundingPoolAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
         );
-
         GPDaoExtension gpdao = GPDaoExtension(
             dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
         );
@@ -114,43 +117,60 @@ contract AllocationAdapterContractV2 is AdapterGuard {
             return 0;
         }
         uint256 GPBonus = (tokenAmount *
-            dao.getConfiguration(GPAllocationBonusRadio)) / 100;
-        uint256 myFund = fundingpool.balanceOf(recipient);
-        uint256 allGPFunds;
-        for (uint8 i = 0; i < gpdao.getAllGPs().length; i++) {
-            if (gpdao.isGeneralPartner(gpdao.getAllGPs()[i])) {
-                allGPFunds += fundingpool.balanceOf(gpdao.getAllGPs()[i]);
-            }
-        }
+            dao.getConfiguration(DaoHelper.REWARD_FOR_GP)) / 100;
+        uint256 myFund = fundpoolAdapt.balanceOf(dao, recipient);
+        uint256 allGPFunds = fundpoolAdapt.gpBalance(dao);
+        // for (uint8 i = 0; i < gpdao.getAllGPs().length; i++) {
+        //     if (gpdao.isGeneralPartner(gpdao.getAllGPs()[i])) {
+        //         allGPFunds += fundingpool.balanceOf(gpdao.getAllGPs()[i]);
+        //     }
+        // }
         if (GPBonus <= 0 || myFund <= 0 || allGPFunds <= 0) {
             return 0;
         }
         return (GPBonus * myFund) / allGPFunds;
     }
 
-    function getRiceRewards(
+    function getProposerBonus(
         DaoRegistry dao,
-        address recipient,
+        address proposerAddr,
         uint256 tokenAmount
     ) public view returns (uint256) {
-        StakingRiceExtension stakingRice = StakingRiceExtension(
-            dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
+        GPDaoExtension gpdao = GPDaoExtension(
+            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
         );
-        uint256 riceStakingRewards = (tokenAmount *
-            dao.getConfiguration(RiceStakeAllocationRadio)) / 100;
-        uint256 projectSanpRice = stakingRice.getProjectSnapRice();
-
-        address riceAddr = dao.getAddressConfiguration(
-            DaoHelper.RICE_TOKEN_ADDRESS
-        );
-        uint256 riceBalance = stakingRice.balanceOf(recipient, riceAddr);
-        if (
-            projectSanpRice <= 0 || riceBalance <= 0 || riceStakingRewards <= 0
-        ) {
+        if (!gpdao.isGeneralPartner(proposerAddr)) {
             return 0;
         }
-        return (riceBalance * riceStakingRewards) / projectSanpRice;
+        uint256 ProposerBonus = (tokenAmount *
+            dao.getConfiguration(DaoHelper.REWARD_FOR_PROPOSER)) / 100;
+
+        return ProposerBonus;
     }
+
+    // function getRiceRewards(
+    //     DaoRegistry dao,
+    //     address recipient,
+    //     uint256 tokenAmount
+    // ) public view returns (uint256) {
+    //     StakingRiceExtension stakingRice = StakingRiceExtension(
+    //         dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
+    //     );
+    //     uint256 riceStakingRewards = (tokenAmount *
+    //         dao.getConfiguration(RiceStakeAllocationRadio)) / 100;
+    //     uint256 projectSanpRice = stakingRice.getProjectSnapRice();
+
+    //     address riceAddr = dao.getAddressConfiguration(
+    //         DaoHelper.RICE_TOKEN_ADDRESS
+    //     );
+    //     uint256 riceBalance = stakingRice.balanceOf(recipient, riceAddr);
+    //     if (
+    //         projectSanpRice <= 0 || riceBalance <= 0 || riceStakingRewards <= 0
+    //     ) {
+    //         return 0;
+    //     }
+    //     return (riceBalance * riceStakingRewards) / projectSanpRice;
+    // }
 
     struct allocateProjectTokenLocalVars {
         ISablier streamingPaymentContract;
@@ -172,6 +192,7 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         DaoRegistry dao,
         uint256 tokenAmount,
         address tokenAddress,
+        address proposerAddr,
         uint256 startTime,
         uint256 stopTime
     ) external {
@@ -190,9 +211,9 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         vars.fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        vars.ricestaking = StakingRiceExtension(
-            dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
-        );
+        // vars.ricestaking = StakingRiceExtension(
+        //     dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
+        // );
         GPDaoExtension gpdao = GPDaoExtension(
             dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
         );
@@ -211,12 +232,14 @@ contract AllocationAdapterContractV2 is AdapterGuard {
             tokenAmount
         );
         address[] memory allInvestors = vars.fundingpool.getInvestors();
-        address[] memory riceStakeres = vars.ricestaking.getAllRiceStakers();
+        // address[] memory riceStakeres = vars.ricestaking.getAllRiceStakers();
         address[] memory gps = gpdao.getAllGPs();
+        // address[] memory targetAddressArr = new address[](
+        //     allInvestors.length + riceStakeres.length + gps.length
+        // );
         address[] memory targetAddressArr = new address[](
-            allInvestors.length + riceStakeres.length + gps.length
+            allInvestors.length + gps.length
         );
-
         vars.totalReward = 0;
 
         if (allInvestors.length > 0) {
@@ -255,26 +278,44 @@ contract AllocationAdapterContractV2 is AdapterGuard {
                 }
             }
         }
-        if (riceStakeres.length > 0) {
-            for (uint8 i = 0; i < riceStakeres.length; i++) {
-                uint256 riceStakingRewards = getRiceRewards(
-                    dao,
-                    riceStakeres[i],
-                    tokenAmount
+
+        if (proposerAddr != address(0x0)) {
+            uint256 proposerBonus = getProposerBonus(
+                dao,
+                proposerAddr,
+                tokenAmount
+            );
+            vars.totalReward += proposerBonus;
+            if (proposerBonus > 0) {
+                vars.streamingPaymentContract.createStream(
+                    proposerAddr,
+                    proposerBonus,
+                    tokenAddress,
+                    startTime,
+                    stopTime
                 );
-                vars.totalReward += riceStakingRewards;
-                //bug fixed: fillter riceStakingRewards >0;20220614
-                if (riceStakingRewards > 0) {
-                    vars.streamingPaymentContract.createStream(
-                        riceStakeres[i],
-                        riceStakingRewards,
-                        tokenAddress,
-                        startTime,
-                        stopTime
-                    );
-                }
             }
         }
+        // if (riceStakeres.length > 0) {
+        //     for (uint8 i = 0; i < riceStakeres.length; i++) {
+        //         uint256 riceStakingRewards = getRiceRewards(
+        //             dao,
+        //             riceStakeres[i],
+        //             tokenAmount
+        //         );
+        //         vars.totalReward += riceStakingRewards;
+        //         //bug fixed: fillter riceStakingRewards >0;20220614
+        //         if (riceStakingRewards > 0) {
+        //             vars.streamingPaymentContract.createStream(
+        //                 riceStakeres[i],
+        //                 riceStakingRewards,
+        //                 tokenAddress,
+        //                 startTime,
+        //                 stopTime
+        //             );
+        //         }
+        //     }
+        // }
         require(
             vars.totalReward <= tokenAmount,
             "allocateProjectToken::distribute token amount exceeds tranding off amount"

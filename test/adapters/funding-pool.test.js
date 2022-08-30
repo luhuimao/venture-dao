@@ -201,144 +201,59 @@ describe("Adapter - FundingPool", () => {
         investor,
         amount,
         token) => {
+
+        console.log(`FUND_RAISING_WINDOW_BEGIN: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_BEGIN")))}`);
+        console.log(`FUND_RAISING_WINDOW_END: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_END")))}`);
+
         await token.connect(investor).approve(fundingpoolAdapter.address, amount);
         await fundingpoolAdapter.connect(investor).deposit(dao.address, amount);
+
+        console.log(`balance in fund pool: ${hre.ethers.utils.formatEther(await fundingpoolAdapter.balanceOf(
+            dao.address, investor.address))}`);
     };
 
-    it("should be possible to deposit funds to the fundingpool", async () => {
+    it("should be possible to deposit funds to the fundingpool during fundraise window", async () => {
         const fundingpoolAdapter = this.fundingpoolAdapter;
         const dao = this.dao;
         const testtoken1 = this.testtoken1;
         const fundingPoolExt = this.extensions.fundingpoolExt.functions;
         const gpdaoExt = this.gpdaoExt;
 
-        // await fundingpoolAdapter.registerPotentialNewToken(dao.address, testtoken1.address);
         await testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("2000"));
-        await testtoken1.transfer(this.user2.address, hre.ethers.utils.parseEther("1000"));
-
         console.log("user1 test token balance: ", hre.ethers.utils.formatEther(await testtoken1.balanceOf(this.user1.address)).toString());
-        await testtoken1.connect(this.user1).approve(fundingpoolAdapter.address, hre.ethers.utils.parseEther("2000"));
-        await fundingpoolAdapter.connect(this.user1).deposit(dao.address, hre.ethers.utils.parseEther("100"));
-
+        await depositToFundingPool(fundingpoolAdapter, dao, this.user1, hre.ethers.utils.parseEther("1000"), testtoken1);
+        console.log(`test usdt bal in fund pool: ${hre.ethers.utils.formatEther((await testtoken1.balanceOf(this.extensions.fundingpoolExt.address)))}`);
         console.log("user1 test token balance: ", hre.ethers.utils.formatEther(await testtoken1.balanceOf(this.user1.address)).toString());
-
+        console.log(`total fund: ${hre.ethers.utils.formatEther((await fundingpoolAdapter.lpBalance(dao.address)))}`);
         expect(parseInt(hre.ethers.utils.formatEther(await fundingpoolAdapter.balanceOf(
-            dao.address, this.user1.address)))).equal(100 * (100 - getDefaultOptions().serviceFeeRatio) / 100);
-
-        await fundingpoolAdapter.connect(this.user1).deposit(dao.address, hre.ethers.utils.parseEther("1000"));
-
-        expect(parseInt(hre.ethers.utils.formatEther(await fundingpoolAdapter.balanceOf(
-            dao.address, this.user1.address)))).equal(1100 * (100 - getDefaultOptions().serviceFeeRatio) / 100);
+            dao.address, this.user1.address)))).equal(1000);
     })
 
-    it("should be possible to withdraw funds from the fundingpool", async () => {
+    it("should be impossible to withdraw funds from the fundingpool during fundraise window", async () => {
         const fundingpoolAdapter = this.adapters.fundingpoolAdapter.instance;
         const dao = this.dao;
         const testtoken1 = this.testContracts.testToken1.instance;
         const fundingPoolExt = this.extensions.fundingpoolExt.functions;
         const gpdaoExt = this.extensions.gpDaoExt.functions;
 
-        await fundingpoolAdapter.connect(this.user1).withdraw(dao.address, hre.ethers.utils.parseEther("10"));
-        expect(parseInt(hre.ethers.utils.formatEther(await fundingpoolAdapter.balanceOf(dao.address, this.user1.address)))).equal(
-            1100 * (100 - getDefaultOptions().serviceFeeRatio) / 100 - 10);
-
-        expect(parseInt(hre.ethers.utils.formatEther(await testtoken1.balanceOf(this.user1.address)))).equal(2000 - 100 - 1000 + 10);
-
-        await fundingpoolAdapter.connect(this.user1).withdraw(dao.address, hre.ethers.utils.parseEther("100"));
-        expect((await gpdaoExt.isGeneralPartner(this.user1.address))[0]).equal(true);
+        await expectRevert(fundingpoolAdapter.connect(this.user1).withdraw(dao.address, hre.ethers.utils.parseEther("10")), "revert");
     })
 
-    it("should be no allow to let total funds greater than snap fund during GP voting", async () => {
+    it("should be no allow to let total funds greater than Fundraise max amount ", async () => {
         const fundingpoolAdapter = this.fundingpoolAdapter;
         const dao = this.dao;
         const testtoken2 = this.testContracts.testToken2.instance;
         const distributeFundAdapter = this.adapters.distributeFundAdapterv2.instance;
         const fundingPoolExt = this.extensions.fundingpoolExt.functions;
+        const testtoken1 = this.testtoken1;
 
-        //create distribute fund proposal
-        const requestedFundAmount = hre.ethers.utils.parseEther("100");
-        const tradingOffTokenAmount = hre.ethers.utils.parseEther("50000");
-        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const lockupDate = blocktimestamp;
-        const fullyReleasedDate = lockupDate + 1000;
-        const projectTeamAddr = this.project_team1.address;
-        const projectTeamTokenAddr = testtoken2.address;
-
-        console.log(`dao owner projectTeamToken balance ${hre.ethers.utils.formatEther(await testtoken2.balanceOf(this.owner.address))}`);
-        await testtoken2.transfer(projectTeamAddr, tradingOffTokenAmount);
-        console.log(`projectTeam projectTeamToken balance ${hre.ethers.utils.formatEther(await testtoken2.balanceOf(projectTeamAddr))}`);
-
-        await testtoken2.connect(this.project_team1).approve(distributeFundAdapter.address, tradingOffTokenAmount);
-        // create proposal and snapshot the total fund
-
-        let { proposalId } = await distributeFundsProposal(
-            dao,
-            distributeFundAdapter,
-            requestedFundAmount,
-            tradingOffTokenAmount,
-            fullyReleasedDate,
-            lockupDate,
-            projectTeamAddr,
-            projectTeamTokenAddr,
-            this.owner
-        );
-        console.log(`proposalId: ${hre.ethers.utils.toUtf8String(proposalId)}`);
-        this.proposalId = proposalId;
-        console.log(`snap funds: ${hre.ethers.utils.formatEther((await fundingPoolExt.snapFunds()).toString())}`);
-        console.log(`totalSupply: ${hre.ethers.utils.formatEther((await fundingPoolExt.totalSupply()).toString())}`);
-
-        let distriInfo = await distributeFundAdapter.distributions(dao.address, proposalId);
-        console.log(`distriInfo -> proposalStartVotingTimestamp:  ${distriInfo.proposalStartVotingTimestamp}`);
-        console.log(`current blcok timestamp ->: ${(await hre.ethers.provider.getBlock("latest")).timestamp}`);
-
-        //start fill funds process
-        await distributeFundAdapter.startFillFundsProcess(dao.address, this.proposalId);
-        distriInfo = await distributeFundAdapter.distributions(dao.address, proposalId);
-        console.log(`proposal state: ${distriInfo.status}`);
-        let currentProposalId = await distributeFundAdapter.ongoingDistributions(dao.address);
-        console.log(`current proposalId: ${hre.ethers.utils.toUtf8String(currentProposalId)}`);
-
-
-        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(distriInfo.proposalStartVotingTimestamp) + 1])
-        await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
-
-        //start Voting Process
-        await distributeFundAdapter.startVotingProcess(dao.address, this.proposalId);
-        const voteInfo = await this.gpvoting.votes(dao.address, this.proposalId);
-        console.log(`start voting time of proposal ${this.proposalId} : ${voteInfo.startingTime}`);
-        //vote for proposal
-        // await this.adapters.gpVotingAdapter.instance.connect(this.user1).submitVote(dao.address, proposalId.proposalId, 1);
-
-        await expectRevert(fundingpoolAdapter.connect(this.user1).deposit(dao.address, hre.ethers.utils.parseEther("900")), "revert");
+        const fundRaisingMaxAmount = await fundingpoolAdapter.getFundRaisingMaxAmount(dao.address);
+        const totalValidFund = await fundingPoolExt.totalSupply();
+        console.log(`fundRaisingMaxAmount: ${fundRaisingMaxAmount} totalValidFund: ${totalValidFund}`);
+        await expectRevert(depositToFundingPool(fundingpoolAdapter, dao, this.owner, toBN(fundRaisingMaxAmount.toString()).sub(toBN(totalValidFund.toString())), testtoken1), "revert");
     });
 
-    // it("should be possible to deposit fund when someone withdraw fund during GP voting", async () => {
-    //     const fundingpoolAdapter = this.adapters.fundingpoolAdapter.instance;
-    //     const dao = this.dao;
-    //     const testtoken1 = this.testContracts.testToken1.instance;
-    //     const testtoken2 = this.testContracts.testToken2.instance;
-    //     const distributeFundAdapter = this.adapters.distributeFundAdapterv2.instance;
-    //     const fundingPoolExt = this.extensions.fundingpoolExt.functions;
-
-
-    //     //user1 withdraw fund
-    //     const user1FundBalance1 = hre.ethers.utils.formatEther(await testtoken1.balanceOf(this.user1.address));
-    //     await fundingpoolAdapter.connect(this.user1).withdraw(dao.address, hre.ethers.utils.parseEther("10"));
-    //     const user1FundBalance2 = hre.ethers.utils.formatEther(await testtoken1.balanceOf(this.user1.address));
-    //     expect(parseInt(user1FundBalance2)).equal(parseInt(user1FundBalance1) + 10);
-
-    //     console.log(`snap funds: ${hre.ethers.utils.formatEther((await fundingPoolExt.snapFunds()).toString())}`);
-    //     console.log(`totalSupply: ${hre.ethers.utils.formatEther((await fundingPoolExt.totalSupply()).toString())}`);
-
-    //     //user2 deposit fund
-    //     await testtoken1.connect(this.user2).approve(fundingpoolAdapter.address, hre.ethers.utils.parseEther("1000"));
-    //     await fundingpoolAdapter.connect(this.user2).deposit(dao.address, hre.ethers.utils.parseEther("20"));
-    //     console.log(`user2 bal: ${hre.ethers.utils.formatEther((await fundingpoolAdapter.balanceOf(dao.address, this.user2.address)).toString())}`);
-    //     console.log(`snap funds: ${hre.ethers.utils.formatEther((await fundingPoolExt.snapFunds()).toString())}`);
-    //     console.log(`totalSupply: ${hre.ethers.utils.formatEther((await fundingPoolExt.totalSupply()).toString())}`);
-    // });
-
-    it("should be possible to deposit arbitrary funds when proposal processed", async () => {
+    it("should be not allow investor to deposit funds less than min investment amount for lp", async () => {
         const fundingpoolAdapter = this.adapters.fundingpoolAdapter.instance;
         const dao = this.dao;
         const testtoken1 = this.testContracts.testToken1.instance;
@@ -346,24 +261,363 @@ describe("Adapter - FundingPool", () => {
         const distributeFundAdapter = this.adapters.distributeFundAdapterv2.instance;
         const fundingPoolExt = this.extensions.fundingpoolExt.functions;
 
+        const minInvestmentAmountForLP = await fundingpoolAdapter.getMinInvestmentForLP(dao.address);
+        console.log(`min Investment Amount For LP: ${hre.ethers.utils.formatEther(minInvestmentAmountForLP.toString())}`);
+        await expectRevert(depositToFundingPool(fundingpoolAdapter, dao, this.owner, hre.ethers.utils.parseEther("100"), testtoken1), "revert");
 
-        //processProposal
-        let distriInfo = await distributeFundAdapter.distributions(dao.address, this.proposalId);
-        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(distriInfo.proposalStopVotingTimestamp) + 1])
-        await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
-        await distributeFundAdapter.processProposal(dao.address, this.proposalId);
+    });
+});
 
 
-        console.log(`snap funds: ${hre.ethers.utils.formatEther((await fundingPoolExt.snapFunds()).toString())}`);
-        console.log(`totalSupply: ${hre.ethers.utils.formatEther((await fundingPoolExt.totalSupply()).toString())}`);
+describe("Adapter - Fund Raising Failed", () => {
+    before("deploy dao", async () => {
+        let [owner, user1, user2, project_team1] = await hre.ethers.getSigners();
+        this.owner = owner;
+        this.user1 = user1;
+        this.user2 = user2;
+        this.project_team1 = project_team1;
 
-        //user2 deposit fund
-        const tt1User2Bal = await testtoken1.balanceOf(this.user2.address);
-        await testtoken1.connect(this.user2).approve(fundingpoolAdapter.address, tt1User2Bal);
-        await fundingpoolAdapter.connect(this.user2).deposit(dao.address, tt1User2Bal);
-        console.log(`user2 bal: ${hre.ethers.utils.formatEther((await fundingpoolAdapter.balanceOf(dao.address, this.user2.address)).toString())}`);
-        console.log(`snap funds: ${hre.ethers.utils.formatEther((await fundingPoolExt.snapFunds()).toString())}`);
-        console.log(`totalSupply: ${hre.ethers.utils.formatEther((await fundingPoolExt.totalSupply()).toString())}`);
+        const { dao, adapters, extensions, testContracts } = await deployDefaultDao({
+            owner: owner,
+        });
+
+        this.adapters = adapters;
+        this.extensions = extensions;
+        this.dao = dao;
+        this.testContracts = testContracts;
+        this.snapshotId = await takeChainSnapshot();
+
+        this.gpDaoOnboardingAdapter = adapters.gpDaoOnboardingAdapter.instance;
+        this.gpOnboardVotingAdapter = adapters.gpOnboardVotingAdapter.instance;
+        this.fundingpoolAdapter = adapters.fundingpoolAdapter.instance;
+        this.gpdaoExt = extensions.gpDaoExt.functions;
+        this.testtoken1 = testContracts.testToken1.instance
+        this.gpvoting = this.adapters.gpVotingAdapter.instance;
+
+        //add new GP
+        await depositToFundingPool(this.fundingpoolAdapter, dao, this.owner, hre.ethers.utils.parseEther("1000"), this.testtoken1)
+        await addNewGP(this.user1.address, this.gpDaoOnboardingAdapter, this.gpOnboardVotingAdapter, dao, this.gpdaoExt, [this.user1]);
+
     });
 
+    beforeEach(async () => {
+        await revertChainSnapshot(this.snapshotId);
+        this.snapshotId = await takeChainSnapshot();
+    });
+
+    const addNewGP = async (applicant, gpDaoOnboardingAdapter, gpOnboardVotingAdatper, dao, gpDaoExe, gpList) => {
+        let tx = await gpDaoOnboardingAdapter.submitProposal(dao.address, applicant);
+        const result = await tx.wait();
+        const newOnboardingProposalId = result.events[2].args.proposalId;
+        console.log(`newOnboardingProposalId: ${hre.ethers.utils.toUtf8String(newOnboardingProposalId)}`);
+
+        const proposalInfo = await gpDaoOnboardingAdapter.proposals(dao.address, newOnboardingProposalId);
+        let allGPs = await gpDaoExe.getAllGPs();
+        let arrayGPs = allGPs.toString().split(',');
+        console.log(`arrayGPs: ${arrayGPs}`);
+        tx = await gpOnboardVotingAdatper.submitVote(dao.address, newOnboardingProposalId, 1);
+        await tx.wait();
+        console.log(`GP amount: ${arrayGPs.length}`);
+        if (arrayGPs.length > 1) {
+            for (var i = 0; i < arrayGPs.length - 1; i++) {
+                tx = await gpOnboardVotingAdatper.connect(gpList[i]).submitVote(dao.address, newOnboardingProposalId, 1);
+                await tx.wait();
+            }
+        }
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalInfo.stopVoteTime) + 1])
+        await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+
+        tx = await gpDaoOnboardingAdapter.processProposal(dao.address, newOnboardingProposalId);
+        await tx.wait();
+
+        const isGP = await gpDaoExe.isGeneralPartner(applicant);
+        console.log(`${applicant} is a GP?: ${isGP}`);
+    }
+
+    const depositToFundingPool = async (
+        fundingpoolAdapter,
+        dao,
+        investor,
+        amount,
+        token) => {
+
+        console.log(`FUND_RAISING_WINDOW_BEGIN: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_BEGIN")))}`);
+        console.log(`FUND_RAISING_WINDOW_END: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_END")))}`);
+
+        await token.connect(investor).approve(fundingpoolAdapter.address, amount);
+        await fundingpoolAdapter.connect(investor).deposit(dao.address, amount);
+
+        console.log(`balance in fund pool: ${hre.ethers.utils.formatEther(await fundingpoolAdapter.balanceOf(
+            dao.address, investor.address))}`);
+    };
+
+    it("fund raise should fail if totoal fund didt meet the target", async () => {
+        const fundingpoolAdapter = this.adapters.fundingpoolAdapter.instance;
+        const dao = this.dao;
+        const testtoken1 = this.testContracts.testToken1.instance;
+        const testtoken2 = this.testContracts.testToken2.instance;
+        const distributeFundAdapter = this.adapters.distributeFundAdapterv2.instance;
+        const fundingPoolExt = this.extensions.fundingpoolExt.functions;
+
+        const fundRaisingTarget = await fundingpoolAdapter.getFundRaisingTarget(dao.address);
+        console.log(`fund Raising Target: ${hre.ethers.utils.formatEther(fundRaisingTarget.toString())}`);
+
+        const fundRaisingWindwoEndTime = await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_END"));
+
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaisingWindwoEndTime) + 1]);
+        await hre.network.provider.send("evm_mine");
+
+        await fundingPoolExt.processFundRaising();
+
+        expect((await fundingPoolExt.fundRaisingState())[0]).equal(2);
+    });
+
+    it("should be possible to withdraw fund if fund raising failed", async () => {
+        const fundingpoolAdapter = this.adapters.fundingpoolAdapter.instance;
+        const dao = this.dao;
+        const testtoken1 = this.testContracts.testToken1.instance;
+
+        const bal_usdt1 = await testtoken1.balanceOf(this.owner.address);
+        const bal_fundPool1 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
+
+        await fundingpoolAdapter.withdraw(dao.address, hre.ethers.utils.parseEther("100"));
+
+        const bal_usdt2 = await testtoken1.balanceOf(this.owner.address);
+        const bal_fundPool2 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
+        console.log(`USDT balance: ${hre.ethers.utils.formatEther(bal_usdt2.toString())}`);
+        console.log(`balance if fund pool: ${hre.ethers.utils.formatEther(bal_fundPool2.toString())}`);
+
+        expect(toBN(bal_usdt2.toString()).sub(toBN(bal_usdt1.toString()))).equal(toBN(bal_fundPool1.toString()).sub(toBN(bal_fundPool2.toString())));
+    });
+
+    it("should be impossible to withdraw fund amount exceed your balance in fund pool if fund raising failed", async () => {
+        const fundingpoolAdapter = this.adapters.fundingpoolAdapter.instance;
+        const dao = this.dao;
+
+        const bal_fundPool1 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
+
+        await expectRevert(fundingpoolAdapter.withdraw(dao.address, toBN(bal_fundPool1.toString()).add(toBN("1"))), "revert");
+    });
+});
+
+
+describe("Adapter - Fund Raising Succeed", () => {
+    before("deploy dao", async () => {
+        let [owner, user1, user2, project_team1, DAOSquare, GP] = await hre.ethers.getSigners();
+        this.owner = owner;
+        this.user1 = user1;
+        this.user2 = user2;
+        this.project_team1 = project_team1;
+        this.DAOSquare = DAOSquare;
+        this.GP = GP;
+        const { dao, adapters, extensions, testContracts } = await deployDefaultDao({
+            owner: owner,
+        });
+
+        this.adapters = adapters;
+        this.extensions = extensions;
+        this.dao = dao;
+        this.testContracts = testContracts;
+        this.snapshotId = await takeChainSnapshot();
+
+        this.gpDaoOnboardingAdapter = adapters.gpDaoOnboardingAdapter.instance;
+        this.gpOnboardVotingAdapter = adapters.gpOnboardVotingAdapter.instance;
+        this.fundingpoolAdapter = adapters.fundingpoolAdapter.instance;
+        this.gpdaoExt = extensions.gpDaoExt.functions;
+        this.testtoken1 = testContracts.testToken1.instance
+        this.gpvoting = this.adapters.gpVotingAdapter.instance;
+    });
+
+    beforeEach(async () => {
+        await revertChainSnapshot(this.snapshotId);
+        this.snapshotId = await takeChainSnapshot();
+    });
+
+    const addNewGP = async (applicant, gpDaoOnboardingAdapter, gpOnboardVotingAdatper, dao, gpDaoExe, gpList) => {
+        let tx = await gpDaoOnboardingAdapter.submitProposal(dao.address, applicant);
+        const result = await tx.wait();
+        const newOnboardingProposalId = result.events[2].args.proposalId;
+        console.log(`newOnboardingProposalId: ${hre.ethers.utils.toUtf8String(newOnboardingProposalId)}`);
+
+        const proposalInfo = await gpDaoOnboardingAdapter.proposals(dao.address, newOnboardingProposalId);
+        let allGPs = await gpDaoExe.getAllGPs();
+        let arrayGPs = allGPs.toString().split(',');
+        console.log(`arrayGPs: ${arrayGPs}`);
+        tx = await gpOnboardVotingAdatper.submitVote(dao.address, newOnboardingProposalId, 1);
+        await tx.wait();
+        console.log(`GP amount: ${arrayGPs.length}`);
+        if (arrayGPs.length > 1) {
+            for (var i = 0; i < arrayGPs.length - 1; i++) {
+                tx = await gpOnboardVotingAdatper.connect(gpList[i]).submitVote(dao.address, newOnboardingProposalId, 1);
+                await tx.wait();
+            }
+        }
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalInfo.stopVoteTime) + 1])
+        await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+
+        tx = await gpDaoOnboardingAdapter.processProposal(dao.address, newOnboardingProposalId);
+        await tx.wait();
+
+        const isGP = await gpDaoExe.isGeneralPartner(applicant);
+        console.log(`${applicant} is a GP?: ${isGP}`);
+    }
+
+    const depositToFundingPool = async (
+        fundingpoolAdapter,
+        dao,
+        investor,
+        amount,
+        token) => {
+
+        console.log(`FUND_RAISING_WINDOW_BEGIN: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_BEGIN")))}`);
+        console.log(`FUND_RAISING_WINDOW_END: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_END")))}`);
+
+        await token.connect(investor).approve(fundingpoolAdapter.address, amount);
+        await fundingpoolAdapter.connect(investor).deposit(dao.address, amount);
+
+        console.log(`balance in fund pool: ${hre.ethers.utils.formatEther(await fundingpoolAdapter.balanceOf(
+            dao.address, investor.address))}`);
+    };
+
+    it("fund raise should succeed if totoal fund meet the target", async () => {
+        const fundingpoolAdapter = this.adapters.fundingpoolAdapter.instance;
+        const dao = this.dao;
+        const testtoken1 = this.testContracts.testToken1.instance;
+        const testtoken2 = this.testContracts.testToken2.instance;
+        const distributeFundAdapter = this.adapters.distributeFundAdapterv2.instance;
+        const fundingPoolExt = this.extensions.fundingpoolExt.functions;
+
+        const fundRaisingTarget = await fundingpoolAdapter.getFundRaisingTarget(dao.address);
+        console.log(`fund Raising Target: ${hre.ethers.utils.formatEther(fundRaisingTarget.toString())}`);
+
+        const fundRaisingWindwoEndTime = await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_END"));
+
+        await depositToFundingPool(fundingpoolAdapter, dao, this.owner, fundRaisingTarget, testtoken1);
+
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaisingWindwoEndTime) + 1]);
+        await hre.network.provider.send("evm_mine");
+
+        const balanceOfUSDT1 = await testtoken1.balanceOf(this.owner.address);
+        const balanceOfDAOSquare1 = await testtoken1.balanceOf(this.DAOSquare.address);
+        const balanceOfGP1 = await testtoken1.balanceOf(this.GP.address);
+        const totalFund1 = await fundingPoolExt.totalSupply();
+
+        console.log(`balance Of DAOSquare : ${hre.ethers.utils.formatEther(balanceOfDAOSquare1.toString())}`);
+        console.log(`balance Of GP : ${hre.ethers.utils.formatEther(balanceOfGP1.toString())}`);
+        console.log(`total Fund1 : ${hre.ethers.utils.formatEther(totalFund1.toString())}`);
+
+        await fundingPoolExt.processFundRaising();
+
+        const balanceOfUSDT2 = await testtoken1.balanceOf(this.owner.address);
+        const balanceOfDAOSquare2 = await testtoken1.balanceOf(this.DAOSquare.address);
+        const balanceOfGP2 = await testtoken1.balanceOf(this.GP.address);
+        const totalFund2 = await fundingPoolExt.totalSupply();
+        console.log(`balance Of DAOSquare : ${hre.ethers.utils.formatEther(balanceOfDAOSquare2.toString())}`);
+        console.log(`balance Of GP : ${hre.ethers.utils.formatEther(balanceOfGP2.toString())}`);
+        console.log(`total Fund2 : ${hre.ethers.utils.formatEther(totalFund2.toString())}`);
+
+        expect(hre.ethers.utils.formatEther(toBN(balanceOfDAOSquare2.toString()).sub(
+            toBN(balanceOfDAOSquare1.toString())))).equal(
+                hre.ethers.utils.formatEther(toBN(totalFund1.toString()).mul(toBN("3")).div(toBN("100"))));
+        expect((await fundingPoolExt.fundRaisingState())[0]).equal(1);
+
+    });
+
+    it("shoule be impossible to process fund raising twice", async () => {
+        const fundingPoolExt = this.extensions.fundingpoolExt.functions;
+        await fundingPoolExt.processFundRaising();
+        const totalFund1 = await fundingPoolExt.totalSupply();
+        console.log(`total Fund : ${hre.ethers.utils.formatEther(totalFund1.toString())}`);
+        const fundState = await fundingPoolExt.fundRaisingState();
+        console.log(`fund raising state: ${fundState}`);
+    });
+
+    it("should be impossible to withdraw fund if not in redemption or fund expired", async () => {
+        const fundingpoolAdapter = this.adapters.fundingpoolAdapter.instance;
+        const dao = this.dao;
+        const testtoken1 = this.testContracts.testToken1.instance;
+        const fundingPoolExt = this.extensions.fundingpoolExt.functions;
+
+        const fundState = await fundingPoolExt.fundRaisingState();
+        console.log(`fund raising state: ${fundState}`);
+
+        await expectRevert(fundingpoolAdapter.withdraw(dao.address, hre.ethers.utils.parseEther("100")), "revert");
+    });
+
+    it("should be possible to withdraw fund during fund redemption", async () => {
+        const fundingpoolAdapter = this.adapters.fundingpoolAdapter.instance;
+        const dao = this.dao;
+        const fundingPoolExt = this.extensions.fundingpoolExt.functions;
+        const testtoken1 = this.testContracts.testToken1.instance;
+
+        const bal_fundPool1 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
+        const bal1 = await testtoken1.balanceOf(this.owner.address);
+        const gpUSDTBal1 = await testtoken1.balanceOf(this.GP.address);
+        console.log(`balance in fund pool: ${hre.ethers.utils.formatEther(bal_fundPool1.toString())}`);
+        console.log(`owner usdt bal: ${hre.ethers.utils.formatEther(bal1.toString())}`);
+        console.log(`GP usdt bal: ${hre.ethers.utils.formatEther(gpUSDTBal1.toString())}`);
+
+        const fundStartTime = await dao.getConfiguration(sha3("FUND_START_TIME"));
+        // console.log(`fund start time: ${fundStartTime}`);
+        const redemptionType = await dao.getConfiguration(sha3("FUND_RAISING_REDEMPTION"));
+        console.log(`redemption type: ${redemptionType}`);
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundStartTime) + 2592000 - 259200 + 1]);
+        await hre.network.provider.send("evm_mine");
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        console.log(`current block timestamp: ${blocktimestamp}`);
+
+        expect((await fundingPoolExt.ifInRedemption())[0]).equal(true);
+
+        await fundingpoolAdapter.withdraw(dao.address, hre.ethers.utils.parseEther("10000"));
+
+        const bal_fundPool2 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
+        const gpUSDTBal2 = await testtoken1.balanceOf(this.GP.address);
+        const bal2 = await testtoken1.balanceOf(this.owner.address);
+
+        console.log(`balance in fund pool: ${hre.ethers.utils.formatEther(bal_fundPool2.toString())}`);
+        console.log(`GP usdt bal: ${hre.ethers.utils.formatEther(gpUSDTBal2.toString())}`);
+        console.log(`owner usdt bal: ${hre.ethers.utils.formatEther(bal2.toString())}`);
+
+        expect(parseInt(hre.ethers.utils.formatEther(toBN(bal2.toString()).sub(toBN(bal1.toString()))))).equal(10000 * (1 - 0.005));
+        expect(parseInt(hre.ethers.utils.formatEther(toBN(gpUSDTBal2.toString()).sub(toBN(gpUSDTBal1.toString()))))).equal(10000 * 0.005);
+    });
+
+    it("should be possible to withdraw fund when fund expired", async () => {
+        const fundingpoolAdapter = this.adapters.fundingpoolAdapter.instance;
+        const dao = this.dao;
+        const fundingPoolExt = this.extensions.fundingpoolExt.functions;
+        const testtoken1 = this.testContracts.testToken1.instance;
+
+        const bal_fundPool1 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
+        const bal1 = await testtoken1.balanceOf(this.owner.address);
+        const gpUSDTBal1 = await testtoken1.balanceOf(this.GP.address);
+        const chargedManagementFee1 = await fundingPoolExt.chargedManagementFee();
+
+        console.log(`balance in fund pool: ${hre.ethers.utils.formatEther(bal_fundPool1.toString())}`);
+        console.log(`owner usdt bal: ${hre.ethers.utils.formatEther(bal1.toString())}`);
+        console.log(`GP usdt bal: ${hre.ethers.utils.formatEther(gpUSDTBal1.toString())}`);
+        console.log(`charged Management Fee1: ${hre.ethers.utils.formatEther(chargedManagementFee1.toString())}`);
+
+        const fundEndTime = await dao.getConfiguration(sha3("FUND_END_TIME"));
+        console.log(`fundEndTime: ${fundEndTime}`);
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        console.log(`current block timestamp: ${blocktimestamp}`);
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundEndTime) + 1]);
+        await hre.network.provider.send("evm_mine");
+
+        expect((await fundingPoolExt.ifInRedemption())[0]).equal(false);
+
+        await fundingpoolAdapter.withdraw(dao.address, hre.ethers.utils.parseEther("10000"));
+
+        const bal_fundPool2 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
+        const gpUSDTBal2 = await testtoken1.balanceOf(this.GP.address);
+        const bal2 = await testtoken1.balanceOf(this.owner.address);
+        const chargedManagementFee2 = await fundingPoolExt.chargedManagementFee();
+        console.log(`balance in fund pool: ${hre.ethers.utils.formatEther(bal_fundPool2.toString())}`);
+        console.log(`GP usdt bal: ${hre.ethers.utils.formatEther(gpUSDTBal2.toString())}`);
+        console.log(`owner usdt bal: ${hre.ethers.utils.formatEther(bal2.toString())}`);
+        console.log(`charged Management Fee2: ${hre.ethers.utils.formatEther(chargedManagementFee2.toString())}`);
+
+        expect(parseInt(hre.ethers.utils.formatEther(toBN(bal2.toString()).sub(toBN(bal1.toString()))))).equal(10000);
+    });
 });

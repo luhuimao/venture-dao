@@ -737,10 +737,14 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         );
         if (DaoHelper.ifGP(member, dao)) {
             uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL));
+            uint256 newGPFunds;
+            unchecked {
+                newGPFunds = totalGPFunds - amount;
+            }
             _createNewAmountCheckpoint(
                 address(DaoHelper.GP_POOL),
                 token,
-                totalGPFunds - amount
+                newGPFunds
             );
         }
         if (newAmount <= 0) {
@@ -852,16 +856,16 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         address token,
         uint256 amount
     ) internal {
-        bool isValidToken = false;
-        if (token != address(0x0)) {
-            require(
-                amount < type(uint128).max,
-                "token amount exceeds the maximum limit for external tokens"
-            );
-            isValidToken = true;
-        }
+        // bool isValidToken = false;
+        // if (token != address(0x0)) {
+        //     require(
+        //         amount < type(uint128).max,
+        //         "token amount exceeds the maximum limit for external tokens"
+        //     );
+        //     isValidToken = true;
+        // }
         uint128 newAmount = uint128(amount);
-        require(isValidToken, "token not registered");
+        // require(isValidToken, "token not registered");
 
         uint32 nCheckpoints = numCheckpoints[token][member];
         if (

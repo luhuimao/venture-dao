@@ -186,7 +186,6 @@ contract GPVotingContract is
         );
 
         GPVoting storage vote = votes[address(dao)][proposalId];
-        // slither-disable-next-line timestamp
         require(
             block.timestamp > vote.startingTime && vote.startingTime > 0,
             "GPVoting::submitVote::this proposalId has not start voting"
@@ -210,8 +209,6 @@ contract GPVotingContract is
             msg.sender,
             token
         );
-        // if (votingWeight == 0) revert("vote not allowed");
-
         voteWeights[address(dao)][proposalId][msg.sender] = votingWeight;
         vote.votes[msg.sender] = voteValue;
         vote.voters += 1;
@@ -242,63 +239,63 @@ contract GPVotingContract is
      */
     // The function is protected against reentrancy with the reimbursable modifier
     //slither-disable-next-line reentrancy-no-eth,reentrancy-benign
-    function updateVoteWeight(
-        DaoRegistry dao,
-        bytes32 proposalId,
-        address voter
-    ) external {
-        GPVoting storage vote = votes[address(dao)][proposalId];
-        if (
-            block.timestamp <
-            vote.startingTime + dao.getConfiguration(VotingPeriod) && //vote must not ended
-            vote.votes[voter] != 0 && //voter must voted
-            vote.startingTime > 0 && //voting must started
-            !dao.getProposalFlag(
-                proposalId,
-                DaoRegistry.ProposalFlag.PROCESSED
-            ) && //the proposal must not process
-            dao.getProposalFlag(
-                proposalId,
-                DaoRegistry.ProposalFlag.SPONSORED
-            ) && //the proposal must been sponsored
-            msg.sender == dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT) //only call from FUNDING_POOL_ADAPT
-        ) {
-            FundingPoolExtension fundingpool = FundingPoolExtension(
-                dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-            );
-            address token = fundingpool.fundRaisingTokenAddress();
-            uint128 newVotingWeight = GovernanceHelper.getGPVotingWeight(
-                dao,
-                voter,
-                token
-            );
-            //old voting weight
-            uint128 oldVotingWeight = voteWeights[address(dao)][proposalId][
-                voter
-            ];
-            //record new voting weight
-            voteWeights[address(dao)][proposalId][voter] = newVotingWeight;
+    // function updateVoteWeight(
+    //     DaoRegistry dao,
+    //     bytes32 proposalId,
+    //     address voter
+    // ) external {
+    //     GPVoting storage vote = votes[address(dao)][proposalId];
+    //     if (
+    //         block.timestamp <
+    //         vote.startingTime + dao.getConfiguration(VotingPeriod) && //vote must not ended
+    //         vote.votes[voter] != 0 && //voter must voted
+    //         vote.startingTime > 0 && //voting must started
+    //         !dao.getProposalFlag(
+    //             proposalId,
+    //             DaoRegistry.ProposalFlag.PROCESSED
+    //         ) && //the proposal must not process
+    //         dao.getProposalFlag(
+    //             proposalId,
+    //             DaoRegistry.ProposalFlag.SPONSORED
+    //         ) && //the proposal must been sponsored
+    //         msg.sender == dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT) //only call from FUNDING_POOL_ADAPT
+    //     ) {
+    //         FundingPoolExtension fundingpool = FundingPoolExtension(
+    //             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+    //         );
+    //         address token = fundingpool.fundRaisingTokenAddress();
+    //         uint128 newVotingWeight = GovernanceHelper.getGPVotingWeight(
+    //             dao,
+    //             voter,
+    //             token
+    //         );
+    //         //old voting weight
+    //         uint128 oldVotingWeight = voteWeights[address(dao)][proposalId][
+    //             voter
+    //         ];
+    //         //record new voting weight
+    //         voteWeights[address(dao)][proposalId][voter] = newVotingWeight;
 
-            uint256 voteValue = vote.votes[voter];
-            if (voteValue == 1) {
-                vote.nbYes -= oldVotingWeight;
-                vote.nbYes += newVotingWeight;
-            } else if (voteValue == 2) {
-                vote.nbNo -= oldVotingWeight;
-                vote.nbNo += newVotingWeight;
-            }
+    //         uint256 voteValue = vote.votes[voter];
+    //         if (voteValue == 1) {
+    //             vote.nbYes -= oldVotingWeight;
+    //             vote.nbYes += newVotingWeight;
+    //         } else if (voteValue == 2) {
+    //             vote.nbNo -= oldVotingWeight;
+    //             vote.nbNo += newVotingWeight;
+    //         }
 
-            emit UpdateVoteWeight(
-                proposalId,
-                block.timestamp,
-                voter,
-                oldVotingWeight,
-                newVotingWeight,
-                vote.nbYes,
-                vote.nbNo
-            );
-        }
-    }
+    //         emit UpdateVoteWeight(
+    //             proposalId,
+    //             block.timestamp,
+    //             voter,
+    //             oldVotingWeight,
+    //             newVotingWeight,
+    //             vote.nbYes,
+    //             vote.nbNo
+    //         );
+    //     }
+    // }
 
     /**
      * @notice Revoke a vote.
@@ -310,57 +307,57 @@ contract GPVotingContract is
      */
     // The function is protected against reentrancy with the reimbursable modifier
     //slither-disable-next-line reentrancy-no-eth,reentrancy-benign
-    function revokeVote(DaoRegistry dao, bytes32 proposalId)
-        external
-        onlyGeneralPartner(dao)
-        reimbursable(dao)
-    {
-        require(
-            dao.getProposalFlag(proposalId, DaoRegistry.ProposalFlag.SPONSORED),
-            "GPVoting::revokeVote::the proposal has not been sponsored yet"
-        );
+    // function revokeVote(DaoRegistry dao, bytes32 proposalId)
+    //     external
+    //     onlyGeneralPartner(dao)
+    //     reimbursable(dao)
+    // {
+    //     require(
+    //         dao.getProposalFlag(proposalId, DaoRegistry.ProposalFlag.SPONSORED),
+    //         "GPVoting::revokeVote::the proposal has not been sponsored yet"
+    //     );
 
-        GPVoting storage vote = votes[address(dao)][proposalId];
+    //     GPVoting storage vote = votes[address(dao)][proposalId];
 
-        // slither-disable-next-line timestamp
-        require(
-            block.timestamp <
-                vote.startingTime + dao.getConfiguration(VotingPeriod),
-            "GPVoting::revokeVote::vote has already ended"
-        );
+    //     // slither-disable-next-line timestamp
+    //     require(
+    //         block.timestamp <
+    //             vote.startingTime + dao.getConfiguration(VotingPeriod),
+    //         "GPVoting::revokeVote::vote has already ended"
+    //     );
 
-        // address GPAddr = dao.getAddressIfDelegated(msg.sender);
+    //     // address GPAddr = dao.getAddressIfDelegated(msg.sender);
 
-        require(
-            vote.votes[msg.sender] != 0,
-            "GPVoting::revokeVote::member has not voted"
-        );
-        uint128 votingWeight = voteWeights[address(dao)][proposalId][
-            msg.sender
-        ];
-        if (votingWeight == 0)
-            revert("GPVoting::revokeVote::voting weight is 0");
+    //     require(
+    //         vote.votes[msg.sender] != 0,
+    //         "GPVoting::revokeVote::member has not voted"
+    //     );
+    //     uint128 votingWeight = voteWeights[address(dao)][proposalId][
+    //         msg.sender
+    //     ];
+    //     if (votingWeight == 0)
+    //         revert("GPVoting::revokeVote::voting weight is 0");
 
-        uint256 voteValue = vote.votes[msg.sender];
+    //     uint256 voteValue = vote.votes[msg.sender];
 
-        //substract voting weight according to vote value
-        if (voteValue == 1) {
-            vote.nbYes -= votingWeight;
-        } else if (voteValue == 2) {
-            vote.nbNo -= votingWeight;
-        }
-        //reset vote value to 0;
-        vote.votes[msg.sender] = 0;
-        vote.voters -= 1;
+    //     //substract voting weight according to vote value
+    //     if (voteValue == 1) {
+    //         vote.nbYes -= votingWeight;
+    //     } else if (voteValue == 2) {
+    //         vote.nbNo -= votingWeight;
+    //     }
+    //     //reset vote value to 0;
+    //     vote.votes[msg.sender] = 0;
+    //     vote.voters -= 1;
 
-        emit RevokeVote(
-            proposalId,
-            block.timestamp,
-            msg.sender,
-            votingWeight,
-            voteValue
-        );
-    }
+    //     emit RevokeVote(
+    //         proposalId,
+    //         block.timestamp,
+    //         msg.sender,
+    //         votingWeight,
+    //         voteValue
+    //     );
+    // }
 
     /**
      * @notice Computes the voting result based on a proposal.
@@ -414,7 +411,6 @@ contract GPVotingContract is
         //     dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
         // ).getAllGPs().length;
         uint128 allGPsWeight = getAllGPWeight(dao);
-
         // rule out any failed quorums
         if (
             voteType == DaoHelper.VoteType.SIMPLE_MAJORITY_QUORUM_REQUIRED ||
@@ -424,7 +420,8 @@ contract GPVotingContract is
                 dao.getConfiguration(DaoHelper.QUORUM)) / 100;
 
             unchecked {
-                if (vote.voters < minVotes)
+                uint256 votes = vote.nbYes + vote.nbNo;
+                if (votes < minVotes)
                     return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
             }
         }

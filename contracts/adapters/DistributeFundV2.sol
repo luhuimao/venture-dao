@@ -175,6 +175,7 @@ contract DistributeFundContractV2 is
 
     function unLockProjectTeamToken(DaoRegistry dao, bytes32 proposalId)
         external
+        reimbursable(dao)
     {
         uint256 lockedTokenAmount = projectTeamLockedTokens[address(dao)][
             proposalId
@@ -228,7 +229,7 @@ contract DistributeFundContractV2 is
      * @dev Proposal ids can not be reused.
      * @dev The amount must be greater than zero.
      * @param dao The dao address.
-     * @param recipientAddr _addressArgs:recipientAddr
+     * @param _addressArgs _addressArgs[0]:recipientAddr,_addressArgs[1]:projectTokenAddr
      * @param _uint256ArgsProposal _uint256ArgsProposal[0]:requestedFundAmount,
                                     _uint256ArgsProposal[1]:tradingOffTokenAmount,
                                     _uint256ArgsProposal[2]:fullyReleasedDate,
@@ -237,7 +238,7 @@ contract DistributeFundContractV2 is
     // slither-disable-next-line reentrancy-benign
     function submitProposal(
         DaoRegistry dao,
-        address recipientAddr,
+        address[] calldata _addressArgs,
         uint256[] calldata _uint256ArgsProposal
     )
         external
@@ -271,7 +272,7 @@ contract DistributeFundContractV2 is
             "DistributeFund::submitProposal::invalid requested Fund Amount"
         );
         require(
-            recipientAddr != address(0x0),
+            _addressArgs[0] != address(0x0),
             "DistributeFund::submitProposal::invalid receiver address"
         );
 
@@ -281,10 +282,8 @@ contract DistributeFundContractV2 is
         // Creates the distribution proposal.
         dao.submitProposal(vars.proposalId);
         address[3] memory _addressArgs = [
-            recipientAddr,
-            dao.getAddressConfiguration(
-                DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
-            ),
+            _addressArgs[0],
+            _addressArgs[1],
             msg.sender
         ];
         // Saves the state of the proposal.
@@ -432,25 +431,18 @@ contract DistributeFundContractV2 is
         Distribution storage distribution = distributions[address(dao)][
             proposalId
         ];
-        // require(
-        //     block.timestamp > distribution.proposalStartVotingTimestamp &&
-        //         block.timestamp < distribution.proposalStopVotingTimestamp,
-        //     "DistributeFund::startVotingProcess::not in voting duration"
-        // );
+        require(
+            block.timestamp > distribution.proposalStartVotingTimestamp,
+            "DistributeFund::startVotingProcess::vote not begin"
+        );
 
-        // Checks if there is proposal in voting process, only one proposal can be in voting process.
-        // require(
-        //     distributions[address(dao)][ongoingProposalId].status ==
-        //         DistributionStatus.IN_QUEUE,
-        //     "DistributeFund::startVotingProcess::proposal not in fill funds state"
-        // );
-        if (
-            distributions[address(dao)][proposalId].status !=
-            DistributionStatus.IN_QUEUE
-        ) return false;
+        if (distribution.status != DistributionStatus.IN_QUEUE) return false;
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
+        //Removes the proposalId at the beginning of the queue
+        proposalQueue.popFront();
+
         // didn't meet the requested fund requirement
         if (
             fundingpool.totalSupply() <
@@ -488,10 +480,9 @@ contract DistributeFundContractV2 is
             distribution.proposalStartVotingTimestamp,
             bytes("")
         );
-        // snap funds
-        // fundingpool.setSnapFunds(fundingpool.fundRaisingTokenAddress());
 
         ongoingDistributions[address(dao)] = proposalId;
+
         distribution.status = DistributionStatus.IN_VOTING_PROGRESS;
         return true;
     }
@@ -522,40 +513,32 @@ contract DistributeFundContractV2 is
         external
         override
         reimbursable(dao)
+        returns (bool)
     {
         ProcessProposalLocalVars memory vars;
         vars.ongoingProposalId = ongoingDistributions[address(dao)];
-        require(
-            vars.ongoingProposalId == proposalId,
-            "DistributeFund::processProposal::invalid proposalId"
-        );
-        dao.processProposal(proposalId);
-        vars.fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        );
-        // vars.stakingrice = StakingRiceExtension(
-        //     dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
-        // );
-        // Checks if the proposal exists or is not in progress yet.
         Distribution storage distribution = distributions[address(dao)][
             proposalId
         ];
         require(
-            distribution.status == DistributionStatus.IN_VOTING_PROGRESS,
-            "proposal already completed or in progress"
+            block.timestamp > distribution.proposalStopVotingTimestamp,
+            "DistributeFund::processProposal::proposal in voting period"
         );
-
         require(
-            distributions[address(dao)][vars.ongoingProposalId].status !=
-                DistributionStatus.IN_EXECUTE_PROGRESS,
-            "proposal already in execute progress"
+            distribution.status != DistributionStatus.IN_EXECUTE_PROGRESS,
+            "DistributeFund::processProposal::proposal already in execute progress"
+        );
+        dao.processProposal(proposalId);
+
+        vars.fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
 
         // Checks if the proposal has passed.
         vars.votingContract = IGPVoting(dao.votingAdapter(proposalId));
         require(
-            address(vars.votingContract) != address(0),
-            "adapter not found"
+            address(vars.votingContract) != address(0x0),
+            "DistributeFund::processProposal::adapter not found"
         );
 
         (vars.voteResult, vars.nbYes, vars.nbNo) = vars
@@ -565,13 +548,7 @@ contract DistributeFundContractV2 is
         if (vars.voteResult == IGPVoting.VotingState.PASS) {
             distribution.status = DistributionStatus.IN_EXECUTE_PROGRESS;
             ongoingDistributions[address(dao)] = proposalId;
-
-            //set project sanp funds/rice to total funds/rice
-            address token = vars.fundingpool.fundRaisingTokenAddress();
-            // vars.fundingpool.setProjectSnapFunds(token);
-            // vars.stakingrice.setProjectSnapRice(
-            //     dao.getAddressConfiguration(DaoHelper.RICE_TOKEN_ADDRESS)
-            // );
+            address token = vars.fundingpool.getFundRaisingTokenAddress();
 
             //insufficient funds failed the distribution
             if (
@@ -595,6 +572,7 @@ contract DistributeFundContractV2 is
                     dao,
                     distribution.tradingOffTokenAmount,
                     distribution.tokenAddr,
+                    distribution.proposer,
                     distribution.lockupDate,
                     distribution.fullyReleasedDate
                 );
@@ -628,6 +606,8 @@ contract DistributeFundContractV2 is
             vars.nbNo,
             uint256(distribution.status)
         );
+
+        return true;
     }
 
     //compute project voting timestamp
