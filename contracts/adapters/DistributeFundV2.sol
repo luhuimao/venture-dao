@@ -574,7 +574,8 @@ contract DistributeFundContractV2 is
                     distribution.tokenAddr,
                     distribution.proposer,
                     distribution.lockupDate,
-                    distribution.fullyReleasedDate
+                    distribution.fullyReleasedDate,
+                    proposalId
                 );
                 //process3. substract from funding pool
                 vars.fundingpool.subtractAllFromBalance(

@@ -39,6 +39,14 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
         _;
     }
 
+    modifier onlyRecipient(uint256 streamId) {
+        require(
+            msg.sender == streams[streamId].recipient,
+            "caller is not the recipient of the stream"
+        );
+        _;
+    }
+
     /**
      * @dev Throws if the provided id does not point to a valid stream.
      */
@@ -73,7 +81,8 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
             uint256 startTime,
             uint256 stopTime,
             uint256 remainingBalance,
-            uint256 ratePerSecond
+            uint256 ratePerSecond,
+            bytes32 proposalId
         )
     {
         sender = streams[streamId].sender;
@@ -84,6 +93,7 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
         stopTime = streams[streamId].stopTime;
         remainingBalance = streams[streamId].remainingBalance;
         ratePerSecond = streams[streamId].ratePerSecond;
+        proposalId = streams[streamId].proposalId;
     }
 
     /**
@@ -206,7 +216,8 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
         uint256 deposit,
         address tokenAddress,
         uint256 startTime,
-        uint256 stopTime
+        uint256 stopTime,
+        bytes32 proposalId
     ) public override returns (uint256) {
         require(recipient != address(0x00), "stream to the zero address");
         require(recipient != address(this), "stream to the contract itself");
@@ -247,7 +258,8 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
             sender: msg.sender,
             startTime: startTime,
             stopTime: stopTime,
-            tokenAddress: tokenAddress
+            tokenAddress: tokenAddress,
+            proposalId: proposalId
         });
 
         /* Increment the next stream id. */
@@ -266,6 +278,7 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
             streamId,
             msg.sender,
             recipient,
+            proposalId,
             deposit,
             tokenAddress,
             startTime,
@@ -288,7 +301,7 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
         override
         nonReentrant
         streamExists(streamId)
-        onlySenderOrRecipient(streamId)
+        onlyRecipient(streamId)
         returns (bool)
     {
         require(amount > 0, "amount is zero");

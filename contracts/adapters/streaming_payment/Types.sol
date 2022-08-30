@@ -15,5 +15,6 @@ library Types {
         address sender;
         address tokenAddress;
         bool isEntity;
+        bytes32 proposalId;
     }
 }

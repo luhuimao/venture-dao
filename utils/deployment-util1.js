@@ -395,6 +395,96 @@ const validateContractConfigs = (contractConfigs) => {
         });
 };
 
+const setDaoConfiguration = async ({ options, dao, testContracts }) => {
+    const configKey_FundRaisingTarget = sha3(web3.utils.encodePacked("FUND_RAISING_TARGET"));
+    const configKey_FundRaisingMax = sha3(web3.utils.encodePacked("FUND_RAISING_MAX"));
+    const configKey_FundRaisingMinInvestmentAmountOfLP = sha3(web3.utils.encodePacked("FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP"));
+    const configKey_FundRaisingWindowBegin = sha3(web3.utils.encodePacked("FUND_RAISING_WINDOW_BEGIN"));
+    const configKey_FundRaisingWindowEnd = sha3(web3.utils.encodePacked("FUND_RAISING_WINDOW_END"));
+    const configKey_FundRaisingLockupPeriod = sha3(web3.utils.encodePacked("FUND_RAISING_LOCKUP_PERIOD"));
+    const configKey_FundRaisingRedemption = sha3(web3.utils.encodePacked("FUND_RAISING_REDEMPTION"));
+    const configKey_FundRaisingRedemptionPeriod = sha3(web3.utils.encodePacked("FUND_RAISING_REDEMPTION_PERIOD"));
+    const configKey_FundRaisingTerm = sha3(web3.utils.encodePacked("FUND_RAISING_TERM"));
+    const configKey_FundStartTime = sha3(web3.utils.encodePacked("FUND_START_TIME"));
+    const configKey_FundEndTime = sha3(web3.utils.encodePacked("FUND_END_TIME"));
+    const configKey_RewardForProposer = sha3(web3.utils.encodePacked("REWARD_FOR_PROPOSER"));
+    const configKey_RewardForGP = sha3(web3.utils.encodePacked("REWARD_FOR_GP"));
+    const configKey_MangementFee = sha3(web3.utils.encodePacked("MANAGEMENT_FEE"));
+    const configKey_MangementFeePerYear = sha3(web3.utils.encodePacked("MANAGEMENT_FEE_PER_YEAR"));
+    const configKey_RedemptionFee = sha3(web3.utils.encodePacked("REDEMPTION_FEE"));
+    const configKey_ProtocolFee = sha3(web3.utils.encodePacked("PROTOCOL_FEE"));
+
+
+    log("config FUND_RAISING_TARGET");
+    let tx = await dao.setConfiguration(configKey_FundRaisingTarget, options.fundRaisingTarget);
+    await tx.wait();
+    log("config FUND_RAISING_MAX");
+    tx = await dao.setConfiguration(configKey_FundRaisingMax, options.fundRaisingMax);
+    await tx.wait();
+    log("config FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP");
+    tx = await dao.setConfiguration(configKey_FundRaisingMinInvestmentAmountOfLP, options.fundRaisingMinInvestmentAmountOfLP);
+    await tx.wait();
+    log("config FUND_RAISING_WINDOW_BEGIN");
+    tx = await dao.setConfiguration(configKey_FundRaisingWindowBegin, options.fundRaisingWindowBegin);
+    await tx.wait();
+    log("config FUND_RAISING_WINDOW_END");
+    tx = await dao.setConfiguration(configKey_FundRaisingWindowEnd, options.fundRaisingWindowEnd);
+    await tx.wait();
+    log("config FUND_RAISING_LOCKUP_PERIOD");
+    tx = await dao.setConfiguration(configKey_FundRaisingLockupPeriod, options.fundRaisingLockupPeriod);
+    await tx.wait();
+
+    log("config FUND_RAISING_REDEMPTION");
+    tx = await dao.setConfiguration(configKey_FundRaisingRedemption, 2);
+    await tx.wait();
+    log("config FUND_RAISING_REDEMPTION_PERIOD");
+    tx = await dao.setConfiguration(configKey_FundRaisingRedemptionPeriod, options.fundRaisingRedemptionPeriod);
+    await tx.wait();
+    log("config FUND_RAISING_TERM");
+    tx = await dao.setConfiguration(configKey_FundRaisingTerm, options.fundRaisingTerm);
+    await tx.wait();
+    log("config FUND_START_TIME");
+    tx = await dao.setConfiguration(configKey_FundStartTime, options.fundStartTime);
+    await tx.wait();
+    log("config FUND_END_TIME");
+    tx = await dao.setConfiguration(configKey_FundEndTime, options.fundEndTime);
+    await tx.wait();
+    log("config REWARD_FOR_PROPOSER");
+    tx = await dao.setConfiguration(configKey_RewardForProposer, options.rewardForProposer);
+    await tx.wait();
+    log("config REWARD_FOR_GP");
+    tx = await dao.setConfiguration(configKey_RewardForGP, options.rewardForGP);
+    await tx.wait();
+    log("config MANAGEMENT_FEE");
+    tx = await dao.setConfiguration(configKey_MangementFee, options.managementFee);
+    await tx.wait();
+    log("config MANAGEMENT_FEE_PER_YEAR");
+    tx = await dao.setConfiguration(configKey_MangementFeePerYear, options.managementFeePerYear);
+    await tx.wait();
+    log("config REDEMPTION_FEE");
+    tx = await dao.setConfiguration(configKey_RedemptionFee, options.redemptionFee);
+    await tx.wait();
+    log("config PROTOCOL_FEE");
+    tx = await dao.setConfiguration(configKey_ProtocolFee, options.protocolFee);
+    await tx.wait();
+};
+const setDaoAddressConfiguration = async ({ options, dao, testContracts }) => {
+    const configKey_DaoSquareAddress = sha3(web3.utils.encodePacked("DAO_SQUARE_ADDRESS"));
+    const configKey_GPAddress = sha3(web3.utils.encodePacked("GP_ADDRESS"));
+    const configKey_FundRaisingCurrencyAddress = sha3(web3.utils.encodePacked("FUND_RAISING_CURRENCY_ADDRESS"));
+
+    log("config DAO_SQUARE_ADDRESS");
+    let tx = await dao.setAddressConfiguration(configKey_DaoSquareAddress, options.daoSquareAddress);
+    await tx.wait();
+    log("config GP_ADDRESS");
+    tx = await dao.setAddressConfiguration(configKey_GPAddress, options.gpAddress);
+    await tx.wait();
+    log("config FUND_RAISING_CURRENCY_ADDRESS");
+    tx = await dao.setAddressConfiguration(configKey_FundRaisingCurrencyAddress,
+        options.fundRaisingCurrencyAddress === undefined ? testContracts.testToken1.instance.address : options.fundRaisingCurrencyAddress);
+    await tx.wait();
+};
+
 /**
  * Deploys all the contracts defined in the migrations/configs/*.config.ts.
  * The contracts must be enabled in the migrations/configs/*.config.ts,
@@ -473,9 +563,12 @@ const deployDao = async (options) => {
     tx = await adapters.fundingpoolAdapter.instance.setRiceTokenAddress(dao.address, testContracts.testRiceToken.instance.address);
     await tx.wait();
 
-    log("registerPotentialNewToken to funding pool");
-    tx = await adapters.fundingpoolAdapter.instance.registerPotentialNewToken(dao.address, testContracts.testToken1.instance.address);
-    await tx.wait();
+    await setDaoConfiguration({ options, dao, testContracts });
+    await setDaoAddressConfiguration({ options, dao, testContracts });
+
+    // log("registerPotentialNewToken to funding pool");
+    // tx = await adapters.fundingpoolAdapter.instance.registerPotentialNewToken(dao.address, testContracts.testToken1.instance.address);
+    // await tx.wait();
 
 
     // if (options.finalize) {
@@ -668,7 +761,7 @@ const configureDao = async ({
     const configureAdapters = async () => {
         log("configure adapters ...");
         await configureAdaptersWithDAOAccess();
-        // await configureAdaptersWithDAOParameters();
+        await configureAdaptersWithDAOParameters();
         await Object.values(extensions)
             .filter((targetExtension) => targetExtension.configs.enabled)
             .filter((targetExtension) => !targetExtension.configs.skipAutoDeploy)

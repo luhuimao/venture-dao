@@ -194,7 +194,8 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         address tokenAddress,
         address proposerAddr,
         uint256 startTime,
-        uint256 stopTime
+        uint256 stopTime,
+        bytes32 proposalId
     ) external {
         require(
             msg.sender ==
@@ -257,7 +258,8 @@ contract AllocationAdapterContractV2 is AdapterGuard {
                         fundingRewards,
                         tokenAddress,
                         startTime,
-                        stopTime
+                        stopTime,
+                        proposalId
                     );
                 }
             }
@@ -273,7 +275,8 @@ contract AllocationAdapterContractV2 is AdapterGuard {
                         gpBonus,
                         tokenAddress,
                         startTime,
-                        stopTime
+                        stopTime,
+                        proposalId
                     );
                 }
             }
@@ -292,7 +295,8 @@ contract AllocationAdapterContractV2 is AdapterGuard {
                     proposerBonus,
                     tokenAddress,
                     startTime,
-                    stopTime
+                    stopTime,
+                    proposalId
                 );
             }
         }

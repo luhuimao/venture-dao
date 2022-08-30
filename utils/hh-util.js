@@ -182,21 +182,42 @@ const getHardhatContracts = (contracts) => {
     }, {});
 };
 
-const getDefaultOptions = (options) => {
+const getDefaultOptions = async (options) => {
+  const currentTimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+  let [owner, user1, user2, project_team1, DAOSquare, GP] = await hre.ethers.getSigners();
   return {
-    quorum: 60,
-    sumperMajority: 66,
-    gpAllocationBonusRadio: 3,
-    riceStakeAllocationRadio: 10,
-    gps: ["0x7D8cad0bbD68deb352C33e80fccd4D8e88b4aBb8"],
+    daoSquareAddress: options.daoSquareAddress === undefined ? DAOSquare.address : options.daoSquareAddress,
+    gpAddress: options.gpAddress === undefined ? GP.address : options.gpAddress,
+    quorum: options.quorum === undefined ? 60 : options.quorum,
+    sumperMajority: options.superMajority === undefined ? 66 : options.superMajority,
+    gpAllocationBonusRadio: options.gpAllocationBonusRadio === undefined ? 3 : options.gpAllocationBonusRadio,
+    riceStakeAllocationRadio: options.riceStakerAllocationRadio === undefined ? 10 : options.riceStakerAllocationRadio,
+    votingPeriod: options.votingPeriod === undefined ? 600 : options.votingPeriod,
+    gracePeriod: options.gracePeriod === undefined ? 1 : options.gracePeriod,
+    proposalDuration: options.proposalDuration === undefined ? 600 : options.proposalDuration,
+    proposalInterval: options.proposalInterval === undefined ? 600 : options.proposalInterval,
+    proposalExecuteDurantion: options.proposalExecuteDurantion === undefined ? 600 : options.proposalExecuteDurantion,
+    // fundRaisingCurrencyAddress: options.fundRaisingCurrencyAddress === undefined ? "0x7570263Be9A6D430F2ca19f8afbe28BA760618F2" : options.fundRaisingCurrencyAddress,
+    fundRaisingTarget: options.fundRaisingTarget === undefined ? toBN("1000000000000000000000000") : options.fundRaisingTarget,
+    fundRaisingMax: options.fundRaisingMax === undefined ? toBN("2000000000000000000000000") : options.fundRaisingMax,
+    fundRaisingMinInvestmentAmountOfLP: options.fundRaisingMinInvestmentAmountOfLP === undefined ? toBN("1000000000000000000000") : options.fundRaisingMinInvestmentAmountOfLP,
+    fundRaisingWindowBegin: options.fundRaisingWindowBegin === undefined ? currentTimestamp + 60 : options.fundRaisingWindowBegin,
+    fundRaisingWindowEnd: options.fundRaisingWindowEnd === undefined ? currentTimestamp + 2000 : options.fundRaisingWindowEnd,
+    fundRaisingLockupPeriod: options.fundRaisingLockupPeriod === undefined ? 7776000 : options.fundRaisingLockupPeriod,
+    fundRaisingRedemption: options.fundRaisingRedemption === undefined ? 0 : options.fundRaisingRedemption,
+    fundRaisingRedemptionPeriod: options.fundRaisingRedemptionPeriod === undefined ? 259200 : options.fundRaisingRedemptionPeriod,
+    fundRaisingTerm: options.fundRaisingTerm === undefined ? 209952000 : options.fundRaisingTerm,
+    fundStartTime: options.fundStartTime === undefined ? currentTimestamp + 2010 : options.fundStartTime,
+    fundEndTime: options.fundEndTime === undefined ? currentTimestamp + 2510000 : options.fundEndTime,
+    rewardForProposer: options.rewardForProposer === undefined ? 5 : options.rewardForProposer,
+    rewardForGP: options.rewardForGP === undefined ? 1 : options.rewardForGP,
+    managementFee: options.managementFee === undefined ? 2 : options.managementFee,
+    managementFeePerYear: options.managementFeePerYear === undefined ? 2 : options.managementFeePerYear,
+    protocolFee: options.protocolFee === undefined ? 3 : options.protocolFee,
+    redemptionFee: options.redemptionFee === undefined ? 5 : options.redemptionFee,
     serviceFeeRatio: 5,
     unitPrice: unitPrice,
     nbUnits: numberOfUnits,
-    votingPeriod: options.votingPeriod === undefined ? 10 : options.votingPeriod,//10 mins
-    gracePeriod: options.gracePeriod === undefined ? 2 : options.gracePeriod, //2 mins
-    proposalDuration: options.proposalDuration === undefined ? 600 : options.proposalDuration,
-    proposalInterval: options.proposalInterval === undefined ? 600 : options.proposalInterval,
-    proposalExecuteDurantion:options.proposalExecuteDurantion === undefined ? 600 : options.proposalExecuteDurantion,
     tokenAddr: ETH_TOKEN,
     maxChunks: maximumChunks,
     maxAmount,
@@ -231,7 +252,6 @@ const getDefaultOptions = (options) => {
     gelato: "0x1000000000000000000000000000000000000000",
   };
 };
-
 // const advanceTime = async (time) => {
 //   await new Promise((resolve, reject) => {
 //     web3.currentProvider.send(
@@ -322,8 +342,9 @@ const proposalIdGenerator = () => {
 
 const hhContracts = getHardhatContracts(allContractConfigs);
 const deployDefaultDao = async (options) => {
+  const newOpts = await getDefaultOptions(options);
   const result = await deployDao({
-    ...getDefaultOptions(options),
+    ...newOpts,
     ...hhContracts,
     deployFunction,
     contractConfigs: allContractConfigs
