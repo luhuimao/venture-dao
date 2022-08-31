@@ -27,7 +27,7 @@ SOFTWARE.
 const { entryDao, entryBank } = require("./access-control-util");
 const { adaptersIdsMap, extensionsIdsMap } = require("./dao-ids-util");
 const { UNITS, LOOT, ZERO_ADDRESS,
-    sha3, embedConfigs } = require("./contract-util.js");
+    sha3, embedConfigs, waitTx } = require("./contract-util.js");
 const { ContractType } = require("../migrations/configs/contracts.config");
 const { utils } = require("ethers");
 const { web3 } = require("@openzeppelin/test-environment");
@@ -697,38 +697,30 @@ const configureDao = async ({
         const adapterList = Object.values(adapters)
             .filter((a) => a.configs.enabled)
             .filter((a) => !a.configs.skipAutoDeploy)
-            .filter((a) => a.configs.daoConfigs && a.configs.daoConfigs.length > 0)
-            .reduce((p, adapter) => {
-                const contractConfigs = adapter.configs;
-                return p.then(() =>
-                    contractConfigs.daoConfigs.reduce(
-                        (q, configEntry) =>
-                            q.then(() => {
-                                console.log(`contractConfigs.name ${contractConfigs.name}`);
-                                const configValues = configEntry.map((configName) =>
-                                    readConfigValue(configName, contractConfigs.name)
+            .filter((a) => a.configs.daoConfigs && a.configs.daoConfigs.length > 0);
+
+        await adapterList.reduce(async (p, adapter) => {
+            const contractConfigs = adapter.configs;
+            return await p.then(() =>
+                contractConfigs.daoConfigs.reduce(
+                    (q, configEntry) =>
+                        q.then(async () => {
+                            const configValues = configEntry.map((configName) =>
+                                readConfigValue(configName, contractConfigs.name)
+                            );
+                            const p = adapter.instance.configureDao(...configValues).catch((err) => {
+                                error(
+                                    `Error while configuring dao with contract ${contractConfigs.name}. `,
+                                    err
                                 );
-                                console.log(`configValues ${configValues}`);
-                                // const tx = await adapter.instance
-                                //     .configureDao(...configValues);
-                                // await tx.wait();
-                                return adapter.instance
-                                    .configureDao(...configValues).then((tx, adapter) => { tx.wait(); })
-                                    .catch((e, adapter) => {
-                                        // error(
-                                        //     `Error while configuring dao with contract ${adapter.name} `,
-                                        //     e
-                                        // );
-                                        console.error(`Error while configuring dao with contract `, e);
-                                        throw e;
-                                    });
-
-                            }),
-                        Promise.resolve()
-                    )
-                );
-            }, Promise.resolve());
-
+                                throw err;
+                            });
+                            return await waitTx(p);
+                        }),
+                    Promise.resolve()
+                )
+            );
+        }, Promise.resolve());
         log("configure Adapters With DAO Parameters ... FINISHED!");
 
     };
