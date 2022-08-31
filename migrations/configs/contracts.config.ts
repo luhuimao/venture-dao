@@ -951,7 +951,7 @@ export const contracts: Array<ContractConfig> = [
     name: "AllocationAdapterContract",
     alias: "allocation",
     path: "../../contracts/adapters/AllocationAdapterContract",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
