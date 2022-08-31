@@ -51,8 +51,40 @@ let owner;
     log(`DaoOwner: ${daoOwnerAddr}`);
     log(`Deployment started at: ${new Date().toISOString()}`);
     log(`Deploying incubator-contracts@${pkgJson.version} to ${network.name} network`);
-
-    const result = await deployDefaultDao({ owner: owner, votingPeriod: getEnvVar("VOTING_PERIOD_SECONDS"), gracePeriod: getEnvVar("GRACE_PERIOD_SECONDS") });
+    let options = {
+        owner: owner,
+        serviceFeeRatio: getEnvVar("SERVICE_FEE_RATIO"),
+        quorum: getEnvVar("QUORUM"),
+        superMajority: getEnvVar("SUPER_MAJORITY"),
+        gpAllocationBonusRadio: getEnvVar("GP_ALLOCATION_BUNUS_RADIO"),
+        riceStakerAllocationRadio: getEnvVar("RICE_STAKER_ALLOCATION_RADIO"),
+        proposalDuration: getEnvVar("PROPOSAL_DURATION"),
+        proposalInterval: getEnvVar("PROPOSAL_INTERVAL"),
+        proposalExecuteDuration: getEnvVar("PROPOSAL_EXECUTE_DURATION"),
+        fundRaisingCurrencyAddress: getEnvVar("FUND_RAISING_CURRENCY_ADDRESS"),
+        fundRaisingTarget: getEnvVar("FUND_RAISING_TARGET"),
+        fundRaisingMax: getEnvVar("FUND_RAISING_MAX"),
+        fundRaisingMinInvestmentAmountOfLP: getEnvVar("FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP"),
+        fundRaisingWindowBegin: getEnvVar("FUND_RAISING_WINDOW_BEGIN"),
+        fundRaisingWindowEnd: getEnvVar("FUND_RAISING_WINDOW_END"),
+        fundRaisingLockupPeriod: getEnvVar("FUND_RAISING_LOCKUP_PERIOD"),
+        fundRaisingRedemption: getEnvVar("FUND_RAISING_REDEMPTION"),
+        fundRaisingRedemptionPeriod: getEnvVar("FUND_RAISING_REDEMPTION_PERIOD"),
+        fundRaisingTerm: getEnvVar("FUND_RAISING_TERM"),
+        fundStartTime: getEnvVar("FUND_START_TIME"),
+        fundEndTime: getEnvVar("FUND_END_TIME"),
+        rewardForProposer: getEnvVar("REWARD_FOR_PROPOSER"),
+        rewardForGP: getEnvVar("REWARD_FOR_GP"),
+        managementFee: getEnvVar("MANAGEMENT_FEE"),
+        managementFeePerYear: getEnvVar("MANAGEMENT_FEE_PER_YEAR"),
+        redemptionFee: getEnvVar("REDEMPTION_FEE"),
+        protocolFee: getEnvVar("PROTOCOL_FEE"),
+        votingPeriod: getEnvVar("VOTING_PERIOD_SECONDS"),
+        gracePeriod: getEnvVar("GRACE_PERIOD_SECONDS"),
+        daoSquareAddress: getEnvVar("DAO_SQUARE_ADDRESS"),
+        gpAddress: getEnvVar("GP_ADDRESS")
+    };
+    const result = await deployDefaultDao(options);
     const { dao, factories, extensions, adapters, testContracts, utilContracts } =
         result;
     if (dao) {
