@@ -2,24 +2,34 @@
   "compilerOptions": {
     "rootDir": ".",
     "lib": [
-      "ES2018"
+      "ES2019"
     ],
-    "module": "CommonJS",
     "target": "ES2018",
     "allowJs": true, /* Allow JavaScript files to be a part of your program. Use the `checkJS` option to get errors from these files. */
     "esModuleInterop": true, /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */
     "forceConsistentCasingInFileNames": true, /* Ensure that casing is correct in imports. */
-    "strict": true, /* Enable all strict type-checking options. */
+    // "strict": true, /* Enable all strict type-checking options. */
+    // enable this rule:
+    "noImplicitAny": false,
     "skipLibCheck": true, /* Skip type checking all .d.ts files. */
     "outDir": "build/dist",
     "checkJs": false,
     "types": [
       "@types/node",
-      "@types/chai",
-      "@types/mocha"
+      "@types/chai"
     ],
     "typeRoots": [
       "./node_modules/@types",
     ],
-  }
+    "module": "commonjs",
+    "resolveJsonModule": true
+  },
+  "include": [
+    "./scripts",
+    "./test",
+    "./typechain"
+  ],
+  "files": [
+    "./hardhat.config.ts"
+  ],
 }
