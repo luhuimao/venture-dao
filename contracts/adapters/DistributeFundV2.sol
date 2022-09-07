@@ -124,7 +124,7 @@ contract DistributeFundContractV2 is
     DoubleEndedQueue.Bytes32Deque public proposalQueue;
 
     string constant PROPOSALID_PREFIX = "TFP";
-    uint256 public proposalIds = 200000;
+    uint256 public proposalIds = 100000;
 
     /**
      * @notice Configures the DAO with the Voting and Gracing periods.
@@ -249,6 +249,14 @@ contract DistributeFundContractV2 is
     {
         SubmitProposalLocalVars memory vars;
 
+        vars.fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        require(
+            vars.fundingpool.fundRaisingState() ==
+                DaoHelper.FundRaiseState.DONE,
+            "FundRaise::submitProposal::only submit proposal when fund raise was done"
+        );
         vars.gpVotingContract = IGPVoting(
             dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
         );
@@ -361,48 +369,6 @@ contract DistributeFundContractV2 is
             _proposalExecuteTimestamp
         );
     }
-
-    // function startFillFundsProcess(DaoRegistry dao, bytes32 proposalId)
-    //     external
-    //     reimbursable(dao)
-    //     returns (bool)
-    // {
-    //     //queue is empty
-    //     if (proposalQueue.length() <= 0) {
-    //         return false;
-    //     }
-    //     //proposalId must get from begining of the queue
-    //     require(
-    //         proposalId == proposalQueue.front(),
-    //         "DistributeFund::startVotingProcess::Invalid ProposalId"
-    //     );
-
-    //     Distribution storage distribution = distributions[address(dao)][
-    //         proposalId
-    //     ];
-    //     // require(
-    //     //     block.timestamp < distribution.proposalStartVotingTimestamp,
-    //     //     "DistributeFund::startFillFundsProcess::fill funds time is end"
-    //     // );
-
-    //     // Checks if there is proposal in voting process, only one proposal can be in voting process.
-    //     bytes32 ongoingProposalId = ongoingDistributions[address(dao)];
-    //     require(
-    //         ongoingProposalId == bytes32(0) ||
-    //             distributions[address(dao)][ongoingProposalId].status ==
-    //             DistributionStatus.DONE ||
-    //             distributions[address(dao)][ongoingProposalId].status ==
-    //             DistributionStatus.FAILED,
-    //         "DistributeFund::submitProposal::there is proposal not finished"
-    //     );
-    //     ongoingDistributions[address(dao)] = proposalId;
-    //     // set to fill funds state;
-    //     distributions[address(dao)][proposalId].status = DistributionStatus
-    //         .IN_FILL_FUNDS_PROGRESS;
-    //     //Removes the proposalId at the beginning of the queue
-    //     proposalQueue.popFront();
-    //     return true;
-    // }
 
     /**
      * @notice Start voting process when period for project team to approval is end.

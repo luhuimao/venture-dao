@@ -58,7 +58,11 @@ library DaoHelper {
         QUARTERLY,
         YEARLY
     }
-
+    enum FundRaiseState {
+        IN_PROGRESS,
+        DONE,
+        FAILED
+    }
     uint256 internal constant ONE_WEEK = 60 * 60 * 24 * 7;
     uint256 internal constant TWO_WEEK = 60 * 60 * 24 * 14;
     uint256 internal constant ONE_MONTH = 60 * 60 * 24 * 30;

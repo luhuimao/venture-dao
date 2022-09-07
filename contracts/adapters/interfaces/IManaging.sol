@@ -60,7 +60,6 @@ interface IManaging {
 
     function submitProposal(
         DaoRegistry dao,
-        bytes32 proposalId,
         ProposalDetails calldata proposal,
         Configuration[] memory configs,
         bytes calldata data

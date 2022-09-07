@@ -435,6 +435,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         IExtension extension,
         address creator
     ) external hasAccess(this, AclFlag.ADD_EXTENSION) {
+        console.log("addExtension");
         require(extensionId != bytes32(0), "extension id must not be empty");
         require(
             extensions[extensionId] == address(0x0),
@@ -448,7 +449,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         inverseExtensions[address(extension)].id = extensionId;
 
         extension.initialize(this, creator);
-
+        console.log("extension added");
         emit ExtensionAdded(extensionId, address(extension));
     }
 

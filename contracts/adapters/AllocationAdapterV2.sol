@@ -104,9 +104,6 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         address recipient,
         uint256 tokenAmount
     ) public view returns (uint256) {
-        // FundingPoolExtension fundingpool = FundingPoolExtension(
-        //     dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        // );
         FundingPoolAdapterContract fundpoolAdapt = FundingPoolAdapterContract(
             dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
         );
@@ -120,11 +117,6 @@ contract AllocationAdapterContractV2 is AdapterGuard {
             dao.getConfiguration(DaoHelper.REWARD_FOR_GP)) / 100;
         uint256 myFund = fundpoolAdapt.balanceOf(dao, recipient);
         uint256 allGPFunds = fundpoolAdapt.gpBalance(dao);
-        // for (uint8 i = 0; i < gpdao.getAllGPs().length; i++) {
-        //     if (gpdao.isGeneralPartner(gpdao.getAllGPs()[i])) {
-        //         allGPFunds += fundingpool.balanceOf(gpdao.getAllGPs()[i]);
-        //     }
-        // }
         if (GPBonus <= 0 || myFund <= 0 || allGPFunds <= 0) {
             return 0;
         }
@@ -147,30 +139,6 @@ contract AllocationAdapterContractV2 is AdapterGuard {
 
         return ProposerBonus;
     }
-
-    // function getRiceRewards(
-    //     DaoRegistry dao,
-    //     address recipient,
-    //     uint256 tokenAmount
-    // ) public view returns (uint256) {
-    //     StakingRiceExtension stakingRice = StakingRiceExtension(
-    //         dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
-    //     );
-    //     uint256 riceStakingRewards = (tokenAmount *
-    //         dao.getConfiguration(RiceStakeAllocationRadio)) / 100;
-    //     uint256 projectSanpRice = stakingRice.getProjectSnapRice();
-
-    //     address riceAddr = dao.getAddressConfiguration(
-    //         DaoHelper.RICE_TOKEN_ADDRESS
-    //     );
-    //     uint256 riceBalance = stakingRice.balanceOf(recipient, riceAddr);
-    //     if (
-    //         projectSanpRice <= 0 || riceBalance <= 0 || riceStakingRewards <= 0
-    //     ) {
-    //         return 0;
-    //     }
-    //     return (riceBalance * riceStakingRewards) / projectSanpRice;
-    // }
 
     struct allocateProjectTokenLocalVars {
         ISablier streamingPaymentContract;
@@ -212,19 +180,21 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         vars.fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        // vars.ricestaking = StakingRiceExtension(
-        //     dao.getExtensionAddress(DaoHelper.RICE_STAKING_EXT)
-        // );
         GPDaoExtension gpdao = GPDaoExtension(
             dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
         );
+     
         require(
-            IERC20(tokenAddress).transferFrom(
+            IERC20(tokenAddress).allowance(
                 dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPTV2),
-                address(this),
-                tokenAmount
-            ),
-            "allocAdapt::allocateProjectToken::transfer failed"
+                address(this)
+            ) >= tokenAmount,
+            "AllocationAdapter::allocateProjectToken::insufficient allowance"
+        );
+        IERC20(tokenAddress).transferFrom(
+            dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPTV2),
+            address(this),
+            tokenAmount
         );
 
         // approve from Allocation adapter contract to streaming payment contract
@@ -233,14 +203,7 @@ contract AllocationAdapterContractV2 is AdapterGuard {
             tokenAmount
         );
         address[] memory allInvestors = vars.fundingpool.getInvestors();
-        // address[] memory riceStakeres = vars.ricestaking.getAllRiceStakers();
         address[] memory gps = gpdao.getAllGPs();
-        // address[] memory targetAddressArr = new address[](
-        //     allInvestors.length + riceStakeres.length + gps.length
-        // );
-        address[] memory targetAddressArr = new address[](
-            allInvestors.length + gps.length
-        );
         vars.totalReward = 0;
 
         if (allInvestors.length > 0) {
@@ -250,7 +213,6 @@ contract AllocationAdapterContractV2 is AdapterGuard {
                     allInvestors[i],
                     tokenAmount
                 );
-                vars.totalReward += fundingRewards;
                 //bug fixed: fillter fundingRewards > 0 ;20220614
                 if (fundingRewards > 0) {
                     vars.streamingPaymentContract.createStream(
@@ -261,13 +223,13 @@ contract AllocationAdapterContractV2 is AdapterGuard {
                         stopTime,
                         proposalId
                     );
+                    vars.totalReward += fundingRewards;
                 }
             }
         }
         if (gps.length > 0) {
             for (uint8 i = 0; i < gps.length; i++) {
                 uint256 gpBonus = getGPBonus(dao, gps[i], tokenAmount);
-                vars.totalReward += gpBonus;
                 //bug  fixed: fillter gpBonus >0;20220614
                 if (gpBonus > 0) {
                     vars.streamingPaymentContract.createStream(
@@ -278,17 +240,16 @@ contract AllocationAdapterContractV2 is AdapterGuard {
                         stopTime,
                         proposalId
                     );
+                    vars.totalReward += gpBonus;
                 }
             }
         }
-
         if (proposerAddr != address(0x0)) {
             uint256 proposerBonus = getProposerBonus(
                 dao,
                 proposerAddr,
                 tokenAmount
             );
-            vars.totalReward += proposerBonus;
             if (proposerBonus > 0) {
                 vars.streamingPaymentContract.createStream(
                     proposerAddr,
@@ -298,31 +259,12 @@ contract AllocationAdapterContractV2 is AdapterGuard {
                     stopTime,
                     proposalId
                 );
+                vars.totalReward += proposerBonus;
             }
         }
-        // if (riceStakeres.length > 0) {
-        //     for (uint8 i = 0; i < riceStakeres.length; i++) {
-        //         uint256 riceStakingRewards = getRiceRewards(
-        //             dao,
-        //             riceStakeres[i],
-        //             tokenAmount
-        //         );
-        //         vars.totalReward += riceStakingRewards;
-        //         //bug fixed: fillter riceStakingRewards >0;20220614
-        //         if (riceStakingRewards > 0) {
-        //             vars.streamingPaymentContract.createStream(
-        //                 riceStakeres[i],
-        //                 riceStakingRewards,
-        //                 tokenAddress,
-        //                 startTime,
-        //                 stopTime
-        //             );
-        //         }
-        //     }
-        // }
         require(
             vars.totalReward <= tokenAmount,
-            "allocateProjectToken::distribute token amount exceeds tranding off amount"
+            "AllocationAdapter::allocateProjectToken::distribute token amount exceeds tranding off amount"
         );
     }
 }

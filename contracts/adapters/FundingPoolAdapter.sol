@@ -76,11 +76,9 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
 
         address token = fundingpool.fundRaisingTokenAddress();
         uint256 balance = balanceOf(dao, msg.sender);
-        require(balance > 0, "insufficient balance");
-        require(
-            amount > 0 && amount <= balance,
-            "withdraw amount insufficient"
-        );
+        console.log("funding pool balance: ", balance);
+        require(amount > 0, "FundingPool::withdraw::invalid amount");
+        require(amount <= balance, "FundingPool::withdraw::insufficient fund");
 
         fundingpool.withdraw(msg.sender, amount);
     }
@@ -108,44 +106,22 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         fundingpool.addToBalance(msg.sender, amount);
     }
 
-    // function claimeRiceReward(DaoRegistry dao) external {
-    //     FundingPoolExtension fundingpool = FundingPoolExtension(
-    //         dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-    //     );
-    //     fundingpool.getReward(msg.sender);
-    // }
-
-    // function notifyRewardAmount(DaoRegistry dao, uint256 rewardRiceAmount)
-    //     external
-    //     onlyMember(dao)
-    //     reimbursable(dao)
-    // {
-    //     FundingPoolExtension fundingpool = FundingPoolExtension(
-    //         dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-    //     );
-    //     fundingpool.notifyRewardAmount(rewardRiceAmount);
-    // }
-
-    function recoverERC20(
-        DaoRegistry dao,
-        address tokenAddress,
-        uint256 tokenAmount
-    ) external onlyMember(dao) reimbursable(dao) {
+    function processFundRaise(DaoRegistry dao) external reimbursable(dao) {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        fundingpool.recoverERC20(tokenAddress, tokenAmount, msg.sender);
+        fundingpool.processFundRaising();
     }
 
-    // function setRewardsDuration(DaoRegistry dao, uint256 _rewardsDuration)
-    //     external
-    //     onlyMember(dao)
-    //     reimbursable(dao)
-    // {
+    // function recoverERC20(
+    //     DaoRegistry dao,
+    //     address tokenAddress,
+    //     uint256 tokenAmount
+    // ) external onlyMember(dao) reimbursable(dao) {
     //     FundingPoolExtension fundingpool = FundingPoolExtension(
     //         dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
     //     );
-    //     fundingpool.setRewardsDuration(_rewardsDuration);
+    //     fundingpool.recoverERC20(tokenAddress, tokenAmount, msg.sender);
     // }
 
     function setRiceTokenAddress(DaoRegistry dao, address riceAddr)
@@ -158,20 +134,6 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         );
         fundingpool.setRiceTokenAddress(riceAddr);
     }
-
-    // /*
-    //  * @notice Allows anyone to send eth to the bank extension
-    //  * @param dao The DAO address.
-    //  */
-    // function sendEth(DaoRegistry dao) external payable reimbursable(dao) {
-    //     require(msg.value > 0, "no eth sent!");
-    //     FundingPoolExtension(dao.getExtensionAddress(DaoHelper.FUNDINGPOOL))
-    //         .addToBalance{value: msg.value}(
-    //         DaoHelper.GUILD,
-    //         DaoHelper.ETH_TOKEN,
-    //         msg.value
-    //     );
-    // }
 
     function balanceOf(DaoRegistry dao, address investorAddr)
         public
@@ -223,5 +185,29 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         returns (uint256)
     {
         return dao.getConfiguration(DaoHelper.FUND_RAISING_TARGET);
+    }
+
+    function getFundRaiseWindowOpenTime(DaoRegistry dao)
+        external
+        view
+        returns (uint256)
+    {
+        return dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN);
+    }
+
+    function getFundRaiseWindowCloseTime(DaoRegistry dao)
+        external
+        view
+        returns (uint256)
+    {
+        return dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END);
+    }
+
+    function getFundStartTime(DaoRegistry dao) external view returns (uint256) {
+        return dao.getConfiguration(DaoHelper.FUND_START_TIME);
+    }
+
+    function getFundEndTime(DaoRegistry dao) external view returns (uint256) {
+        return dao.getConfiguration(DaoHelper.FUND_END_TIME);
     }
 }

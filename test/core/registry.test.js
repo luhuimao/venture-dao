@@ -33,12 +33,18 @@ const {
 const {
   expectRevert,
   expect,
+  DaoFactory,
   DaoRegistry,
+  FundingPoolExtension,
   web3,
   accounts,
 } = require("../../utils/oz-util");
 
-import { deployDefaultDao, takeChainSnapshot, revertChainSnapshot, proposalIdGenerator, expect, expectRevert, web3 } from "../../utils/hh-util";
+import {
+  DaoFactory,
+  DaoRegistry,
+  FundingPoolExtension, deployDefaultDao, takeChainSnapshot, revertChainSnapshot, proposalIdGenerator, expect, expectRevert, web3
+} from "../../utils/hh-util";
 
 const hre = require("hardhat");
 

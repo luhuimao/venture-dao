@@ -268,7 +268,11 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
             vars.mathErr == MathError.NO_ERROR,
             "next stream id calculation error"
         );
-
+        require(
+            IERC20(tokenAddress).allowance(msg.sender, address(this)) >=
+                deposit,
+            "StreamPay::createStream::insufficient allowance"
+        );
         IERC20(tokenAddress).safeTransferFrom(
             msg.sender,
             address(this),

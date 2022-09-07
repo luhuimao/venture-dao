@@ -355,7 +355,7 @@ export const contracts: Array<ContractConfig> = [
     name: "RiceStakingFactory",
     alias: "riceStakingExtFactory",
     path: "../../contracts/extensions/ricestaking/RiceStakingFactory",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Factory,
     acls: {
@@ -512,7 +512,7 @@ export const contracts: Array<ContractConfig> = [
     name: "StakingRiceExtension",
     alias: "ricestakingExt",
     path: "../../contracts/extensions/ricestaking/StakingRiceExtension",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Extension,
     buildAclFlag: entryRiceStaking,
@@ -712,7 +712,7 @@ export const contracts: Array<ContractConfig> = [
     name: "RiceStakingAdapterContract",
     alias: "ricestakingAdapter",
     path: "../../contracts/adapters/RiceStakingAdapterContract",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -868,7 +868,7 @@ export const contracts: Array<ContractConfig> = [
     name: "ManagingContract",
     alias: "managing",
     path: "../../contracts/adapters/ManagingContract",
-    enabled: false,
+    enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {

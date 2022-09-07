@@ -5,9 +5,12 @@ pragma solidity ^0.8.0;
 import "./interfaces/IManaging.sol";
 import "../core/DaoRegistry.sol";
 import "../adapters/interfaces/IVoting.sol";
+import "../adapters/interfaces/IGPVoting.sol";
 import "../guards/AdapterGuard.sol";
 import "./modifiers/Reimbursable.sol";
 import "../helpers/DaoHelper.sol";
+import "../utils/TypeConver.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
 MIT License
@@ -34,11 +37,17 @@ SOFTWARE.
  */
 
 contract ManagingContract is IManaging, AdapterGuard, Reimbursable {
+    event ProposalCreated(
+        bytes32 indexed proposalId,
+        uint256 creationTime,
+        uint256 stopVoteTime
+    );
     // DAO => (ProposalID => ProposalDetails)
     mapping(address => mapping(bytes32 => ProposalDetails)) public proposals;
     // DAO => (ProposalId => Configuration[])
     mapping(address => mapping(bytes32 => Configuration[]))
         public configurations;
+    uint256 public proposalIds = 100000;
 
     /**
      * @notice Creates a proposal to replace, remove or add an adapter.
@@ -47,14 +56,12 @@ contract ManagingContract is IManaging, AdapterGuard, Reimbursable {
      * @dev keys and value must have the same length.
      * @dev proposalId can not be reused.
      * @param dao The dao address.
-     * @param proposalId Tproposal details
      * @param proposal The proposal details
      * @param data Additional data to pass to the voting contract and identify the submitter
      */
     // slither-disable-next-line reentrancy-benign
     function submitProposal(
         DaoRegistry dao,
-        bytes32 proposalId,
         ProposalDetails calldata proposal,
         Configuration[] memory configs,
         bytes calldata data
@@ -74,7 +81,9 @@ contract ManagingContract is IManaging, AdapterGuard, Reimbursable {
             DaoHelper.isNotReservedAddress(proposal.adapterOrExtensionAddr),
             "address is reserved"
         );
-
+        bytes32 proposalId = TypeConver.bytesToBytes32(
+            abi.encodePacked("TMAP", Strings.toString(proposalIds))
+        );
         dao.submitProposal(proposalId);
 
         proposals[address(dao)][proposalId] = proposal;
@@ -94,8 +103,8 @@ contract ManagingContract is IManaging, AdapterGuard, Reimbursable {
             );
         }
 
-        IVoting votingContract = IVoting(
-            dao.getAdapterAddress(DaoHelper.VOTING_ADAPT)
+        IGPVoting votingContract = IGPVoting(
+            dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
         );
         address senderAddress = votingContract.getSenderAddress(
             dao,
@@ -105,7 +114,18 @@ contract ManagingContract is IManaging, AdapterGuard, Reimbursable {
         );
 
         dao.sponsorProposal(proposalId, senderAddress, address(votingContract));
-        votingContract.startNewVotingForProposal(dao, proposalId, data);
+        votingContract.startNewVotingForProposal(
+            dao,
+            proposalId,
+            block.timestamp,
+            data
+        );
+        proposalIds += 1;
+        emit ProposalCreated(
+            proposalId,
+            block.timestamp,
+            block.timestamp + dao.getConfiguration(DaoHelper.PROPOSAL_DURATION)
+        );
     }
 
     /**

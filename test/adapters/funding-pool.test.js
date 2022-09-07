@@ -205,8 +205,12 @@ describe("Adapter - FundingPool", () => {
         console.log(`FUND_RAISING_WINDOW_BEGIN: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_BEGIN")))}`);
         console.log(`FUND_RAISING_WINDOW_END: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_END")))}`);
 
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        console.log(`current block timestamp: ${blocktimestamp}`);
+
         await token.connect(investor).approve(fundingpoolAdapter.address, amount);
         await fundingpoolAdapter.connect(investor).deposit(dao.address, amount);
+
 
         console.log(`balance in fund pool: ${hre.ethers.utils.formatEther(await fundingpoolAdapter.balanceOf(
             dao.address, investor.address))}`);
@@ -222,11 +226,13 @@ describe("Adapter - FundingPool", () => {
         await testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("2000"));
         console.log("user1 test token balance: ", hre.ethers.utils.formatEther(await testtoken1.balanceOf(this.user1.address)).toString());
         await depositToFundingPool(fundingpoolAdapter, dao, this.user1, hre.ethers.utils.parseEther("1000"), testtoken1);
+        await depositToFundingPool(fundingpoolAdapter, dao, this.user1, hre.ethers.utils.parseEther("1000"), testtoken1);
+
         console.log(`test usdt bal in fund pool: ${hre.ethers.utils.formatEther((await testtoken1.balanceOf(this.extensions.fundingpoolExt.address)))}`);
         console.log("user1 test token balance: ", hre.ethers.utils.formatEther(await testtoken1.balanceOf(this.user1.address)).toString());
         console.log(`total fund: ${hre.ethers.utils.formatEther((await fundingpoolAdapter.lpBalance(dao.address)))}`);
         expect(parseInt(hre.ethers.utils.formatEther(await fundingpoolAdapter.balanceOf(
-            dao.address, this.user1.address)))).equal(1000);
+            dao.address, this.user1.address)))).equal(2000);
     })
 
     it("should be impossible to withdraw funds from the fundingpool during fundraise window", async () => {
@@ -524,12 +530,9 @@ describe("Adapter - Fund Raising Succeed", () => {
     });
 
     it("shoule be impossible to process fund raising twice", async () => {
-        const fundingPoolExt = this.extensions.fundingpoolExt.functions;
-        await fundingPoolExt.processFundRaising();
-        const totalFund1 = await fundingPoolExt.totalSupply();
-        console.log(`total Fund : ${hre.ethers.utils.formatEther(totalFund1.toString())}`);
-        const fundState = await fundingPoolExt.fundRaisingState();
-        console.log(`fund raising state: ${fundState}`);
+        const fundingpoolAdapter = this.fundingpoolAdapter;
+        await expectRevert(fundingpoolAdapter.processFundRaise(this.dao.address), "revert");
+
     });
 
     it("should be impossible to withdraw fund if not in redemption or fund expired", async () => {
@@ -568,7 +571,8 @@ describe("Adapter - Fund Raising Succeed", () => {
 
         expect((await fundingPoolExt.ifInRedemption())[0]).equal(true);
 
-        await fundingpoolAdapter.withdraw(dao.address, hre.ethers.utils.parseEther("10000"));
+        const redempteAmount = toBN(bal_fundPool1.toString()).div(toBN("2"));
+        await fundingpoolAdapter.withdraw(dao.address, redempteAmount);
 
         const bal_fundPool2 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
         const gpUSDTBal2 = await testtoken1.balanceOf(this.GP.address);
@@ -578,8 +582,12 @@ describe("Adapter - Fund Raising Succeed", () => {
         console.log(`GP usdt bal: ${hre.ethers.utils.formatEther(gpUSDTBal2.toString())}`);
         console.log(`owner usdt bal: ${hre.ethers.utils.formatEther(bal2.toString())}`);
 
-        expect(parseInt(hre.ethers.utils.formatEther(toBN(bal2.toString()).sub(toBN(bal1.toString()))))).equal(10000 * (1 - 0.005));
-        expect(parseInt(hre.ethers.utils.formatEther(toBN(gpUSDTBal2.toString()).sub(toBN(gpUSDTBal1.toString()))))).equal(10000 * 0.005);
+        expect(parseFloat(hre.ethers.utils.formatEther(bal2.toString())) - parseFloat(hre.ethers.utils.formatEther(bal1.toString())))
+            .equal(parseFloat(hre.ethers.utils.formatEther(redempteAmount.toString())) * (1 - 0.005));
+
+        expect(parseFloat(hre.ethers.utils.formatEther(toBN(gpUSDTBal2.toString()).
+            sub(toBN(gpUSDTBal1.toString()))))).
+            equal(parseFloat(hre.ethers.utils.formatEther(redempteAmount.toString())) * 0.005);
     });
 
     it("should be possible to withdraw fund when fund expired", async () => {
@@ -591,7 +599,7 @@ describe("Adapter - Fund Raising Succeed", () => {
         const bal_fundPool1 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
         const bal1 = await testtoken1.balanceOf(this.owner.address);
         const gpUSDTBal1 = await testtoken1.balanceOf(this.GP.address);
-        const chargedManagementFee1 = await fundingPoolExt.chargedManagementFee();
+        const chargedManagementFee1 = await fundingPoolExt.lpChargedManagementFees(this.owner.address);
 
         console.log(`balance in fund pool: ${hre.ethers.utils.formatEther(bal_fundPool1.toString())}`);
         console.log(`owner usdt bal: ${hre.ethers.utils.formatEther(bal1.toString())}`);
@@ -607,17 +615,21 @@ describe("Adapter - Fund Raising Succeed", () => {
 
         expect((await fundingPoolExt.ifInRedemption())[0]).equal(false);
 
-        await fundingpoolAdapter.withdraw(dao.address, hre.ethers.utils.parseEther("10000"));
+        await fundingpoolAdapter.withdraw(dao.address, bal_fundPool1);
 
         const bal_fundPool2 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
         const gpUSDTBal2 = await testtoken1.balanceOf(this.GP.address);
         const bal2 = await testtoken1.balanceOf(this.owner.address);
-        const chargedManagementFee2 = await fundingPoolExt.chargedManagementFee();
+        const chargedManagementFee2 = await fundingPoolExt.lpChargedManagementFees(this.owner.address);
         console.log(`balance in fund pool: ${hre.ethers.utils.formatEther(bal_fundPool2.toString())}`);
         console.log(`GP usdt bal: ${hre.ethers.utils.formatEther(gpUSDTBal2.toString())}`);
         console.log(`owner usdt bal: ${hre.ethers.utils.formatEther(bal2.toString())}`);
         console.log(`charged Management Fee2: ${hre.ethers.utils.formatEther(chargedManagementFee2.toString())}`);
 
-        expect(parseInt(hre.ethers.utils.formatEther(toBN(bal2.toString()).sub(toBN(bal1.toString()))))).equal(10000);
+        expect(parseFloat(hre.ethers.utils.formatEther(toBN(gpUSDTBal2.toString()).
+            sub(toBN(gpUSDTBal1.toString()))))).
+            equal(parseFloat(hre.ethers.utils.formatEther(chargedManagementFee2.toString())));
+        // expect(parseFloat(hre.ethers.utils.formatEther(toBN(bal2.toString()).sub(toBN(bal1.toString()))))).
+        //     equal(parseFloat(hre.ethers.utils.formatEther(bal_fundPool1.toString())));
     });
 });

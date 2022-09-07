@@ -51,7 +51,7 @@ const {
   ERC1271Extension,
   VotingContract,
   NFTExtension,
-} = require("../../utils/oz-util");
+} = require("../../utils/hh-util");
 
 const {
   bankExtensionAclFlagsMap,
