@@ -82,7 +82,8 @@ let owner;
         votingPeriod: getEnvVar("VOTING_PERIOD_SECONDS"),
         gracePeriod: getEnvVar("GRACE_PERIOD_SECONDS"),
         daoSquareAddress: getEnvVar("DAO_SQUARE_ADDRESS"),
-        gpAddress: getEnvVar("GP_ADDRESS")
+        gpAddress: getEnvVar("GP_ADDRESS"),
+        daoName:getEnvVar("DAO_NAME")
     };
     const result = await deployDefaultDao(options);
     const { dao, factories, extensions, adapters, testContracts, utilContracts } =
