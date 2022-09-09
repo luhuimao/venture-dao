@@ -59,7 +59,8 @@ export const fundingpoolExtensionAclFlagsMap: Record<string, string> = {
   NOTIFY_REWARD_AMOUNT: "GET_REWARDS",
   RECOVER_ERC20: "GET_REWARDS",
   SET_REWARDS_DURATION: "GET_REWARDS",
-  SET_RICE_ADDRESS: "SET_RICE_ADDRESS"
+  SET_RICE_ADDRESS: "SET_RICE_ADDRESS",
+  UPDATE_GP_BALANCE: "UPDATE_GP_BALANCE"
 };
 
 export const ricestakingExtensionAclFlagsMap: Record<string, string> = {

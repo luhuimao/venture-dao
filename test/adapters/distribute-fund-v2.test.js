@@ -752,10 +752,9 @@ describe("Voting for distribute proposal", () => {
         await this.testRiceToken.transfer(rice_staker.address, hre.ethers.utils.parseEther("20000"));
         console.log(`rice_staker rice balance: ${await this.testRiceToken.balanceOf(rice_staker.address)}`);
 
-        console.log("dao member 1 addr: ", (await dao.getMemberAddress(0)));
-        console.log("dao member 2 addr: ", (await dao.getMemberAddress(1)));
-
         //gp deposit funds
+        await depositToFundingPool(this.fundingpoolAdapter, dao, this.owner, hre.ethers.utils.parseEther("1000"), this.testtoken1);
+
         await depositToFundingPool(this.fundingpoolAdapter, dao, this.gp1, hre.ethers.utils.parseEther("20000"), this.testtoken1);
         await depositToFundingPool(this.fundingpoolAdapter, dao, this.gp2, hre.ethers.utils.parseEther("20000"), this.testtoken1);
         await depositToFundingPool(this.fundingpoolAdapter, dao, this.gp3, hre.ethers.utils.parseEther("20000"), this.testtoken1);
@@ -829,16 +828,6 @@ describe("Voting for distribute proposal", () => {
 
         console.log(`deposited balace ${hre.ethers.utils.formatEther((await fundingpoolAdapter.balanceOf(dao.address, investor.address)).toString())}`);
     };
-
-
-    // const stakingRice = async (stakingRiceAdapter,
-    //     dao,
-    //     investor,
-    //     amount,
-    //     token) => {
-    //     await token.connect(investor).approve(stakingRiceAdapter.address, amount);
-    //     await stakingRiceAdapter.connect(investor).deposit(dao.address, amount);
-    // }
 
     const distributeFundsProposal = async (
         dao,

@@ -729,9 +729,9 @@ const configureDao = async ({
         log("configure Extension Access ...");
         const withAccess = Object.values(contracts).reduce((accessRequired, c) => {
             const configs = c.configs;
-            console.log(`adapter name: ${configs.name}`);
+            console.log(`extension/adapter name: ${configs.name}`);
             accessRequired.push(
-                extension.configs.buildAclFlag(c.instance.address, configs.acls)
+                extension.configs.buildAclFlag(configs.type == ContractType.Extension ? c.address : c.instance.address, configs.acls)
             );
             return accessRequired;
         }, []);

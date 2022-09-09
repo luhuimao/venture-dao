@@ -532,7 +532,9 @@ export const contracts: Array<ContractConfig> = [
     buildAclFlag: entryGPDao,
     acls: {
       dao: [],
-      extensions: {},
+      extensions: {
+        [extensionsIdsMap.FUNDING_POOL_EXT]: [fundingpoolExtensionAclFlagsMap.UPDATE_GP_BALANCE,],
+      },
     },
   },
   {

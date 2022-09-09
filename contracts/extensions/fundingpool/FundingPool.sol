@@ -61,7 +61,8 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         NOTIFY_REWARD_AMOUNT,
         RECOVER_ERC20,
         SET_REWARDS_DURATION,
-        SET_RICE_ADDRESS
+        SET_RICE_ADDRESS,
+        UPDATE_GP_BALANCE
     }
     enum InvestorFlag {
         EXISTS,
@@ -535,6 +536,23 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         IERC20(tokenAddr).safeTransfer(recipientAddr, amount);
 
         emit DistributeFund(recipientAddr, tokenAddr, amount);
+    }
+
+    function updateTotalGPsBalance(
+        address token,
+        uint256 amount,
+        uint8 updateType
+    ) external hasExtensionAccess(AclFlag.UPDATE_GP_BALANCE) {
+        uint256 oldGPsBalance = balanceOf(address(DaoHelper.GP_POOL));
+        uint256 newGPsBalance;
+        // 1: sub 2: add
+        if (updateType == 1) {
+            newGPsBalance = oldGPsBalance - amount;
+        }
+        if (updateType == 2) {
+            newGPsBalance = oldGPsBalance + amount;
+        }
+        _createNewAmountCheckpoint(DaoHelper.GP_POOL, token, newGPsBalance);
     }
 
     /**

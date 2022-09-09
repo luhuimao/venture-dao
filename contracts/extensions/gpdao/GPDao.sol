@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 import "../../core/DaoRegistry.sol";
 import "../IExtension.sol";
+import "../fundingpool/FundingPool.sol";
 import "../../guards/AdapterGuard.sol";
 import "../../helpers/DaoHelper.sol";
 // import "@openzeppelin/contracts/utils/Address.sol";
@@ -80,8 +81,10 @@ contract GPDaoExtension is IExtension {
         require(_dao.isMember(creator), "gpdao::not member");
         dao = _dao;
         sponsor = creator;
-        registerGeneralPartner(creator);
-
+        // registerGeneralPartner(creator);
+        if (!_generalPartners.contains(creator)) {
+            _generalPartners.add(creator);
+        }
         initialized = true;
     }
 
@@ -101,6 +104,16 @@ contract GPDaoExtension is IExtension {
 
         if (!_generalPartners.contains(newGeneralPartnerAddress)) {
             _generalPartners.add(newGeneralPartnerAddress);
+
+            FundingPoolExtension fundingpool = FundingPoolExtension(
+                dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+            );
+            address tokenAddr = fundingpool.getFundRaisingTokenAddress();
+            uint256 gpBal = fundingpool.balanceOf(newGeneralPartnerAddress);
+            //update gps balance
+            if (gpBal > 0) {
+                fundingpool.updateTotalGPsBalance(tokenAddr, gpBal, 2);
+            }
         }
     }
 
@@ -120,6 +133,16 @@ contract GPDaoExtension is IExtension {
         );
 
         _generalPartners.remove(generalPartnerAddress);
+
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        address tokenAddr = fundingpool.getFundRaisingTokenAddress();
+        uint256 gpBal = fundingpool.balanceOf(generalPartnerAddress);
+        //update gps balance
+        if (gpBal > 0) {
+            fundingpool.updateTotalGPsBalance(tokenAddr, gpBal, 1);
+        }
     }
 
     /**

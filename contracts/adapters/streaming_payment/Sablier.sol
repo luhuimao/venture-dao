@@ -142,10 +142,27 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
         BalanceOfLocalVars memory vars;
 
         uint256 delta = deltaOf(streamId);
-        (vars.mathErr, vars.recipientBalance) = mulUInt(
-            delta,
-            stream.ratePerSecond
-        );
+        if (stream.ratePerSecond == 0) {
+            uint256 streamDuration;
+            (vars.mathErr, streamDuration) = subUInt(
+                stream.stopTime,
+                stream.startTime
+            );
+            (vars.mathErr, vars.recipientBalance) = mulUInt(
+                stream.deposit,
+                delta
+            );
+            (vars.mathErr, vars.recipientBalance) = divUInt(
+                vars.recipientBalance,
+                streamDuration
+            );
+        } else {
+            (vars.mathErr, vars.recipientBalance) = mulUInt(
+                delta,
+                stream.ratePerSecond
+            );
+        }
+
         require(
             vars.mathErr == MathError.NO_ERROR,
             "recipient balance calculation error"
@@ -171,15 +188,15 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
         }
 
         if (who == stream.recipient) return vars.recipientBalance;
-        if (who == stream.sender) {
-            (vars.mathErr, vars.senderBalance) = subUInt(
-                stream.remainingBalance,
-                vars.recipientBalance
-            );
-            /* `recipientBalance` cannot and should not be bigger than `remainingBalance`. */
-            assert(vars.mathErr == MathError.NO_ERROR);
-            return vars.senderBalance;
-        }
+        // if (who == stream.sender) {
+        //     (vars.mathErr, vars.senderBalance) = subUInt(
+        //         stream.remainingBalance,
+        //         vars.recipientBalance
+        //     );
+        //     /* `recipientBalance` cannot and should not be bigger than `remainingBalance`. */
+        //     assert(vars.mathErr == MathError.NO_ERROR);
+        //     return vars.senderBalance;
+        // }
         return 0;
     }
 
@@ -234,8 +251,8 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
         /* `subUInt` can only return MathError.INTEGER_UNDERFLOW but we know `stopTime` is higher than `startTime`. */
         assert(vars.mathErr == MathError.NO_ERROR);
 
-        /* Without this, the rate per second would be zero. */
-        require(deposit >= vars.duration, "deposit smaller than time delta");
+        /* Without this, the rate per second would be zero. (need to fix)*/
+        // require(deposit >= vars.duration, "deposit smaller than time delta");
 
         /* This condition avoids dealing with remainders */
         // require(

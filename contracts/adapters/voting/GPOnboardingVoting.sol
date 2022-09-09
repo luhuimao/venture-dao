@@ -245,14 +245,7 @@ contract GPOnboardVotingContract is
         DaoHelper.VoteType voteType = DaoHelper.VoteType(
             dao.getProposalVoteType(DaoHelper.ProposalType.MEMBERSHIP)
         );
-        // uint256 gpAmount = GPDaoExtension(
-        //     dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
-        // ).getAllGPs().length;
 
-        // FundingPoolExtension fundingpool = FundingPoolExtension(
-        //     dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        // );
-        // address token = fundingpool.fundRaisingTokenAddress();
         uint128 allGPsWeight = getAllGPWeight(dao);
         // rule out any failed quorums
         if (
@@ -287,7 +280,10 @@ contract GPOnboardVotingContract is
             // ((7+2) * 66) / 100 = 5.94; 7 yes will pass
             uint256 minYes = ((vote.nbYes + vote.nbNo) *
                 dao.getConfiguration(DaoHelper.SUPER_MAJORITY)) / 100;
-
+            // not one vote or voting power is zero should return tie .20220908
+            if (minYes == 0 && vote.nbYes == 0) {
+                return (VotingState.TIE, vote.nbYes, vote.nbNo);
+            }
             if (vote.nbYes >= minYes)
                 return (VotingState.PASS, vote.nbYes, vote.nbNo);
             else return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
