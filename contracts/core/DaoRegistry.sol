@@ -260,13 +260,13 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
      * @param key The configuration key for which the value will be set
      * @param value The value to set the key
      */
-    function setConfigurationByMember(bytes32 key, uint256 value)
-        external
-        onlyMember(this)
-    {
-        mainConfiguration[key] = value;
-        emit ConfigurationUpdated(key, value);
-    }
+    // function setConfigurationByMember(bytes32 key, uint256 value)
+    //     external
+    //     onlyMember(this)
+    // {
+    //     mainConfiguration[key] = value;
+    //     emit ConfigurationUpdated(key, value);
+    // }
 
     /**
      * @notice Registers a member address in the DAO if it is not registered or invalid.

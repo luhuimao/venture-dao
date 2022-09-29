@@ -6,7 +6,8 @@ import "../core/DaoRegistry.sol";
 import "../guards/AdapterGuard.sol";
 import "./modifiers/Reimbursable.sol";
 import "./interfaces/IGPKick.sol";
-import "../adapters/interfaces/IGPOnboardingVoting.sol";
+import "./interfaces/IGPOnboardingVoting.sol";
+import "./voting/GPOnboardingVoting.sol";
 import "../helpers/DaoHelper.sol";
 import "../extensions/gpdao/GPDao.sol";
 import "../utils/TypeConver.sol";
@@ -68,12 +69,13 @@ contract GPKickAdapterContract is
         bytes32 proposalId,
         IGPOnboardingVoting.VotingState voteRelsult,
         ProposalState state,
+        uint128 allVotingWeight,
         uint128 nbYes,
         uint128 nbNo
     );
     // Keeps track of all the kicks executed per DAO.
     mapping(address => mapping(bytes32 => GPKickProposal)) public kickProposals;
-    uint256 public proposalIds = 100001;
+    uint256 public proposalIds = 100030;
 
     /**
      * @notice Creates a gp kick proposal, opens it for voting, and sponsors it.
@@ -157,13 +159,18 @@ contract GPKickAdapterContract is
         dao.processProposal(proposalId);
 
         // Checks if the proposal has passed.
-        IGPOnboardingVoting votingContract = IGPOnboardingVoting(
+        // IGPOnboardingVoting votingContract = IGPOnboardingVoting(
+        //     dao.votingAdapter(proposalId)
+        // );
+        GPOnboardVotingContract votingContract = GPOnboardVotingContract(
             dao.votingAdapter(proposalId)
         );
         require(address(votingContract) != address(0), "adapter not found");
         IGPOnboardingVoting.VotingState votingState;
         uint128 nbYes;
         uint128 nbNo;
+        uint128 allGPWeights = votingContract.getAllGPWeight(dao);
+
         (votingState, nbYes, nbNo) = votingContract.voteResult(dao, proposalId);
         GPKickProposal storage proposal = kickProposals[address(dao)][
             proposalId
@@ -196,6 +203,7 @@ contract GPKickAdapterContract is
             proposalId,
             votingState,
             proposal.state,
+            allGPWeights,
             nbYes,
             nbNo
         );

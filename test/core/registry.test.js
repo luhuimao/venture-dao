@@ -40,6 +40,7 @@ const {
   accounts,
 } = require("../../utils/oz-util");
 
+import { exec } from "child_process";
 import {
   DaoFactory,
   DaoRegistry,
@@ -193,8 +194,8 @@ describe("Core - Registry", () => {
     );
   });
 
-  it("should be possible to set configuration", async () => {
-    await this.dao.setConfigurationByMember(sha3("voting.votingPeriod"), 60 * 5);
+  it("should be possible to set configuration when dao is not finalized", async () => {
+    await this.dao.setConfiguration(sha3("voting.votingPeriod"), 60 * 5);
     console.log(`voting.votingPeriod: ${await this.dao.getConfiguration(sha3("voting.votingPeriod"))}`);
     expect(await this.dao.getConfiguration(sha3("voting.votingPeriod"))).equal(60 * 5);
   });
@@ -215,7 +216,13 @@ describe("Core - Registry", () => {
     console.log(`voting.gracePeriod: ${await this.dao.getConfiguration(sha3("voting.gracePeriod"))}`);
     console.log(`allocation.gpAllocationBonusRadio: ${await this.dao.getConfiguration(sha3("allocation.gpAllocationBonusRadio"))}`);
     console.log(`allocation.riceStakeAllocationRadio: ${await this.dao.getConfiguration(sha3("allocation.riceStakeAllocationRadio"))}`);
-    await expectRevert(this.dao.connect(this.user1).setConfigurationByMember(sha3("voting.votingPeriod"), 60 * 5), "revert");
+    await expectRevert(this.dao.connect(this.user1).setConfiguration(sha3("voting.votingPeriod"), 60 * 5), "revert");
+  });
+
+
+  it("should be impossible to set configuration when dao is finalized", async () => {
+    await this.dao.finalizeDao();
+    await expectRevert(this.dao.setConfiguration(sha3("voting.votingPeriod"), 60 * 5), "revert");
   });
 
 });

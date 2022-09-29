@@ -76,7 +76,6 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
 
         address token = fundingpool.fundRaisingTokenAddress();
         uint256 balance = balanceOf(dao, msg.sender);
-        console.log("funding pool balance: ", balance);
         require(amount > 0, "FundingPool::withdraw::invalid amount");
         require(amount <= balance, "FundingPool::withdraw::insufficient fund");
 
@@ -209,5 +208,60 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
 
     function getFundEndTime(DaoRegistry dao) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.FUND_END_TIME);
+    }
+
+    function latestRedempteTime(DaoRegistry dao)
+        public
+        view
+        returns (uint256, uint256)
+    {
+        uint256 fundStartTime = dao.getConfiguration(DaoHelper.FUND_START_TIME);
+        uint256 fundEndTime = dao.getConfiguration(DaoHelper.FUND_END_TIME);
+        uint256 redemptionPeriod = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_REDEMPTION_PERIOD
+        );
+        uint256 fundDuration = fundEndTime - fundStartTime;
+        if (
+            fundStartTime <= 0 ||
+            fundEndTime <= 0 ||
+            redemptionPeriod <= 0 ||
+            fundDuration <= 0
+        ) return (0, 0);
+        DaoHelper.RedemptionType redemptionT = DaoHelper.RedemptionType(
+            dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION)
+        );
+        uint256 redemption;
+        if (redemptionT == DaoHelper.RedemptionType.WEEKLY) {
+            redemption = DaoHelper.ONE_WEEK;
+        }
+        if (redemptionT == DaoHelper.RedemptionType.BI_WEEKLY) {
+            redemption = DaoHelper.TWO_WEEK;
+        }
+        if (redemptionT == DaoHelper.RedemptionType.MONTHLY) {
+            redemption = DaoHelper.ONE_MONTH;
+        }
+        if (redemptionT == DaoHelper.RedemptionType.QUARTERLY) {
+            redemption = DaoHelper.THREE_MONTH;
+        }
+        uint256 redemptionEndTime = fundStartTime + redemption;
+        uint256 redemptionStartTime = redemptionEndTime - redemptionPeriod;
+        if (
+            redemptionStartTime > fundEndTime ||
+            redemptionEndTime - redemptionStartTime <= 0
+        ) return (0, 0);
+
+        return (redemptionStartTime, redemptionEndTime);
+    }
+
+    function getRedemptDuration(DaoRegistry dao)
+        external
+        view
+        returns (uint256)
+    {
+        return dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION_PERIOD);
+    }
+
+    function getRedemptType(DaoRegistry dao) external view returns (uint256) {
+        return dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION);
     }
 }

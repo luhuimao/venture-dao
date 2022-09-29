@@ -87,10 +87,12 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
+        // uint256 fundingRewards = (tokenAmount *
+        //     (100 -
+        //         dao.getConfiguration(DaoHelper.REWARD_FOR_PROPOSER) -
+        //         dao.getConfiguration(DaoHelper.REWARD_FOR_GP))) / 100;
         uint256 fundingRewards = (tokenAmount *
-            (100 -
-                dao.getConfiguration(DaoHelper.REWARD_FOR_PROPOSER) -
-                dao.getConfiguration(DaoHelper.REWARD_FOR_GP))) / 100;
+            (100 - dao.getConfiguration(DaoHelper.REWARD_FOR_PROPOSER))) / 100;
         uint256 totalFund = fundingpool.totalSupply();
         uint256 fund = fundingpool.balanceOf(recipient);
         if (totalFund <= 0 || fund <= 0 || fundingRewards <= 0) {
@@ -183,7 +185,7 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         GPDaoExtension gpdao = GPDaoExtension(
             dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
         );
-     
+
         require(
             IERC20(tokenAddress).allowance(
                 dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPTV2),
@@ -203,7 +205,7 @@ contract AllocationAdapterContractV2 is AdapterGuard {
             tokenAmount
         );
         address[] memory allInvestors = vars.fundingpool.getInvestors();
-        address[] memory gps = gpdao.getAllGPs();
+        // address[] memory gps = gpdao.getAllGPs();
         vars.totalReward = 0;
 
         if (allInvestors.length > 0) {
@@ -227,23 +229,23 @@ contract AllocationAdapterContractV2 is AdapterGuard {
                 }
             }
         }
-        if (gps.length > 0) {
-            for (uint8 i = 0; i < gps.length; i++) {
-                uint256 gpBonus = getGPBonus(dao, gps[i], tokenAmount);
-                //bug  fixed: fillter gpBonus >0;20220614
-                if (gpBonus > 0) {
-                    vars.streamingPaymentContract.createStream(
-                        gps[i],
-                        gpBonus,
-                        tokenAddress,
-                        startTime,
-                        stopTime,
-                        proposalId
-                    );
-                    vars.totalReward += gpBonus;
-                }
-            }
-        }
+        // if (gps.length > 0) {
+        //     for (uint8 i = 0; i < gps.length; i++) {
+        //         uint256 gpBonus = getGPBonus(dao, gps[i], tokenAmount);
+        //         //bug  fixed: fillter gpBonus >0;20220614
+        //         if (gpBonus > 0) {
+        //             vars.streamingPaymentContract.createStream(
+        //                 gps[i],
+        //                 gpBonus,
+        //                 tokenAddress,
+        //                 startTime,
+        //                 stopTime,
+        //                 proposalId
+        //             );
+        //             vars.totalReward += gpBonus;
+        //         }
+        //     }
+        // }
         if (proposerAddr != address(0x0)) {
             uint256 proposerBonus = getProposerBonus(
                 dao,

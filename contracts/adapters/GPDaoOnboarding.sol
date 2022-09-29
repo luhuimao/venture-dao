@@ -5,10 +5,12 @@ pragma solidity ^0.8.0;
 import "../core/DaoRegistry.sol";
 import "../extensions/gpdao/GPDao.sol";
 import "../adapters/interfaces/IGPOnboardingVoting.sol";
+import "./voting/GPOnboardingVoting.sol";
 import "../adapters/modifiers/Reimbursable.sol";
 import "../guards/AdapterGuard.sol";
 import "../helpers/DaoHelper.sol";
 import "../utils/TypeConver.sol";
+import "./FundingPoolAdapter.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "hardhat/console.sol";
 
@@ -65,6 +67,7 @@ contract GPDaoOnboardingAdapterContract is
         bytes32 proposalId,
         IGPOnboardingVoting.VotingState voteRelsult,
         ProposalState state,
+        uint128 allVotingWeight,
         uint128 nbYes,
         uint128 nbNo
     );
@@ -76,7 +79,7 @@ contract GPDaoOnboardingAdapterContract is
     // mapping(bytes32 => DaoHelper.VoteType) public proposalVoteTypes;
 
     // string constant PROPOSALID_PREFIX = "TMP";
-    uint256 public proposalIds = 100000;
+    uint256 public proposalIds = 100050;
 
     /**
      * @notice Updates the DAO registry with the new configurations if valid.
@@ -158,9 +161,11 @@ contract GPDaoOnboardingAdapterContract is
             ),
             "proposal already processed"
         );
-        IGPOnboardingVoting votingContract = IGPOnboardingVoting(
+        GPOnboardVotingContract votingContract = GPOnboardVotingContract(
             dao.votingAdapter(proposalId)
         );
+        uint128 allGPWeights = votingContract.getAllGPWeight(dao);
+
         // IVoting votingContract = IVoting(dao.votingAdapter(proposalId));
         require(address(votingContract) != address(0), "adapter not found");
 
@@ -193,6 +198,7 @@ contract GPDaoOnboardingAdapterContract is
             proposalId,
             voteResult,
             proposal.state,
+            allGPWeights,
             nbYes,
             nbNo
         );

@@ -99,7 +99,7 @@ contract GPDaoExtension is IExtension {
     {
         require(
             newGeneralPartnerAddress != address(0x0),
-            "invalid generalPartner address"
+            "GPDAO::new GP::invalid generalPartner address"
         );
 
         if (!_generalPartners.contains(newGeneralPartnerAddress)) {

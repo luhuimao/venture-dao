@@ -103,7 +103,8 @@ library DaoHelper {
         keccak256("MANAGEMENT_FEE_PER_YEAR");
     bytes32 internal constant REDEMPTION_FEE = keccak256("REDEMPTION_FEE");
     bytes32 internal constant PROTOCOL_FEE = keccak256("PROTOCOL_FEE");
-
+    bytes32 internal constant GP_MIN_INVESTMENT_AMOUNT =
+        keccak256("GP_MIN_INVESTMENT_AMOUNT");
     //voting
     bytes32 internal constant QUORUM = keccak256("voting.quorum");
     bytes32 internal constant SUPER_MAJORITY =
@@ -124,7 +125,7 @@ library DaoHelper {
     bytes32 internal constant PROPOSAL_INTERVAL =
         keccak256("distributeFund.proposalInterval");
     bytes32 internal constant PROPOSAL_EXECUTE_DURATION =
-        keccak256("distributeFund.proposalExecuteDuration");
+        keccak256("PROPOSAL_EXECUTE_DURATION");
 
     // Adapters
     bytes32 internal constant GP_ONBOARDING_ADAPT =

@@ -6,12 +6,14 @@ import "../core/DaoRegistry.sol";
 import "../guards/AdapterGuard.sol";
 import "../guards/MemberGuard.sol";
 import "./modifiers/Reimbursable.sol";
-import "../adapters/interfaces/IGPVoting.sol";
+import "./interfaces/IGPVoting.sol";
 import "./AllocationAdapterV2.sol";
-import "../adapters/interfaces/IFunding.sol";
+import "./interfaces/IFunding.sol";
+import "./voting/GPVoting.sol";
 import "../helpers/FairShareHelper.sol";
 import "../helpers/DaoHelper.sol";
 import "../extensions/bank/Bank.sol";
+import "./FundingPoolAdapter.sol";
 import "../extensions/fundingpool/FundingPool.sol";
 import "../extensions/ricestaking/RiceStaking.sol";
 import "../utils/TypeConver.sol";
@@ -76,6 +78,7 @@ contract DistributeFundContractV2 is
     event ProposalExecuted(
         bytes32 proposalID,
         uint256 state,
+        uint128 allVotingWeight,
         uint128 nbYes,
         uint128 nbNo,
         uint256 distributeState
@@ -83,7 +86,6 @@ contract DistributeFundContractV2 is
     // The distribution status
     enum DistributionStatus {
         IN_QUEUE,
-        IN_FILL_FUNDS_PROGRESS,
         IN_VOTING_PROGRESS,
         IN_EXECUTE_PROGRESS,
         DONE,
@@ -124,7 +126,7 @@ contract DistributeFundContractV2 is
     DoubleEndedQueue.Bytes32Deque public proposalQueue;
 
     string constant PROPOSALID_PREFIX = "TFP";
-    uint256 public proposalIds = 100000;
+    uint256 public proposalIds = 100030;
 
     /**
      * @notice Configures the DAO with the Voting and Gracing periods.
@@ -164,10 +166,17 @@ contract DistributeFundContractV2 is
         if (erc20.allowance(projectTeamAddr, address(this)) < lockAmount) {
             return false;
         }
+
+        //20220916 fix potential bugs
+        uint256 oldAllowance = erc20.allowance(
+            address(this),
+            dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPTV2)
+        );
+        uint256 newAllowance = oldAllowance + lockAmount;
         //approve to AllocationAdapter contract
         erc20.approve(
             dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPTV2),
-            lockAmount
+            newAllowance
         );
         erc20.transferFrom(projectTeamAddr, address(this), lockAmount);
         return true;
@@ -182,7 +191,7 @@ contract DistributeFundContractV2 is
         ][msg.sender];
         require(
             lockedTokenAmount > 0,
-            "unLockProjectTeamToken::no fund to unlock"
+            "DistributeFund::unLockProjectTeamToken::no fund to unlock"
         );
 
         Distribution storage distribution = distributions[address(dao)][
@@ -198,13 +207,9 @@ contract DistributeFundContractV2 is
             dao,
             proposalId
         );
-
         require(
-            distribution.status == DistributionStatus.FAILED &&
-                (voteResult == IGPVoting.VotingState.NOT_PASS ||
-                    voteResult == IGPVoting.VotingState.TIE ||
-                    voteResult == IGPVoting.VotingState.PASS),
-            "unLockProjectTeamToken::not satisfied"
+            distribution.status == DistributionStatus.FAILED,
+            "DistributeFund::unLockProjectTeamToken::not satisfied"
         );
         projectTeamLockedTokens[address(dao)][proposalId][msg.sender] = 0;
         erc20.transfer(msg.sender, lockedTokenAmount);
@@ -214,6 +219,7 @@ contract DistributeFundContractV2 is
         bytes32 ongoingProposalId;
         IGPVoting gpVotingContract;
         FundingPoolExtension fundingpool;
+        FundingPoolAdapterContract fundingPoolAdapt;
         address submittedBy;
         bytes32 proposalId;
         uint256 proposalInQueueTimestamp;
@@ -252,10 +258,15 @@ contract DistributeFundContractV2 is
         vars.fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
+        vars.fundingPoolAdapt = FundingPoolAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
+        );
         require(
             vars.fundingpool.fundRaisingState() ==
-                DaoHelper.FundRaiseState.DONE,
-            "FundRaise::submitProposal::only submit proposal when fund raise was done"
+                DaoHelper.FundRaiseState.DONE &&
+                block.timestamp >
+                vars.fundingPoolAdapt.getFundRaiseWindowCloseTime(dao),
+            "FundRaise::submitProposal::only can submit proposal when fund raise was done"
         );
         vars.gpVotingContract = IGPVoting(
             dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
@@ -347,13 +358,13 @@ contract DistributeFundContractV2 is
         address[3] memory _addressArgs,
         uint256[] calldata _uint256ArgsProposal
     ) internal {
-        uint256 _propsalStartVotingTimestamp = computeProjectVotingTimestamp(
-            dao
-        );
-        uint256 _propsalStopVotingTimestamp = _propsalStartVotingTimestamp +
-            dao.getConfiguration(DaoHelper.PROPOSAL_DURATION);
-        uint256 _proposalExecuteTimestamp = _propsalStopVotingTimestamp +
-            dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION);
+        // uint256 _propsalStartVotingTimestamp = computeProjectVotingTimestamp(
+        //     dao
+        // );
+        // uint256 _propsalStopVotingTimestamp = _propsalStartVotingTimestamp +
+        //     dao.getConfiguration(DaoHelper.PROPOSAL_DURATION);
+        // uint256 _proposalExecuteTimestamp = _propsalStopVotingTimestamp +
+        //     dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION);
         distributions[address(dao)][proposalId] = Distribution(
             _addressArgs[1],
             _uint256ArgsProposal[1],
@@ -364,10 +375,18 @@ contract DistributeFundContractV2 is
             _addressArgs[2],
             DistributionStatus.IN_QUEUE,
             block.timestamp,
-            _propsalStartVotingTimestamp,
-            _propsalStopVotingTimestamp,
-            _proposalExecuteTimestamp
+            0,
+            0,
+            0
         );
+    }
+
+    struct StartVotingLocalVars {
+        bytes32 ongongingPrposalId;
+        FundingPoolExtension fundingpoolExt;
+        FundingPoolAdapterContract fundingPoolAdapt;
+        uint256 _propsalStartVotingTimestamp;
+        uint256 _propsalStopVotingTimestamp;
     }
 
     /**
@@ -381,41 +400,70 @@ contract DistributeFundContractV2 is
     function startVotingProcess(DaoRegistry dao, bytes32 proposalId)
         external
         reimbursable(dao)
+        onlyGeneralPartner(dao)
         returns (bool)
     {
         //  queue is empty
         if (proposalQueue.length() <= 0) {
             return false;
         }
+
         //proposalId must get from begining of the queue
         require(
             proposalId == proposalQueue.front(),
             "DistributeFund::startVotingProcess::Invalid ProposalId"
         );
-        // ongoingDistributions[address(dao)] = proposalId;
+        StartVotingLocalVars memory vars;
+        vars.ongongingPrposalId = ongoingDistributions[address(dao)];
+        // make sure there is no proposal no finalized
+        if (vars.ongongingPrposalId != bytes32(0)) {
+            require(
+                distributions[address(dao)][vars.ongongingPrposalId].status ==
+                    DistributionStatus.DONE ||
+                    distributions[address(dao)][vars.ongongingPrposalId]
+                        .status ==
+                    DistributionStatus.FAILED,
+                "DistributeFund::startVotingProcess::there is other proposal not finalized"
+            );
+        }
+
+        vars.fundingpoolExt = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        vars.fundingPoolAdapt = FundingPoolAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
+        );
+        vars._propsalStartVotingTimestamp = block.timestamp;
+        vars._propsalStopVotingTimestamp =
+            vars._propsalStartVotingTimestamp +
+            dao.getConfiguration(DaoHelper.PROPOSAL_DURATION);
+        //make sure there is no proposal in progress during redempt duration
+        require(
+            !vars.fundingpoolExt.ifInRedemptionPeriod(
+                vars._propsalStopVotingTimestamp +
+                    dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION)
+            ),
+            "FundRaiseProposal::startVotingProcess::cant start vote now"
+        );
 
         Distribution storage distribution = distributions[address(dao)][
             proposalId
         ];
-        require(
-            block.timestamp > distribution.proposalStartVotingTimestamp,
-            "DistributeFund::startVotingProcess::vote not begin"
-        );
 
         if (distribution.status != DistributionStatus.IN_QUEUE) return false;
-        FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        );
+
         //Removes the proposalId at the beginning of the queue
         proposalQueue.popFront();
 
         // didn't meet the requested fund requirement
         if (
-            fundingpool.totalSupply() <
-            distributions[address(dao)][proposalId].requestedFundAmount
+            vars.fundingpoolExt.totalSupply() <
+            distribution.requestedFundAmount +
+                (distribution.requestedFundAmount *
+                    dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) /
+                100
         ) {
-            distributions[address(dao)][proposalId].status = DistributionStatus
-                .FAILED;
+            distribution.status = DistributionStatus.FAILED;
             return false;
         }
 
@@ -438,6 +486,10 @@ contract DistributeFundContractV2 is
         IGPVoting gpVotingContract = IGPVoting(
             dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
         );
+        distribution.proposalStartVotingTimestamp = vars
+            ._propsalStartVotingTimestamp;
+        distribution.proposalStopVotingTimestamp = vars
+            ._propsalStopVotingTimestamp;
 
         // Starts the voting process for the proposal. setting voting start time
         gpVotingContract.startNewVotingForProposal(
@@ -455,13 +507,14 @@ contract DistributeFundContractV2 is
 
     struct ProcessProposalLocalVars {
         bytes32 ongoingProposalId;
-        IGPVoting votingContract;
+        GPVotingContract votingContract;
         StakingRiceExtension stakingrice;
         FundingPoolExtension fundingpool;
         IGPVoting.VotingState voteResult;
         AllocationAdapterContractV2 allocAda;
         uint128 nbYes;
         uint128 nbNo;
+        uint128 allVotingWeight;
     }
 
     /**
@@ -483,6 +536,13 @@ contract DistributeFundContractV2 is
     {
         ProcessProposalLocalVars memory vars;
         vars.ongoingProposalId = ongoingDistributions[address(dao)];
+        //make sure proposal process in sequence
+        if (vars.ongoingProposalId != bytes32(0)) {
+            require(
+                proposalId == vars.ongoingProposalId,
+                "DistributeFund::processProposal::invalid prposalId"
+            );
+        }
         Distribution storage distribution = distributions[address(dao)][
             proposalId
         ];
@@ -494,19 +554,19 @@ contract DistributeFundContractV2 is
             distribution.status != DistributionStatus.IN_EXECUTE_PROGRESS,
             "DistributeFund::processProposal::proposal already in execute progress"
         );
-        dao.processProposal(proposalId);
 
+        dao.processProposal(proposalId);
         vars.fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
 
         // Checks if the proposal has passed.
-        vars.votingContract = IGPVoting(dao.votingAdapter(proposalId));
+        vars.votingContract = GPVotingContract(dao.votingAdapter(proposalId));
         require(
             address(vars.votingContract) != address(0x0),
             "DistributeFund::processProposal::adapter not found"
         );
-
+        vars.allVotingWeight = vars.votingContract.getAllGPWeight(dao);
         (vars.voteResult, vars.nbYes, vars.nbNo) = vars
             .votingContract
             .voteResult(dao, proposalId);
@@ -519,7 +579,10 @@ contract DistributeFundContractV2 is
             //insufficient funds failed the distribution
             if (
                 vars.fundingpool.totalSupply() <
-                distribution.requestedFundAmount
+                distribution.requestedFundAmount +
+                    (distribution.requestedFundAmount *
+                        dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) /
+                    100
             ) {
                 distribution.status = DistributionStatus.FAILED;
             } else {
@@ -529,8 +592,14 @@ contract DistributeFundContractV2 is
                     token,
                     distribution.requestedFundAmount
                 );
-
-                //process2. streaming pay for all eligible investor
+                //process2. distribute management fee to GP
+                vars.fundingpool.distributeFunds(
+                    dao.getAddressConfiguration(DaoHelper.GP_ADDRESS),
+                    token,
+                    (distribution.requestedFundAmount *
+                        dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) / 100
+                );
+                //process3. streaming pay for all eligible investor
                 vars.allocAda = AllocationAdapterContractV2(
                     dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPTV2)
                 );
@@ -543,12 +612,15 @@ contract DistributeFundContractV2 is
                     distribution.fullyReleasedDate,
                     proposalId
                 );
-                //process3. substract from funding pool
+                //process4. substract from funding pool
                 vars.fundingpool.subtractAllFromBalance(
                     token,
-                    distribution.requestedFundAmount
+                    distribution.requestedFundAmount +
+                        (distribution.requestedFundAmount *
+                            dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) /
+                        100
                 );
-                //process4. set  projectTeamLockedToken to 0
+                //process5. set  projectTeamLockedToken to 0
                 projectTeamLockedTokens[address(dao)][proposalId][
                     distribution.recipientAddr
                 ] = 0;
@@ -563,12 +635,13 @@ contract DistributeFundContractV2 is
         } else {
             revert("voting not finalized");
         }
-
+        distribution.proposalExecuteTimestamp = block.timestamp;
         ongoingDistributions[address(dao)] = bytes32(0);
 
         emit ProposalExecuted(
             proposalId,
             uint256(vars.voteResult),
+            vars.allVotingWeight,
             vars.nbYes,
             vars.nbNo,
             uint256(distribution.status)
@@ -578,25 +651,25 @@ contract DistributeFundContractV2 is
     }
 
     //compute project voting timestamp
-    function computeProjectVotingTimestamp(DaoRegistry dao)
-        internal
-        returns (uint256)
-    {
-        if (proposalQueue.length() > 0) {
-            bytes32 lastProposalId = proposalQueue.back();
-            // uint256 timestamp = distributions[address(dao)][lastProposalId]
-            //     .proposalExecuteTimestamp +
-            //     dao.getConfiguration(DaoHelper.PROPOSAL_INTERVAL);
+    // function computeProjectVotingTimestamp(DaoRegistry dao)
+    //     internal
+    //     returns (uint256)
+    // {
+    //     if (proposalQueue.length() > 0) {
+    //         bytes32 lastProposalId = proposalQueue.back();
+    //         // uint256 timestamp = distributions[address(dao)][lastProposalId]
+    //         //     .proposalExecuteTimestamp +
+    //         //     dao.getConfiguration(DaoHelper.PROPOSAL_INTERVAL);
 
-            uint256 startVoteTimeStamp = distributions[address(dao)][
-                lastProposalId
-            ].proposalExecuteTimestamp;
-            return startVoteTimeStamp;
-        }
-        return block.timestamp;
-        // return
-        // block.timestamp + dao.getConfiguration(DaoHelper.PROPOSAL_INTERVAL);
-    }
+    //         uint256 startVoteTimeStamp = distributions[address(dao)][
+    //             lastProposalId
+    //         ].proposalExecuteTimestamp;
+    //         return startVoteTimeStamp;
+    //     }
+    //     return block.timestamp;
+    //     // return
+    //     // block.timestamp + dao.getConfiguration(DaoHelper.PROPOSAL_INTERVAL);
+    // }
 
     /**
      * Public read-only functions
