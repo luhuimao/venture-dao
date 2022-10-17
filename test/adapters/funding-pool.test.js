@@ -40,7 +40,8 @@ const {
     fromAscii,
     sha3,
     GUILD,
-    DAOSQUARE_TREASURY
+    DAOSQUARE_TREASURY,
+    oneDay, oneWeek, twoWeeks, oneMonth, threeMonthes
 } = require("../../utils/contract-util");
 
 const { checkBalance } = require("../../utils/test-util");
@@ -499,28 +500,17 @@ describe("Adapter - Fund Raising Succeed", () => {
         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaisingWindwoEndTime) + 1]);
         await hre.network.provider.send("evm_mine");
 
-        const balanceOfUSDT1 = await testtoken1.balanceOf(this.owner.address);
-        const balanceOfDAOSquare1 = await testtoken1.balanceOf(this.DAOSquare.address);
-        const balanceOfGP1 = await testtoken1.balanceOf(this.GP.address);
         const totalFund1 = await fundingPoolExt.totalSupply();
 
-        console.log(`balance Of DAOSquare : ${hre.ethers.utils.formatEther(balanceOfDAOSquare1.toString())}`);
-        console.log(`balance Of GP : ${hre.ethers.utils.formatEther(balanceOfGP1.toString())}`);
         console.log(`total Fund1 : ${hre.ethers.utils.formatEther(totalFund1.toString())}`);
 
         await fundingPoolExt.processFundRaising();
 
-        const balanceOfUSDT2 = await testtoken1.balanceOf(this.owner.address);
-        const balanceOfDAOSquare2 = await testtoken1.balanceOf(this.DAOSquare.address);
-        const balanceOfGP2 = await testtoken1.balanceOf(this.GP.address);
         const totalFund2 = await fundingPoolExt.totalSupply();
-        console.log(`balance Of DAOSquare : ${hre.ethers.utils.formatEther(balanceOfDAOSquare2.toString())}`);
-        console.log(`balance Of GP : ${hre.ethers.utils.formatEther(balanceOfGP2.toString())}`);
         console.log(`total Fund2 : ${hre.ethers.utils.formatEther(totalFund2.toString())}`);
 
-        expect(hre.ethers.utils.formatEther(toBN(balanceOfDAOSquare2.toString()).sub(
-            toBN(balanceOfDAOSquare1.toString())))).equal(
-                hre.ethers.utils.formatEther(toBN(totalFund1.toString()).mul(toBN("3")).div(toBN("100"))));
+        expect(hre.ethers.utils.formatEther(toBN(totalFund2.toString()))).equal(
+            hre.ethers.utils.formatEther(toBN(fundRaisingTarget.toString())));
         expect((await fundingPoolExt.fundRaisingState())[0]).equal(1);
 
     });
@@ -561,7 +551,7 @@ describe("Adapter - Fund Raising Succeed", () => {
         const redemptionType = await dao.getConfiguration(sha3("FUND_RAISING_REDEMPTION"));
         console.log(`redemption type: ${redemptionType}`);
         //first redempt duration
-        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundStartTime) + 2592000 - 259200 + 1]);
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundStartTime) + oneWeek - oneDay * 3 + 1]);
         await hre.network.provider.send("evm_mine");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         console.log(`current block timestamp: ${blocktimestamp}`);
@@ -589,7 +579,7 @@ describe("Adapter - Fund Raising Succeed", () => {
             equal(parseFloat(hre.ethers.utils.formatEther(redempteAmount.toString())) * 0.005);
 
         //second redempt duration
-        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundStartTime) + 2592000 * 2 - 259200 + 1]);
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundStartTime) + oneWeek * 2 - oneDay * 3 + 1]);
         await hre.network.provider.send("evm_mine");
 
         const fundEndTime = await fundingpoolAdapter.getFundEndTime(dao.address);

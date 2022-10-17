@@ -126,7 +126,7 @@ contract DistributeFundContractV2 is
     DoubleEndedQueue.Bytes32Deque public proposalQueue;
 
     string constant PROPOSALID_PREFIX = "TFP";
-    uint256 public proposalIds = 100030;
+    uint256 public proposalIds = 100060;
 
     /**
      * @notice Configures the DAO with the Voting and Gracing periods.
@@ -163,7 +163,10 @@ contract DistributeFundContractV2 is
         uint256 lockAmount
     ) internal returns (bool) {
         IERC20 erc20 = IERC20(projectTokenAddr);
-        if (erc20.allowance(projectTeamAddr, address(this)) < lockAmount) {
+        if (
+            erc20.balanceOf(projectTeamAddr) < lockAmount ||
+            erc20.allowance(projectTeamAddr, address(this)) < lockAmount
+        ) {
             return false;
         }
 
@@ -455,12 +458,15 @@ contract DistributeFundContractV2 is
         //Removes the proposalId at the beginning of the queue
         proposalQueue.popFront();
 
-        // didn't meet the requested fund requirement
+        // didn't meet the requested fund requirement(requesting fund + management fee + protocol fee)
         if (
             vars.fundingpoolExt.totalSupply() <
             distribution.requestedFundAmount +
                 (distribution.requestedFundAmount *
                     dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) /
+                100 +
+                (distribution.requestedFundAmount *
+                    dao.getConfiguration(DaoHelper.PROTOCOL_FEE)) /
                 100
         ) {
             distribution.status = DistributionStatus.FAILED;
@@ -599,7 +605,14 @@ contract DistributeFundContractV2 is
                     (distribution.requestedFundAmount *
                         dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) / 100
                 );
-                //process3. streaming pay for all eligible investor
+                //process3. distribute protocol fee to GP
+                vars.fundingpool.distributeFunds(
+                    dao.getAddressConfiguration(DaoHelper.DAO_SQUARE_ADDRESS),
+                    token,
+                    (distribution.requestedFundAmount *
+                        dao.getConfiguration(DaoHelper.PROTOCOL_FEE)) / 100
+                );
+                //process4. streaming pay for all eligible investor
                 vars.allocAda = AllocationAdapterContractV2(
                     dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPTV2)
                 );
@@ -612,19 +625,22 @@ contract DistributeFundContractV2 is
                     distribution.fullyReleasedDate,
                     proposalId
                 );
-                //process4. substract from funding pool
+                //process5. substract from funding pool
                 vars.fundingpool.subtractAllFromBalance(
                     token,
                     distribution.requestedFundAmount +
                         (distribution.requestedFundAmount *
                             dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) /
+                        100 +
+                        (distribution.requestedFundAmount *
+                            dao.getConfiguration(DaoHelper.PROTOCOL_FEE)) /
                         100
                 );
-                //process5. set  projectTeamLockedToken to 0
+                //process6. set  projectTeamLockedToken to 0
                 projectTeamLockedTokens[address(dao)][proposalId][
                     distribution.recipientAddr
                 ] = 0;
-
+                //process7. set proposal state
                 distribution.status = DistributionStatus.DONE;
             }
         } else if (

@@ -385,15 +385,15 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         }
         address fundTokenAddr = getFundRaisingTokenAddress();
         //distribute protocol fee to DAOSquare
-        uint256 protocolFee = (totalSupply() *
-            dao.getConfiguration(DaoHelper.PROTOCOL_FEE)) / 100;
+        // uint256 protocolFee = (totalSupply() *
+        //     dao.getConfiguration(DaoHelper.PROTOCOL_FEE)) / 100;
 
-        subtractAllFromBalance(fundTokenAddr, protocolFee);
+        // subtractAllFromBalance(fundTokenAddr, protocolFee);
 
-        IERC20(fundTokenAddr).safeTransfer(
-            address(dao.getAddressConfiguration(DaoHelper.DAO_SQUARE_ADDRESS)),
-            protocolFee
-        );
+        // IERC20(fundTokenAddr).safeTransfer(
+        //     address(dao.getAddressConfiguration(DaoHelper.DAO_SQUARE_ADDRESS)),
+        //     protocolFee
+        // );
 
         fundRaisingState = DaoHelper.FundRaiseState.DONE;
         return true;

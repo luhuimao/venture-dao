@@ -261,7 +261,7 @@ describe("Adapter - DistributeFundsV2", () => {
         const projectTeamTokenAddr = this.testtoken2.address;
         const GPAddr= await dao.getAddressConfiguration(sha3("GP_ADDRESS"));
         const managementFeeRatio= await dao.getConfiguration(sha3("MANAGEMENT_FEE"))
-
+        const protocolFeeRatio=await dao.getConfiguration(sha3("PROTOCOL_FEE"));
         await this.testtoken2.transfer(this.project_team1.address, tradingOffTokenAmount);
         await this.testtoken2.connect(this.project_team1).approve(distributeFundContract.address, tradingOffTokenAmount);
 
@@ -351,9 +351,10 @@ describe("Adapter - DistributeFundsV2", () => {
 
         const GPBal2 = await this.testtoken1.balanceOf(GPAddr);
 
-        //management fee
-        expect(toBN(GPBal2).sub(toBN(GPBal1))).equal(toBN(requestedFundAmount).mul(toBN(managementFeeRatio)).div(toBN("100")));
-
+        //management fee + protocol fee
+        expect(toBN(GPBal2).sub(toBN(GPBal1))).equal(toBN(requestedFundAmount).mul(toBN(managementFeeRatio)).div(toBN("100")).add(
+            toBN(requestedFundAmount).mul(toBN(protocolFeeRatio)).div(toBN("100"))));
+        
         console.log(`distributions status: ${(await distributeFundContract.distributions(dao.address, proposalId)).status}`);
         const voteResults = await this.gpvoting.voteResult(dao.address, proposalId);
         console.log(`voteResults: ${voteResults}`);
@@ -824,6 +825,88 @@ describe("Adapter - DistributeFundsV2", () => {
         await distributeFundContract.startVotingProcess(dao.address, this.proposalId);
         distriInfo = await distributeFundContract.distributions(dao.address, this.proposalId);
         expect(distriInfo.status).equal(1);// in voting state
+
+
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(distriInfo.proposalStopVotingTimestamp) + 1])
+        await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        await distributeFundContract.processProposal(dao.address, this.proposalId);
+    });
+
+    it("cant in voting process if project token not approved",async()=>{
+        const dao = this.dao;
+        const distributeFundContract = this.distributefund;
+
+        // Submit distribute proposal
+        const requestedFundAmount = hre.ethers.utils.parseEther("300");
+        const tradingOffTokenAmount = hre.ethers.utils.parseEther("500");
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        const lockupDate = blocktimestamp + 24;
+        const fullyReleasedDate = lockupDate + 1000;
+        const projectTeamAddr = this.project_team1.address;
+        const projectTeamTokenAddr = this.testtoken2.address;
+        const GPAddr= await dao.getAddressConfiguration(sha3("GP_ADDRESS"));
+        const managementFeeRatio= await dao.getConfiguration(sha3("MANAGEMENT_FEE"))
+        const proposalExecuteDuration= await dao.getConfiguration(sha3("PROPOSAL_EXECUTE_DURATION"))
+
+        await this.testtoken2.transfer(this.project_team1.address, tradingOffTokenAmount);
+        // await this.testtoken2.connect(this.project_team1).approve(distributeFundContract.address, tradingOffTokenAmount);
+
+        let { proposalId } = await distributeFundsProposal(
+            dao,
+            distributeFundContract,
+            requestedFundAmount,
+            tradingOffTokenAmount,
+            fullyReleasedDate,
+            lockupDate,
+            projectTeamAddr,
+            projectTeamTokenAddr,
+            this.owner
+        );
+
+        this.proposalId=proposalId;
+
+        await distributeFundContract.startVotingProcess(dao.address, this.proposalId);
+        let distriInfo = await distributeFundContract.distributions(dao.address, this.proposalId);
+        expect(distriInfo.status).equal(4);// failed.
+
+    });
+
+    it("cant in voting process if project token not enough",async()=>{
+        const dao = this.dao;
+        const distributeFundContract = this.distributefund;
+
+        // Submit distribute proposal
+        const requestedFundAmount = hre.ethers.utils.parseEther("300");
+        const tradingOffTokenAmount = hre.ethers.utils.parseEther("5000");
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        const lockupDate = blocktimestamp + 24;
+        const fullyReleasedDate = lockupDate + 1000;
+        const projectTeamAddr = this.project_team1.address;
+        const projectTeamTokenAddr = this.testtoken2.address;
+        const GPAddr= await dao.getAddressConfiguration(sha3("GP_ADDRESS"));
+        const managementFeeRatio= await dao.getConfiguration(sha3("MANAGEMENT_FEE"))
+        const proposalExecuteDuration= await dao.getConfiguration(sha3("PROPOSAL_EXECUTE_DURATION"))
+
+        // await this.testtoken2.transfer(this.project_team1.address, tradingOffTokenAmount);
+        await this.testtoken2.connect(this.project_team1).approve(distributeFundContract.address, tradingOffTokenAmount);
+
+        let { proposalId } = await distributeFundsProposal(
+            dao,
+            distributeFundContract,
+            requestedFundAmount,
+            tradingOffTokenAmount,
+            fullyReleasedDate,
+            lockupDate,
+            projectTeamAddr,
+            projectTeamTokenAddr,
+            this.owner
+        );
+
+        this.proposalId=proposalId;
+
+        await distributeFundContract.startVotingProcess(dao.address, this.proposalId);
+        let  distriInfo = await distributeFundContract.distributions(dao.address, this.proposalId);
+        expect(distriInfo.status).equal(4);// failed.
     });
 });
 
