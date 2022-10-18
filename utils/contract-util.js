@@ -70,6 +70,12 @@ const maximumChunks = toBN("11");
 const maxAmount = toBN("10000000000000000000");
 const maxUnits = toBN("10000000000000000000");
 
+const oneDay = 60 * 60 * 24;
+const oneWeek = oneDay * 7;
+const twoWeeks = oneDay * 14;
+const oneMonth = oneDay * 30;
+const threeMonthes = oneDay * 90;
+
 const waitTx = async (p) => {
   try {
     const res = await p;
@@ -127,4 +133,9 @@ module.exports = {
   NFT,
   ERC1271,
   ERC1155,
+  oneDay,
+  oneWeek,
+  twoWeeks,
+  oneMonth,
+  threeMonthes,
 };
