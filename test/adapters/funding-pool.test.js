@@ -465,8 +465,9 @@ describe("Adapter - Fund Raising Succeed", () => {
         const dao = this.dao;
         const fundingPoolExt = this.extensions.fundingpoolExt.functions;
         const testtoken1 = this.testContracts.testToken1.instance;
-        const GPAddr= await dao.getAddressConfiguration(sha3("GP_ADDRESS"));
-        const DaoSquareAddr= await dao.getAddressConfiguration(sha3("DAO_SQUARE_ADDRESS"));        const bal_fundPool1 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
+        const GPAddr = await dao.getAddressConfiguration(sha3("GP_ADDRESS"));
+        const DaoSquareAddr = await dao.getAddressConfiguration(sha3("DAO_SQUARE_ADDRESS"));
+        const bal_fundPool1 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
         const bal1 = await testtoken1.balanceOf(this.owner.address);
         const gpUSDTBal1 = await testtoken1.balanceOf(GPAddr);
         console.log(`balance in fund pool: ${hre.ethers.utils.formatEther(bal_fundPool1.toString())}`);
@@ -474,12 +475,12 @@ describe("Adapter - Fund Raising Succeed", () => {
         console.log(`GP usdt bal: ${hre.ethers.utils.formatEther(gpUSDTBal1.toString())}`);
 
         const fundStartTime = await dao.getConfiguration(sha3("FUND_START_TIME"));
-        console.log(`fund start time: ${fundStartTime}`);
-        const redemptionType = await dao.getConfiguration(sha3("FUND_RAISING_REDEMPTION"));
-        console.log(`redemption type: ${redemptionType}`);
+        // const fundEndTime = await dao.getConfiguration(sha3("FUND_END_TIME"));
+        const redemptPeriod = await dao.getConfiguration(sha3("FUND_RAISING_REDEMPTION_PERIOD"));
+        const redemptDuration = await dao.getConfiguration(sha3("FUND_RAISING_REDEMPTION_DURATION"));
+
         //first redempt duration
-        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundStartTime) + 
-            oneWeek - oneDay * 3 + 1]);
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundStartTime) + parseInt(redemptPeriod) - parseInt(redemptDuration) + 1]);
         await hre.network.provider.send("evm_mine");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         // console.log(`current block timestamp: ${blocktimestamp}`);
@@ -507,7 +508,7 @@ describe("Adapter - Fund Raising Succeed", () => {
             equal(parseFloat(hre.ethers.utils.formatEther(redempteAmount.toString())) * 0.005);
 
         //second redempt duration
-        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundStartTime) + oneWeek * 2 - oneDay * 3 + 1]);
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundStartTime) + parseInt(redemptPeriod) * 2 - parseInt(redemptDuration) + 1]);
         await hre.network.provider.send("evm_mine");
 
         const fundEndTime = await fundingpoolAdapter.getFundEndTime(dao.address);

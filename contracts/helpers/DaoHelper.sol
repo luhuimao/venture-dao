@@ -91,6 +91,8 @@ library DaoHelper {
         keccak256("FUND_RAISING_REDEMPTION");
     bytes32 internal constant FUND_RAISING_REDEMPTION_PERIOD =
         keccak256("FUND_RAISING_REDEMPTION_PERIOD");
+    bytes32 internal constant FUND_RAISING_REDEMPTION_DURATION =
+        keccak256("FUND_RAISING_REDEMPTION_DURATION");
     bytes32 internal constant FUND_RAISING_TERM =
         keccak256("FUND_RAISING_TERM");
     bytes32 internal constant FUND_START_TIME = keccak256("FUND_START_TIME");

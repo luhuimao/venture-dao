@@ -311,36 +311,48 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         uint256 redemptionPeriod = dao.getConfiguration(
             DaoHelper.FUND_RAISING_REDEMPTION_PERIOD
         );
-        uint256 fundDuration = fundEndTime - fundStartTime;
-        DaoHelper.RedemptionType redemptionT = DaoHelper.RedemptionType(
-            dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION)
+        uint256 redemptionDuration = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_REDEMPTION_DURATION
         );
+        uint256 fundDuration = fundEndTime - fundStartTime;
+        if (
+            redemptionPeriod <= 0 ||
+            redemptionDuration <= 0 ||
+            fundDuration <= 0
+        ) {
+            return false;
+        }
+        // DaoHelper.RedemptionType redemptionT = DaoHelper.RedemptionType(
+        //     dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION)
+        // );
         uint256 steps;
-        uint256 redemption;
-        if (redemptionT == DaoHelper.RedemptionType.WEEKLY) {
-            steps = fundDuration / DaoHelper.ONE_WEEK;
-            redemption = DaoHelper.ONE_WEEK;
-        }
-        if (redemptionT == DaoHelper.RedemptionType.BI_WEEKLY) {
-            steps = fundDuration / DaoHelper.TWO_WEEK;
-            redemption = DaoHelper.TWO_WEEK;
-        }
-        if (redemptionT == DaoHelper.RedemptionType.MONTHLY) {
-            steps = fundDuration / DaoHelper.ONE_MONTH;
-            redemption = DaoHelper.ONE_MONTH;
-        }
-        if (redemptionT == DaoHelper.RedemptionType.QUARTERLY) {
-            steps = fundDuration / DaoHelper.THREE_MONTH;
-            redemption = DaoHelper.THREE_MONTH;
-        }
+        // uint256 redemption;
+        steps = fundDuration / redemptionPeriod;
+
+        // if (redemptionT == DaoHelper.RedemptionType.WEEKLY) {
+        //     steps = fundDuration / DaoHelper.ONE_WEEK;
+        //     redemption = DaoHelper.ONE_WEEK;
+        // }
+        // if (redemptionT == DaoHelper.RedemptionType.BI_WEEKLY) {
+        //     steps = fundDuration / DaoHelper.TWO_WEEK;
+        //     redemption = DaoHelper.TWO_WEEK;
+        // }
+        // if (redemptionT == DaoHelper.RedemptionType.MONTHLY) {
+        //     steps = fundDuration / DaoHelper.ONE_MONTH;
+        //     redemption = DaoHelper.ONE_MONTH;
+        // }
+        // if (redemptionT == DaoHelper.RedemptionType.QUARTERLY) {
+        //     steps = fundDuration / DaoHelper.THREE_MONTH;
+        //     redemption = DaoHelper.THREE_MONTH;
+        // }
         uint256 redemptionEndTime;
         uint256 redemptionStartTime;
         uint256 i = 0;
         while (i <= steps) {
             redemptionEndTime = redemptionEndTime == 0
-                ? fundStartTime + redemption
-                : redemptionEndTime + redemption;
-            redemptionStartTime = redemptionEndTime - redemptionPeriod;
+                ? fundStartTime + redemptionPeriod
+                : redemptionEndTime + redemptionPeriod;
+            redemptionStartTime = redemptionEndTime - redemptionDuration;
             if (
                 timeStamp > redemptionStartTime &&
                 timeStamp < redemptionEndTime &&

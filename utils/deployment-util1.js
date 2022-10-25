@@ -404,6 +404,7 @@ const setDaoConfiguration = async ({ options, dao, testContracts }) => {
     const configKey_FundRaisingLockupPeriod = sha3(web3.utils.encodePacked("FUND_RAISING_LOCKUP_PERIOD"));
     const configKey_FundRaisingRedemption = sha3(web3.utils.encodePacked("FUND_RAISING_REDEMPTION"));
     const configKey_FundRaisingRedemptionPeriod = sha3(web3.utils.encodePacked("FUND_RAISING_REDEMPTION_PERIOD"));
+    const configKey_FundRaisingRedemptionDuration = sha3(web3.utils.encodePacked("FUND_RAISING_REDEMPTION_DURATION"));
     const configKey_FundRaisingTerm = sha3(web3.utils.encodePacked("FUND_RAISING_TERM"));
     const configKey_FundStartTime = sha3(web3.utils.encodePacked("FUND_START_TIME"));
     const configKey_FundEndTime = sha3(web3.utils.encodePacked("FUND_END_TIME"));
@@ -413,7 +414,7 @@ const setDaoConfiguration = async ({ options, dao, testContracts }) => {
     const configKey_MangementFeePerYear = sha3(web3.utils.encodePacked("MANAGEMENT_FEE_PER_YEAR"));
     const configKey_RedemptionFee = sha3(web3.utils.encodePacked("REDEMPTION_FEE"));
     const configKey_ProtocolFee = sha3(web3.utils.encodePacked("PROTOCOL_FEE"));
-
+    const configKey_ProposalExecuteDuration = sha3(web3.utils.encodePacked("PROPOSAL_EXECUTE_DURATION"));
 
     log("config FUND_RAISING_TARGET");
     let tx = await dao.setConfiguration(configKey_FundRaisingTarget, options.fundRaisingTarget);
@@ -439,6 +440,9 @@ const setDaoConfiguration = async ({ options, dao, testContracts }) => {
     await tx.wait();
     log("config FUND_RAISING_REDEMPTION_PERIOD");
     tx = await dao.setConfiguration(configKey_FundRaisingRedemptionPeriod, options.fundRaisingRedemptionPeriod);
+    await tx.wait();
+    log("config FUND_RAISING_REDEMPTION_DURATION");
+    tx = await dao.setConfiguration(configKey_FundRaisingRedemptionDuration, options.fundRaisingRedemptionDuration);
     await tx.wait();
     log("config FUND_RAISING_TERM");
     tx = await dao.setConfiguration(configKey_FundRaisingTerm, options.fundRaisingTerm);
@@ -467,6 +471,11 @@ const setDaoConfiguration = async ({ options, dao, testContracts }) => {
     log("config PROTOCOL_FEE");
     tx = await dao.setConfiguration(configKey_ProtocolFee, options.protocolFee);
     await tx.wait();
+    log("config PROPOSAL_EXECUTE_DURATION");
+    tx = await dao.setConfiguration(configKey_ProposalExecuteDuration, options.proposalExecuteDurantion);
+    await tx.wait();
+
+    
 };
 const setDaoAddressConfiguration = async ({ options, dao, testContracts }) => {
     const configKey_DaoSquareAddress = sha3(web3.utils.encodePacked("DAO_SQUARE_ADDRESS"));
@@ -551,17 +560,17 @@ const deployDao = async (options) => {
     // deploy test token contracts for testing convenience
     const testContracts = await createTestContracts({ options });
 
-    const configKey = sha3(web3.utils.encodePacked("rice.token.address"));
-    const configValue = testContracts.testRiceToken.instance.address;
-    log('set Address Configuration ...');
-    let tx = await dao.setAddressConfiguration(configKey, configValue);
-    await tx.wait();
-    log('end set Address Configuration ...');
+    // const configKey = sha3(web3.utils.encodePacked("rice.token.address"));
+    // const configValue = testContracts.testRiceToken.instance.address;
+    // log('set Address Configuration ...');
+    // let tx = await dao.setAddressConfiguration(configKey, configValue);
+    // await tx.wait();
+    // log('end set Address Configuration ...');
 
     //set rice address 
-    log("fundingpoolAdapter set rice address");
-    tx = await adapters.fundingpoolAdapter.instance.setRiceTokenAddress(dao.address, testContracts.testRiceToken.instance.address);
-    await tx.wait();
+    // log("fundingpoolAdapter set rice address");
+    // tx = await adapters.fundingpoolAdapter.instance.setRiceTokenAddress(dao.address, testContracts.testRiceToken.instance.address);
+    // await tx.wait();
 
     await setDaoConfiguration({ options, dao, testContracts });
     await setDaoAddressConfiguration({ options, dao, testContracts });

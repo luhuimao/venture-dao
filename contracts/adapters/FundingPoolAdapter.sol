@@ -220,31 +220,23 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         uint256 redemptionPeriod = dao.getConfiguration(
             DaoHelper.FUND_RAISING_REDEMPTION_PERIOD
         );
+        uint256 redemptionDuration = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_REDEMPTION_DURATION
+        );
         uint256 fundDuration = fundEndTime - fundStartTime;
         if (
             fundStartTime <= 0 ||
             fundEndTime <= 0 ||
             redemptionPeriod <= 0 ||
+            redemptionDuration <= 0 ||
             fundDuration <= 0
         ) return (0, 0);
         DaoHelper.RedemptionType redemptionT = DaoHelper.RedemptionType(
             dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION)
         );
-        uint256 redemption;
-        if (redemptionT == DaoHelper.RedemptionType.WEEKLY) {
-            redemption = DaoHelper.ONE_WEEK;
-        }
-        if (redemptionT == DaoHelper.RedemptionType.BI_WEEKLY) {
-            redemption = DaoHelper.TWO_WEEK;
-        }
-        if (redemptionT == DaoHelper.RedemptionType.MONTHLY) {
-            redemption = DaoHelper.ONE_MONTH;
-        }
-        if (redemptionT == DaoHelper.RedemptionType.QUARTERLY) {
-            redemption = DaoHelper.THREE_MONTH;
-        }
-        uint256 redemptionEndTime = fundStartTime + redemption;
-        uint256 redemptionStartTime = redemptionEndTime - redemptionPeriod;
+
+        uint256 redemptionEndTime = fundStartTime + redemptionPeriod;
+        uint256 redemptionStartTime = redemptionEndTime - redemptionDuration;
         if (
             redemptionStartTime > fundEndTime ||
             redemptionEndTime - redemptionStartTime <= 0
@@ -258,10 +250,10 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         view
         returns (uint256)
     {
-        return dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION_PERIOD);
+        return dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION_DURATION);
     }
 
-    function getRedemptType(DaoRegistry dao) external view returns (uint256) {
-        return dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION);
+    function getRedeptPeriod(DaoRegistry dao) external view returns (uint256) {
+        return dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION_PERIOD);
     }
 }
