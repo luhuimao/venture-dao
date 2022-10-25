@@ -260,6 +260,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
         const GPAddr= await dao.getAddressConfiguration(sha3("GP_ADDRESS"));
+        const DaoSquareAddr= await dao.getAddressConfiguration(sha3("DAO_SQUARE_ADDRESS"));
+
         const managementFeeRatio= await dao.getConfiguration(sha3("MANAGEMENT_FEE"))
         const protocolFeeRatio=await dao.getConfiguration(sha3("PROTOCOL_FEE"));
         await this.testtoken2.transfer(this.project_team1.address, tradingOffTokenAmount);
@@ -342,6 +344,7 @@ describe("Adapter - DistributeFundsV2", () => {
         console.log(`all Allocations ${hre.ethers.utils.formatEther(allAllocations)}`);
 
         const GPBal1 = await this.testtoken1.balanceOf(GPAddr);
+        const DaoSquareBal1= await this.testtoken1.balanceOf(DaoSquareAddr);
 
         const lps=await fundingPoolExt.getInvestors();
         console.log(`all lps ${lps}`);
@@ -350,11 +353,16 @@ describe("Adapter - DistributeFundsV2", () => {
         await distributeFundContract.processProposal(dao.address, this.proposalId);
 
         const GPBal2 = await this.testtoken1.balanceOf(GPAddr);
-
-        //management fee + protocol fee
-        expect(toBN(GPBal2).sub(toBN(GPBal1))).equal(toBN(requestedFundAmount).mul(toBN(managementFeeRatio)).div(toBN("100")).add(
-            toBN(requestedFundAmount).mul(toBN(protocolFeeRatio)).div(toBN("100"))));
+        const DaoSquareBal2= await this.testtoken1.balanceOf(DaoSquareAddr);
+        //management fee
+        expect(toBN(GPBal2).sub(toBN(GPBal1))).equal(toBN(requestedFundAmount).mul(
+            toBN(managementFeeRatio)).div(toBN("100")));
         
+        //protocol fee
+        expect(toBN(DaoSquareBal2).sub(toBN(DaoSquareBal1))).equal(
+            toBN(requestedFundAmount).mul(
+                toBN(protocolFeeRatio)).div(toBN("100")));
+
         console.log(`distributions status: ${(await distributeFundContract.distributions(dao.address, proposalId)).status}`);
         const voteResults = await this.gpvoting.voteResult(dao.address, proposalId);
         console.log(`voteResults: ${voteResults}`);

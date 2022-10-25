@@ -435,7 +435,7 @@ const setDaoConfiguration = async ({ options, dao, testContracts }) => {
     await tx.wait();
 
     log("config FUND_RAISING_REDEMPTION");
-    tx = await dao.setConfiguration(configKey_FundRaisingRedemption, 2);
+    tx = await dao.setConfiguration(configKey_FundRaisingRedemption, options.fundRaisingRedemption);
     await tx.wait();
     log("config FUND_RAISING_REDEMPTION_PERIOD");
     tx = await dao.setConfiguration(configKey_FundRaisingRedemptionPeriod, options.fundRaisingRedemptionPeriod);

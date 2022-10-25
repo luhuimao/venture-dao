@@ -184,7 +184,7 @@ const getHardhatContracts = (contracts) => {
 
 const getDefaultOptions = async (options) => {
   const currentTimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-  let [owner, user1, user2, project_team1, DAOSquare, GP] = await hre.ethers.getSigners();
+  let [owner, user1, user2, project_team1, ,,,,,DAOSquare, GP] = await hre.ethers.getSigners();
   return {
     daoSquareAddress: options.daoSquareAddress === undefined ? DAOSquare.address : options.daoSquareAddress,
     gpAddress: options.gpAddress === undefined ? GP.address : options.gpAddress,

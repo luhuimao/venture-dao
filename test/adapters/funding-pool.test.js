@@ -52,79 +52,7 @@ const remaining = unitPrice.sub(toBN("50000000000000"));
 const expectedGuildBalance = toBN("1200000000000000000");
 const proposalCounter = proposalIdGenerator().generator;
 
-function getProposalCounter() {
-    return proposalCounter().next().value;
-}
 
-const getDefaultOptions = (options) => {
-    return {
-        serviceFeeRatio: 5,
-        minFundsForLP: 100,
-        minFundsForGP: 1000,
-        serviceFeeRatio: 5,
-        unitPrice: unitPrice,
-        nbUnits: numberOfUnits,
-        votingPeriod: 5,
-        gracePeriod: 1,
-        tokenAddr: ETH_TOKEN,
-        maxChunks: maximumChunks,
-        maxAmount,
-        maxUnits,
-        chainId: 1,
-        maxExternalTokens: 100,
-        couponCreatorAddress: "0x7D8cad0bbD68deb352C33e80fccd4D8e88b4aBb8",
-        kycMaxMembers: 1000,
-        kycSignerAddress: "0x7D8cad0bbD68deb352C33e80fccd4D8e88b4aBb8",
-        kycFundTargetAddress: "0x823A19521A76f80EC49670BE32950900E8Cd0ED3",
-        deployTestTokens: true,
-        erc20TokenName: "Test Token",
-        erc20TokenSymbol: "TTK",
-        erc20TokenDecimals: Number(0),
-        erc20TokenAddress: UNITS,
-        supplyTestToken1: 1000000,
-        supplyTestToken2: 1000000,
-        supplyPixelNFT: 100,
-        supplyOLToken: toBN("1000000000000000000000000"),
-        erc1155TestTokenUri: "1155 test token",
-        maintainerTokenAddress: UNITS,
-        // finalize: options.finalize === undefined || !!options.finalize,
-        ...options, // to make sure the options from the tests override the default ones
-        gasPriceLimit: "2000000000000",
-        spendLimitPeriod: "259200",
-        spendLimitEth: "2000000000000000000000",
-        feePercent: "110",
-        gasFixed: "50000",
-        gelato: "0x1000000000000000000000000000000000000000",
-    };
-};
-
-const distributeFundsProposal = async (
-    dao,
-    distributeFundContract,
-    requestedFundAmount,
-    tradingOffTokenAmount,
-    fullyReleasedDate,
-    lockupDate,
-    projectTeamAddr,
-    projectTeamTokenAddr,
-    sender
-) => {
-    // const newProposalId = proposalId ? proposalId : getProposalCounter();
-    const tx = await distributeFundContract.connect(sender).submitProposal(
-        dao.address,
-        [projectTeamAddr, projectTeamTokenAddr],
-        [requestedFundAmount, tradingOffTokenAmount, fullyReleasedDate, lockupDate],
-    );
-    const result = await tx.wait();
-    const newProposalId = result.events[2].args.proposalId;
-    return { proposalId: newProposalId };
-};
-async function advanceTime(addr1, addr2, token) {
-    for (var i = 0; i < 10; i++) {
-        await token.transfer(addr2.address, 1);
-        await token.connect(addr2).transfer(addr1.address, 1);
-    }
-}
 
 describe("Adapter - FundingPool", () => {
     before("deploy dao", async () => {
@@ -143,7 +71,6 @@ describe("Adapter - FundingPool", () => {
         this.extensions = extensions;
         this.dao = dao;
         this.testContracts = testContracts;
-        this.snapshotId = await takeChainSnapshot();
 
         this.gpDaoOnboardingAdapter = adapters.gpDaoOnboardingAdapter.instance;
         this.gpOnboardVotingAdapter = adapters.gpOnboardVotingAdapter.instance;
@@ -538,23 +465,24 @@ describe("Adapter - Fund Raising Succeed", () => {
         const dao = this.dao;
         const fundingPoolExt = this.extensions.fundingpoolExt.functions;
         const testtoken1 = this.testContracts.testToken1.instance;
-
-        const bal_fundPool1 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
+        const GPAddr= await dao.getAddressConfiguration(sha3("GP_ADDRESS"));
+        const DaoSquareAddr= await dao.getAddressConfiguration(sha3("DAO_SQUARE_ADDRESS"));        const bal_fundPool1 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
         const bal1 = await testtoken1.balanceOf(this.owner.address);
-        const gpUSDTBal1 = await testtoken1.balanceOf(this.GP.address);
+        const gpUSDTBal1 = await testtoken1.balanceOf(GPAddr);
         console.log(`balance in fund pool: ${hre.ethers.utils.formatEther(bal_fundPool1.toString())}`);
         console.log(`owner usdt bal: ${hre.ethers.utils.formatEther(bal1.toString())}`);
         console.log(`GP usdt bal: ${hre.ethers.utils.formatEther(gpUSDTBal1.toString())}`);
 
         const fundStartTime = await dao.getConfiguration(sha3("FUND_START_TIME"));
-        // console.log(`fund start time: ${fundStartTime}`);
+        console.log(`fund start time: ${fundStartTime}`);
         const redemptionType = await dao.getConfiguration(sha3("FUND_RAISING_REDEMPTION"));
         console.log(`redemption type: ${redemptionType}`);
         //first redempt duration
-        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundStartTime) + oneWeek - oneDay * 3 + 1]);
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundStartTime) + 
+            oneWeek - oneDay * 3 + 1]);
         await hre.network.provider.send("evm_mine");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        console.log(`current block timestamp: ${blocktimestamp}`);
+        // console.log(`current block timestamp: ${blocktimestamp}`);
 
         expect((await fundingPoolExt.ifInRedemptionPeriod(blocktimestamp))[0]).equal(true);
 
@@ -562,7 +490,7 @@ describe("Adapter - Fund Raising Succeed", () => {
         await fundingpoolAdapter.withdraw(dao.address, redempteAmount);
 
         const bal_fundPool2 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
-        const gpUSDTBal2 = await testtoken1.balanceOf(this.GP.address);
+        const gpUSDTBal2 = await testtoken1.balanceOf(GPAddr);
         const bal2 = await testtoken1.balanceOf(this.owner.address);
 
         console.log(`balance in fund pool: ${hre.ethers.utils.formatEther(bal_fundPool2.toString())}`);
@@ -596,7 +524,7 @@ describe("Adapter - Fund Raising Succeed", () => {
         await fundingpoolAdapter.withdraw(dao.address, redempteAmount);
 
         const bal_fundPool3 = await fundingpoolAdapter.balanceOf(dao.address, this.owner.address);
-        const gpUSDTBal3 = await testtoken1.balanceOf(this.GP.address);
+        const gpUSDTBal3 = await testtoken1.balanceOf(GPAddr);
         const bal3 = await testtoken1.balanceOf(this.owner.address);
 
 
