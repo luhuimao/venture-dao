@@ -605,7 +605,7 @@ contract DistributeFundContractV2 is
                     (distribution.requestedFundAmount *
                         dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) / 100
                 );
-                //process3. distribute protocol fee to GP
+                //process3. distribute protocol fee to DaoSquare
                 vars.fundingpool.distributeFunds(
                     dao.getAddressConfiguration(DaoHelper.DAO_SQUARE_ADDRESS),
                     token,
