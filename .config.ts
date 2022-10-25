@@ -10,7 +10,7 @@ export const RiceStakingFactory_RINKEBY = "0x0C78577d975035563d7f0130934AF7d7B39
 export const GPDaoFactory_RINKEBY = "0x2F018184c4b87905a1BFc012d028EBf616487F8e"; //REPLACE_FLAG
 //Goerli testnet
 export const DaoFactory_GOERLI = "0x2ccF655DD0e15e97B6a677EB3ff1f3Aa4b9833a1"; //REPLACE_FLAG
-export const FundingPoolFactory_GOERLI = "0x9DD73153052B2e49eb8127f3A522BaA760A03180"; //REPLACE_FLAG
+export const FundingPoolFactory_GOERLI = "0x9C6da72Dd0ABBD853865C39553ff7E2218F01184"; //REPLACE_FLAG
 export const RiceStakingFactory_GOERLI = "0x4C2b940f4410a93AfBfF5E36c7d5810Cf20e4965"; //REPLACE_FLAG
 export const GPDaoFactory_GOERLI = "0xEC72dd8c1F8eD46DcE76d39A7D8c2a56ce4A1DFc"; //REPLACE_FLAG
 //core
@@ -24,7 +24,7 @@ export const StakingRiceExtension_RINKEBY = "0xA27E96440E81A9DAC44461951b03DF390
 export const GPDaoExtension_RINKEBY = "0x217C48a06Be195c27f52095E0Ba2A0bb9eb851Af"; //REPLACE_FLAG
 
 //Goerli testnet
-export const FundingPoolExtension_GOERLI = "0x8eA827E3A057CB809f6a63c950576C6fE213f66a";
+export const FundingPoolExtension_GOERLI = "0x3a78973F7689eD857508Ced206E4295b562B59f1";
 export const StakingRiceExtension_GOERLI = "0xf52b1531EFef7E2BCe7a38Aa4945216F6aB9b8FB"; //REPLACE_FLAG
 export const GPDaoExtension_GOERLI = "0x952767cF43832bdeb2fe717A019e56ceC96E416F"; //REPLACE_FLAG
 //adapters
@@ -44,20 +44,20 @@ export const AllocationAdapterContract_RINKEBY = "0x1F2b112266452b1e7553ECF4A7eF
 export const AllocationAdapterContractV2_RINKEBY = "0x0e3d60B0c62CDC2bD68C5353cEa28C43d62E5f9c"; //REPLACE_FLAG
 
 //Goerli testnet
-export const FundingPoolAdapterContract_GOERLI = "0x4DB015fa270d006d13088fc0D35cd9c83763AbB5"; //REPLACE_FLAG
+export const FundingPoolAdapterContract_GOERLI = "0xb53E4163F921731B374612f3c34C9Ca34E3c1401"; //REPLACE_FLAG
 export const RiceStakingAdapterContract_GOERLI = "0xf203E215601647Bf7d51B223efB1089A9eDB81a8"; //REPLACE_FLAG
 export const GPDaoAdapterContract_GOERLI = "0x80E6A7a8faF5C57f0EAdA586fc8F8b557e09648F"; //REPLACE_FLAG
-export const GPDaoOnboardingAdapterContract_GOERLI = "0xf4d9765f8BecC146ECEa194838AD23E486fAce03"; //REPLACE_FLAG
-export const GPKickAdapterContract_GOERLI = "0x01343aBe51aD921323Ff071B211235677C5afBd3"; //REPLACE_FLAG
+export const GPDaoOnboardingAdapterContract_GOERLI = "0x55C5938Afbb70d111c4661b1fDEE22FbB03D959b"; //REPLACE_FLAG
+export const GPKickAdapterContract_GOERLI = "0xb1fD4B225970f727bdbeCCCcec4B12bc8Fd22D89"; //REPLACE_FLAG
 export const Sablier_GOERLI = "0x05a1cf2DD5968C2624b8873454766BC2C80e0Df4"; //REPLACE_FLAG
 export const ManageMemberAdapterContract_GOERLI = ""; //REPLACE_FLAG
 export const DistributeFundContract_GOERLI = ""; //REPLACE_FLAG
-export const DistributeFundContractV2_GOERLI = "0x1FC1deC157DdDd79Db60a3d6952b085fea64DC79"; //REPLACE_FLAG
+export const DistributeFundContractV2_GOERLI = "0x5560e62eA2a376E28419C737efC80fabd85C7849"; //REPLACE_FLAG
 export const GPVotingContract_GOERLI = "0x8FC24a76bb5A63C50830368424CD930720D9C482"; //REPLACE_FLAG
 export const GPOnboardVotingContract_GOERLI = "0x7e1c584b36530347f9e482F47251AACDF686D35b"; //REPLACE_FLAG
 export const AllocationAdapterContract_GOERLI = ""; //REPLACE_FLAG
-export const AllocationAdapterContractV2_GOERLI = "0xCbf1b63F6d5d3eC18a94130F69c2b8F5f3400A91"; //REPLACE_FLAG
-export const ManagingAdapterContract_GOERLI = ""; //REPLACE_FLAG
+export const AllocationAdapterContractV2_GOERLI = "0x8144254C832B14D4dDFdBba155290640AfEA0631"; //REPLACE_FLAG
+export const ManagingAdapterContract_GOERLI = "0xdd60b84fDa3C243937F442181916a71f14334b7c"; //REPLACE_FLAG
 //test contracts
 export const TestToken1_RINKEBY = "0x607EaF02Ac994959739FB69FCe717815b697f4EB";
 export const TestToken2_RINKEBY = "0x87E2C537e1743A4D0F2C73132c81eEcB5a40f3d1";
