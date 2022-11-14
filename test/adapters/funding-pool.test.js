@@ -478,7 +478,7 @@ describe("Adapter - Fund Raising Succeed", () => {
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         // console.log(`current block timestamp: ${blocktimestamp}`);
 
-        expect((await fundingPoolExt.ifInRedemptionPeriod(blocktimestamp))[0]).equal(true);
+        expect((await fundingpoolAdapter.ifInRedemptionPeriod(dao.address, blocktimestamp))).equal(true);
 
         let redempteAmount = toBN(bal_fundPool1.toString()).div(toBN("2"));
         await fundingpoolAdapter.withdraw(dao.address, redempteAmount);
@@ -512,7 +512,7 @@ describe("Adapter - Fund Raising Succeed", () => {
         console.log(`fundEndTime: ${fundEndTime}
         current blocktimestamp ${blocktimestamp}  
         `);
-        expect((await fundingPoolExt.ifInRedemptionPeriod(blocktimestamp))[0]).equal(true);
+        expect((await fundingpoolAdapter.ifInRedemptionPeriod(dao.address, blocktimestamp))).equal(true);
 
         redempteAmount = toBN(bal_fundPool1.toString()).div(toBN("4"));
         await fundingpoolAdapter.withdraw(dao.address, redempteAmount);
@@ -553,7 +553,9 @@ describe("Adapter - Fund Raising Succeed", () => {
 
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         console.log(`current block timestamp: ${blocktimestamp}`);
-        expect((await fundingPoolExt.ifInRedemptionPeriod(blocktimestamp))[0]).equal(false);
+        const ifInRedempte = await fundingpoolAdapter.ifInRedemptionPeriod(dao.address, blocktimestamp);
+        // console.log("ifInRedempte:", ifInRedempte);
+        expect(ifInRedempte).equal(false);
 
         await fundingpoolAdapter.withdraw(dao.address, toBN(bal_fundPool1).div(toBN("2")));
 

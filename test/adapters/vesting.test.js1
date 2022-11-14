@@ -1,0 +1,36 @@
+/*
+ * @Descripttion: 
+ * @version: 
+ * @Author: huhuimao
+ * @Date: 2022-11-10 21:57:41
+ * @LastEditors: huhuimao
+ * @LastEditTime: 2022-11-13 20:41:26
+ */
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
+
+describe("vesting", function () {
+    it("Should return the new greeting once it's changed", async function () {
+        // const Greeter = await ethers.getContractFactory("Greeter");
+        // const greeter = await Greeter.deploy("Hello, world!");
+        // await greeter.deployed();
+
+        const BentoBoxV1 = await ethers.getContractFactory("BentoBoxV1");
+        const bentobox = await BentoBoxV1.deploy();
+        await bentobox.deployed();
+
+        const FuroVesting = await ethers.getContractFactory("FuroVesting");
+        const vesting = await FuroVesting.deploy();
+        await vesting.deployed();
+
+        
+        // expect(await greeter.greet()).to.equal("Hello, world!");
+
+        // const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
+
+        // wait until the transaction is mined
+        // await setGreetingTx.wait();
+
+        // expect(await greeter.greet()).to.equal("Hola, mundo!");
+    });
+});

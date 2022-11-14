@@ -183,8 +183,10 @@ const createDistributeFundsProposal = async (
   distributeFundContract,
   requestedFundAmount,
   tradingOffTokenAmount,
-  fullyReleasedDate,
-  lockupDate,
+  vestingStartTime,
+  vestingcliffDuration,
+  vestingStepDuration,
+  vestingSteps,
   projectTeamAddr,
   projectTokenAddr,
   sender
@@ -192,7 +194,10 @@ const createDistributeFundsProposal = async (
   const tx = await distributeFundContract.connect(sender).submitProposal(
     dao.address,
     [projectTeamAddr, projectTokenAddr],
-    [requestedFundAmount, tradingOffTokenAmount, fullyReleasedDate, lockupDate],
+    [requestedFundAmount, tradingOffTokenAmount, vestingStartTime,
+      vestingcliffDuration,
+      vestingStepDuration,
+      vestingSteps],
   );
   const result = await tx.wait();
   const newProposalId = result.events[2].args.proposalId;

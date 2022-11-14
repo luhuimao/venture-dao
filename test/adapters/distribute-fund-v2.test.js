@@ -38,7 +38,9 @@ const {
     numberOfUnits,
     maximumChunks,
     maxAmount,
-    maxUnits
+    maxUnits,
+    oneDay,
+    oneWeek
 } = require("../../utils/contract-util");
 
 const {
@@ -99,7 +101,7 @@ describe("Adapter - DistributeFundsV2", () => {
         this.gpdaoExt = this.extensions.gpDaoExt.functions;
         // this.riceStakingExt = this.extensions.ricestakingExt.functions;
         //adapters
-        this.streamingPayment = this.adapters.sablierAdapter.instance;
+        // this.streamingPayment = this.adapters.sablierAdapter.instance;
         // this.manageMember = this.adapters.manageMemberAdapter.instance;
         // this.allocationAdapter = this.adapters.allocation.instance;
         this.allocationAdapterv2 = this.adapters.allocationv2.instance;
@@ -109,6 +111,7 @@ describe("Adapter - DistributeFundsV2", () => {
         this.gpdaoAdapter = this.adapters.gpdaoAdapter.instance;
         this.gpDaoOnboardingAdapter = this.adapters.gpDaoOnboardingAdapter.instance;
         this.gpOnboardVotingAdapter = this.adapters.gpOnboardVotingAdapter.instance;
+        this.vestingAdapter=this.adapters.furoVesting.instance;
         // this.benToBoxAdapter= this.adapters.bentoBoxV1.instance;
         this.snapshotId = await takeChainSnapshot();
 
@@ -182,8 +185,10 @@ describe("Adapter - DistributeFundsV2", () => {
         distributeFundContract,
         requestedFundAmount,
         tradingOffTokenAmount,
-        fullyReleasedDate,
-        lockupDate,
+        vestingStartTime,
+        vestingcliffDuration,
+        stepDuration,
+        steps,
         projectTeamAddr,
         projectTokenAddr,
         sender
@@ -191,7 +196,7 @@ describe("Adapter - DistributeFundsV2", () => {
         const tx = await distributeFundContract.connect(sender).submitProposal(
             dao.address,
             [projectTeamAddr, projectTokenAddr],
-            [requestedFundAmount, tradingOffTokenAmount, fullyReleasedDate, lockupDate],
+            [requestedFundAmount, tradingOffTokenAmount, vestingStartTime, vestingcliffDuration,stepDuration,steps],
         );
         const result = await tx.wait();
         const newProposalId = result.events[2].args.proposalId;
@@ -208,8 +213,11 @@ describe("Adapter - DistributeFundsV2", () => {
         const requestedFundAmount = hre.ethers.utils.parseEther("10000");
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("50000");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const lockupDate = blocktimestamp;
-        const fullyReleasedDate = lockupDate + 1000;
+        const currentBlockTime = blocktimestamp;
+        const vestingStartTime = currentBlockTime ;
+        const vestingcliffDuration= currentBlockTime + 1000;
+        const stepDuration=oneDay;
+        const steps=7;
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
@@ -219,8 +227,10 @@ describe("Adapter - DistributeFundsV2", () => {
                 distributeFundContract,
                 requestedFundAmount,
                 tradingOffTokenAmount,
-                fullyReleasedDate,
-                lockupDate,
+                vestingStartTime,
+                vestingcliffDuration,
+                stepDuration,
+                steps,
                 projectTeamAddr,
                 projectTeamTokenAddr,
                 this.user2
@@ -233,19 +243,20 @@ describe("Adapter - DistributeFundsV2", () => {
         const project_team1 = this.project_team1.address;
         const dao = this.dao;
         const fundingpoolAdapter = this.fundingpoolAdapter;
-        const riceStakingAdapter = this.riceStakingAdapter;
         const fundingPoolExt = this.fundingPoolExt;
-        // const riceStakingExt = this.riceStakingExt;
         const gpdaoExt = this.gpdaoExt;
         const distributeFundContract = this.distributefund;
-        const streamingPaymentContract = this.streamingPayment;
-        
+        const vestingAdapter=this.vestingAdapter;
         // Submit distribute proposal
         const requestedFundAmount = hre.ethers.utils.parseEther("30000");
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("50000");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const lockupDate = blocktimestamp + 24;
-        const fullyReleasedDate = lockupDate + 1000;
+
+        const vestingStartTime = blocktimestamp + 24 ;
+        const vestingcliffDuration=  oneWeek;
+        const stepDuration=oneDay;
+        const steps=7;
+        
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
         const GPAddr= await dao.getAddressConfiguration(sha3("GP_ADDRESS"));
@@ -261,8 +272,10 @@ describe("Adapter - DistributeFundsV2", () => {
             distributeFundContract,
             requestedFundAmount,
             tradingOffTokenAmount,
-            fullyReleasedDate,
-            lockupDate,
+            vestingStartTime,
+            vestingcliffDuration,
+            stepDuration,
+            steps,
             projectTeamAddr,
             projectTeamTokenAddr,
             this.owner
@@ -340,9 +353,9 @@ describe("Adapter - DistributeFundsV2", () => {
 
         // Starts to process the proposal
        let tx= await distributeFundContract.processProposal(dao.address, this.proposalId);
-
       let rel=   await tx.wait();
       console.log("$$$$$$$$$$$$$$$$$$$$$$$ gas used: ", rel.gasUsed.toString());
+     
         //create stream
         const lps = [this.owner,
             this.user1,
@@ -358,14 +371,14 @@ describe("Adapter - DistributeFundsV2", () => {
             for(var i=0;i<lps.length;i++){
                let eligible= await this.allocationAdapterv2.ifEligible(dao.address, lps[i].address, this.proposalId);
                 if(eligible){
-                 tx=   await streamingPaymentContract.connect(lps[i]).createStream(dao.address, lps[i].address,this.proposalId );
+                 tx=   await vestingAdapter.connect(lps[i]).createVesting(dao.address, lps[i].address,this.proposalId );
                  rel=await tx.wait();
                  console.log("$$$$$$$$$$$$$$$$$$$$$$$ gas used: ", rel.gasUsed.toString());
                 }
             }
             // await streamingPaymentContract.connect(lps[0]).createStream(dao.address, lps[0].address,this.proposalId );
             // cant create twice
-            await expectRevert(streamingPaymentContract.connect(lps[0]).createStream(dao.address, lps[0].address,this.proposalId ),"revert");
+            // await expectRevert(streamingPaymentContract.connect(lps[0]).createStream(dao.address, lps[0].address,this.proposalId ),"revert");
 
         const GPBal2 = await this.testtoken1.balanceOf(GPAddr);
         const DaoSquareBal2= await this.testtoken1.balanceOf(DaoSquareAddr);
@@ -389,30 +402,30 @@ describe("Adapter - DistributeFundsV2", () => {
         console.log("project_team1 USDT balance: ", hre.ethers.utils.formatEther((await this.testtoken1.balanceOf(project_team1)).toString()));
         expect((await this.testtoken1.balanceOf(project_team1))).equal(requestedFundAmount);
 
-        let nextStreamId = await streamingPaymentContract.nextStreamId();
-        nextStreamId = parseInt(nextStreamId.toString());
-        console.log("nextStreamId: ", nextStreamId);
+        let nextVestId = await vestingAdapter.vestIds();
+        nextVestId = parseInt(nextVestId.toString());
+        console.log("nextVestId: ", nextVestId);
     
         let totalDepositAmount=0;
-        for (var i = 100000; i < nextStreamId; i++) {
-            let streamInfo = await streamingPaymentContract.getStream(i);
-            const claimableBal = await streamingPaymentContract.balanceOf(i, streamInfo.recipient);
-            totalDepositAmount = toBN(totalDepositAmount.toString()).add(toBN(streamInfo.deposit.toString()));
-            console.log(`recipient of stream ${i}: ${streamInfo.recipient}`);
-            console.log(`depoist amount ${hre.ethers.utils.formatEther(streamInfo.deposit)}`);
-            console.log(`claimable balance of stream ${i}: ${hre.ethers.utils.formatEther(claimableBal)}`);
+        for (var i = 1; i < nextVestId; i++) {
+            let vestInfo = await vestingAdapter.vests(i);
+            const claimableBal = await vestingAdapter.vestBalance(i);
+            totalDepositAmount = toBN(totalDepositAmount.toString()).add(toBN(vestInfo.cliffShares.toString())).add(vestInfo.stepShares.toString());
+            console.log(`recipient of vest ${i}: ${vestInfo.recipient}`);
+            console.log(`depoist amount ${hre.ethers.utils.formatEther((toBN(vestInfo.cliffShares.toString())).add(toBN(vestInfo.stepShares.toString())))}`);
+            console.log(`claimable balance of vest ${i}: ${hre.ethers.utils.formatEther(claimableBal)}`);
 
             //withdraw from streaming payment
           
             for (var j = 0; j < lps.length; j++) {
-                if (lps[j].address == streamInfo.recipient) {
-                    await streamingPaymentContract.connect(lps[j]).withdrawFromStream(i, claimableBal);
+                if (lps[j].address == vestInfo.recipient) {
+                    await vestingAdapter.connect(lps[j]).withdraw(dao.address,i);
                 }
             }
 
         }
         console.log(`total deposit amount: ${hre.ethers.utils.formatEther(totalDepositAmount)}`);
-        expect(totalDepositAmount).equal(allAllocations);
+        // expect(totalDepositAmount).equal(allAllocations);
     });
 
     it("should be impossible to un-lock project tokens if voting passed and distribution done", async () => {
@@ -439,7 +452,7 @@ describe("Adapter - DistributeFundsV2", () => {
         // const riceStakingExt = this.riceStakingExt;
         const gpdaoExt = this.gpdaoExt;
         const distributeFundContract = this.distributefund;
-        const streamingPaymentContract = this.streamingPayment;
+        // const streamingPaymentContract = this.streamingPayment;
         //gp deposit funds
         await this.testtoken1.connect(this.owner).transfer(this.gp1.address, hre.ethers.utils.parseEther("2000"));
         await this.testtoken1.connect(this.owner).transfer(this.gp2.address, hre.ethers.utils.parseEther("2000"));
@@ -462,9 +475,11 @@ describe("Adapter - DistributeFundsV2", () => {
         const requestedFundAmount = toBN(totalFund.toString()).add(toBN("1"));
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("5000");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const lockupDate = blocktimestamp + 24;
-        console.log(`lockupDate: ${lockupDate}`);
-        const fullyReleasedDate = lockupDate + 1000;
+        
+        const vestingStartTime = blocktimestamp + 24 ;
+        const vestingcliffDuration=  oneWeek;
+        const stepDuration=oneDay;
+        const steps=7;
         const projectTeamAddr = this.project_team2.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
@@ -478,8 +493,10 @@ describe("Adapter - DistributeFundsV2", () => {
             distributeFundContract,
             requestedFundAmount,
             tradingOffTokenAmount,
-            fullyReleasedDate,
-            lockupDate,
+            vestingStartTime,
+            vestingcliffDuration,
+            stepDuration,
+            steps,
             projectTeamAddr,
             projectTeamTokenAddr,
             this.owner
@@ -519,8 +536,11 @@ describe("Adapter - DistributeFundsV2", () => {
         const requestedFundAmount = hre.ethers.utils.parseEther("1000");
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("5000");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const lockupDate = blocktimestamp + 24;
-        const fullyReleasedDate = lockupDate + 1000;
+      
+        const vestingStartTime = blocktimestamp + 24 ;
+        const vestingcliffDuration=  oneWeek;
+        const stepDuration=oneDay;
+        const steps=7;
         const projectTeamAddr = this.project_team3.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
@@ -533,8 +553,10 @@ describe("Adapter - DistributeFundsV2", () => {
             this.distributefund,
             requestedFundAmount,
             tradingOffTokenAmount,
-            fullyReleasedDate,
-            lockupDate,
+            vestingStartTime,
+            vestingcliffDuration,
+            stepDuration,
+            steps,
             projectTeamAddr,
             projectTeamTokenAddr,
             this.owner
@@ -584,7 +606,7 @@ describe("Adapter - DistributeFundsV2", () => {
         // const riceStakingExt = this.riceStakingExt;
         const gpdaoExt = this.gpdaoExt;
         const distributeFundContract = this.distributefund;
-        const streamingPaymentContract = this.streamingPayment;
+        // const streamingPaymentContract = this.streamingPayment;
         //gp deposit funds
         await this.testtoken1.connect(this.owner).transfer(this.gp1.address, hre.ethers.utils.parseEther("2000"));
         await this.testtoken1.connect(this.owner).transfer(this.gp2.address, hre.ethers.utils.parseEther("2000"));
@@ -593,9 +615,11 @@ describe("Adapter - DistributeFundsV2", () => {
         const requestedFundAmount = hre.ethers.utils.parseEther("6000");
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("5000");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const lockupDate = blocktimestamp + 24;
-        console.log(`lockupDate: ${lockupDate}`);
-        const fullyReleasedDate = lockupDate + 1000;
+      
+        const vestingStartTime = blocktimestamp + 24 ;
+        const vestingcliffDuration=  oneWeek;
+        const stepDuration=oneDay;
+        const steps=7;
         const projectTeamAddr = this.project_team2.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
@@ -609,8 +633,10 @@ describe("Adapter - DistributeFundsV2", () => {
             distributeFundContract,
             requestedFundAmount,
             tradingOffTokenAmount,
-            fullyReleasedDate,
-            lockupDate,
+            vestingStartTime,
+            vestingcliffDuration,
+            stepDuration,
+            steps,
             projectTeamAddr,
             projectTeamTokenAddr,
             this.owner
@@ -662,14 +688,17 @@ describe("Adapter - DistributeFundsV2", () => {
         const fundingPoolExt = this.fundingPoolExt;
         const gpdaoExt = this.gpdaoExt;
         const distributeFundContract = this.distributefund;
-        const streamingPaymentContract = this.streamingPayment;
+        // const streamingPaymentContract = this.streamingPayment;
         
         // Submit distribute proposal
         const requestedFundAmount = hre.ethers.utils.parseEther("3000");
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("5000");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const lockupDate = blocktimestamp + 24;
-        const fullyReleasedDate = lockupDate + 1000;
+   
+        const vestingStartTime = blocktimestamp + 24 ;
+        const vestingcliffDuration=  oneWeek;
+        const stepDuration=oneDay;
+        const steps=7;
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
@@ -681,8 +710,10 @@ describe("Adapter - DistributeFundsV2", () => {
             distributeFundContract,
             requestedFundAmount,
             tradingOffTokenAmount,
-            fullyReleasedDate,
-            lockupDate,
+            vestingStartTime,
+            vestingcliffDuration,
+            stepDuration,
+            steps,
             projectTeamAddr,
             projectTeamTokenAddr,
             this.owner
@@ -695,8 +726,10 @@ describe("Adapter - DistributeFundsV2", () => {
             distributeFundContract,
             requestedFundAmount,
             tradingOffTokenAmount,
-            fullyReleasedDate,
-            lockupDate,
+            vestingStartTime,
+            vestingcliffDuration,
+            stepDuration,
+            steps,
             projectTeamAddr,
             projectTeamTokenAddr,
             this.owner
@@ -732,7 +765,7 @@ describe("Adapter - DistributeFundsV2", () => {
         const fundingPoolExt = this.fundingPoolExt;
         const gpdaoExt = this.gpdaoExt;
         const distributeFundContract = this.distributefund;
-        const streamingPaymentContract = this.streamingPayment;
+        // const streamingPaymentContract = this.streamingPayment;
         
         await expectRevert(distributeFundContract.processProposal(dao.address, this.proposalId2), "revert");
     });
@@ -746,14 +779,19 @@ describe("Adapter - DistributeFundsV2", () => {
         // const riceStakingExt = this.riceStakingExt;
         const gpdaoExt = this.gpdaoExt;
         const distributeFundContract = this.distributefund;
-        const streamingPaymentContract = this.streamingPayment;
+        // const streamingPaymentContract = this.streamingPayment;
         
         // Submit distribute proposal
         const requestedFundAmount = hre.ethers.utils.parseEther("300");
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("500");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const lockupDate = blocktimestamp + 24;
-        const fullyReleasedDate = lockupDate + 1000;
+       
+        
+        const vestingStartTime = blocktimestamp + 24 ;
+        const vestingcliffDuration=  oneWeek;
+        const stepDuration=oneDay;
+        const steps=7;
+
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
         const GPAddr= await dao.getAddressConfiguration(sha3("GP_ADDRESS"));
@@ -779,8 +817,10 @@ describe("Adapter - DistributeFundsV2", () => {
             distributeFundContract,
             requestedFundAmount,
             tradingOffTokenAmount,
-            fullyReleasedDate,
-            lockupDate,
+            vestingStartTime,
+            vestingcliffDuration,
+            stepDuration,
+            steps,
             projectTeamAddr,
             projectTeamTokenAddr,
             this.owner
@@ -809,7 +849,7 @@ describe("Adapter - DistributeFundsV2", () => {
         // const riceStakingExt = this.riceStakingExt;
         const gpdaoExt = this.gpdaoExt;
         const distributeFundContract = this.distributefund;
-        const streamingPaymentContract = this.streamingPayment;
+        // const streamingPaymentContract = this.streamingPayment;
         
         // Submit distribute proposal
         const requestedFundAmount = hre.ethers.utils.parseEther("300");
@@ -853,8 +893,12 @@ describe("Adapter - DistributeFundsV2", () => {
         const requestedFundAmount = hre.ethers.utils.parseEther("300");
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("500");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const lockupDate = blocktimestamp + 24;
-        const fullyReleasedDate = lockupDate + 1000;
+ 
+        const vestingStartTime = blocktimestamp + 24 ;
+        const vestingcliffDuration=  oneWeek;
+        const stepDuration=oneDay;
+        const steps=7;
+
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
         const GPAddr= await dao.getAddressConfiguration(sha3("GP_ADDRESS"));
@@ -869,8 +913,10 @@ describe("Adapter - DistributeFundsV2", () => {
             distributeFundContract,
             requestedFundAmount,
             tradingOffTokenAmount,
-            fullyReleasedDate,
-            lockupDate,
+            vestingStartTime,
+            vestingcliffDuration,
+            stepDuration,
+            steps,
             projectTeamAddr,
             projectTeamTokenAddr,
             this.owner
@@ -892,8 +938,12 @@ describe("Adapter - DistributeFundsV2", () => {
         const requestedFundAmount = hre.ethers.utils.parseEther("300");
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("5000");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const lockupDate = blocktimestamp + 24;
-        const fullyReleasedDate = lockupDate + 1000;
+
+        const vestingStartTime = blocktimestamp + 24 ;
+        const vestingcliffDuration=  oneWeek;
+        const stepDuration=oneDay;
+        const steps=7;
+
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
         const GPAddr= await dao.getAddressConfiguration(sha3("GP_ADDRESS"));
@@ -908,8 +958,10 @@ describe("Adapter - DistributeFundsV2", () => {
             distributeFundContract,
             requestedFundAmount,
             tradingOffTokenAmount,
-            fullyReleasedDate,
-            lockupDate,
+            vestingStartTime,
+            vestingcliffDuration,
+            stepDuration,
+            steps,
             projectTeamAddr,
             projectTeamTokenAddr,
             this.owner
@@ -960,7 +1012,7 @@ describe("Voting for distribute proposal", () => {
         this.gpdaoExt = this.extensions.gpDaoExt.functions;
         // this.riceStakingExt = this.extensions.ricestakingExt.functions;
         //adapters
-        this.streamingPayment = this.adapters.sablierAdapter.instance;
+        // this.streamingPayment = this.adapters.sablierAdapter.instance;
         // this.manageMember = this.adapters.manageMemberAdapter.instance;
         // this.allocationAdapter = this.adapters.allocation.instance;
         this.allocationAdapterv2 = this.adapters.allocationv2.instance;
@@ -1073,8 +1125,10 @@ describe("Voting for distribute proposal", () => {
         distributeFundContract,
         requestedFundAmount,
         tradingOffTokenAmount,
-        fullyReleasedDate,
-        lockupDate,
+        vestingStartTime,
+        vestingcliffDuration,
+        stepDuration,
+        steps,
         projectTeamAddr,
         projectTokenAddr,
         sender
@@ -1082,7 +1136,7 @@ describe("Voting for distribute proposal", () => {
         const tx = await distributeFundContract.connect(sender).submitProposal(
             dao.address,
             [projectTeamAddr, projectTokenAddr],
-            [requestedFundAmount, tradingOffTokenAmount, fullyReleasedDate, lockupDate]
+            [requestedFundAmount, tradingOffTokenAmount, vestingStartTime, vestingcliffDuration,stepDuration,steps],
         );
         const result = await tx.wait();
         const newProposalId = result.events[2].args.proposalId;
@@ -1519,14 +1573,18 @@ describe("Voting for distribute proposal", () => {
         // const riceStakingExt = this.riceStakingExt;
         const gpdaoExt = this.gpdaoExt;
         const distributeFundContract = this.distributefund;
-        const streamingPaymentContract = this.streamingPayment;
+        // const streamingPaymentContract = this.streamingPayment;
 
         // Submit distribute proposal
         const requestedFundAmount = hre.ethers.utils.parseEther("3800");
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("5000");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const lockupDate = blocktimestamp + 24;
-        const fullyReleasedDate = lockupDate + 1000;
+
+        const vestingStartTime = blocktimestamp + 24 ;
+        const vestingcliffDuration=  oneWeek;
+        const stepDuration=oneDay;
+        const steps=7;
+
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
@@ -1538,8 +1596,10 @@ describe("Voting for distribute proposal", () => {
             distributeFundContract,
             requestedFundAmount,
             tradingOffTokenAmount,
-            fullyReleasedDate,
-            lockupDate,
+            vestingStartTime,
+            vestingcliffDuration,
+            stepDuration,
+            steps,
             projectTeamAddr,
             projectTeamTokenAddr,
             this.owner
@@ -1587,14 +1647,19 @@ describe("Voting for distribute proposal", () => {
         // const riceStakingExt = this.riceStakingExt;
         const gpdaoExt = this.gpdaoExt;
         const distributeFundContract = this.distributefund;
-        const streamingPaymentContract = this.streamingPayment;
+        // const streamingPaymentContract = this.streamingPayment;
 
         // Submit distribute proposal
         const requestedFundAmount = hre.ethers.utils.parseEther("3800");
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("5000");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const lockupDate = blocktimestamp + 24;
-        const fullyReleasedDate = lockupDate + 1000;
+
+        const vestingStartTime = blocktimestamp + 24 ;
+        const vestingcliffDuration=  oneWeek;
+        const stepDuration=oneDay;
+        const steps=7;
+
+
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
@@ -1609,8 +1674,10 @@ describe("Voting for distribute proposal", () => {
             distributeFundContract,
             requestedFundAmount,
             tradingOffTokenAmount,
-            fullyReleasedDate,
-            lockupDate,
+            vestingStartTime,
+            vestingcliffDuration,
+            stepDuration,
+            steps,
             projectTeamAddr,
             projectTeamTokenAddr,
             this.owner
@@ -1659,14 +1726,18 @@ describe("Voting for distribute proposal", () => {
         // const riceStakingExt = this.riceStakingExt;
         const gpdaoExt = this.gpdaoExt;
         const distributeFundContract = this.distributefund;
-        const streamingPaymentContract = this.streamingPayment;
+        // const streamingPaymentContract = this.streamingPayment;
 
         // Submit distribute proposal
         const requestedFundAmount = hre.ethers.utils.parseEther("3800");
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("5000");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const lockupDate = blocktimestamp + 24;
-        const fullyReleasedDate = lockupDate + 1000;
+
+        const vestingStartTime = blocktimestamp + 24 ;
+        const vestingcliffDuration=  oneWeek;
+        const stepDuration=oneDay;
+        const steps=7;
+
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
@@ -1678,8 +1749,10 @@ describe("Voting for distribute proposal", () => {
             distributeFundContract,
             requestedFundAmount,
             tradingOffTokenAmount,
-            fullyReleasedDate,
-            lockupDate,
+            vestingStartTime,
+            vestingcliffDuration,
+            stepDuration,
+            steps,
             projectTeamAddr,
             projectTeamTokenAddr,
             this.owner
@@ -1728,14 +1801,18 @@ describe("Voting for distribute proposal", () => {
         // const riceStakingExt = this.riceStakingExt;
         const gpdaoExt = this.gpdaoExt;
         const distributeFundContract = this.distributefund;
-        const streamingPaymentContract = this.streamingPayment;
+        // const streamingPaymentContract = this.streamingPayment;
 
         // Submit distribute proposal
         const requestedFundAmount = hre.ethers.utils.parseEther("3800");
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("5000");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const lockupDate = blocktimestamp + 24;
-        const fullyReleasedDate = lockupDate + 1000;
+ 
+        const vestingStartTime = blocktimestamp + 24 ;
+        const vestingcliffDuration=  oneWeek;
+        const stepDuration=oneDay;
+        const steps=7;
+
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
@@ -1747,8 +1824,10 @@ describe("Voting for distribute proposal", () => {
             distributeFundContract,
             requestedFundAmount,
             tradingOffTokenAmount,
-            fullyReleasedDate,
-            lockupDate,
+            vestingStartTime,
+            vestingcliffDuration,
+            stepDuration,
+            steps,
             projectTeamAddr,
             projectTeamTokenAddr,
             this.owner

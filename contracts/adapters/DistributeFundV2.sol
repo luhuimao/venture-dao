@@ -62,53 +62,6 @@ contract DistributeFundContractV2 is
     //     address receiver
     // );
 
-    event ProposalCreated(
-        bytes32 proposalId,
-        address projectTokenAddress,
-        address projectTeamAddress,
-        uint256 tradingOffTokenAmount,
-        uint256 requestedFundAmount,
-        uint256 fullyReleasedDate,
-        uint256 lockupDate,
-        uint256 inQueueTimestamp,
-        uint256 voteStartingTimestamp,
-        uint256 voteEndTimestamp,
-        uint256 proposalExecuteTimestamp
-    );
-    event ProposalExecuted(
-        bytes32 proposalID,
-        uint256 state,
-        uint128 allVotingWeight,
-        uint128 nbYes,
-        uint128 nbNo,
-        uint256 distributeState
-    );
-    // The distribution status
-    enum DistributionStatus {
-        IN_QUEUE,
-        IN_VOTING_PROGRESS,
-        IN_EXECUTE_PROGRESS,
-        DONE,
-        FAILED
-    }
-
-    // State of the distribution proposal
-    struct Distribution {
-        address tokenAddr; // The token in which the project team to trade off.
-        uint256 tradingOffTokenAmount; //project token amount for trading off
-        uint256 requestedFundAmount; // The amount project team requested.
-        address recipientAddr; // The receiver address that will receive the funds.
-        address proposer;
-        DistributionStatus status; // The distribution status.
-        uint256 inQueueTimestamp;
-        uint256 proposalStartVotingTimestamp; //project start voting timestamp
-        uint256 proposalStopVotingTimestamp;
-        uint256 proposalExecuteTimestamp;
-        uint256 vestingStartTime;
-        uint256 vestingCliffDuration;
-        uint256 vestingStepDuration;
-        uint256 vestingSteps;
-    }
     // bytes32 constant RiceTokenAddr = keccak256("rice.token.address");
     // bytes32 constant ProposalDuration =
     //     keccak256("distributeFund.proposalDuration");
@@ -212,7 +165,7 @@ contract DistributeFundContractV2 is
             proposalId
         );
         require(
-            distribution.status == DistributionStatus.FAILED,
+            distribution.status == IFunding.DistributionStatus.FAILED,
             "DistributeFund::unLockProjectTeamToken::not satisfied"
         );
         projectTeamLockedTokens[address(dao)][proposalId][msg.sender] = 0;
@@ -354,7 +307,8 @@ contract DistributeFundContractV2 is
 
         //Inserts proposal at the end of the queue.
         proposalQueue.pushBack(vars.proposalId);
-        distributions[address(dao)][vars.proposalId].status = DistributionStatus
+        distributions[address(dao)][vars.proposalId].status = IFunding
+            .DistributionStatus
             .IN_QUEUE;
 
         proposalIds += 1;
@@ -392,15 +346,17 @@ contract DistributeFundContractV2 is
             _uint256ArgsProposal[0],
             _addressArgs[0],
             _addressArgs[2],
-            DistributionStatus.IN_QUEUE,
+            IFunding.DistributionStatus.IN_QUEUE,
             block.timestamp,
             0,
             0,
             0,
-            _uint256ArgsProposal[2],
-            _uint256ArgsProposal[3],
-            _uint256ArgsProposal[4],
-            _uint256ArgsProposal[5]
+            IFunding.VestInfo(
+                _uint256ArgsProposal[2],
+                _uint256ArgsProposal[3],
+                _uint256ArgsProposal[4],
+                _uint256ArgsProposal[5]
+            )
         );
     }
 
@@ -442,10 +398,10 @@ contract DistributeFundContractV2 is
         if (vars.ongongingPrposalId != bytes32(0)) {
             require(
                 distributions[address(dao)][vars.ongongingPrposalId].status ==
-                    DistributionStatus.DONE ||
+                    IFunding.DistributionStatus.DONE ||
                     distributions[address(dao)][vars.ongongingPrposalId]
                         .status ==
-                    DistributionStatus.FAILED,
+                    IFunding.DistributionStatus.FAILED,
                 "DistributeFund::startVotingProcess::there is other proposal not finalized"
             );
         }
@@ -474,7 +430,8 @@ contract DistributeFundContractV2 is
             proposalId
         ];
 
-        if (distribution.status != DistributionStatus.IN_QUEUE) return false;
+        if (distribution.status != IFunding.DistributionStatus.IN_QUEUE)
+            return false;
 
         //Removes the proposalId at the beginning of the queue
         proposalQueue.popFront();
@@ -490,7 +447,7 @@ contract DistributeFundContractV2 is
                     dao.getConfiguration(DaoHelper.PROTOCOL_FEE)) /
                 100
         ) {
-            distribution.status = DistributionStatus.FAILED;
+            distribution.status = IFunding.DistributionStatus.FAILED;
             return false;
         }
 
@@ -503,7 +460,7 @@ contract DistributeFundContractV2 is
         );
         // lock project token failed
         if (!rel) {
-            distribution.status = DistributionStatus.FAILED;
+            distribution.status = IFunding.DistributionStatus.FAILED;
             return false;
         }
         projectTeamLockedTokens[address(dao)][proposalId][
@@ -528,7 +485,7 @@ contract DistributeFundContractV2 is
 
         ongoingDistributions[address(dao)] = proposalId;
 
-        distribution.status = DistributionStatus.IN_VOTING_PROGRESS;
+        distribution.status = IFunding.DistributionStatus.IN_VOTING_PROGRESS;
         return true;
     }
 
@@ -578,7 +535,8 @@ contract DistributeFundContractV2 is
             "DistributeFund::processProposal::proposal in voting period"
         );
         require(
-            distribution.status != DistributionStatus.IN_EXECUTE_PROGRESS,
+            distribution.status !=
+                IFunding.DistributionStatus.IN_EXECUTE_PROGRESS,
             "DistributeFund::processProposal::proposal already in execute progress"
         );
 
@@ -599,7 +557,9 @@ contract DistributeFundContractV2 is
             .voteResult(dao, proposalId);
 
         if (vars.voteResult == IGPVoting.VotingState.PASS) {
-            distribution.status = DistributionStatus.IN_EXECUTE_PROGRESS;
+            distribution.status = IFunding
+                .DistributionStatus
+                .IN_EXECUTE_PROGRESS;
             ongoingDistributions[address(dao)] = proposalId;
             vars.fundRaiseTokenAddr = vars
                 .fundingpool
@@ -613,7 +573,7 @@ contract DistributeFundContractV2 is
                         dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) /
                     100
             ) {
-                distribution.status = DistributionStatus.FAILED;
+                distribution.status = IFunding.DistributionStatus.FAILED;
             } else {
                 //process1. distribute fund to project team address
 
@@ -635,13 +595,13 @@ contract DistributeFundContractV2 is
                     distribution.recipientAddr
                 ] = 0;
                 //process7. set proposal state
-                distribution.status = DistributionStatus.DONE;
+                distribution.status = IFunding.DistributionStatus.DONE;
             }
         } else if (
             vars.voteResult == IGPVoting.VotingState.NOT_PASS ||
             vars.voteResult == IGPVoting.VotingState.TIE
         ) {
-            distribution.status = DistributionStatus.FAILED;
+            distribution.status = IFunding.DistributionStatus.FAILED;
         } else {
             revert("voting not finalized");
         }
@@ -749,10 +709,10 @@ contract DistributeFundContractV2 is
 
         uint256[5] memory uint256Args = [
             distribution.tradingOffTokenAmount,
-            distribution.vestingStartTime,
-            distribution.vestingCliffDuration,
-            distribution.vestingStepDuration,
-            distribution.vestingSteps
+            distribution.vestInfo.vestingStartTime,
+            distribution.vestInfo.vestingCliffDuration,
+            distribution.vestInfo.vestingStepDuration,
+            distribution.vestInfo.vestingSteps
         ];
         allocAda.allocateProjectToken(
             dao,

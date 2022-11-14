@@ -792,7 +792,7 @@ export const contracts: Array<ContractConfig> = [
     name: "Sablier",
     alias: "sablierAdapter",
     path: "../../contracts/adapters/streaming_payment/Sablier",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {

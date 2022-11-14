@@ -96,27 +96,40 @@ describe("Adapter - FundRaise", () => {
         const gpDaoExt = this.extensions.gpDaoExt.functions;
         const dao = this.dao;
 
+        let fundRaiseTarget = hre.ethers.utils.parseEther("10000");
+        let fundRaiseMaxAmount = hre.ethers.utils.parseEther("10000000");
+        let lpMinDepositAmount = hre.ethers.utils.parseEther("100");
+        let lpMaxDepositAmount = hre.ethers.utils.parseEther("10000");
         const _uint256ArgsProposal = [
-            hre.ethers.utils.parseEther("10000"),
-            hre.ethers.utils.parseEther("10000000"),
-            hre.ethers.utils.parseEther("100"),
-            hre.ethers.utils.parseEther("10000"),
+            fundRaiseTarget,
+            fundRaiseMaxAmount,
+            lpMinDepositAmount,
+            lpMaxDepositAmount
         ];
         let currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-
+        let fundRaiseStartTime = currentblocktimestamp;
+        let fundRaiseEndTime = currentblocktimestamp + oneMonth;
+        let fundTerm = 60 * 60;
+        let redemptPeriod = 60 * 10;
+        let redemptDuration = 60;
+        let returnDuration = threeMonthes;
         const _uint256ArgsTimeInfo = [
-            currentblocktimestamp,
-            currentblocktimestamp + oneMonth,
-            60 * 60,
-            60 * 10,
-            60,
-            threeMonthes
+            fundRaiseStartTime,
+            fundRaiseEndTime,
+            fundTerm,
+            redemptPeriod,
+            redemptDuration,
+            returnDuration
         ];
+        let proposerRewardRatio = 5;
+        let managementFeeRatio = 2;
+        let redepmtFeeRatio = 5;
+        let protocolFeeRatio = 3;
         const _uint256ArgsFeeInfo = [
-            5,
-            2,
-            5,
-            3
+            proposerRewardRatio,
+            managementFeeRatio,
+            redepmtFeeRatio,
+            protocolFeeRatio
         ];
 
         const lastFundEndTime = await dao.getConfiguration(sha3("FUND_END_TIME"));
@@ -187,8 +200,14 @@ describe("Adapter - FundRaise", () => {
         const requestedFundAmount = hre.ethers.utils.parseEther("30000");
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("50000");
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const lockupDate = blocktimestamp + 24;
-        const fullyReleasedDate = lockupDate + 1000;
+        // const lockupDate = blocktimestamp + 24;
+        // const fullyReleasedDate = lockupDate + 1000;
+
+        const vestingStartTime = blocktimestamp + 24;
+        const vestingcliffDuration = oneWeek;
+        const stepDuration = oneDay;
+        const steps = 7;
+
         const projectTeamAddr = this.user1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
@@ -209,8 +228,10 @@ describe("Adapter - FundRaise", () => {
             distributeFundContract,
             requestedFundAmount,
             tradingOffTokenAmount,
-            fullyReleasedDate,
-            lockupDate,
+            vestingStartTime,
+            vestingcliffDuration,
+            stepDuration,
+            steps,
             projectTeamAddr,
             projectTeamTokenAddr,
             this.owner);

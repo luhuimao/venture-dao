@@ -221,11 +221,11 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         // approve from Allocation adapter contract to streaming payment contract
         vars.oldAllowance = IERC20(tokenAddress).allowance(
             address(this),
-            dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT)
+            dao.getAdapterAddress(DaoHelper.VESTWING)
         );
         vars.newAllowance = vars.oldAllowance + vars.tokenAmount;
         IERC20(tokenAddress).approve(
-            dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT),
+            dao.getAdapterAddress(DaoHelper.BEN_TO_BOX),
             vars.newAllowance
         );
         address[] memory allInvestors = vars.fundingpool.getInvestors();

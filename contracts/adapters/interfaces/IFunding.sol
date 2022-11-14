@@ -40,5 +40,57 @@ interface IFunding {
         external
         returns (bool);
 
+    // The distribution status
+    enum DistributionStatus {
+        IN_QUEUE,
+        IN_VOTING_PROGRESS,
+        IN_EXECUTE_PROGRESS,
+        DONE,
+        FAILED
+    }
+    // State of the distribution proposal
+    struct Distribution {
+        address tokenAddr; // The token in which the project team to trade off.
+        uint256 tradingOffTokenAmount; //project token amount for trading off
+        uint256 requestedFundAmount; // The amount project team requested.
+        address recipientAddr; // The receiver address that will receive the funds.
+        address proposer;
+        DistributionStatus status; // The distribution status.
+        uint256 inQueueTimestamp;
+        uint256 proposalStartVotingTimestamp; //project start voting timestamp
+        uint256 proposalStopVotingTimestamp;
+        uint256 proposalExecuteTimestamp;
+        VestInfo vestInfo;
+    }
+
+    struct VestInfo {
+        uint256 vestingStartTime;
+        uint256 vestingCliffDuration;
+        uint256 vestingStepDuration;
+        uint256 vestingSteps;
+    }
+
+    event ProposalCreated(
+        bytes32 proposalId,
+        address projectTokenAddress,
+        address projectTeamAddress,
+        uint256 tradingOffTokenAmount,
+        uint256 requestedFundAmount,
+        uint256 fullyReleasedDate,
+        uint256 lockupDate,
+        uint256 inQueueTimestamp,
+        uint256 voteStartingTimestamp,
+        uint256 voteEndTimestamp,
+        uint256 proposalExecuteTimestamp
+    );
+    event ProposalExecuted(
+        bytes32 proposalID,
+        uint256 state,
+        uint128 allVotingWeight,
+        uint128 nbYes,
+        uint128 nbNo,
+        uint256 distributeState
+    );
+
     // function distribute(DaoRegistry dao, uint256 toIndex) external;
 }

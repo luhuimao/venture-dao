@@ -85,6 +85,7 @@ contract FuroVesting is
         uint256 vestingStepDuration;
         uint256 vestingSteps;
         address allocAdaptAddr;
+        IFunding.VestInfo vestInfo;
     }
 
     function createVesting(DaoRegistry dao,
@@ -132,16 +133,17 @@ contract FuroVesting is
             ,
             ,
             ,
-            vars.vestingStartTime,
-            vars.vestingCliffDuration,
-            vars.vestingStepDuration,
-            vars.vestingSteps
+            vars.vestInfo
+            // vars.vestingStartTime,
+            // vars.vestingCliffDuration,
+            // vars.vestingStepDuration,
+            // vars.vestingSteps
         ) = vars.distributeFundAdapter.distributions(address(dao), proposalId);
         // if (vestParams.start < block.timestamp) revert InvalidStart();
-        vars.stepPercentage=uint128(PERCENTAGE_PRECISION / vars.vestingSteps);
+        vars.stepPercentage=uint128(PERCENTAGE_PRECISION / vars.vestInfo.vestingSteps);
         if (vars.stepPercentage > PERCENTAGE_PRECISION)
             revert InvalidStepSetting();
-        if (vars.vestingStepDuration == 0 || vars.vestingSteps == 0)
+        if (vars.vestInfo.vestingStepDuration == 0 || vars.vestInfo.vestingSteps == 0)
             revert InvalidStepSetting();
         // depositedShares = _depositToken(
         //     address(vestParams.token),
@@ -153,7 +155,7 @@ contract FuroVesting is
 
         vars.depositedShares = _depositToken(dao,
            vars.tokenAddress,
-            msg.sender,
+             vars.allocAdaptAddr,
             address(this),
             vars.depositAmount,
             false
@@ -163,7 +165,7 @@ contract FuroVesting is
                 PERCENTAGE_PRECISION
         );
         vars.cliffShares = uint128(
-            vars.depositedShares - (vars.stepShares * vars.vestingSteps)
+            vars.depositedShares - (vars.stepShares * vars.vestInfo.vestingSteps)
         );
 
         vars.vestId = vestIds++;
@@ -177,24 +179,25 @@ contract FuroVesting is
             //     ? IERC20(wETH)
             //     : vestParams.token,
             token: vars.tokenAddress,
-            start: uint32(vars.vestingStartTime),
-            cliffDuration: uint32(vars.vestingCliffDuration),
-            stepDuration: uint32(vars.vestingStepDuration),
-            steps: uint32(vars.vestingSteps),
+            start: uint32(vars.vestInfo.vestingStartTime),
+            cliffDuration: uint32(vars.vestInfo.vestingCliffDuration),
+            stepDuration: uint32(vars.vestInfo.vestingStepDuration),
+            steps: uint32(vars.vestInfo.vestingSteps),
             cliffShares: vars.cliffShares,
             stepShares: vars.stepShares,
             claimed: 0
         });
+        vars.allocAdapter.streamCreated(dao, proposalId, recipientAddr);
 
         emit CreateVesting(
            vars.vestId,
             vars.tokenAddress,
             msg.sender,
             recipientAddr,
-           uint32(vars.vestingStartTime),
-           uint32(vars.vestingCliffDuration),
-            uint32(vars.vestingStepDuration),
-          uint32(vars.vestingSteps),
+           uint32(vars.vestInfo.vestingStartTime),
+           uint32(vars.vestInfo.vestingCliffDuration),
+            uint32(vars.vestInfo.vestingStepDuration),
+          uint32(vars.vestInfo.vestingSteps),
             // cliffShares,
             // stepShares,
             // vestParams.fromBentoBox,
@@ -313,7 +316,7 @@ contract FuroVesting is
         uint256 amount,
         bool fromBentoBox
     ) internal returns (uint256 depositedShares) {
-        IBentoBoxMinimal bentoBox=IBentoBoxMinimal(dao.getAddressConfiguration(DaoHelper.BEN_TO_BOX));
+        IBentoBoxMinimal bentoBox=IBentoBoxMinimal(dao.getAdapterAddress(DaoHelper.BEN_TO_BOX));
         if (fromBentoBox) {
             depositedShares = bentoBox.toShare(token, amount, false);
             bentoBox.transfer(token, from, to, depositedShares);
