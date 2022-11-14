@@ -1,10 +1,21 @@
+/*
+ * @Descripttion: 
+ * @version: 
+ * @Author: huhuimao
+ * @Date: 2022-11-10 19:00:47
+ * @LastEditors: huhuimao
+ * @LastEditTime: 2022-11-14 12:52:27
+ */
 /**
  * @notice the ids defined in this file must match the ids added to DaoHelper.sol.
  */
 
 /** Adapters */
 export const adaptersIdsMap: Record<string, string> = {
-  GP_KICK_ADAPTER:"gp-kick",
+  FUND_RAISE:"fund-raise",
+  VESTING:"vesting",
+  BEN_TO_BOX: "ben-to-box",
+  GP_KICK_ADAPTER: "gp-kick",
   GP_DAO_ONBOARDING_ADAPTER: "gp-dao-onboarding",
   GP_DAO_ADAPTER: "gp-dao",
   STREAMING_PAYMENT_ADAPTER: "streaming-payment",

@@ -57,7 +57,16 @@ module.exports = {
           },
         }
       },
-      { version: "0.5.17" }
+      { version: "0.5.17" },
+      {
+        version: '0.6.12',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 999999,
+          },
+        },
+      },
     ],
     settings: {
       optimizer: {
@@ -72,7 +81,7 @@ module.exports = {
       // blockGasLimit: 0x1ffffffff,
     },
     rinkeby: {
-      url: process.env.ETH_NODE_URL,
+      url: process.env.RINKEBY_NODE_URL,
       network_id: 4,
       chainId: 4,
       skipDryRun: true,

@@ -58,6 +58,7 @@ export const GPOnboardVotingContract_GOERLI = "0x7e1c584b36530347f9e482F47251AAC
 export const AllocationAdapterContract_GOERLI = ""; //REPLACE_FLAG
 export const AllocationAdapterContractV2_GOERLI = "0x8144254C832B14D4dDFdBba155290640AfEA0631"; //REPLACE_FLAG
 export const ManagingAdapterContract_GOERLI = "0xdd60b84fDa3C243937F442181916a71f14334b7c"; //REPLACE_FLAG
+export const VESTING_GOERLI = ""; //REPLACE_FLAG
 //test contracts
 export const TestToken1_RINKEBY = "0x607EaF02Ac994959739FB69FCe717815b697f4EB";
 export const TestToken2_RINKEBY = "0x87E2C537e1743A4D0F2C73132c81eEcB5a40f3d1";

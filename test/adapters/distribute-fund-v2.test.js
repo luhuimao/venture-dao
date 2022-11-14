@@ -108,7 +108,10 @@ describe("Adapter - DistributeFundsV2", () => {
         this.gpdaoAdapter = this.adapters.gpdaoAdapter.instance;
         this.gpDaoOnboardingAdapter = this.adapters.gpDaoOnboardingAdapter.instance;
         this.gpOnboardVotingAdapter = this.adapters.gpOnboardVotingAdapter.instance;
+        this.benToBoxAdapter= this.adapters.bentoBoxV1.instance;
         this.snapshotId = await takeChainSnapshot();
+
+        console.log(`bentobox address ${this.benToBoxAdapter.address}`);
 
         await this.testtoken1.transfer(investor1.address, hre.ethers.utils.parseEther("2000"));
         await this.testtoken1.transfer(investor2.address, hre.ethers.utils.parseEther("2000"));

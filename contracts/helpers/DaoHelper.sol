@@ -71,6 +71,7 @@ library DaoHelper {
     uint256 internal constant ONE_YEAR = 60 * 60 * 24 * 365;
 
     //PPM
+    bytes32 internal constant RETURN_DURATION = keccak256("RETURN_DURATION");
     bytes32 internal constant DAO_SQUARE_ADDRESS =
         keccak256("DAO_SQUARE_ADDRESS");
     bytes32 internal constant GP_ADDRESS = keccak256("GP_ADDRESS");
@@ -130,6 +131,9 @@ library DaoHelper {
         keccak256("PROPOSAL_EXECUTE_DURATION");
 
     // Adapters
+
+    bytes32 internal constant VESTWING = keccak256("vesting");
+    bytes32 internal constant BEN_TO_BOX = keccak256("ben-to-box");
     bytes32 internal constant GP_ONBOARDING_ADAPT =
         keccak256("gp-dao-onboarding");
     bytes32 internal constant FUNDING_POOL_ADAPT = keccak256("founding-pool");
