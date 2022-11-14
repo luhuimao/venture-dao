@@ -2,7 +2,7 @@ pragma solidity ^0.8.0;
 
 // SPDX-License-Identifier: MIT
 
-import "../core/DaoRegistry.sol";
+// import "../core/DaoRegistry.sol";
 import "../guards/AdapterGuard.sol";
 import "../guards/MemberGuard.sol";
 import "./modifiers/Reimbursable.sol";
@@ -10,12 +10,12 @@ import "./interfaces/IGPVoting.sol";
 import "./AllocationAdapterV2.sol";
 import "./interfaces/IFunding.sol";
 import "./voting/GPVoting.sol";
-import "../helpers/FairShareHelper.sol";
+// import "../helpers/FairShareHelper.sol";
 import "../helpers/DaoHelper.sol";
-import "../extensions/bank/Bank.sol";
+// import "../extensions/bank/Bank.sol";
 import "./FundingPoolAdapter.sol";
 import "../extensions/fundingpool/FundingPool.sol";
-import "../extensions/ricestaking/RiceStaking.sol";
+// import "../extensions/ricestaking/RiceStaking.sol";
 import "../utils/TypeConver.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
@@ -97,8 +97,6 @@ contract DistributeFundContractV2 is
         address tokenAddr; // The token in which the project team to trade off.
         uint256 tradingOffTokenAmount; //project token amount for trading off
         uint256 requestedFundAmount; // The amount project team requested.
-        uint256 fullyReleasedDate; //  tokens will be fully released due to this time linearly. Must be equal or later than Tokens lock-up date
-        uint256 lockupDate; //tokens will be locked untill this specific time.
         address recipientAddr; // The receiver address that will receive the funds.
         address proposer;
         DistributionStatus status; // The distribution status.
@@ -106,7 +104,10 @@ contract DistributeFundContractV2 is
         uint256 proposalStartVotingTimestamp; //project start voting timestamp
         uint256 proposalStopVotingTimestamp;
         uint256 proposalExecuteTimestamp;
-        //project display timestamp
+        uint256 vestingStartTime;
+        uint256 vestingCliffDuration;
+        uint256 vestingStepDuration;
+        uint256 vestingSteps;
     }
     // bytes32 constant RiceTokenAddr = keccak256("rice.token.address");
     // bytes32 constant ProposalDuration =
@@ -221,7 +222,6 @@ contract DistributeFundContractV2 is
     struct SubmitProposalLocalVars {
         bytes32 ongoingProposalId;
         IGPVoting gpVotingContract;
-        FundingPoolExtension fundingpool;
         FundingPoolAdapterContract fundingPoolAdapt;
         address submittedBy;
         bytes32 proposalId;
@@ -230,6 +230,12 @@ contract DistributeFundContractV2 is
         uint256 proposalStartVotingTimestamp;
         uint256 proposalEndVotingTimestamp;
         uint256 proposalExecuteTimestamp;
+        uint256 vestingStartTime;
+        uint256 vestingcliffDuration;
+        uint256 vestingStepDuration;
+        uint256 vestingSteps;
+        uint256 requestedFundAmount;
+        uint256 tradingOffTokenAmount;
     }
 
     /**
@@ -241,8 +247,10 @@ contract DistributeFundContractV2 is
      * @param _addressArgs _addressArgs[0]:recipientAddr,_addressArgs[1]:projectTokenAddr
      * @param _uint256ArgsProposal _uint256ArgsProposal[0]:requestedFundAmount,
                                     _uint256ArgsProposal[1]:tradingOffTokenAmount,
-                                    _uint256ArgsProposal[2]:fullyReleasedDate,
-                                    _uint256ArgsProposal[3]:lockupDate
+                                    _uint256ArgsProposal[2]:vestingStartTime,
+                                    _uint256ArgsProposal[3]:vestingcliffDuration,
+                                    _uint256ArgsProposal[4]:stepDuration,
+                                    _uint256ArgsProposal[5]:steps,
      */
     // slither-disable-next-line reentrancy-benign
     function submitProposal(
@@ -258,9 +266,6 @@ contract DistributeFundContractV2 is
     {
         SubmitProposalLocalVars memory vars;
 
-        vars.fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        );
         vars.fundingPoolAdapt = FundingPoolAdapterContract(
             dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
         );
@@ -273,6 +278,10 @@ contract DistributeFundContractV2 is
                 block.timestamp < vars.fundingPoolAdapt.getFundEndTime(dao),
             "Funding::submitProposal::only can submit proposal in investing period"
         );
+        require(
+            _addressArgs.length == 2 && _uint256ArgsProposal.length == 6,
+            "Funding::submitProposal::invalid parameter number"
+        );
         vars.gpVotingContract = IGPVoting(
             dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
         );
@@ -283,21 +292,28 @@ contract DistributeFundContractV2 is
             bytes(""),
             msg.sender
         );
+        vars.requestedFundAmount = _uint256ArgsProposal[0];
+        vars.tradingOffTokenAmount = _uint256ArgsProposal[1];
+        vars.vestingStartTime = _uint256ArgsProposal[2];
+        vars.vestingcliffDuration = _uint256ArgsProposal[3];
+        vars.vestingStepDuration = _uint256ArgsProposal[4];
+        vars.vestingSteps = _uint256ArgsProposal[5];
+
         require(
-            _uint256ArgsProposal[2] >= _uint256ArgsProposal[3],
-            "DistributeFund::submitProposal::fully released date must >= lock-up date"
+            vars.vestingStartTime > 0 &&
+                vars.vestingcliffDuration > 0 &&
+                vars.vestingStepDuration > 0 &&
+                vars.vestingSteps > 0,
+            "Funding::submitProposal::vesting start time, cliff duration, step duration, steps must > 0"
         );
         require(
-            _uint256ArgsProposal[1] > 0,
-            "DistributeFund::submitProposal::invalid trading-Off Token Amount"
+            vars.requestedFundAmount > 0 && vars.tradingOffTokenAmount > 0,
+            "Funding::submitProposal::invalid trading-Off Token or trading off token Amount"
         );
-        require(
-            _uint256ArgsProposal[0] > 0,
-            "DistributeFund::submitProposal::invalid requested Fund Amount"
-        );
+
         require(
             _addressArgs[0] != address(0x0),
-            "DistributeFund::submitProposal::invalid receiver address"
+            "Funding::submitProposal::invalid receiver address"
         );
 
         vars.proposalId = TypeConver.bytesToBytes32(
@@ -374,15 +390,17 @@ contract DistributeFundContractV2 is
             _addressArgs[1],
             _uint256ArgsProposal[1],
             _uint256ArgsProposal[0],
-            _uint256ArgsProposal[2],
-            _uint256ArgsProposal[3],
             _addressArgs[0],
             _addressArgs[2],
             DistributionStatus.IN_QUEUE,
             block.timestamp,
             0,
             0,
-            0
+            0,
+            _uint256ArgsProposal[2],
+            _uint256ArgsProposal[3],
+            _uint256ArgsProposal[4],
+            _uint256ArgsProposal[5]
         );
     }
 
@@ -444,7 +462,8 @@ contract DistributeFundContractV2 is
             dao.getConfiguration(DaoHelper.PROPOSAL_DURATION);
         //make sure there is no proposal in progress during redempt duration
         require(
-            !vars.fundingpoolExt.ifInRedemptionPeriod(
+            !vars.fundingPoolAdapt.ifInRedemptionPeriod(
+                dao,
                 vars._propsalStopVotingTimestamp +
                     dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION)
             ),
@@ -516,13 +535,12 @@ contract DistributeFundContractV2 is
     struct ProcessProposalLocalVars {
         bytes32 ongoingProposalId;
         GPVotingContract votingContract;
-        StakingRiceExtension stakingrice;
         FundingPoolExtension fundingpool;
         IGPVoting.VotingState voteResult;
-        AllocationAdapterContractV2 allocAda;
         uint128 nbYes;
         uint128 nbNo;
         uint128 allVotingWeight;
+        address fundRaiseTokenAddr;
     }
 
     /**
@@ -554,6 +572,7 @@ contract DistributeFundContractV2 is
         Distribution storage distribution = distributions[address(dao)][
             proposalId
         ];
+
         require(
             block.timestamp > distribution.proposalStopVotingTimestamp,
             "DistributeFund::processProposal::proposal in voting period"
@@ -582,7 +601,9 @@ contract DistributeFundContractV2 is
         if (vars.voteResult == IGPVoting.VotingState.PASS) {
             distribution.status = DistributionStatus.IN_EXECUTE_PROGRESS;
             ongoingDistributions[address(dao)] = proposalId;
-            address token = vars.fundingpool.getFundRaisingTokenAddress();
+            vars.fundRaiseTokenAddr = vars
+                .fundingpool
+                .getFundRaisingTokenAddress();
 
             //insufficient funds failed the distribution
             if (
@@ -595,49 +616,20 @@ contract DistributeFundContractV2 is
                 distribution.status = DistributionStatus.FAILED;
             } else {
                 //process1. distribute fund to project team address
-                vars.fundingpool.distributeFunds(
-                    distribution.recipientAddr,
-                    token,
-                    distribution.requestedFundAmount
-                );
+
+                distributeFundToProductTeam(dao, proposalId);
                 //process2. distribute management fee to GP
-                vars.fundingpool.distributeFunds(
-                    dao.getAddressConfiguration(DaoHelper.GP_ADDRESS),
-                    token,
-                    (distribution.requestedFundAmount *
-                        dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) / 100
-                );
+
+                distributeManagementFeeToGP(dao, proposalId);
                 //process3. distribute protocol fee to DaoSquare
-                vars.fundingpool.distributeFunds(
-                    dao.getAddressConfiguration(DaoHelper.DAO_SQUARE_ADDRESS),
-                    token,
-                    (distribution.requestedFundAmount *
-                        dao.getConfiguration(DaoHelper.PROTOCOL_FEE)) / 100
-                );
+
+                distributeProtocolFeeToDaoSquare(dao, proposalId);
                 //process4. streaming pay for all eligible investor
-                vars.allocAda = AllocationAdapterContractV2(
-                    dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPTV2)
-                );
-                vars.allocAda.allocateProjectToken(
-                    dao,
-                    distribution.tradingOffTokenAmount,
-                    distribution.tokenAddr,
-                    distribution.proposer,
-                    distribution.lockupDate,
-                    distribution.fullyReleasedDate,
-                    proposalId
-                );
+
+                snapShotVestingInfo(dao, proposalId);
                 //process5. substract from funding pool
-                vars.fundingpool.subtractAllFromBalance(
-                    token,
-                    distribution.requestedFundAmount +
-                        (distribution.requestedFundAmount *
-                            dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) /
-                        100 +
-                        (distribution.requestedFundAmount *
-                            dao.getConfiguration(DaoHelper.PROTOCOL_FEE)) /
-                        100
-                );
+
+                subFromFundPool(dao, proposalId);
                 //process6. set  projectTeamLockedToken to 0
                 projectTeamLockedTokens[address(dao)][proposalId][
                     distribution.recipientAddr
@@ -668,26 +660,108 @@ contract DistributeFundContractV2 is
         return true;
     }
 
-    //compute project voting timestamp
-    // function computeProjectVotingTimestamp(DaoRegistry dao)
-    //     internal
-    //     returns (uint256)
-    // {
-    //     if (proposalQueue.length() > 0) {
-    //         bytes32 lastProposalId = proposalQueue.back();
-    //         // uint256 timestamp = distributions[address(dao)][lastProposalId]
-    //         //     .proposalExecuteTimestamp +
-    //         //     dao.getConfiguration(DaoHelper.PROPOSAL_INTERVAL);
+    function distributeFundToProductTeam(DaoRegistry dao, bytes32 proposalId)
+        internal
+    {
+        FundingPoolExtension fundingpoolExt = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        address fundRaiseTokenAddr = fundingpoolExt
+            .getFundRaisingTokenAddress();
+        Distribution storage distribution = distributions[address(dao)][
+            proposalId
+        ];
+        fundingpoolExt.distributeFunds(
+            distribution.recipientAddr,
+            fundRaiseTokenAddr,
+            distribution.requestedFundAmount
+        );
+    }
 
-    //         uint256 startVoteTimeStamp = distributions[address(dao)][
-    //             lastProposalId
-    //         ].proposalExecuteTimestamp;
-    //         return startVoteTimeStamp;
-    //     }
-    //     return block.timestamp;
-    //     // return
-    //     // block.timestamp + dao.getConfiguration(DaoHelper.PROPOSAL_INTERVAL);
-    // }
+    function distributeManagementFeeToGP(DaoRegistry dao, bytes32 proposalId)
+        internal
+    {
+        FundingPoolExtension fundingpoolExt = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        address fundRaiseTokenAddr = fundingpoolExt
+            .getFundRaisingTokenAddress();
+        Distribution storage distribution = distributions[address(dao)][
+            proposalId
+        ];
+        fundingpoolExt.distributeFunds(
+            dao.getAddressConfiguration(DaoHelper.GP_ADDRESS),
+            fundRaiseTokenAddr,
+            (distribution.requestedFundAmount *
+                dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) / 100
+        );
+    }
+
+    function distributeProtocolFeeToDaoSquare(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) internal {
+        FundingPoolExtension fundingpoolExt = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        address fundRaiseTokenAddr = fundingpoolExt
+            .getFundRaisingTokenAddress();
+        Distribution storage distribution = distributions[address(dao)][
+            proposalId
+        ];
+        fundingpoolExt.distributeFunds(
+            dao.getAddressConfiguration(DaoHelper.DAO_SQUARE_ADDRESS),
+            fundRaiseTokenAddr,
+            (distribution.requestedFundAmount *
+                dao.getConfiguration(DaoHelper.PROTOCOL_FEE)) / 100
+        );
+    }
+
+    function subFromFundPool(DaoRegistry dao, bytes32 proposalId) internal {
+        FundingPoolExtension fundingpoolExt = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        );
+        address fundRaiseTokenAddr = fundingpoolExt
+            .getFundRaisingTokenAddress();
+        Distribution storage distribution = distributions[address(dao)][
+            proposalId
+        ];
+
+        fundingpoolExt.subtractAllFromBalance(
+            fundRaiseTokenAddr,
+            distribution.requestedFundAmount +
+                (distribution.requestedFundAmount *
+                    dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) /
+                100 +
+                (distribution.requestedFundAmount *
+                    dao.getConfiguration(DaoHelper.PROTOCOL_FEE)) /
+                100
+        );
+    }
+
+    function snapShotVestingInfo(DaoRegistry dao, bytes32 proposalId) internal {
+        AllocationAdapterContractV2 allocAda = AllocationAdapterContractV2(
+            dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPTV2)
+        );
+        Distribution storage distribution = distributions[address(dao)][
+            proposalId
+        ];
+
+        uint256[5] memory uint256Args = [
+            distribution.tradingOffTokenAmount,
+            distribution.vestingStartTime,
+            distribution.vestingCliffDuration,
+            distribution.vestingStepDuration,
+            distribution.vestingSteps
+        ];
+        allocAda.allocateProjectToken(
+            dao,
+            distribution.tokenAddr,
+            distribution.proposer,
+            proposalId,
+            uint256Args
+        );
+    }
 
     /**
      * Public read-only functions

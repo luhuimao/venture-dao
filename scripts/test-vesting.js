@@ -4,7 +4,7 @@
  * @Author: huhuimao
  * @Date: 2022-11-10 22:02:48
  * @LastEditors: huhuimao
- * @LastEditTime: 2022-11-13 20:23:10
+ * @LastEditTime: 2022-11-14 16:23:40
  */
 // We require the Hardhat Runtime Environment explicitly here. This is optional
 // but useful for running the script in a standalone fashion through `node <script>`.
@@ -61,17 +61,17 @@ async function main() {
 
 
     const FuroVesting = await ethers.getContractFactory("FuroVesting");
-    const vesting = await FuroVesting.deploy(bentobox.address, ETH_TOKEN);
+    const vesting = await FuroVesting.deploy(bentobox.address);
     await vesting.deployed();
     console.log("vesting deployed to:", vesting.address);
 
     await bentobox.whitelistMasterContract(vesting.address, true);
 
 
-    const FuroVestingRouter = await ethers.getContractFactory("FuroVestingRouter");
-    const vestingrouter = await FuroVestingRouter.deploy(bentobox.address, vesting.address, ETH_TOKEN);
-    await vestingrouter.deployed();
-    console.log("vestingrouter deployed to:", vestingrouter.address);
+    // const FuroVestingRouter = await ethers.getContractFactory("FuroVestingRouter");
+    // const vestingrouter = await FuroVestingRouter.deploy(bentobox.address, vesting.address, ETH_TOKEN);
+    // await vestingrouter.deployed();
+    // console.log("vestingrouter deployed to:", vestingrouter.address);
 
     // console.log(toBytes32("0"));
     // await bentobox.setMasterContractApproval(owner.address, vesting.address, true, 0, "0x0000000000000000000000000000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000000000000000000000000000");

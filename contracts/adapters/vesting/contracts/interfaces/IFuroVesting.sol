@@ -3,24 +3,29 @@
 pragma solidity ^0.8.0;
 
 import "./ITasker.sol";
-import "./IERC20.sol";
+// import "./IERC20.sol";
 import "./ITokenURIFetcher.sol";
 import "./IBentoBoxMinimal.sol";
 import "../utils/Multicall.sol";
 import "../utils/BoringOwnable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@rari-capital/solmate/src/tokens/ERC721.sol";
+import "../../../../helpers/DaoHelper.sol";
 
 interface IFuroVesting {
-    function setBentoBoxApproval(
-        address user,
-        bool approved,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external payable;
+    // function setBentoBoxApproval(
+    //     address user,
+    //     bool approved,
+    //     uint8 v,
+    //     bytes32 r,
+    //     bytes32 s
+    // ) external payable;
 
-    function createVesting(VestParams calldata vestParams)
+    function createVesting(
+        DaoRegistry dao,
+        address recipientAddr,
+        bytes32 proposalId
+    )
         external
         payable
         returns (
@@ -31,6 +36,7 @@ interface IFuroVesting {
         );
 
     function withdraw(
+        DaoRegistry dao,
         uint256 vestId
         // bytes memory taskData,
         // bool toBentoBox
@@ -43,7 +49,7 @@ interface IFuroVesting {
     function updateOwner(uint256 vestId, address newOwner) external;
 
     struct VestParams {
-        IERC20 token;
+        address token;
         bytes32 proposalId;
         address recipient;
         uint32 start;
@@ -59,7 +65,7 @@ interface IFuroVesting {
         bytes32 proposalId;
         address owner;
         address recipient;
-        IERC20 token;
+        address token;
         uint32 start;
         uint32 cliffDuration;
         uint32 stepDuration;
@@ -71,7 +77,7 @@ interface IFuroVesting {
 
     event CreateVesting(
         uint256 indexed vestId,
-        IERC20 token,
+        address token,
         address indexed owner,
         address indexed recipient,
         uint32 start,
@@ -86,7 +92,7 @@ interface IFuroVesting {
 
     event Withdraw(
         uint256 indexed vestId,
-        IERC20 indexed token,
+        address indexed token,
         uint256 indexed amount,
         bool toBentoBox
     );
@@ -95,7 +101,7 @@ interface IFuroVesting {
         uint256 indexed vestId,
         uint256 indexed ownerAmount,
         uint256 indexed recipientAmount,
-        IERC20 token,
+        address token,
         bool toBentoBox
     );
 

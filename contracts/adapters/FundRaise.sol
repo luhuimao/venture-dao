@@ -7,7 +7,7 @@ import "../guards/AdapterGuard.sol";
 import "../guards/MemberGuard.sol";
 import "./modifiers/Reimbursable.sol";
 import "./interfaces/IGPVoting.sol";
-import "./AllocationAdapterV2.sol";
+// import "./AllocationAdapterV2.sol";
 import "./interfaces/IFundRaise.sol";
 import "./voting/GPVoting.sol";
 import "../helpers/FairShareHelper.sol";
@@ -131,7 +131,7 @@ contract FundRaiseAdapterContract is
         vars.fundRaiseMaxAmount = _uint256ArgsProposal[1];
         vars.lpMinDepositAmount = _uint256ArgsProposal[2];
         vars.lpMaxDepositAmount = _uint256ArgsProposal[3];
-        
+
         vars.fundRaiseStartTime = _uint256ArgsTimeInfo[0];
         vars.fundRaiseEndTime = _uint256ArgsTimeInfo[1];
         vars.fundTerm = _uint256ArgsTimeInfo[2];
@@ -243,7 +243,7 @@ contract FundRaiseAdapterContract is
         StakingRiceExtension stakingrice;
         FundingPoolExtension fundingpool;
         IGPVoting.VotingState voteResult;
-        AllocationAdapterContractV2 allocAda;
+        // AllocationAdapterContractV2 allocAda;
         uint128 nbYes;
         uint128 nbNo;
         uint128 allVotingWeight;

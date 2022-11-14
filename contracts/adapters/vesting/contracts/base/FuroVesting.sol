@@ -3,6 +3,8 @@
 pragma solidity ^0.8.0;
 
 import "../interfaces/IFuroVesting.sol";
+import "../../../AllocationAdapterV2.sol";
+import "../../../DistributeFundV2.sol";
 import "hardhat/console.sol";
 
 // Use the FuroStreamVesting to create Vesting and do not create vesting directly.
@@ -13,7 +15,7 @@ contract FuroVesting is
     Multicall,
     BoringOwnable
 {
-    IBentoBoxMinimal public immutable bentoBox;
+    // IBentoBoxMinimal public immutable bentoBox;
     address public immutable wETH;
 
     address public tokenURIFetcher;
@@ -30,11 +32,13 @@ contract FuroVesting is
     error NotVestReceiver();
     error InvalidStepSetting();
 
-    constructor(IBentoBoxMinimal _bentoBox) {
-        bentoBox = _bentoBox;
+
+    // constructor(IBentoBoxMinimal _bentoBox) {
+    constructor() {
+        // bentoBox = _bentoBox;
         wETH = address(0x0);
         vestIds = 1;
-        _bentoBox.registerProtocol();
+        // _bentoBox.registerProtocol();
     }
 
     function setTokenURIFetcher(address _fetcher) external onlyOwner {
@@ -45,31 +49,46 @@ contract FuroVesting is
     //     return ITokenURIFetcher(tokenURIFetcher).fetchTokenURIData(id);
     // }
 
-    function setBentoBoxApproval(
-        address user,
-        bool approved,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external payable override {
-        bentoBox.setMasterContractApproval(
-            user,
-            address(this),
-            approved,
-            v,
-            r,
-            s
-        );
-    }
+    // function setBentoBoxApproval(
+    //     address user,
+    //     bool approved,
+    //     uint8 v,
+    //     bytes32 r,
+    //     bytes32 s
+    // ) external payable override {
+    //             IBentoBoxMinimal bentoBox=IBentoBoxMinimal(dao.getAddressConfiguration(DaoHelper.BEN_TO_BOX));
+
+    //     bentoBox.setMasterContractApproval(
+    //         user,
+    //         address(this),
+    //         approved,
+    //         v,
+    //         r,
+    //         s
+    //     );
+    // }
 
     struct CreateVestLocalVars {
         uint256 depositedShares;
         uint256 vestId;
         uint128 stepShares;
         uint128 cliffShares;
+        uint128 stepPercentage;
+         AllocationAdapterContractV2 allocAdapter;
+        DistributeFundContractV2 distributeFundAdapter;
+          uint256 duration;
+        uint256 ratePerSecond;
+        uint256 depositAmount;
+        address tokenAddress;
+        uint256 vestingStartTime;
+        uint256 vestingCliffDuration;
+        uint256 vestingStepDuration;
+        uint256 vestingSteps;
+        address allocAdaptAddr;
     }
 
-    function createVesting(VestParams calldata vestParams)
+    function createVesting(DaoRegistry dao,
+       address recipientAddr, bytes32 proposalId)
         external
         payable
         override
@@ -80,10 +99,49 @@ contract FuroVesting is
             uint128 cliffShares
         )
     {
-        if (vestParams.start < block.timestamp) revert InvalidStart();
-        if (vestParams.stepPercentage > PERCENTAGE_PRECISION)
+         CreateVestLocalVars memory vars;
+        vars.allocAdaptAddr = dao.getAdapterAddress(
+            DaoHelper.ALLOCATION_ADAPTV2
+        );
+        vars.allocAdapter = AllocationAdapterContractV2(vars.allocAdaptAddr);
+        require(
+            vars.allocAdapter.ifEligible(dao,recipientAddr, proposalId),
+            "Sablier::createVesting::Recipient not eligible of this proposalId"
+        );
+        require(
+            !vars.allocAdapter.isStreamCreated(dao, proposalId,recipientAddr),
+            "Sablier::createVesting::Already created"
+        );
+
+         vars.distributeFundAdapter = DistributeFundContractV2(
+            dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPTV2)
+        );
+        (vars.depositAmount, ) = vars.allocAdapter.vestingInfos(
+            address(dao),
+            proposalId,
+            recipientAddr
+        );
+         (
+            vars.tokenAddress,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            vars.vestingStartTime,
+            vars.vestingCliffDuration,
+            vars.vestingStepDuration,
+            vars.vestingSteps
+        ) = vars.distributeFundAdapter.distributions(address(dao), proposalId);
+        // if (vestParams.start < block.timestamp) revert InvalidStart();
+        vars.stepPercentage=uint128(PERCENTAGE_PRECISION / vars.vestingSteps);
+        if (vars.stepPercentage > PERCENTAGE_PRECISION)
             revert InvalidStepSetting();
-        if (vestParams.stepDuration == 0 || vestParams.steps == 0)
+        if (vars.vestingStepDuration == 0 || vars.vestingSteps == 0)
             revert InvalidStepSetting();
         // depositedShares = _depositToken(
         //     address(vestParams.token),
@@ -92,38 +150,37 @@ contract FuroVesting is
         //     vestParams.amount,
         //     vestParams.fromBentoBox
         // );
-        CreateVestLocalVars memory vars;
 
-        vars.depositedShares = _depositToken(
-            address(vestParams.token),
+        vars.depositedShares = _depositToken(dao,
+           vars.tokenAddress,
             msg.sender,
             address(this),
-            vestParams.amount,
+            vars.depositAmount,
             false
         );
         vars.stepShares = uint128(
-            (vestParams.stepPercentage * vars.depositedShares) /
+            (vars.stepPercentage * vars.depositedShares) /
                 PERCENTAGE_PRECISION
         );
         vars.cliffShares = uint128(
-            vars.depositedShares - (vars.stepShares * vestParams.steps)
+            vars.depositedShares - (vars.stepShares * vars.vestingSteps)
         );
 
         vars.vestId = vestIds++;
         // _mint(vestParams.recipient, vestId);
 
         vests[vars.vestId] = Vest({
-            proposalId: vestParams.proposalId,
+            proposalId: proposalId,
             owner: msg.sender,
-            recipient: vestParams.recipient,
+            recipient: recipientAddr,
             // token: address(vestParams.token) == address(0)
             //     ? IERC20(wETH)
             //     : vestParams.token,
-            token: vestParams.token,
-            start: vestParams.start,
-            cliffDuration: vestParams.cliffDuration,
-            stepDuration: vestParams.stepDuration,
-            steps: vestParams.steps,
+            token: vars.tokenAddress,
+            start: uint32(vars.vestingStartTime),
+            cliffDuration: uint32(vars.vestingCliffDuration),
+            stepDuration: uint32(vars.vestingStepDuration),
+            steps: uint32(vars.vestingSteps),
             cliffShares: vars.cliffShares,
             stepShares: vars.stepShares,
             claimed: 0
@@ -131,21 +188,22 @@ contract FuroVesting is
 
         emit CreateVesting(
            vars.vestId,
-            vestParams.token,
+            vars.tokenAddress,
             msg.sender,
-            vestParams.recipient,
-            vestParams.start,
-            vestParams.cliffDuration,
-            vestParams.stepDuration,
-            vestParams.steps,
+            recipientAddr,
+           uint32(vars.vestingStartTime),
+           uint32(vars.vestingCliffDuration),
+            uint32(vars.vestingStepDuration),
+          uint32(vars.vestingSteps),
             // cliffShares,
             // stepShares,
             // vestParams.fromBentoBox,
-            vestParams.proposalId
+            proposalId
         );
     }
 
     function withdraw(
+        DaoRegistry dao,
         uint256 vestId
         // bytes calldata taskData,
         // bool toBentoBox
@@ -160,6 +218,7 @@ contract FuroVesting is
         vest.claimed += uint128(canClaim);
 
         _transferToken(
+            dao,
             address(vest.token),
             address(this),
             recipient,
@@ -247,12 +306,14 @@ contract FuroVesting is
     }
 
     function _depositToken(
+        DaoRegistry dao,
         address token,
         address from,
         address to,
         uint256 amount,
         bool fromBentoBox
     ) internal returns (uint256 depositedShares) {
+        IBentoBoxMinimal bentoBox=IBentoBoxMinimal(dao.getAddressConfiguration(DaoHelper.BEN_TO_BOX));
         if (fromBentoBox) {
             depositedShares = bentoBox.toShare(token, amount, false);
             bentoBox.transfer(token, from, to, depositedShares);
@@ -264,12 +325,14 @@ contract FuroVesting is
     }
 
     function _transferToken(
+        DaoRegistry dao,
         address token,
         address from,
         address to,
         uint256 shares,
         bool toBentoBox
     ) internal {
+                IBentoBoxMinimal bentoBox=IBentoBoxMinimal(dao.getAddressConfiguration(DaoHelper.BEN_TO_BOX));
         if (toBentoBox) {
             bentoBox.transfer(token, from, to, shares);
         } else {

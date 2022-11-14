@@ -8,7 +8,7 @@ import "../guards/AdapterGuard.sol";
 import "../extensions/fundingpool/FundingPool.sol";
 // import "../extensions/ricestaking/RiceStaking.sol";
 import "../extensions/gpdao/GPDao.sol";
-import "./streaming_payment/interfaces/ISablier.sol";
+// import "./vesting/contracts/base/FuroVesting.sol";
 import "./FundingPoolAdapter.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -44,7 +44,7 @@ contract AllocationAdapterContractV2 is AdapterGuard {
     /*
      * STRUCTURES
      */
-    struct StreamInfo {
+    struct VestingInfo {
         uint256 tokenAmount;
         bool created;
     }
@@ -57,8 +57,8 @@ contract AllocationAdapterContractV2 is AdapterGuard {
     // bytes32 constant RiceStakeAllocationRadio =
     //     keccak256("allocation.riceStakeAllocationRadio");
 
-    mapping(address => mapping(bytes32 => mapping(address => StreamInfo)))
-        public streamInfos;
+    mapping(address => mapping(bytes32 => mapping(address => VestingInfo)))
+        public vestingInfos;
 
     /*
      *EVENTS
@@ -152,20 +152,33 @@ contract AllocationAdapterContractV2 is AdapterGuard {
 
     struct allocateProjectTokenLocalVars {
         // ISablier streamingPaymentContract;
+        // IFuroVesting vestingContract;
         FundingPoolExtension fundingpool;
         uint256 totalReward;
         uint256 oldAllowance;
         uint256 newAllowance;
+        uint8 i;
+        uint256 fundingRewards;
+        uint256 proposerBonus;
+        uint256 tokenAmount;
+        uint256 vestingStartTIme;
+        uint256 vestingCliffDuration;
+        uint256 vestingStepDuration;
+        uint256 vestingSteps;
     }
+
+    // uint256Args[0]: tokenAmount
+    // uint256Args[0]: vestingStartTIme
+    // uint256Args[0]: vestingCliffDuration
+    // uint256Args[0]: vestingStepDuration
+    // uint256Args[0]: vestingSteps
 
     function allocateProjectToken(
         DaoRegistry dao,
-        uint256 tokenAmount,
         address tokenAddress,
         address proposerAddr,
-        uint256 startTime,
-        uint256 stopTime,
-        bytes32 proposalId
+        bytes32 proposalId,
+        uint256[5] memory uint256Args
     ) external {
         require(
             msg.sender ==
@@ -176,8 +189,17 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         );
         allocateProjectTokenLocalVars memory vars;
 
+        vars.tokenAmount = uint256Args[0];
+        vars.vestingStartTIme = uint256Args[1];
+        vars.vestingCliffDuration = uint256Args[2];
+        vars.vestingStepDuration = uint256Args[3];
+        vars.vestingSteps = uint256Args[4];
+
         // vars.streamingPaymentContract = ISablier(
         //     dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT)
+        // );
+        // vars.vestingContract = IFuroVesting(
+        //     dao.getAdapterAddress(DaoHelper.VESTWING)
         // );
         vars.fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
@@ -187,13 +209,13 @@ contract AllocationAdapterContractV2 is AdapterGuard {
             IERC20(tokenAddress).allowance(
                 dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPTV2),
                 address(this)
-            ) >= tokenAmount,
+            ) >= vars.tokenAmount,
             "AllocationAdapter::allocateProjectToken::insufficient allowance"
         );
         IERC20(tokenAddress).transferFrom(
             dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPTV2),
             address(this),
-            tokenAmount
+            vars.tokenAmount
         );
 
         // approve from Allocation adapter contract to streaming payment contract
@@ -201,7 +223,7 @@ contract AllocationAdapterContractV2 is AdapterGuard {
             address(this),
             dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT)
         );
-        vars.newAllowance = vars.oldAllowance + tokenAmount;
+        vars.newAllowance = vars.oldAllowance + vars.tokenAmount;
         IERC20(tokenAddress).approve(
             dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT),
             vars.newAllowance
@@ -210,14 +232,14 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         vars.totalReward = 0;
 
         if (allInvestors.length > 0) {
-            for (uint8 i = 0; i < allInvestors.length; i++) {
-                uint256 fundingRewards = getFundingRewards(
+            for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
+                vars.fundingRewards = getFundingRewards(
                     dao,
-                    allInvestors[i],
-                    tokenAmount
+                    allInvestors[vars.i],
+                    vars.tokenAmount
                 );
                 //bug fixed: fillter fundingRewards > 0 ;20220614
-                if (fundingRewards > 0) {
+                if (vars.fundingRewards > 0) {
                     // vars.streamingPaymentContract.createStream(
                     //     allInvestors[i],
                     //     fundingRewards,
@@ -226,21 +248,21 @@ contract AllocationAdapterContractV2 is AdapterGuard {
                     //     stopTime,
                     //     proposalId
                     // );
-                    streamInfos[address(dao)][proposalId][
-                        allInvestors[i]
-                    ] = StreamInfo(fundingRewards, false);
-                    vars.totalReward += fundingRewards;
+                    vestingInfos[address(dao)][proposalId][
+                        allInvestors[vars.i]
+                    ] = VestingInfo(vars.fundingRewards, false);
+                    vars.totalReward += vars.fundingRewards;
                 }
             }
         }
 
         if (proposerAddr != address(0x0)) {
-            uint256 proposerBonus = getProposerBonus(
+            vars.proposerBonus = getProposerBonus(
                 dao,
                 proposerAddr,
-                tokenAmount
+                vars.tokenAmount
             );
-            if (proposerBonus > 0) {
+            if (vars.proposerBonus > 0) {
                 // vars.streamingPaymentContract.createStream(
                 //     proposerAddr,
                 //     proposerBonus,
@@ -249,18 +271,18 @@ contract AllocationAdapterContractV2 is AdapterGuard {
                 //     stopTime,
                 //     proposalId
                 // );
-                streamInfos[address(dao)][proposalId][
+                vestingInfos[address(dao)][proposalId][
                     proposerAddr
-                ] = StreamInfo(
-                    streamInfos[address(dao)][proposalId][proposerAddr]
-                        .tokenAmount + proposerBonus,
+                ] = VestingInfo(
+                    vestingInfos[address(dao)][proposalId][proposerAddr]
+                        .tokenAmount + vars.proposerBonus,
                     false
                 );
-                vars.totalReward += proposerBonus;
+                vars.totalReward += vars.proposerBonus;
             }
         }
         require(
-            vars.totalReward <= tokenAmount,
+            vars.totalReward <= vars.tokenAmount,
             "AllocationAdapter::allocateProjectToken::distribute token amount exceeds tranding off amount"
         );
         emit AllocateToken(proposalId, proposerAddr, allInvestors);
@@ -272,11 +294,10 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         address recipient
     ) external returns (bool) {
         require(
-            msg.sender ==
-                dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT),
+            msg.sender == dao.getAdapterAddress(DaoHelper.VESTWING),
             "AllocationAdapter:streamCreated:Access deny"
         );
-        streamInfos[address(dao)][proposalId][recipient].created = true;
+        vestingInfos[address(dao)][proposalId][recipient].created = true;
     }
 
     function isStreamCreated(
@@ -284,7 +305,7 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         bytes32 proposalId,
         address recepient
     ) external view returns (bool) {
-        return streamInfos[address(dao)][proposalId][recepient].created;
+        return vestingInfos[address(dao)][proposalId][recepient].created;
     }
 
     function ifEligible(
@@ -292,7 +313,7 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         address recipient,
         bytes32 proposalId
     ) external view returns (bool) {
-        if (streamInfos[address(dao)][proposalId][recipient].tokenAmount > 0)
+        if (vestingInfos[address(dao)][proposalId][recipient].tokenAmount > 0)
             return true;
         else return false;
     }

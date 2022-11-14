@@ -620,7 +620,7 @@ export const contracts: Array<ContractConfig> = [
     name: "BentoBoxV1",
     alias: "bentoBoxV1",
     path: "../../contracts/adapters/BentoBoxV1",
-    enabled: false,
+    enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -634,7 +634,7 @@ export const contracts: Array<ContractConfig> = [
     name: "FuroVesting",
     alias: "furoVesting",
     path: "../../contracts/adapters/FuroVesting",
-    enabled: false,
+    enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {

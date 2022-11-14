@@ -172,7 +172,6 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         uint256 minDepositAmount = dao.getConfiguration(
             DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP
         );
-        console.log();
         if (minDepositAmount > 0) {
             require(
                 amount >= minDepositAmount,

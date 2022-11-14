@@ -301,51 +301,51 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         // return getInvestorFlag(addr, InvestorFlag.EXISTS);
     }
 
-    function ifInRedemptionPeriod(uint256 timeStamp)
-        public
-        view
-        returns (bool)
-    {
-        uint256 fundStartTime = dao.getConfiguration(DaoHelper.FUND_START_TIME);
-        uint256 fundEndTime = dao.getConfiguration(DaoHelper.FUND_END_TIME);
-        uint256 redemptionPeriod = dao.getConfiguration(
-            DaoHelper.FUND_RAISING_REDEMPTION_PERIOD
-        );
-        uint256 redemptionDuration = dao.getConfiguration(
-            DaoHelper.FUND_RAISING_REDEMPTION_DURATION
-        );
-        uint256 fundDuration = fundEndTime - fundStartTime;
-        if (
-            redemptionPeriod <= 0 ||
-            redemptionDuration <= 0 ||
-            fundDuration <= 0
-        ) {
-            return false;
-        }
+    // function ifInRedemptionPeriod(uint256 timeStamp)
+    //     public
+    //     view
+    //     returns (bool)
+    // {
+    //     uint256 fundStartTime = dao.getConfiguration(DaoHelper.FUND_START_TIME);
+    //     uint256 fundEndTime = dao.getConfiguration(DaoHelper.FUND_END_TIME);
+    //     uint256 redemptionPeriod = dao.getConfiguration(
+    //         DaoHelper.FUND_RAISING_REDEMPTION_PERIOD
+    //     );
+    //     uint256 redemptionDuration = dao.getConfiguration(
+    //         DaoHelper.FUND_RAISING_REDEMPTION_DURATION
+    //     );
+    //     uint256 fundDuration = fundEndTime - fundStartTime;
+    //     if (
+    //         redemptionPeriod <= 0 ||
+    //         redemptionDuration <= 0 ||
+    //         fundDuration <= 0
+    //     ) {
+    //         return false;
+    //     }
 
-        uint256 steps;
-        steps = fundDuration / redemptionPeriod;
+    //     uint256 steps;
+    //     steps = fundDuration / redemptionPeriod;
 
-        uint256 redemptionEndTime;
-        uint256 redemptionStartTime;
-        uint256 i = 0;
-        while (i <= steps) {
-            redemptionEndTime = redemptionEndTime == 0
-                ? fundStartTime + redemptionPeriod
-                : redemptionEndTime + redemptionPeriod;
-            redemptionStartTime = redemptionEndTime - redemptionDuration;
-            if (
-                timeStamp > redemptionStartTime &&
-                timeStamp < redemptionEndTime &&
-                timeStamp > fundStartTime &&
-                timeStamp < fundEndTime
-            ) {
-                return true;
-            }
-            i += 1;
-        }
-        return false;
-    }
+    //     uint256 redemptionEndTime;
+    //     uint256 redemptionStartTime;
+    //     uint256 i = 0;
+    //     while (i <= steps) {
+    //         redemptionEndTime = redemptionEndTime == 0
+    //             ? fundStartTime + redemptionPeriod
+    //             : redemptionEndTime + redemptionPeriod;
+    //         redemptionStartTime = redemptionEndTime - redemptionDuration;
+    //         if (
+    //             timeStamp > redemptionStartTime &&
+    //             timeStamp < redemptionEndTime &&
+    //             timeStamp > fundStartTime &&
+    //             timeStamp < fundEndTime
+    //         ) {
+    //             return true;
+    //         }
+    //         i += 1;
+    //     }
+    //     return false;
+    // }
 
     /**
      * Internal bookkeeping
