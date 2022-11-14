@@ -98,9 +98,9 @@ describe("Adapter - FundRaise", () => {
 
         const _uint256ArgsProposal = [
             hre.ethers.utils.parseEther("10000"),
-            0,
+            hre.ethers.utils.parseEther("10000000"),
             hre.ethers.utils.parseEther("100"),
-            0
+            hre.ethers.utils.parseEther("10000"),
         ];
         let currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
@@ -168,7 +168,14 @@ describe("Adapter - FundRaise", () => {
 
         await fundRaiseAdapter.processProposal(dao.address, newProposalId);
         const newFundEndTime = await dao.getConfiguration(sha3("FUND_END_TIME"));
+        let maxAmount = await this.fundingpoolAdapter.getFundRaisingMaxAmount(dao.address);
+        console.log(`
+        fund end time ${newFundEndTime}
+        fund raise max amount ${hre.ethers.utils.formatEther(maxAmount.toString())}
+        `);
         console.log(newFundEndTime);
+
+
 
         await depositToFundingPool(this.fundingpoolAdapter, dao, this.owner, proposalInfo.fundRaiseTarget, this.testtoken1);
     })

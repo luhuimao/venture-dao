@@ -96,6 +96,10 @@ contract FundRaiseAdapterContract is
         uint256 redemptPeriod;
         uint256 redemptDuration;
         uint256 returnDuration;
+        uint256 proposerRewardRatio;
+        uint256 managementFeeRatio;
+        uint256 redepmtFeeRatio;
+        uint256 protocolFeeRatio;
     }
 
     function submitProposal(
@@ -127,6 +131,7 @@ contract FundRaiseAdapterContract is
         vars.fundRaiseMaxAmount = _uint256ArgsProposal[1];
         vars.lpMinDepositAmount = _uint256ArgsProposal[2];
         vars.lpMaxDepositAmount = _uint256ArgsProposal[3];
+        
         vars.fundRaiseStartTime = _uint256ArgsTimeInfo[0];
         vars.fundRaiseEndTime = _uint256ArgsTimeInfo[1];
         vars.fundTerm = _uint256ArgsTimeInfo[2];
@@ -134,22 +139,28 @@ contract FundRaiseAdapterContract is
         vars.redemptDuration = _uint256ArgsTimeInfo[4];
         vars.returnDuration = _uint256ArgsTimeInfo[5];
 
+        vars.proposerRewardRatio = _uint256ArgsFeeInfo[0];
+        vars.managementFeeRatio = _uint256ArgsFeeInfo[1];
+        vars.redepmtFeeRatio = _uint256ArgsFeeInfo[2];
+        vars.protocolFeeRatio = _uint256ArgsFeeInfo[3];
         require(
             vars.fundRaiseTarget > 0 && //fundRaiseTarget must > 0
-                vars.fundRaiseEndTime > 0 && //fundRaiseEndTime must > 0
+                vars.fundRaiseMaxAmount > vars.fundRaiseTarget && // max amount > target
+                vars.lpMinDepositAmount > 0 && // minimal deposit amount > 0
+                vars.lpMaxDepositAmount > vars.lpMinDepositAmount && // max deposit amount > min deposit amount
                 vars.fundRaiseStartTime > 0 && //fundRaiseStartTime must > 0
                 vars.fundRaiseEndTime > vars.fundRaiseStartTime && //fundRaiseEndTime must > fundRaiseStartTime
                 vars.fundTerm > 0 && //fundTerm must > 0
                 vars.redemptPeriod > 0 && //redemptPeriod must > 0
                 vars.redemptDuration > 0 && //redemptDuration must > 0
-                _uint256ArgsFeeInfo[0] < 100 &&
-                _uint256ArgsFeeInfo[0] >= 0 &&
-                _uint256ArgsFeeInfo[1] < 100 &&
-                _uint256ArgsFeeInfo[1] >= 0 &&
-                _uint256ArgsFeeInfo[2] < 100 &&
-                _uint256ArgsFeeInfo[2] >= 0 &&
-                _uint256ArgsFeeInfo[3] < 100 &&
-                _uint256ArgsFeeInfo[3] >= 0,
+                vars.proposerRewardRatio < 100 &&
+                vars.proposerRewardRatio >= 0 &&
+                vars.managementFeeRatio < 100 &&
+                vars.managementFeeRatio >= 0 &&
+                vars.redepmtFeeRatio < 100 &&
+                vars.redepmtFeeRatio >= 0 &&
+                vars.protocolFeeRatio < 100 &&
+                vars.protocolFeeRatio >= 0,
             "FundRaise::submitProposal::invalid parameter"
         );
         vars.gpVotingContract = IGPVoting(

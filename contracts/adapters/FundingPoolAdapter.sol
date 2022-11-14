@@ -202,10 +202,7 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         fundingpool.addToBalance(msg.sender, amount);
     }
 
-    function processFundRaise(DaoRegistry dao)
-        public
-        returns (bool)
-    {
+    function processFundRaise(DaoRegistry dao) public returns (bool) {
         uint256 fundRaiseTarget = dao.getConfiguration(
             DaoHelper.FUND_RAISING_TARGET
         );
@@ -285,6 +282,17 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         return
             dao.getConfiguration(
                 DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP
+            );
+    }
+
+    function getMaxInvestmentForLP(DaoRegistry dao)
+        external
+        view
+        returns (uint256)
+    {
+        return
+            dao.getConfiguration(
+                DaoHelper.FUND_RAISING_MAX_INVESTMENT_AMOUNT_OF_LP
             );
     }
 

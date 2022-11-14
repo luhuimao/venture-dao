@@ -175,6 +175,20 @@ describe("Adapter - FundingPool", () => {
         await expectRevert(depositToFundingPool(fundingpoolAdapter, dao, this.owner, hre.ethers.utils.parseEther("100"), testtoken1), "revert");
 
     });
+
+    it("should be not allow investor to deposit funds less than max investment amount for lp", async () => {
+        const fundingpoolAdapter = this.adapters.fundingpoolAdapter.instance;
+        const dao = this.dao;
+        const testtoken1 = this.testContracts.testToken1.instance;
+        const testtoken2 = this.testContracts.testToken2.instance;
+        const distributeFundAdapter = this.adapters.distributeFundAdapterv2.instance;
+        const fundingPoolExt = this.extensions.fundingpoolExt.functions;
+
+        const maxInvestmentAmountForLP = await fundingpoolAdapter.getMaxInvestmentForLP(dao.address);
+        console.log(`max Investment Amount For LP: ${hre.ethers.utils.formatEther(maxInvestmentAmountForLP.toString())}`);
+        await expectRevert(depositToFundingPool(fundingpoolAdapter, dao, this.owner, hre.ethers.utils.parseEther("1000000"), testtoken1), "revert");
+
+    });
 });
 
 
