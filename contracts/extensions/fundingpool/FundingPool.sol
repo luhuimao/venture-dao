@@ -141,7 +141,7 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
     uint256 public rewardPerTokenStored;
     // uint256 public lastManagementFeeChargedTime;
     // uint256 public chargedManagementFee;
-    DaoHelper.FundRaiseState public fundRaisingState;
+    // DaoHelper.FundRaiseState public fundRaisingState;
     DaoRegistry public dao;
 
     address[] public tokens;
@@ -222,7 +222,7 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         require(!initialized, "foundingpool already initialized");
         require(_dao.isMember(creator), "foundingpool::not member");
         dao = _dao;
-        fundRaisingState = DaoHelper.FundRaiseState.IN_PROGRESS;
+        // fundRaisingState = DaoHelper.FundRaiseState.IN_PROGRESS;
         votingWeightMultiplier = 1;
         votingWeightAddend = 0;
         votingWeightRadix = 2;
@@ -322,29 +322,10 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         ) {
             return false;
         }
-        // DaoHelper.RedemptionType redemptionT = DaoHelper.RedemptionType(
-        //     dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION)
-        // );
+
         uint256 steps;
-        // uint256 redemption;
         steps = fundDuration / redemptionPeriod;
 
-        // if (redemptionT == DaoHelper.RedemptionType.WEEKLY) {
-        //     steps = fundDuration / DaoHelper.ONE_WEEK;
-        //     redemption = DaoHelper.ONE_WEEK;
-        // }
-        // if (redemptionT == DaoHelper.RedemptionType.BI_WEEKLY) {
-        //     steps = fundDuration / DaoHelper.TWO_WEEK;
-        //     redemption = DaoHelper.TWO_WEEK;
-        // }
-        // if (redemptionT == DaoHelper.RedemptionType.MONTHLY) {
-        //     steps = fundDuration / DaoHelper.ONE_MONTH;
-        //     redemption = DaoHelper.ONE_MONTH;
-        // }
-        // if (redemptionT == DaoHelper.RedemptionType.QUARTERLY) {
-        //     steps = fundDuration / DaoHelper.THREE_MONTH;
-        //     redemption = DaoHelper.THREE_MONTH;
-        // }
         uint256 redemptionEndTime;
         uint256 redemptionStartTime;
         uint256 i = 0;
@@ -378,10 +359,10 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
     }
 
     function processFundRaising() external nonReentrant returns (bool) {
-        require(
-            fundRaisingState == DaoHelper.FundRaiseState.IN_PROGRESS,
-            "FundingPoolExtension::processFundRaising::prcessed already"
-        );
+        // require(
+        //     fundRaisingState == DaoHelper.FundRaiseState.IN_PROGRESS,
+        //     "FundingPoolExtension::processFundRaising::prcessed already"
+        // );
         require(
             dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN) <
                 block.timestamp &&
@@ -392,7 +373,7 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         if (
             totalSupply() < dao.getConfiguration(DaoHelper.FUND_RAISING_TARGET)
         ) {
-            fundRaisingState = DaoHelper.FundRaiseState.FAILED;
+            // fundRaisingState = DaoHelper.FundRaiseState.FAILED;
             return false;
         }
         // address fundTokenAddr = getFundRaisingTokenAddress();
@@ -407,7 +388,7 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         //     protocolFee
         // );
 
-        fundRaisingState = DaoHelper.FundRaiseState.DONE;
+        // fundRaisingState = DaoHelper.FundRaiseState.DONE;
         return true;
     }
 
@@ -418,30 +399,29 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
      */
     function addToBalance(address depositer, uint256 amount)
         public
-        nonReentrant
         hasExtensionAccess(AclFlag.ADD_TO_BALANCE)
     {
-        require(
-            dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN) <
-                block.timestamp &&
-                dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) >
-                block.timestamp,
-            "FundingPool::Deposit::not in fundraise window"
-        );
-        require(
-            amount > 0 &&
-                amount >=
-                dao.getConfiguration(
-                    DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP
-                ),
-            "FundingPool::Deposit::invalid amount"
-        );
+        // require(
+        //     dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN) <
+        //         block.timestamp &&
+        //         dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) >
+        //         block.timestamp,
+        //     "FundingPool::Deposit::not in fundraise window"
+        // );
+        // require(
+        //     amount > 0 &&
+        //         amount >=
+        //         dao.getConfiguration(
+        //             DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP
+        //         ),
+        //     "FundingPool::Deposit::invalid amount"
+        // );
 
-        require(
-            totalSupply() + amount <
-                dao.getConfiguration(DaoHelper.FUND_RAISING_MAX),
-            "FundingPool::Deposit::Fundraise max amount reach"
-        );
+        // require(
+        //     totalSupply() + amount <
+        //         dao.getConfiguration(DaoHelper.FUND_RAISING_MAX),
+        //     "FundingPool::Deposit::Fundraise max amount reach"
+        // );
         address fundTokenAddr = getFundRaisingTokenAddress();
         _newInvestor(depositer);
         IERC20 erc20 = IERC20(fundTokenAddr);
@@ -469,57 +449,55 @@ contract FundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
 
     function withdraw(address recipientAddr, uint256 amount)
         external
-        nonReentrant
         hasExtensionAccess(AclFlag.WITHDRAW)
     {
-        require(
-            fundRaisingState == DaoHelper.FundRaiseState.FAILED ||
-                (fundRaisingState == DaoHelper.FundRaiseState.DONE &&
-                    ifInRedemptionPeriod(block.timestamp)) ||
-                (fundRaisingState == DaoHelper.FundRaiseState.DONE &&
-                    block.timestamp >
-                    dao.getConfiguration(DaoHelper.FUND_END_TIME)),
-            "FundingPool::Withdraw::Cant withdraw at this time"
-        );
+        // require(
+        //     fundRaisingState == DaoHelper.FundRaiseState.FAILED ||
+        //         (fundRaisingState == DaoHelper.FundRaiseState.DONE &&
+        //             ifInRedemptionPeriod(block.timestamp)) ||
+        //         (fundRaisingState == DaoHelper.FundRaiseState.DONE &&
+        //             block.timestamp >
+        //             dao.getConfiguration(DaoHelper.FUND_END_TIME)),
+        //     "FundingPool::Withdraw::Cant withdraw at this time"
+        // );
         address fundTokenAddr = getFundRaisingTokenAddress();
         uint256 actualWithdrawAmount = amount;
         if (balanceOf(recipientAddr) < amount) {
             actualWithdrawAmount = balanceOf(recipientAddr);
         }
 
-        uint256 redemptionFee = 0;
-        if (
-            fundRaisingState == DaoHelper.FundRaiseState.DONE &&
-            ifInRedemptionPeriod(block.timestamp)
-        ) {
-            //distribute redemption fee to GP
-            redemptionFee =
-                (dao.getConfiguration(DaoHelper.REDEMPTION_FEE) *
-                    actualWithdrawAmount) /
-                1000;
-            IERC20(fundTokenAddr).safeTransfer(
-                address(dao.getAddressConfiguration(DaoHelper.GP_ADDRESS)),
-                redemptionFee
-            );
-            emit RedeptionFeeCharged(
-                block.timestamp,
-                recipientAddr,
-                redemptionFee
-            );
-        }
+        // uint256 redemptionFee = 0;
+        // if (
+        //     // fundRaisingState == DaoHelper.FundRaiseState.DONE &&
+        //     ifInRedemptionPeriod(block.timestamp)
+        // ) {
+        //     //distribute redemption fee to GP
+        //     redemptionFee =
+        //         (dao.getConfiguration(DaoHelper.REDEMPTION_FEE) *
+        //             actualWithdrawAmount) /
+        //         1000;
+        //     if (redemptionFee > 0) {
+        //         IERC20(fundTokenAddr).safeTransfer(
+        //             address(dao.getAddressConfiguration(DaoHelper.GP_ADDRESS)),
+        //             redemptionFee
+        //         );
+        //         emit RedeptionFeeCharged(
+        //             block.timestamp,
+        //             recipientAddr,
+        //             redemptionFee
+        //         );
+        //     }
+        // }
 
-        subtractFromBalance(recipientAddr, fundTokenAddr, actualWithdrawAmount);
+        // subtractFromBalance(recipientAddr, fundTokenAddr, actualWithdrawAmount);
 
-        IERC20(fundTokenAddr).safeTransfer(
-            recipientAddr,
-            actualWithdrawAmount - redemptionFee
-        );
+        IERC20(fundTokenAddr).safeTransfer(recipientAddr, actualWithdrawAmount);
 
         //slither-disable-next-line reentrancy-events
         emit Withdraw(
             recipientAddr,
             fundTokenAddr,
-            uint128(actualWithdrawAmount - redemptionFee)
+            uint128(actualWithdrawAmount)
         );
     }
 

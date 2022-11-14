@@ -40,11 +40,16 @@ const {
     fromAscii,
     sha3,
     GUILD,
-    DAOSQUARE_TREASURY
+    DAOSQUARE_TREASURY,
+    oneDay,
+    oneWeek,
+    twoWeeks,
+    oneMonth,
+    threeMonthes,
 } = require("../../utils/contract-util");
 const proposalCounter = proposalIdGenerator().generator;
 
-const { checkBalance } = require("../../utils/test-util");
+const { checkBalance, depositToFundingPool, createDistributeFundsProposal } = require("../../utils/test-util");
 const hre = require("hardhat");
 
 
@@ -67,7 +72,10 @@ describe("Adapter - FundRaise", () => {
         this.testtoken1 = testContracts.testToken1.instance
         this.fundingpoolAdapter = this.adapters.fundingpoolAdapter.instance;
         this.gpvoting = this.adapters.gpVotingAdapter.instance;
+        this.distributefund = this.adapters.distributeFundAdapterv2.instance;
+        this.fundingPoolExt = this.extensions.fundingpoolExt.functions;
 
+        this.testtoken2 = testContracts.testToken2.instance
         await depositToFundingPool(this.fundingpoolAdapter, dao, owner, hre.ethers.utils.parseEther("20000"), this.testtoken1);
     });
 
@@ -75,26 +83,6 @@ describe("Adapter - FundRaise", () => {
         await revertChainSnapshot(this.snapshotId);
         this.snapshotId = await takeChainSnapshot();
     });
-
-
-    const depositToFundingPool = async (
-        fundingpoolAdapter,
-        dao,
-        investor,
-        amount,
-        token) => {
-        // console.log(`FUND_RAISING_WINDOW_BEGIN: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_BEGIN")))}`);
-        // console.log(`FUND_RAISING_WINDOW_END: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_END")))}`);
-
-        // let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        // console.log(`current blocktimestamp: ${blocktimestamp}`);
-
-        await token.connect(investor).approve(fundingpoolAdapter.address, amount);
-        await fundingpoolAdapter.connect(investor).deposit(dao.address, amount);
-        console.log(`
-            ${investor.address} deposit ${amount.toString()}
-        `);
-    };
 
     it("should be impossible submit a fund raise proposal by non GP", async () => {
         const fundRaiseAdapter = this.adapters.fundRaiseAdapter.instance;
@@ -118,11 +106,11 @@ describe("Adapter - FundRaise", () => {
 
         const _uint256ArgsTimeInfo = [
             currentblocktimestamp,
-            currentblocktimestamp + 600,
+            currentblocktimestamp + oneMonth,
             60 * 60,
             60 * 10,
             60,
-            2600000
+            threeMonthes
         ];
         const _uint256ArgsFeeInfo = [
             5,
@@ -181,7 +169,48 @@ describe("Adapter - FundRaise", () => {
         await fundRaiseAdapter.processProposal(dao.address, newProposalId);
         const newFundEndTime = await dao.getConfiguration(sha3("FUND_END_TIME"));
         console.log(newFundEndTime);
+
+        await depositToFundingPool(this.fundingpoolAdapter, dao, this.owner, proposalInfo.fundRaiseTarget, this.testtoken1);
     })
+
+    it("should be possible to submit a funding proposal in investing period", async () => {
+        const dao = this.dao;
+        const distributeFundContract = this.distributefund;
+        const fundingPoolAdaptContract = this.fundingpoolAdapter;
+        const requestedFundAmount = hre.ethers.utils.parseEther("30000");
+        const tradingOffTokenAmount = hre.ethers.utils.parseEther("50000");
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        const lockupDate = blocktimestamp + 24;
+        const fullyReleasedDate = lockupDate + 1000;
+        const projectTeamAddr = this.user1.address;
+        const projectTeamTokenAddr = this.testtoken2.address;
+
+        const fundStartTime = await fundingPoolAdaptContract.getFundStartTime(dao.address);
+        const fundStopTime = await fundingPoolAdaptContract.getFundEndTime(dao.address);
+        console.log(`
+        fund start time ${fundStartTime.toString()}
+        fund end time ${fundStopTime.toString()}
+        `);
+        await this.testtoken2.transfer(this.user1.address, tradingOffTokenAmount);
+        await this.testtoken2.connect(this.user1).approve(distributeFundContract.address, tradingOffTokenAmount);
+
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundStartTime) + 1])
+        await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        console.log(`current time ${blocktimestamp}`);
+        let { proposalId } = await createDistributeFundsProposal(dao,
+            distributeFundContract,
+            requestedFundAmount,
+            tradingOffTokenAmount,
+            fullyReleasedDate,
+            lockupDate,
+            projectTeamAddr,
+            projectTeamTokenAddr,
+            this.owner);
+
+    })
+
+
 
     it("should be impossible to summit a fund raise proposal if pre-fund not finish", async () => {
         const fundRaiseAdapter = this.adapters.fundRaiseAdapter.instance;
@@ -228,4 +257,5 @@ describe("Adapter - FundRaise", () => {
         // let tx = await fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo);
         // const result = await tx.wait();
     })
+
 });

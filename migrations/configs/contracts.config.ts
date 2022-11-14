@@ -620,7 +620,7 @@ export const contracts: Array<ContractConfig> = [
     name: "BentoBoxV1",
     alias: "bentoBoxV1",
     path: "../../contracts/adapters/BentoBoxV1",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -747,6 +747,7 @@ export const contracts: Array<ContractConfig> = [
           fundingpoolExtensionAclFlagsMap.RECOVER_ERC20,
           fundingpoolExtensionAclFlagsMap.SET_REWARDS_DURATION,
           fundingpoolExtensionAclFlagsMap.SET_RICE_ADDRESS,
+          fundingpoolExtensionAclFlagsMap.DISTRIBUTE_FUNDS,
         ],
       },
     },

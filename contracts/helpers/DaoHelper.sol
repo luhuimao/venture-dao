@@ -82,6 +82,8 @@ library DaoHelper {
     bytes32 internal constant FUND_RAISING_MAX = keccak256("FUND_RAISING_MAX");
     bytes32 internal constant FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP =
         keccak256("FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP");
+    bytes32 internal constant FUND_RAISING_MAX_INVESTMENT_AMOUNT_OF_LP =
+        keccak256("FUND_RAISING_MAX_INVESTMENT_AMOUNT_OF_LP");
     bytes32 internal constant FUND_RAISING_WINDOW_BEGIN =
         keccak256("FUND_RAISING_WINDOW_BEGIN");
     bytes32 internal constant FUND_RAISING_WINDOW_END =
@@ -108,6 +110,7 @@ library DaoHelper {
     bytes32 internal constant PROTOCOL_FEE = keccak256("PROTOCOL_FEE");
     bytes32 internal constant GP_MIN_INVESTMENT_AMOUNT =
         keccak256("GP_MIN_INVESTMENT_AMOUNT");
+
     //voting
     bytes32 internal constant QUORUM = keccak256("voting.quorum");
     bytes32 internal constant SUPER_MAJORITY =

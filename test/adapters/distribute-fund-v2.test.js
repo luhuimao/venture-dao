@@ -57,6 +57,7 @@ import { RiceStakingAdapterContract_GOERLI } from "../../.config";
 // const { getConfig } = require("../../migrations/configs/contracts.config");
 
 import { deployDefaultDao, takeChainSnapshot, revertChainSnapshot, proposalIdGenerator, expect, expectRevert, web3 } from "../../utils/hh-util";
+const { checkBalance, depositToFundingPool } = require("../../utils/test-util");
 
 const proposalCounter = proposalIdGenerator().generator;
 
@@ -108,10 +109,10 @@ describe("Adapter - DistributeFundsV2", () => {
         this.gpdaoAdapter = this.adapters.gpdaoAdapter.instance;
         this.gpDaoOnboardingAdapter = this.adapters.gpDaoOnboardingAdapter.instance;
         this.gpOnboardVotingAdapter = this.adapters.gpOnboardVotingAdapter.instance;
-        this.benToBoxAdapter= this.adapters.bentoBoxV1.instance;
+        // this.benToBoxAdapter= this.adapters.bentoBoxV1.instance;
         this.snapshotId = await takeChainSnapshot();
 
-        console.log(`bentobox address ${this.benToBoxAdapter.address}`);
+        // console.log(`bentobox address ${this.benToBoxAdapter.address}`);
 
         await this.testtoken1.transfer(investor1.address, hre.ethers.utils.parseEther("2000"));
         await this.testtoken1.transfer(investor2.address, hre.ethers.utils.parseEther("2000"));
@@ -132,8 +133,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const fundRaisingWindwoEndTime = await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_END"));
         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaisingWindwoEndTime) + 1]);
         await hre.network.provider.send("evm_mine");
-        await this.fundingPoolExt.processFundRaising();
-        console.log(`fund raise status: ${await this.fundingPoolExt.fundRaisingState()}`);
+        await this.fundingpoolAdapter.processFundRaise(dao.address);
+        console.log(`fund raise status: ${await this.fundingpoolAdapter.fundRaisingState()}`);
     });
 
     beforeEach(async () => {
@@ -175,22 +176,7 @@ describe("Adapter - DistributeFundsV2", () => {
         console.log(`${applicant} is a GP?: ${isGP}`);
     }
 
-    const depositToFundingPool = async (
-        fundingpoolAdapter,
-        dao,
-        investor,
-        amount,
-        token) => {
-        console.log(`FUND_RAISING_WINDOW_BEGIN: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_BEGIN")))}`);
-        console.log(`FUND_RAISING_WINDOW_END: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_END")))}`);
-
-        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        console.log(`current blocktimestamp: ${blocktimestamp}`);
-
-        await token.connect(investor).approve(fundingpoolAdapter.address, amount);
-        await fundingpoolAdapter.connect(investor).deposit(dao.address, amount);
-    };
-
+ 
     const distributeFundsProposal = async (
         dao,
         distributeFundContract,
@@ -349,11 +335,37 @@ describe("Adapter - DistributeFundsV2", () => {
         const GPBal1 = await this.testtoken1.balanceOf(GPAddr);
         const DaoSquareBal1= await this.testtoken1.balanceOf(DaoSquareAddr);
 
-        const lps=await fundingPoolExt.getInvestors();
-        console.log(`all lps ${lps}`);
+        // const lps=await fundingPoolExt.getInvestors();
+        // console.log(`all lps ${lps}`);
 
         // Starts to process the proposal
-        await distributeFundContract.processProposal(dao.address, this.proposalId);
+       let tx= await distributeFundContract.processProposal(dao.address, this.proposalId);
+
+      let rel=   await tx.wait();
+      console.log("$$$$$$$$$$$$$$$$$$$$$$$ gas used: ", rel.gasUsed.toString());
+        //create stream
+        const lps = [this.owner,
+            this.user1,
+            this.user2,
+            this.investor1,
+            this.investor2,
+            this.gp1,
+            this.gp2,
+            this.project_team1,
+            this.project_team2,
+            this.project_team3
+            ];
+            for(var i=0;i<lps.length;i++){
+               let eligible= await this.allocationAdapterv2.ifEligible(dao.address, lps[i].address, this.proposalId);
+                if(eligible){
+                 tx=   await streamingPaymentContract.connect(lps[i]).createStream(dao.address, lps[i].address,this.proposalId );
+                 rel=await tx.wait();
+                 console.log("$$$$$$$$$$$$$$$$$$$$$$$ gas used: ", rel.gasUsed.toString());
+                }
+            }
+            // await streamingPaymentContract.connect(lps[0]).createStream(dao.address, lps[0].address,this.proposalId );
+            // cant create twice
+            await expectRevert(streamingPaymentContract.connect(lps[0]).createStream(dao.address, lps[0].address,this.proposalId ),"revert");
 
         const GPBal2 = await this.testtoken1.balanceOf(GPAddr);
         const DaoSquareBal2= await this.testtoken1.balanceOf(DaoSquareAddr);
@@ -391,17 +403,7 @@ describe("Adapter - DistributeFundsV2", () => {
             console.log(`claimable balance of stream ${i}: ${hre.ethers.utils.formatEther(claimableBal)}`);
 
             //withdraw from streaming payment
-            const lps = [this.owner,
-            this.user1,
-            this.user2,
-            this.investor1,
-            this.investor2,
-            this.gp1,
-            this.gp2,
-            this.project_team1,
-            this.project_team2,
-            this.project_team3
-            ];
+          
             for (var j = 0; j < lps.length; j++) {
                 if (lps[j].address == streamInfo.recipient) {
                     await streamingPaymentContract.connect(lps[j]).withdrawFromStream(i, claimableBal);
@@ -1010,8 +1012,8 @@ describe("Voting for distribute proposal", () => {
         // const fundRaisingWindwoEndTime = await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_END"));
         // await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaisingWindwoEndTime) + 1]);
         // await hre.network.provider.send("evm_mine");
-        await this.fundingPoolExt.processFundRaising();
-        console.log(`fund raise status: ${await this.fundingPoolExt.fundRaisingState()}`);
+        await this.fundingpoolAdapter.processFundRaise(dao.address);
+        console.log(`fund raise status: ${await this.fundingpoolAdapter.fundRaisingState()}`);
     });
 
     beforeEach(async () => {

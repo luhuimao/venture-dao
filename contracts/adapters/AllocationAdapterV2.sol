@@ -6,7 +6,7 @@ import "../helpers/DaoHelper.sol";
 import "hardhat/console.sol";
 import "../guards/AdapterGuard.sol";
 import "../extensions/fundingpool/FundingPool.sol";
-import "../extensions/ricestaking/RiceStaking.sol";
+// import "../extensions/ricestaking/RiceStaking.sol";
 import "../extensions/gpdao/GPDao.sol";
 import "./streaming_payment/interfaces/ISablier.sol";
 import "./FundingPoolAdapter.sol";
@@ -44,22 +44,30 @@ contract AllocationAdapterContractV2 is AdapterGuard {
     /*
      * STRUCTURES
      */
-
+    struct StreamInfo {
+        uint256 tokenAmount;
+        bool created;
+    }
     /*
      * PUBLIC VARIABLES
      */
-    // uint8 public gpAllocationBonusRadio = 3;
-    // uint8 public riceStakeAllocationRadio = 10;
 
-    bytes32 constant GPAllocationBonusRadio =
-        keccak256("allocation.gpAllocationBonusRadio");
-    bytes32 constant RiceStakeAllocationRadio =
-        keccak256("allocation.riceStakeAllocationRadio");
+    // bytes32 constant GPAllocationBonusRadio =
+    //     keccak256("allocation.gpAllocationBonusRadio");
+    // bytes32 constant RiceStakeAllocationRadio =
+    //     keccak256("allocation.riceStakeAllocationRadio");
 
+    mapping(address => mapping(bytes32 => mapping(address => StreamInfo)))
+        public streamInfos;
+
+    /*
+     *EVENTS
+     */
     event ConfigureDao(
         uint256 gpAllocationBonusRadio,
         uint256 riceStakeAllocationRadio
     );
+    event AllocateToken(bytes32 proposalId, address proposer, address[] lps);
 
     /**
      * @notice Configures the DAO with the Voting and Gracing periods.
@@ -71,12 +79,12 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         uint256 gpAllocationBonusRadio,
         uint256 riceStakeAllocationRadio
     ) external onlyAdapter(dao) {
-        dao.setConfiguration(GPAllocationBonusRadio, gpAllocationBonusRadio);
-        dao.setConfiguration(
-            RiceStakeAllocationRadio,
-            riceStakeAllocationRadio
-        );
-        emit ConfigureDao(gpAllocationBonusRadio, riceStakeAllocationRadio);
+        // dao.setConfiguration(GPAllocationBonusRadio, gpAllocationBonusRadio);
+        // dao.setConfiguration(
+        //     RiceStakeAllocationRadio,
+        //     riceStakeAllocationRadio
+        // );
+        // emit ConfigureDao(gpAllocationBonusRadio, riceStakeAllocationRadio);
     }
 
     function getFundingRewards(
@@ -101,29 +109,29 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         return (fund * fundingRewards) / totalFund;
     }
 
-    function getGPBonus(
-        DaoRegistry dao,
-        address recipient,
-        uint256 tokenAmount
-    ) public view returns (uint256) {
-        FundingPoolAdapterContract fundpoolAdapt = FundingPoolAdapterContract(
-            dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
-        );
-        GPDaoExtension gpdao = GPDaoExtension(
-            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
-        );
-        if (!gpdao.isGeneralPartner(recipient)) {
-            return 0;
-        }
-        uint256 GPBonus = (tokenAmount *
-            dao.getConfiguration(DaoHelper.REWARD_FOR_GP)) / 100;
-        uint256 myFund = fundpoolAdapt.balanceOf(dao, recipient);
-        uint256 allGPFunds = fundpoolAdapt.gpBalance(dao);
-        if (GPBonus <= 0 || myFund <= 0 || allGPFunds <= 0) {
-            return 0;
-        }
-        return (GPBonus * myFund) / allGPFunds;
-    }
+    // function getGPBonus(
+    //     DaoRegistry dao,
+    //     address recipient,
+    //     uint256 tokenAmount
+    // ) public view returns (uint256) {
+    //     FundingPoolAdapterContract fundpoolAdapt = FundingPoolAdapterContract(
+    //         dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
+    //     );
+    //     GPDaoExtension gpdao = GPDaoExtension(
+    //         dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
+    //     );
+    //     if (!gpdao.isGeneralPartner(recipient)) {
+    //         return 0;
+    //     }
+    //     uint256 GPBonus = (tokenAmount *
+    //         dao.getConfiguration(DaoHelper.REWARD_FOR_GP)) / 100;
+    //     uint256 myFund = fundpoolAdapt.balanceOf(dao, recipient);
+    //     uint256 allGPFunds = fundpoolAdapt.gpBalance(dao);
+    //     if (GPBonus <= 0 || myFund <= 0 || allGPFunds <= 0) {
+    //         return 0;
+    //     }
+    //     return (GPBonus * myFund) / allGPFunds;
+    // }
 
     function getProposerBonus(
         DaoRegistry dao,
@@ -143,19 +151,11 @@ contract AllocationAdapterContractV2 is AdapterGuard {
     }
 
     struct allocateProjectTokenLocalVars {
-        ISablier streamingPaymentContract;
+        // ISablier streamingPaymentContract;
         FundingPoolExtension fundingpool;
-        StakingRiceExtension ricestaking;
-        GPDaoExtension gpdao;
-        address[] allInvestors;
-        address[] riceStakeres;
-        address[] gps;
         uint256 totalReward;
-        // uint256 k;
-        // uint256 l;
-        // uint256 m;
-        // bool contained;
-        // uint256 allRewards;
+        uint256 oldAllowance;
+        uint256 newAllowance;
     }
 
     function allocateProjectToken(
@@ -176,14 +176,11 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         );
         allocateProjectTokenLocalVars memory vars;
 
-        vars.streamingPaymentContract = ISablier(
-            dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT)
-        );
+        // vars.streamingPaymentContract = ISablier(
+        //     dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT)
+        // );
         vars.fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        );
-        GPDaoExtension gpdao = GPDaoExtension(
-            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
         );
 
         require(
@@ -200,12 +197,16 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         );
 
         // approve from Allocation adapter contract to streaming payment contract
+        vars.oldAllowance = IERC20(tokenAddress).allowance(
+            address(this),
+            dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT)
+        );
+        vars.newAllowance = vars.oldAllowance + tokenAmount;
         IERC20(tokenAddress).approve(
             dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT),
-            tokenAmount
+            vars.newAllowance
         );
         address[] memory allInvestors = vars.fundingpool.getInvestors();
-        // address[] memory gps = gpdao.getAllGPs();
         vars.totalReward = 0;
 
         if (allInvestors.length > 0) {
@@ -217,35 +218,22 @@ contract AllocationAdapterContractV2 is AdapterGuard {
                 );
                 //bug fixed: fillter fundingRewards > 0 ;20220614
                 if (fundingRewards > 0) {
-                    vars.streamingPaymentContract.createStream(
-                        allInvestors[i],
-                        fundingRewards,
-                        tokenAddress,
-                        startTime,
-                        stopTime,
-                        proposalId
-                    );
+                    // vars.streamingPaymentContract.createStream(
+                    //     allInvestors[i],
+                    //     fundingRewards,
+                    //     tokenAddress,
+                    //     startTime,
+                    //     stopTime,
+                    //     proposalId
+                    // );
+                    streamInfos[address(dao)][proposalId][
+                        allInvestors[i]
+                    ] = StreamInfo(fundingRewards, false);
                     vars.totalReward += fundingRewards;
                 }
             }
         }
-        // if (gps.length > 0) {
-        //     for (uint8 i = 0; i < gps.length; i++) {
-        //         uint256 gpBonus = getGPBonus(dao, gps[i], tokenAmount);
-        //         //bug  fixed: fillter gpBonus >0;20220614
-        //         if (gpBonus > 0) {
-        //             vars.streamingPaymentContract.createStream(
-        //                 gps[i],
-        //                 gpBonus,
-        //                 tokenAddress,
-        //                 startTime,
-        //                 stopTime,
-        //                 proposalId
-        //             );
-        //             vars.totalReward += gpBonus;
-        //         }
-        //     }
-        // }
+
         if (proposerAddr != address(0x0)) {
             uint256 proposerBonus = getProposerBonus(
                 dao,
@@ -253,13 +241,20 @@ contract AllocationAdapterContractV2 is AdapterGuard {
                 tokenAmount
             );
             if (proposerBonus > 0) {
-                vars.streamingPaymentContract.createStream(
-                    proposerAddr,
-                    proposerBonus,
-                    tokenAddress,
-                    startTime,
-                    stopTime,
-                    proposalId
+                // vars.streamingPaymentContract.createStream(
+                //     proposerAddr,
+                //     proposerBonus,
+                //     tokenAddress,
+                //     startTime,
+                //     stopTime,
+                //     proposalId
+                // );
+                streamInfos[address(dao)][proposalId][
+                    proposerAddr
+                ] = StreamInfo(
+                    streamInfos[address(dao)][proposalId][proposerAddr]
+                        .tokenAmount + proposerBonus,
+                    false
                 );
                 vars.totalReward += proposerBonus;
             }
@@ -268,5 +263,37 @@ contract AllocationAdapterContractV2 is AdapterGuard {
             vars.totalReward <= tokenAmount,
             "AllocationAdapter::allocateProjectToken::distribute token amount exceeds tranding off amount"
         );
+        emit AllocateToken(proposalId, proposerAddr, allInvestors);
+    }
+
+    function streamCreated(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        address recipient
+    ) external returns (bool) {
+        require(
+            msg.sender ==
+                dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT),
+            "AllocationAdapter:streamCreated:Access deny"
+        );
+        streamInfos[address(dao)][proposalId][recipient].created = true;
+    }
+
+    function isStreamCreated(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        address recepient
+    ) external view returns (bool) {
+        return streamInfos[address(dao)][proposalId][recepient].created;
+    }
+
+    function ifEligible(
+        DaoRegistry dao,
+        address recipient,
+        bytes32 proposalId
+    ) external view returns (bool) {
+        if (streamInfos[address(dao)][proposalId][recipient].tokenAmount > 0)
+            return true;
+        else return false;
     }
 }

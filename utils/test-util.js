@@ -159,6 +159,46 @@ const submitConfigProposal = async (
   });
 };
 
+const depositToFundingPool = async (
+  fundingpoolAdapter,
+  dao,
+  investor,
+  amount,
+  token) => {
+  // console.log(`FUND_RAISING_WINDOW_BEGIN: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_BEGIN")))}`);
+  // console.log(`FUND_RAISING_WINDOW_END: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_END")))}`);
+
+  // let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+  // console.log(`current blocktimestamp: ${blocktimestamp}`);
+
+  await token.connect(investor).approve(fundingpoolAdapter.address, amount);
+  await fundingpoolAdapter.connect(investor).deposit(dao.address, amount);
+  console.log(`
+      ${investor.address} deposit ${amount.toString()}
+  `);
+};
+
+const createDistributeFundsProposal = async (
+  dao,
+  distributeFundContract,
+  requestedFundAmount,
+  tradingOffTokenAmount,
+  fullyReleasedDate,
+  lockupDate,
+  projectTeamAddr,
+  projectTokenAddr,
+  sender
+) => {
+  const tx = await distributeFundContract.connect(sender).submitProposal(
+    dao.address,
+    [projectTeamAddr, projectTokenAddr],
+    [requestedFundAmount, tradingOffTokenAmount, fullyReleasedDate, lockupDate],
+  );
+  const result = await tx.wait();
+  const newProposalId = result.events[2].args.proposalId;
+  return { proposalId: newProposalId };
+};
+
 module.exports = {
   checkLastEvent,
   checkBalance,
@@ -169,4 +209,6 @@ module.exports = {
   submitConfigProposal,
   isMember,
   encodeDaoInfo,
+  depositToFundingPool,
+  createDistributeFundsProposal,
 };

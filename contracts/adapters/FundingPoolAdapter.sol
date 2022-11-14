@@ -13,6 +13,7 @@ import "../helpers/DaoHelper.sol";
 import "./modifiers/Reimbursable.sol";
 import "./voting/GPVoting.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "hardhat/console.sol";
 
 /**
 MIT License
@@ -39,6 +40,28 @@ SOFTWARE.
  */
 
 contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
+    /* ========== STATE VARIABLES ========== */
+    DaoHelper.FundRaiseState public fundRaisingState;
+
+    /* ========== MODIFIER ========== */
+    // modifier processFundRaise(DaoRegistry dao) {
+    //     uint256 fundRaiseTarget = dao.getConfiguration(
+    //         DaoHelper.FUND_RAISING_TARGET
+    //     );
+    //     uint256 fundRaiseEndTime = dao.getConfiguration(
+    //         DaoHelper.FUND_RAISING_WINDOW_END
+    //     );
+    //     if (
+    //         block.timestamp > fundRaiseEndTime &&
+    //         fundRaisingState == DaoHelper.FundRaiseState.IN_PROGRESS
+    //     ) {
+    //         if (lpBalance(dao) >= fundRaiseTarget)
+    //             fundRaisingState = DaoHelper.FundRaiseState.DONE;
+    //         else fundRaisingState = DaoHelper.FundRaiseState.FAILED;
+    //     }
+    //     _;
+    // }
+
     /**
      * @notice Updates the DAO registry with the new configurations if valid.
      * @notice Updated the Bank extension with the new potential tokens if valid.
@@ -70,16 +93,54 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         external
         reimbursable(dao)
     {
+        processFundRaise(dao);
+        require(
+            fundRaisingState == DaoHelper.FundRaiseState.FAILED ||
+                (fundRaisingState == DaoHelper.FundRaiseState.DONE &&
+                    ifInRedemptionPeriod(dao, block.timestamp)) ||
+                (fundRaisingState == DaoHelper.FundRaiseState.DONE &&
+                    block.timestamp >
+                    dao.getConfiguration(DaoHelper.FUND_END_TIME)),
+            "FundingPoolAdapter::Withdraw::Cant withdraw at this time"
+        );
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
 
-        address token = fundingpool.fundRaisingTokenAddress();
+        address tokenAddr = fundingpool.getFundRaisingTokenAddress();
         uint256 balance = balanceOf(dao, msg.sender);
-        require(amount > 0, "FundingPool::withdraw::invalid amount");
-        require(amount <= balance, "FundingPool::withdraw::insufficient fund");
+        require(amount > 0, "FundingPoolAdapter::withdraw::invalid amount");
+        require(
+            amount <= balance,
+            "FundingPoolAdapter::withdraw::insufficient fund"
+        );
 
-        fundingpool.withdraw(msg.sender, amount);
+        uint256 redemptionFee = 0;
+        if (
+            fundRaisingState == DaoHelper.FundRaiseState.DONE &&
+            ifInRedemptionPeriod(dao, block.timestamp)
+        ) {
+            //distribute redemption fee to GP
+            redemptionFee =
+                (dao.getConfiguration(DaoHelper.REDEMPTION_FEE) * amount) /
+                1000;
+            if (redemptionFee > 0) {
+                fundingpool.distributeFunds(
+                    address(dao.getAddressConfiguration(DaoHelper.GP_ADDRESS)),
+                    tokenAddr,
+                    redemptionFee
+                );
+                // emit RedeptionFeeCharged(
+                //     block.timestamp,
+                //     recipientAddr,
+                //     redemptionFee
+                // );
+            }
+        }
+
+        fundingpool.withdraw(msg.sender, amount - redemptionFee);
+
+        fundingpool.subtractFromBalance(msg.sender, tokenAddr, amount);
     }
 
     /**
@@ -91,8 +152,44 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
      */
     function deposit(DaoRegistry dao, uint256 amount)
         external
+        // reentrancyGuard(dao)
         reimbursable(dao)
     {
+        require(
+            amount > 0,
+            "FundingPoolAdapter::Deposit:: invalid deposit amount"
+        );
+        require(
+            dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN) <
+                block.timestamp &&
+                dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) >
+                block.timestamp,
+            "FundingPoolAdapter::Deposit::not in fundraise window"
+        );
+        uint256 maxDepositAmount = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_MAX_INVESTMENT_AMOUNT_OF_LP
+        );
+        uint256 minDepositAmount = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP
+        );
+        console.log();
+        if (minDepositAmount > 0) {
+            require(
+                amount >= minDepositAmount,
+                "FundingPoolAdapter::Deposit::deposit amount cant less than min deposit amount"
+            );
+        }
+        if (maxDepositAmount > 0) {
+            require(
+                amount <= maxDepositAmount,
+                "FundingPoolAdapter::Deposit::deposit amount cant greater than max deposit amount"
+            );
+        }
+        require(
+            lpBalance(dao) + amount <=
+                dao.getConfiguration(DaoHelper.FUND_RAISING_MAX),
+            "FundingPoolAdapter::Deposit::Fundraise max amount reach"
+        );
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
@@ -105,11 +202,24 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         fundingpool.addToBalance(msg.sender, amount);
     }
 
-    function processFundRaise(DaoRegistry dao) external reimbursable(dao) {
-        FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+    function processFundRaise(DaoRegistry dao)
+        public
+        returns (bool)
+    {
+        uint256 fundRaiseTarget = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_TARGET
         );
-        fundingpool.processFundRaising();
+        uint256 fundRaiseEndTime = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_WINDOW_END
+        );
+        if (
+            block.timestamp > fundRaiseEndTime &&
+            fundRaisingState == DaoHelper.FundRaiseState.IN_PROGRESS
+        ) {
+            if (lpBalance(dao) >= fundRaiseTarget)
+                fundRaisingState = DaoHelper.FundRaiseState.DONE;
+            else fundRaisingState = DaoHelper.FundRaiseState.FAILED;
+        }
     }
 
     // function recoverERC20(
@@ -123,16 +233,16 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
     //     fundingpool.recoverERC20(tokenAddress, tokenAmount, msg.sender);
     // }
 
-    function setRiceTokenAddress(DaoRegistry dao, address riceAddr)
-        external
-        onlyMember(dao)
-        reimbursable(dao)
-    {
-        FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        );
-        fundingpool.setRiceTokenAddress(riceAddr);
-    }
+    // function setRiceTokenAddress(DaoRegistry dao, address riceAddr)
+    //     external
+    //     onlyMember(dao)
+    //     reimbursable(dao)
+    // {
+    //     FundingPoolExtension fundingpool = FundingPoolExtension(
+    //         dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+    //     );
+    //     fundingpool.setRiceTokenAddress(riceAddr);
+    // }
 
     function balanceOf(DaoRegistry dao, address investorAddr)
         public
@@ -255,5 +365,51 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
 
     function getRedeptPeriod(DaoRegistry dao) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION_PERIOD);
+    }
+
+    function ifInRedemptionPeriod(DaoRegistry dao, uint256 timeStamp)
+        public
+        view
+        returns (bool)
+    {
+        uint256 fundStartTime = dao.getConfiguration(DaoHelper.FUND_START_TIME);
+        uint256 fundEndTime = dao.getConfiguration(DaoHelper.FUND_END_TIME);
+        uint256 redemptionPeriod = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_REDEMPTION_PERIOD
+        );
+        uint256 redemptionDuration = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_REDEMPTION_DURATION
+        );
+        uint256 fundDuration = fundEndTime - fundStartTime;
+        if (
+            redemptionPeriod <= 0 ||
+            redemptionDuration <= 0 ||
+            fundDuration <= 0
+        ) {
+            return false;
+        }
+
+        uint256 steps;
+        steps = fundDuration / redemptionPeriod;
+
+        uint256 redemptionEndTime;
+        uint256 redemptionStartTime;
+        uint256 i = 0;
+        while (i <= steps) {
+            redemptionEndTime = redemptionEndTime == 0
+                ? fundStartTime + redemptionPeriod
+                : redemptionEndTime + redemptionPeriod;
+            redemptionStartTime = redemptionEndTime - redemptionDuration;
+            if (
+                timeStamp > redemptionStartTime &&
+                timeStamp < redemptionEndTime &&
+                timeStamp > fundStartTime &&
+                timeStamp < fundEndTime
+            ) {
+                return true;
+            }
+            i += 1;
+        }
+        return false;
     }
 }

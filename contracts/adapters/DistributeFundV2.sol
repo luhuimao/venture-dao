@@ -264,12 +264,14 @@ contract DistributeFundContractV2 is
         vars.fundingPoolAdapt = FundingPoolAdapterContract(
             dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
         );
+        vars.fundingPoolAdapt.processFundRaise(dao);
         require(
-            vars.fundingpool.fundRaisingState() ==
+            vars.fundingPoolAdapt.fundRaisingState() ==
                 DaoHelper.FundRaiseState.DONE &&
                 block.timestamp >
-                vars.fundingPoolAdapt.getFundRaiseWindowCloseTime(dao),
-            "FundRaise::submitProposal::only can submit proposal when fund raise was done"
+                vars.fundingPoolAdapt.getFundRaiseWindowCloseTime(dao) &&
+                block.timestamp < vars.fundingPoolAdapt.getFundEndTime(dao),
+            "Funding::submitProposal::only can submit proposal in investing period"
         );
         vars.gpVotingContract = IGPVoting(
             dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)

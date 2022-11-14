@@ -49,14 +49,14 @@ export const RiceStakingAdapterContract_GOERLI = "0xf203E215601647Bf7d51B223efB1
 export const GPDaoAdapterContract_GOERLI = "0x80E6A7a8faF5C57f0EAdA586fc8F8b557e09648F"; //REPLACE_FLAG
 export const GPDaoOnboardingAdapterContract_GOERLI = "0x55C5938Afbb70d111c4661b1fDEE22FbB03D959b"; //REPLACE_FLAG
 export const GPKickAdapterContract_GOERLI = "0xb1fD4B225970f727bdbeCCCcec4B12bc8Fd22D89"; //REPLACE_FLAG
-export const Sablier_GOERLI = "0x05a1cf2DD5968C2624b8873454766BC2C80e0Df4"; //REPLACE_FLAG
+export const Sablier_GOERLI = "0x74395f805c115fa29a5FC30E71a0A229861b736D"; //REPLACE_FLAG
 export const ManageMemberAdapterContract_GOERLI = ""; //REPLACE_FLAG
 export const DistributeFundContract_GOERLI = ""; //REPLACE_FLAG
 export const DistributeFundContractV2_GOERLI = "0x5560e62eA2a376E28419C737efC80fabd85C7849"; //REPLACE_FLAG
 export const GPVotingContract_GOERLI = "0x8FC24a76bb5A63C50830368424CD930720D9C482"; //REPLACE_FLAG
 export const GPOnboardVotingContract_GOERLI = "0x7e1c584b36530347f9e482F47251AACDF686D35b"; //REPLACE_FLAG
 export const AllocationAdapterContract_GOERLI = ""; //REPLACE_FLAG
-export const AllocationAdapterContractV2_GOERLI = "0x8144254C832B14D4dDFdBba155290640AfEA0631"; //REPLACE_FLAG
+export const AllocationAdapterContractV2_GOERLI = "0xa0DCA4B69Db58833a329dA5E77B8De27b0Cf1670"; //REPLACE_FLAG
 export const ManagingAdapterContract_GOERLI = "0xdd60b84fDa3C243937F442181916a71f14334b7c"; //REPLACE_FLAG
 export const VESTING_GOERLI = ""; //REPLACE_FLAG
 //test contracts

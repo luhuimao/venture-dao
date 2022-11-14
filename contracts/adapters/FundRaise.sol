@@ -303,7 +303,7 @@ contract FundRaiseAdapterContract is
         );
         //4 lpMaxDepositAmount
         dao.setConfiguration(
-            DaoHelper.FUND_RAISING_MAX,
+            DaoHelper.FUND_RAISING_MAX_INVESTMENT_AMOUNT_OF_LP,
             proposalInfo.lpMaxDepositAmount
         );
         //5 fundRaiseStartTime
