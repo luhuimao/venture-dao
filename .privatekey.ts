@@ -62,4 +62,8 @@ export async function getOwnerPrivateKey(name: string): Promise<string> {
             return owner.privateKey;
     }
     return ACCOUNT_PRIVATE_KEY_BSC_TESTNET!;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> feat/fundraising

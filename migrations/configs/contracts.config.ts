@@ -616,6 +616,48 @@ export const contracts: Array<ContractConfig> = [
    * Adapters
    */
   {
+    id: adaptersIdsMap.BEN_TO_BOX,
+    name: "BentoBoxV1",
+    alias: "bentoBoxV1",
+    path: "../../contracts/adapters/BentoBoxV1",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.VESTING,
+    name: "FuroVesting",
+    alias: "furoVesting",
+    path: "../../contracts/adapters/FuroVesting",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FUND_RAISE,
+    name: "FundRaiseAdapterContract",
+    alias: "fundRaiseAdapter",
+    path: "../../contracts/adapters/FundRaiseAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_CONFIGURATION],
+      extensions: {
+      },
+    },
+  },
+  {
     id: adaptersIdsMap.GP_KICK_ADAPTER,
     name: "GPKickAdapterContract",
     alias: "gpKickAdapter",
@@ -705,6 +747,7 @@ export const contracts: Array<ContractConfig> = [
           fundingpoolExtensionAclFlagsMap.RECOVER_ERC20,
           fundingpoolExtensionAclFlagsMap.SET_REWARDS_DURATION,
           fundingpoolExtensionAclFlagsMap.SET_RICE_ADDRESS,
+          fundingpoolExtensionAclFlagsMap.DISTRIBUTE_FUNDS,
         ],
       },
     },
@@ -749,7 +792,7 @@ export const contracts: Array<ContractConfig> = [
     name: "Sablier",
     alias: "sablierAdapter",
     path: "../../contracts/adapters/streaming_payment/Sablier",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {

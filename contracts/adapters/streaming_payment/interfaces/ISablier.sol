@@ -1,4 +1,5 @@
 pragma solidity ^0.8.0;
+import "../../../helpers/DaoHelper.sol";
 
 /**
  * @title ISablier
@@ -60,17 +61,19 @@ interface ISablier {
         );
 
     function createStream(
+        DaoRegistry dao,
         address recipient,
-        uint256 deposit,
-        address tokenAddress,
-        uint256 startTime,
-        uint256 stopTime,
+        // uint256 deposit,
+        // address tokenAddress,
+        // uint256 startTime,
+        // uint256 stopTime,
         bytes32 proposalId
     ) external returns (uint256 streamId);
 
-    function withdrawFromStream(uint256 streamId, uint256 funds)
-        external
-        returns (bool);
+    function withdrawFromStream(
+        uint256 streamId,
+        uint256 funds
+    ) external returns (bool);
 
     // function cancelStream(uint256 streamId) external returns (bool);
 }

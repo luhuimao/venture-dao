@@ -201,6 +201,7 @@ const getDefaultOptions = async (options) => {
     fundRaisingTarget: options.fundRaisingTarget === undefined ? hre.ethers.utils.parseEther("10000") : options.fundRaisingTarget,
     fundRaisingMax: options.fundRaisingMax === undefined ? hre.ethers.utils.parseEther("1000000") : options.fundRaisingMax,
     fundRaisingMinInvestmentAmountOfLP: options.fundRaisingMinInvestmentAmountOfLP === undefined ? hre.ethers.utils.parseEther("1000") : options.fundRaisingMinInvestmentAmountOfLP,
+    fundRaisingMaxInvestmentAmountOfLP: options.fundRaisingMaxInvestmentAmountOfLP === undefined ? hre.ethers.utils.parseEther("1000000") : options.fundRaisingMaxInvestmentAmountOfLP,
     fundRaisingWindowBegin: options.fundRaisingWindowBegin === undefined ? currentTimestamp + 40 : options.fundRaisingWindowBegin,
     fundRaisingWindowEnd: options.fundRaisingWindowEnd === undefined ? currentTimestamp + 2000 : options.fundRaisingWindowEnd,
     fundRaisingLockupPeriod: options.fundRaisingLockupPeriod === undefined ? 7776000 : options.fundRaisingLockupPeriod,

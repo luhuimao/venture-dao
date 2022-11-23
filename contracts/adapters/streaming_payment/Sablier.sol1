@@ -1,4 +1,5 @@
 pragma solidity ^0.8.0;
+// SPDX-License-Identifier: MIT
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -7,6 +8,8 @@ import "./utils/CarefulMath.sol";
 import "hardhat/console.sol";
 import "./interfaces/ISablier.sol";
 import "./Types.sol";
+import "../AllocationAdapterV2.sol";
+import "../DistributeFundV2.sol";
 
 /**
  * @title Sablier
@@ -204,8 +207,15 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
 
     struct CreateStreamLocalVars {
         MathError mathErr;
+        AllocationAdapterContractV2 allocAdapter;
+        DistributeFundContractV2 distributeFundAdapter;
         uint256 duration;
         uint256 ratePerSecond;
+        uint256 deposit;
+        address tokenAddress;
+        uint256 startTime;
+        uint256 stopTime;
+        address allocAdaptAddr;
     }
 
     /**
@@ -222,32 +232,68 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
      *  Throws if the contract is not allowed to transfer enough tokens.
      *  Throws if there is a token transfer failure.
      * @param recipient The address towards which the money is streamed.
-     * @param deposit The amount of money to be streamed.
-     * @param tokenAddress The ERC20 token to use as streaming currency.
-     * @param startTime The unix timestamp for when the stream starts.
-     * @param stopTime The unix timestamp for when the stream stops.
      * @return The uint256 id of the newly created stream.
      */
     function createStream(
+        DaoRegistry dao,
         address recipient,
-        uint256 deposit,
-        address tokenAddress,
-        uint256 startTime,
-        uint256 stopTime,
+        // uint256 deposit,
+        // address tokenAddress,
+        // uint256 startTime,
+        // uint256 stopTime,
         bytes32 proposalId
     ) public override returns (uint256) {
-        require(recipient != address(0x00), "stream to the zero address");
-        require(recipient != address(this), "stream to the contract itself");
-        require(recipient != msg.sender, "stream to the caller");
-        require(deposit > 0, "deposit is zero");
+        CreateStreamLocalVars memory vars;
+        vars.allocAdaptAddr = dao.getAdapterAddress(
+            DaoHelper.ALLOCATION_ADAPTV2
+        );
+        vars.allocAdapter = AllocationAdapterContractV2(vars.allocAdaptAddr);
+        // if (!vars.allocAdapter.ifEligible(dao, recipient, proposalId)) return 0;
+        require(
+            vars.allocAdapter.ifEligible(dao, recipient, proposalId),
+            "Sablier::createStream::Recipient not eligible of this proposalId"
+        );
+        require(
+            !vars.allocAdapter.isStreamCreated(dao, proposalId, recipient),
+            "Sablier::createStream::Already created"
+        );
+        // require(recipient != address(0x00), "stream to the zero address");
+        // require(recipient != address(this), "stream to the contract itself");
+        // require(recipient != msg.sender, "stream to the caller");
+        vars.distributeFundAdapter = DistributeFundContractV2(
+            dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPTV2)
+        );
+        (vars.deposit, ) = vars.allocAdapter.streamInfos(
+            address(dao),
+            proposalId,
+            recipient
+        );
+        (
+            vars.tokenAddress,
+            ,
+            ,
+            vars.stopTime,
+            vars.startTime,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+
+        ) = vars.distributeFundAdapter.distributions(address(dao), proposalId);
+
+        // require(deposit > 0, "deposit is zero");
         // require(
         //     startTime >= block.timestamp,
         //     "start time before block.timestamp"
         // );
-        require(stopTime > startTime, "stop time before the start time");
+        require(
+            vars.stopTime > vars.startTime,
+            "stop time before the start time"
+        );
 
-        CreateStreamLocalVars memory vars;
-        (vars.mathErr, vars.duration) = subUInt(stopTime, startTime);
+        (vars.mathErr, vars.duration) = subUInt(vars.stopTime, vars.startTime);
         /* `subUInt` can only return MathError.INTEGER_UNDERFLOW but we know `stopTime` is higher than `startTime`. */
         assert(vars.mathErr == MathError.NO_ERROR);
 
@@ -260,22 +306,25 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
         //     "deposit not multiple of time delta"
         // );
 
-        (vars.mathErr, vars.ratePerSecond) = divUInt(deposit, vars.duration);
+        (vars.mathErr, vars.ratePerSecond) = divUInt(
+            vars.deposit,
+            vars.duration
+        );
         /* `divUInt` can only return MathError.DIVISION_BY_ZERO but we know `duration` is not zero. */
         assert(vars.mathErr == MathError.NO_ERROR);
 
         /* Create and store the stream object. */
         uint256 streamId = nextStreamId;
         streams[streamId] = Types.Stream({
-            remainingBalance: deposit,
-            deposit: deposit,
+            remainingBalance: vars.deposit,
+            deposit: vars.deposit,
             isEntity: true,
             ratePerSecond: vars.ratePerSecond,
             recipient: recipient,
-            sender: msg.sender,
-            startTime: startTime,
-            stopTime: stopTime,
-            tokenAddress: tokenAddress,
+            sender: vars.allocAdaptAddr,
+            startTime: vars.startTime,
+            stopTime: vars.stopTime,
+            tokenAddress: vars.tokenAddress,
             proposalId: proposalId
         });
 
@@ -286,24 +335,27 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
             "next stream id calculation error"
         );
         require(
-            IERC20(tokenAddress).allowance(msg.sender, address(this)) >=
-                deposit,
+            IERC20(vars.tokenAddress).allowance(
+                vars.allocAdaptAddr,
+                address(this)
+            ) >= vars.deposit,
             "StreamPay::createStream::insufficient allowance"
         );
-        IERC20(tokenAddress).safeTransferFrom(
-            msg.sender,
+        IERC20(vars.tokenAddress).safeTransferFrom(
+            vars.allocAdaptAddr,
             address(this),
-            deposit
+            vars.deposit
         );
+        vars.allocAdapter.streamCreated(dao, proposalId, recipient);
         emit CreateStream(
             streamId,
             msg.sender,
             recipient,
             proposalId,
-            deposit,
-            tokenAddress,
-            startTime,
-            stopTime
+            vars.deposit,
+            vars.tokenAddress,
+            vars.startTime,
+            vars.stopTime
         );
         return streamId;
     }

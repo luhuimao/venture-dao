@@ -1,4 +1,5 @@
 pragma solidity ^0.8.0;
+// SPDX-License-Identifier: MIT
 
 library TypeConver {
     function stringToBytes32(string memory source)
