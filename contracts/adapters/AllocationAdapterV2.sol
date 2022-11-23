@@ -300,7 +300,7 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         vestingInfos[address(dao)][proposalId][recipient].created = true;
     }
 
-    function isStreamCreated(
+    function isVestCreated(
         DaoRegistry dao,
         bytes32 proposalId,
         address recepient

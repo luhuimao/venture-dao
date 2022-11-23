@@ -475,7 +475,7 @@ const setDaoConfiguration = async ({ options, dao, testContracts }) => {
     tx = await dao.setConfiguration(configKey_ProposalExecuteDuration, options.proposalExecuteDurantion);
     await tx.wait();
 
-    
+
 };
 const setDaoAddressConfiguration = async ({ options, dao, testContracts }) => {
     const configKey_DaoSquareAddress = sha3(web3.utils.encodePacked("DAO_SQUARE_ADDRESS"));
@@ -571,9 +571,11 @@ const deployDao = async (options) => {
     // log("fundingpoolAdapter set rice address");
     // tx = await adapters.fundingpoolAdapter.instance.setRiceTokenAddress(dao.address, testContracts.testRiceToken.instance.address);
     // await tx.wait();
-
-    await setDaoConfiguration({ options, dao, testContracts });
-    await setDaoAddressConfiguration({ options, dao, testContracts });
+    console.log("network name", hre.network.name);
+    if (hre.network.name == "hardhat") {
+        await setDaoConfiguration({ options, dao, testContracts });
+        await setDaoAddressConfiguration({ options, dao, testContracts });
+    }
 
     // log("registerPotentialNewToken to funding pool");
     // tx = await adapters.fundingpoolAdapter.instance.registerPotentialNewToken(dao.address, testContracts.testToken1.instance.address);

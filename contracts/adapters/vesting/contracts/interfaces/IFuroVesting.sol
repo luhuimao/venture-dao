@@ -78,15 +78,13 @@ interface IFuroVesting {
     event CreateVesting(
         uint256 indexed vestId,
         address token,
-        address indexed owner,
         address indexed recipient,
         uint32 start,
         uint32 cliffDuration,
         uint32 stepDuration,
         uint32 steps,
-        // uint128 cliffShares,
-        // uint128 stepShares,
-        // bool fromBentoBox,
+        uint128 cliffShares,
+        uint128 stepShares,
         bytes32 proposalId
     );
 

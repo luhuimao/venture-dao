@@ -53,28 +53,11 @@ contract FundRaiseAdapterContract is
     Reimbursable
 {
     /*
-     * EVENTS
-     */
-    event ProposalCreated(
-        bytes32 proposalId,
-        address acceptTokenAddr,
-        uint256 fundRaiseTarget,
-        uint256 fundRaiseMaxAmount,
-        uint256 lpMinDepositAmount,
-        uint256 lpMaxDepositAmount,
-        uint256 fundRaiseStartTime,
-        uint256 fundRaiseEndTime,
-        uint256 fundEndTime,
-        uint256 redemptPeriod,
-        uint256 redemptDuration
-    );
-    event proposalExecuted(bytes32 proposalId, uint256 state);
-    /*
      * PUBLIC VARIABLES
      */
     // Keeps track of all the Proposals executed per DAO.
     mapping(address => mapping(bytes32 => ProposalDetails)) public Proposals;
-    uint256 public proposalIds = 100000;
+    uint256 public proposalIds = 100010;
     bytes32 public latestProposalId;
     bytes32 public previousProposalId;
     /*
@@ -100,6 +83,7 @@ contract FundRaiseAdapterContract is
         uint256 managementFeeRatio;
         uint256 redepmtFeeRatio;
         uint256 protocolFeeRatio;
+        FundingPoolAdapterContract fundingPoolAdapt;
     }
 
     function submitProposal(
@@ -112,9 +96,16 @@ contract FundRaiseAdapterContract is
 
         vars.lastFundEndTime = dao.getConfiguration(DaoHelper.FUND_END_TIME);
         vars.returnDuration = dao.getConfiguration(DaoHelper.RETURN_DURATION);
-
+        vars.fundingPoolAdapt = FundingPoolAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
+        );
         require(
-            block.timestamp > vars.lastFundEndTime + vars.returnDuration,
+            vars.fundingPoolAdapt.fundRaisingState() ==
+                DaoHelper.FundRaiseState.FAILED ||
+                (vars.fundingPoolAdapt.fundRaisingState() ==
+                    DaoHelper.FundRaiseState.DONE &&
+                    block.timestamp >
+                    vars.lastFundEndTime + vars.returnDuration),
             "FundRaise::submitProposal::cant submit fund raise proposal now"
         );
         require(
@@ -233,7 +224,8 @@ contract FundRaiseAdapterContract is
             vars.fundRaiseEndTime,
             vars.fundRaiseEndTime + vars.fundTerm,
             vars.redemptPeriod,
-            vars.redemptDuration
+            vars.redemptDuration,
+            ProposalState.Voting
         );
     }
 
@@ -242,6 +234,7 @@ contract FundRaiseAdapterContract is
         GPVotingContract votingContract;
         StakingRiceExtension stakingrice;
         FundingPoolExtension fundingpool;
+        FundingPoolAdapterContract fundingPoolAdapt;
         IGPVoting.VotingState voteResult;
         // AllocationAdapterContractV2 allocAda;
         uint128 nbYes;
@@ -260,7 +253,9 @@ contract FundRaiseAdapterContract is
         vars.proposalInfo = Proposals[address(dao)][proposalId];
 
         dao.processProposal(proposalId);
-
+        vars.fundingPoolAdapt = FundingPoolAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
+        );
         vars.votingContract = GPVotingContract(dao.votingAdapter(proposalId));
         require(
             address(vars.votingContract) != address(0x0),
@@ -276,6 +271,8 @@ contract FundRaiseAdapterContract is
             // set dao configuration
             setFundRaiseConfiguration(dao, vars.proposalInfo);
 
+            //reset fund raise state
+            vars.fundingPoolAdapt.resetFundRaiseState(dao);
             vars.proposalInfo.state = ProposalState.Done;
         } else if (
             vars.voteResult == IGPVoting.VotingState.NOT_PASS ||
@@ -286,7 +283,7 @@ contract FundRaiseAdapterContract is
             revert("FundRaise::processProposal::voting not finalized");
         }
 
-        emit proposalExecuted(proposalId, uint256(vars.proposalInfo.state));
+        emit proposalExecuted(proposalId, vars.proposalInfo.state);
     }
 
     function setFundRaiseConfiguration(

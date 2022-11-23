@@ -60,6 +60,24 @@ interface IFundRaise {
         FundRaiseRewardAndFeeInfo feeInfo;
         ProposalState state;
     }
+    /*
+     * EVENTS
+     */
+    event ProposalCreated(
+        bytes32 proposalId,
+        address acceptTokenAddr,
+        uint256 fundRaiseTarget,
+        uint256 fundRaiseMaxAmount,
+        uint256 lpMinDepositAmount,
+        uint256 lpMaxDepositAmount,
+        uint256 fundRaiseStartTime,
+        uint256 fundRaiseEndTime,
+        uint256 fundEndTime,
+        uint256 redemptPeriod,
+        uint256 redemptDuration,
+        ProposalState state
+    );
+    event proposalExecuted(bytes32 proposalId, ProposalState state);
 
     /*
     _uint256ArgsProposal[0]:fundRaiseTarget

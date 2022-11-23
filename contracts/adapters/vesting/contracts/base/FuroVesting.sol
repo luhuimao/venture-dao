@@ -107,11 +107,11 @@ contract FuroVesting is
         vars.allocAdapter = AllocationAdapterContractV2(vars.allocAdaptAddr);
         require(
             vars.allocAdapter.ifEligible(dao,recipientAddr, proposalId),
-            "Sablier::createVesting::Recipient not eligible of this proposalId"
+            "Vesting::createVesting::Recipient not eligible of this proposalId"
         );
         require(
-            !vars.allocAdapter.isStreamCreated(dao, proposalId,recipientAddr),
-            "Sablier::createVesting::Already created"
+            !vars.allocAdapter.isVestCreated(dao, proposalId,recipientAddr),
+            "Vesting::createVesting::Already created"
         );
 
          vars.distributeFundAdapter = DistributeFundContractV2(
@@ -133,15 +133,13 @@ contract FuroVesting is
             ,
             ,
             ,
+            ,
             vars.vestInfo
-            // vars.vestingStartTime,
-            // vars.vestingCliffDuration,
-            // vars.vestingStepDuration,
-            // vars.vestingSteps
+          
         ) = vars.distributeFundAdapter.distributions(address(dao), proposalId);
         // if (vestParams.start < block.timestamp) revert InvalidStart();
-        vars.stepPercentage=uint128(PERCENTAGE_PRECISION / vars.vestInfo.vestingSteps);
-        if (vars.stepPercentage > PERCENTAGE_PRECISION)
+        // vars.stepPercentage=uint128(PERCENTAGE_PRECISION / vars.vestInfo.vestingSteps);
+        if (vars.vestInfo.stepPercentage > PERCENTAGE_PRECISION)
             revert InvalidStepSetting();
         if (vars.vestInfo.vestingStepDuration == 0 || vars.vestInfo.vestingSteps == 0)
             revert InvalidStepSetting();
@@ -161,7 +159,7 @@ contract FuroVesting is
             false
         );
         vars.stepShares = uint128(
-            (vars.stepPercentage * vars.depositedShares) /
+            (vars.vestInfo.stepPercentage * vars.depositedShares) /
                 PERCENTAGE_PRECISION
         );
         vars.cliffShares = uint128(
@@ -190,17 +188,15 @@ contract FuroVesting is
         vars.allocAdapter.streamCreated(dao, proposalId, recipientAddr);
 
         emit CreateVesting(
-           vars.vestId,
+            vars.vestId,
             vars.tokenAddress,
-            msg.sender,
             recipientAddr,
-           uint32(vars.vestInfo.vestingStartTime),
-           uint32(vars.vestInfo.vestingCliffDuration),
+            uint32(vars.vestInfo.vestingStartTime),
+            uint32(vars.vestInfo.vestingCliffDuration),
             uint32(vars.vestInfo.vestingStepDuration),
-          uint32(vars.vestInfo.vestingSteps),
-            // cliffShares,
-            // stepShares,
-            // vestParams.fromBentoBox,
+            uint32(vars.vestInfo.vestingSteps),
+            vars.cliffShares,
+            vars.stepShares,
             proposalId
         );
     }
@@ -335,7 +331,7 @@ contract FuroVesting is
         uint256 shares,
         bool toBentoBox
     ) internal {
-                IBentoBoxMinimal bentoBox=IBentoBoxMinimal(dao.getAddressConfiguration(DaoHelper.BEN_TO_BOX));
+                IBentoBoxMinimal bentoBox=IBentoBoxMinimal(dao.getAdapterAddress(DaoHelper.BEN_TO_BOX));
         if (toBentoBox) {
             bentoBox.transfer(token, from, to, shares);
         } else {

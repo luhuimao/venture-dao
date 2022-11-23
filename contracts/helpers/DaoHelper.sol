@@ -134,7 +134,7 @@ library DaoHelper {
         keccak256("PROPOSAL_EXECUTE_DURATION");
 
     // Adapters
-
+    bytes32 internal constant FUND_RAISE = keccak256("fund-raise");
     bytes32 internal constant VESTWING = keccak256("vesting");
     bytes32 internal constant BEN_TO_BOX = keccak256("ben-to-box");
     bytes32 internal constant GP_ONBOARDING_ADAPT =

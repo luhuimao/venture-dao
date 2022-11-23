@@ -53,20 +53,7 @@ contract DistributeFundContractV2 is
     Reimbursable
 {
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
-    // Event to indicate the distribution process has been completed
-    // if the unitHolder address is 0x0, then the amount were distributed to all members of the DAO.
-    // event Distributed(
-    //     address daoAddress,
-    //     address token,
-    //     uint256 amount,
-    //     address receiver
-    // );
 
-    // bytes32 constant RiceTokenAddr = keccak256("rice.token.address");
-    // bytes32 constant ProposalDuration =
-    //     keccak256("distributeFund.proposalDuration");
-    // bytes32 constant ProposalInterval =
-    //     keccak256("distributeFund.proposalInterval");
     // Keeps track of all the distributions executed per DAO.
     mapping(address => mapping(bytes32 => Distribution)) public distributions;
     // Keeps track of all the locked token amount per DAO.
@@ -80,7 +67,8 @@ contract DistributeFundContractV2 is
     DoubleEndedQueue.Bytes32Deque public proposalQueue;
 
     string constant PROPOSALID_PREFIX = "TFP";
-    uint256 public proposalIds = 100060;
+    uint256 public proposalIds = 100095;
+    uint256 public constant PERCENTAGE_PRECISION = 1e18;
 
     /**
      * @notice Configures the DAO with the Voting and Gracing periods.
@@ -187,6 +175,7 @@ contract DistributeFundContractV2 is
         uint256 vestingcliffDuration;
         uint256 vestingStepDuration;
         uint256 vestingSteps;
+        uint256 vestingStepPercentage;
         uint256 requestedFundAmount;
         uint256 tradingOffTokenAmount;
     }
@@ -197,13 +186,14 @@ contract DistributeFundContractV2 is
      * @dev Proposal ids can not be reused.
      * @dev The amount must be greater than zero.
      * @param dao The dao address.
-     * @param _addressArgs _addressArgs[0]:recipientAddr,_addressArgs[1]:projectTokenAddr
+     * @param _addressArgs _addressArgs[0]:recipientAddr,_addressArgs[1]:projectTokenAddr, _addressArgs[2]: approveOwnerAddr
      * @param _uint256ArgsProposal _uint256ArgsProposal[0]:requestedFundAmount,
                                     _uint256ArgsProposal[1]:tradingOffTokenAmount,
                                     _uint256ArgsProposal[2]:vestingStartTime,
                                     _uint256ArgsProposal[3]:vestingcliffDuration,
                                     _uint256ArgsProposal[4]:stepDuration,
                                     _uint256ArgsProposal[5]:steps,
+                                    _uint256ArgsProposal[6]:stepPercentage
      */
     // slither-disable-next-line reentrancy-benign
     function submitProposal(
@@ -232,8 +222,8 @@ contract DistributeFundContractV2 is
             "Funding::submitProposal::only can submit proposal in investing period"
         );
         require(
-            _addressArgs.length == 2 && _uint256ArgsProposal.length == 6,
-            "Funding::submitProposal::invalid parameter number"
+            _addressArgs.length == 3 && _uint256ArgsProposal.length == 7,
+            "Funding::submitProposal::invalid parameter amount"
         );
         vars.gpVotingContract = IGPVoting(
             dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
@@ -251,7 +241,7 @@ contract DistributeFundContractV2 is
         vars.vestingcliffDuration = _uint256ArgsProposal[3];
         vars.vestingStepDuration = _uint256ArgsProposal[4];
         vars.vestingSteps = _uint256ArgsProposal[5];
-
+        vars.vestingStepPercentage = _uint256ArgsProposal[6];
         require(
             vars.vestingStartTime > 0 &&
                 vars.vestingcliffDuration > 0 &&
@@ -259,6 +249,11 @@ contract DistributeFundContractV2 is
                 vars.vestingSteps > 0,
             "Funding::submitProposal::vesting start time, cliff duration, step duration, steps must > 0"
         );
+        if (
+            vars.vestingStepPercentage > PERCENTAGE_PRECISION ||
+            vars.vestingStepPercentage >
+            (PERCENTAGE_PRECISION / vars.vestingSteps)
+        ) revert InvalidStepSetting();
         require(
             vars.requestedFundAmount > 0 && vars.tradingOffTokenAmount > 0,
             "Funding::submitProposal::invalid trading-Off Token or trading off token Amount"
@@ -274,9 +269,10 @@ contract DistributeFundContractV2 is
         );
         // Creates the distribution proposal.
         dao.submitProposal(vars.proposalId);
-        address[3] memory _addressArgs = [
+        address[4] memory _addressArgs = [
             _addressArgs[0],
             _addressArgs[1],
+            _addressArgs[2],
             msg.sender
         ];
         // Saves the state of the proposal.
@@ -316,10 +312,13 @@ contract DistributeFundContractV2 is
             vars.proposalId,
             _addressArgs[1],
             _addressArgs[0],
+            _addressArgs[2],
             _uint256ArgsProposal[1],
             _uint256ArgsProposal[0],
-            _uint256ArgsProposal[2],
-            _uint256ArgsProposal[3],
+            vars.vestingStartTime,
+            vars.vestingcliffDuration,
+            vars.vestingStepDuration,
+            vars.vestingSteps,
             vars.proposalInQueueTimestamp,
             vars.proposalStartVotingTimestamp,
             vars.proposalEndVotingTimestamp,
@@ -330,7 +329,7 @@ contract DistributeFundContractV2 is
     function createNewDistribution(
         DaoRegistry dao,
         bytes32 proposalId,
-        address[3] memory _addressArgs,
+        address[4] memory _addressArgs,
         uint256[] calldata _uint256ArgsProposal
     ) internal {
         // uint256 _propsalStartVotingTimestamp = computeProjectVotingTimestamp(
@@ -346,6 +345,7 @@ contract DistributeFundContractV2 is
             _uint256ArgsProposal[0],
             _addressArgs[0],
             _addressArgs[2],
+            _addressArgs[3],
             IFunding.DistributionStatus.IN_QUEUE,
             block.timestamp,
             0,
@@ -355,7 +355,8 @@ contract DistributeFundContractV2 is
                 _uint256ArgsProposal[2],
                 _uint256ArgsProposal[3],
                 _uint256ArgsProposal[4],
-                _uint256ArgsProposal[5]
+                _uint256ArgsProposal[5],
+                _uint256ArgsProposal[6]
             )
         );
     }
@@ -448,23 +449,35 @@ contract DistributeFundContractV2 is
                 100
         ) {
             distribution.status = IFunding.DistributionStatus.FAILED;
+            emit StartVote(
+                proposalId,
+                0,
+                0,
+                IFunding.DistributionStatus.FAILED
+            );
             return false;
         }
 
         //lock project token
         bool rel = _lockProjectTeamToken(
             dao,
-            distribution.recipientAddr,
+            distribution.approveOwnerAddr,
             distribution.tokenAddr,
             distribution.tradingOffTokenAmount
         );
         // lock project token failed
         if (!rel) {
             distribution.status = IFunding.DistributionStatus.FAILED;
+            emit StartVote(
+                proposalId,
+                0,
+                0,
+                IFunding.DistributionStatus.FAILED
+            );
             return false;
         }
         projectTeamLockedTokens[address(dao)][proposalId][
-            distribution.recipientAddr
+            distribution.approveOwnerAddr
         ] = distribution.tradingOffTokenAmount;
 
         IGPVoting gpVotingContract = IGPVoting(
@@ -486,6 +499,12 @@ contract DistributeFundContractV2 is
         ongoingDistributions[address(dao)] = proposalId;
 
         distribution.status = IFunding.DistributionStatus.IN_VOTING_PROGRESS;
+        emit StartVote(
+            proposalId,
+            vars._propsalStartVotingTimestamp,
+            vars._propsalStopVotingTimestamp,
+            IFunding.DistributionStatus.IN_VOTING_PROGRESS
+        );
         return true;
     }
 

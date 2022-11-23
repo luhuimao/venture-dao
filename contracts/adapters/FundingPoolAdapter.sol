@@ -155,6 +155,25 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         // reentrancyGuard(dao)
         reimbursable(dao)
     {
+        uint256 maxDepositAmount = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_MAX_INVESTMENT_AMOUNT_OF_LP
+        );
+        uint256 minDepositAmount = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP
+        );
+
+        if (minDepositAmount > 0) {
+            require(
+                amount + balanceOf(dao, msg.sender) >= minDepositAmount,
+                "FundingPoolAdapter::Deposit::deposit amount cant less than min deposit amount"
+            );
+        }
+        if (maxDepositAmount > 0) {
+            require(
+                amount + balanceOf(dao, msg.sender) <= maxDepositAmount,
+                "FundingPoolAdapter::Deposit::deposit amount cant greater than max deposit amount"
+            );
+        }
         require(
             amount > 0,
             "FundingPoolAdapter::Deposit:: invalid deposit amount"
@@ -166,24 +185,7 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
                 block.timestamp,
             "FundingPoolAdapter::Deposit::not in fundraise window"
         );
-        uint256 maxDepositAmount = dao.getConfiguration(
-            DaoHelper.FUND_RAISING_MAX_INVESTMENT_AMOUNT_OF_LP
-        );
-        uint256 minDepositAmount = dao.getConfiguration(
-            DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP
-        );
-        if (minDepositAmount > 0) {
-            require(
-                amount >= minDepositAmount,
-                "FundingPoolAdapter::Deposit::deposit amount cant less than min deposit amount"
-            );
-        }
-        if (maxDepositAmount > 0) {
-            require(
-                amount <= maxDepositAmount,
-                "FundingPoolAdapter::Deposit::deposit amount cant greater than max deposit amount"
-            );
-        }
+
         require(
             lpBalance(dao) + amount <=
                 dao.getConfiguration(DaoHelper.FUND_RAISING_MAX),
@@ -216,6 +218,14 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
                 fundRaisingState = DaoHelper.FundRaiseState.DONE;
             else fundRaisingState = DaoHelper.FundRaiseState.FAILED;
         }
+    }
+
+    function resetFundRaiseState(DaoRegistry dao) external {
+        require(
+            msg.sender == dao.getAdapterAddress(DaoHelper.FUND_RAISE),
+            "FundingPoolAdapter::resetFundRaiseState::Access deny"
+        );
+        fundRaisingState = DaoHelper.FundRaiseState.IN_PROGRESS;
     }
 
     // function recoverERC20(
@@ -325,6 +335,14 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
 
     function getFundEndTime(DaoRegistry dao) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.FUND_END_TIME);
+    }
+
+    function getFundReturnDuration(DaoRegistry dao)
+        external
+        view
+        returns (uint256)
+    {
+        return dao.getConfiguration(DaoHelper.RETURN_DURATION);
     }
 
     function latestRedempteTime(DaoRegistry dao)

@@ -90,16 +90,17 @@ describe("Adapter - FundRaise", () => {
         await expectRevert(fundRaiseAdapter.connect(this.user1).submitProposal(dao.address, [0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0]), "revert");
     })
 
-    it("should be possible GP to submit a fund raise proposal", async () => {
+    it("should be possible for GP to submit a fund raise proposal if previous fund finished", async () => {
         const fundRaiseAdapter = this.adapters.fundRaiseAdapter.instance;
         const gpOnboardVotingAdatper = this.adapters.gpOnboardVotingAdapter.instance;
         const gpDaoExt = this.extensions.gpDaoExt.functions;
         const dao = this.dao;
+        const fundingPoolAdapter = this.fundingpoolAdapter;
 
         let fundRaiseTarget = hre.ethers.utils.parseEther("10000");
         let fundRaiseMaxAmount = hre.ethers.utils.parseEther("10000000");
         let lpMinDepositAmount = hre.ethers.utils.parseEther("100");
-        let lpMaxDepositAmount = hre.ethers.utils.parseEther("10000");
+        let lpMaxDepositAmount = hre.ethers.utils.parseEther("100000");
         const _uint256ArgsProposal = [
             fundRaiseTarget,
             fundRaiseMaxAmount,
@@ -132,12 +133,26 @@ describe("Adapter - FundRaise", () => {
             protocolFeeRatio
         ];
 
-        const lastFundEndTime = await dao.getConfiguration(sha3("FUND_END_TIME"));
+        const lastFundEndTime = await fundingPoolAdapter.getFundEndTime(dao.address);
+        const lastreturnDuration = await fundingPoolAdapter.getFundReturnDuration(dao.address);
+        let fundRaiseState = await fundingPoolAdapter.fundRaisingState();
+        const lastfundRaiseTarget = await fundingPoolAdapter.getFundRaisingTarget(dao.address);
+        const lastfundRaiseCloseTime = await fundingPoolAdapter.getFundRaiseWindowCloseTime(dao.address);
+        const totalFund = await fundingPoolAdapter.lpBalance(dao.address);
+        console.log(`
+        fund raise state ${fundRaiseState}
+        fund raise target ${hre.ethers.utils.formatEther(lastfundRaiseTarget.toString())}
+        total fund ${hre.ethers.utils.formatEther(totalFund.toString())}
+        fund raise close time ${lastfundRaiseCloseTime}
+        current block time ${currentblocktimestamp}
+        `);
+
         if (parseInt(lastFundEndTime) > currentblocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(lastFundEndTime) + 1])
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(lastFundEndTime) + parseInt(lastreturnDuration) + 1])
             await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
         }
 
+        await fundingPoolAdapter.processFundRaise(dao.address);
 
         let tx = await fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo);
         const result = await tx.wait();
@@ -181,7 +196,7 @@ describe("Adapter - FundRaise", () => {
 
         await fundRaiseAdapter.processProposal(dao.address, newProposalId);
         const newFundEndTime = await dao.getConfiguration(sha3("FUND_END_TIME"));
-        let maxAmount = await this.fundingpoolAdapter.getFundRaisingMaxAmount(dao.address);
+        let maxAmount = await fundingPoolAdapter.getFundRaisingMaxAmount(dao.address);
         console.log(`
         fund end time ${newFundEndTime}
         fund raise max amount ${hre.ethers.utils.formatEther(maxAmount.toString())}
@@ -190,7 +205,7 @@ describe("Adapter - FundRaise", () => {
 
 
 
-        await depositToFundingPool(this.fundingpoolAdapter, dao, this.owner, proposalInfo.fundRaiseTarget, this.testtoken1);
+        await depositToFundingPool(fundingPoolAdapter, dao, this.owner, hre.ethers.utils.parseEther("20000"), this.testtoken1);
     })
 
     it("should be possible to submit a funding proposal in investing period", async () => {
@@ -207,23 +222,29 @@ describe("Adapter - FundRaise", () => {
         const vestingcliffDuration = oneWeek;
         const stepDuration = oneDay;
         const steps = 7;
+        const stepPercentage = hre.ethers.utils.parseEther("1").div(toBN(steps));
 
         const projectTeamAddr = this.user1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
         const fundStartTime = await fundingPoolAdaptContract.getFundStartTime(dao.address);
         const fundStopTime = await fundingPoolAdaptContract.getFundEndTime(dao.address);
-        console.log(`
-        fund start time ${fundStartTime.toString()}
-        fund end time ${fundStopTime.toString()}
-        `);
+
         await this.testtoken2.transfer(this.user1.address, tradingOffTokenAmount);
         await this.testtoken2.connect(this.user1).approve(distributeFundContract.address, tradingOffTokenAmount);
 
         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundStartTime) + 1])
         await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        console.log(`current time ${blocktimestamp}`);
+        const fundRaiseTarget = await fundingPoolAdaptContract.getFundRaisingTarget(dao.address);
+        const totalFund = await fundingPoolAdaptContract.lpBalance(dao.address);
+        console.log(`
+        fund start time ${fundStartTime.toString()}
+        fund end time ${fundStopTime.toString()}
+        current time ${blocktimestamp}
+        fund raise target ${hre.ethers.utils.formatEther(fundRaiseTarget.toString())}
+        total fund ${hre.ethers.utils.formatEther(totalFund.toString())}
+        `);
         let { proposalId } = await createDistributeFundsProposal(dao,
             distributeFundContract,
             requestedFundAmount,
@@ -232,8 +253,10 @@ describe("Adapter - FundRaise", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
+            stepPercentage,
             projectTeamAddr,
             projectTeamTokenAddr,
+            projectTeamAddr,
             this.owner);
 
     })

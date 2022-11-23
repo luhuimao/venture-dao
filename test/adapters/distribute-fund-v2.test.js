@@ -59,7 +59,7 @@ import { RiceStakingAdapterContract_GOERLI } from "../../.config";
 // const { getConfig } = require("../../migrations/configs/contracts.config");
 
 import { deployDefaultDao, takeChainSnapshot, revertChainSnapshot, proposalIdGenerator, expect, expectRevert, web3 } from "../../utils/hh-util";
-const { checkBalance, depositToFundingPool } = require("../../utils/test-util");
+const { checkBalance, depositToFundingPool ,createDistributeFundsProposal} = require("../../utils/test-util");
 
 const proposalCounter = proposalIdGenerator().generator;
 
@@ -136,7 +136,7 @@ describe("Adapter - DistributeFundsV2", () => {
         const fundRaisingWindwoEndTime = await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_END"));
         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaisingWindwoEndTime) + 1]);
         await hre.network.provider.send("evm_mine");
-        await this.fundingpoolAdapter.processFundRaise(dao.address);
+        // await this.fundingpoolAdapter.processFundRaise(dao.address);
         console.log(`fund raise status: ${await this.fundingpoolAdapter.fundRaisingState()}`);
     });
 
@@ -179,30 +179,6 @@ describe("Adapter - DistributeFundsV2", () => {
         console.log(`${applicant} is a GP?: ${isGP}`);
     }
 
- 
-    const distributeFundsProposal = async (
-        dao,
-        distributeFundContract,
-        requestedFundAmount,
-        tradingOffTokenAmount,
-        vestingStartTime,
-        vestingcliffDuration,
-        stepDuration,
-        steps,
-        projectTeamAddr,
-        projectTokenAddr,
-        sender
-    ) => {
-        const tx = await distributeFundContract.connect(sender).submitProposal(
-            dao.address,
-            [projectTeamAddr, projectTokenAddr],
-            [requestedFundAmount, tradingOffTokenAmount, vestingStartTime, vestingcliffDuration,stepDuration,steps],
-        );
-        const result = await tx.wait();
-        const newProposalId = result.events[2].args.proposalId;
-        return { proposalId: newProposalId };
-    };
-
     it("should be not possible to submit a funding proposal by non gp member", async () => {
         const dao = this.dao;
         const distributeFundContract = this.distributefund
@@ -218,11 +194,13 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration= currentBlockTime + 1000;
         const stepDuration=oneDay;
         const steps=7;
+        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
         await expectRevert(
-            distributeFundsProposal(
+            createDistributeFundsProposal(
                 dao,
                 distributeFundContract,
                 requestedFundAmount,
@@ -231,12 +209,53 @@ describe("Adapter - DistributeFundsV2", () => {
                 vestingcliffDuration,
                 stepDuration,
                 steps,
+                stepPercentage,
                 projectTeamAddr,
                 projectTeamTokenAddr,
+                projectTeamAddr,
                 this.user2
             ),
             "revert"
         );
+    });
+
+    it("should be impossible to submit a funding proposal if step setting invalid",async()=>{
+        const dao = this.dao;
+        const distributeFundContract = this.distributefund
+
+
+        const requestedFundAmount = hre.ethers.utils.parseEther("10000");
+        const tradingOffTokenAmount = hre.ethers.utils.parseEther("50000");
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        const currentBlockTime = blocktimestamp;
+        const vestingStartTime = currentBlockTime ;
+        const vestingcliffDuration= currentBlockTime + 1000;
+        const stepDuration=oneDay;
+        const steps=7;
+        let stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps-1));
+
+        const projectTeamAddr = this.project_team1.address;
+        const projectTeamTokenAddr = this.testtoken2.address;
+
+        await expectRevert(
+            createDistributeFundsProposal(
+                dao,
+                distributeFundContract,
+                requestedFundAmount,
+                tradingOffTokenAmount,
+                vestingStartTime,
+                vestingcliffDuration,
+                stepDuration,
+                steps,
+                stepPercentage,
+                projectTeamAddr,
+                projectTeamTokenAddr,
+                projectTeamAddr,
+                this.user2
+            ),
+            "revert"
+        );
+
     });
 
     it("should be possible to distribute funds to project team", async () => {
@@ -256,7 +275,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
-        
+        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
         const GPAddr= await dao.getAddressConfiguration(sha3("GP_ADDRESS"));
@@ -267,7 +287,7 @@ describe("Adapter - DistributeFundsV2", () => {
         await this.testtoken2.transfer(this.project_team1.address, tradingOffTokenAmount);
         await this.testtoken2.connect(this.project_team1).approve(distributeFundContract.address, tradingOffTokenAmount);
 
-        let { proposalId } = await distributeFundsProposal(
+        let { proposalId } = await createDistributeFundsProposal(
             dao,
             distributeFundContract,
             requestedFundAmount,
@@ -276,8 +296,10 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
+            stepPercentage,
             projectTeamAddr,
             projectTeamTokenAddr,
+            projectTeamAddr,
             this.owner
         );
         console.log(`proposalId: ${hre.ethers.utils.toUtf8String(proposalId)}`);
@@ -480,6 +502,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
+        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+
         const projectTeamAddr = this.project_team2.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
@@ -488,7 +512,7 @@ describe("Adapter - DistributeFundsV2", () => {
         await this.testtoken2.connect(this.project_team2).approve(distributeFundContract.address, tradingOffTokenAmount);
         console.log(`project token allowance of distributeFundContract : ${hre.ethers.utils.formatEther(await this.testtoken2.allowance(this.project_team2.address, distributeFundContract.address))}`);
 
-        let { proposalId } = await distributeFundsProposal(
+        let { proposalId } = await createDistributeFundsProposal(
             dao,
             distributeFundContract,
             requestedFundAmount,
@@ -497,8 +521,10 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
+            stepPercentage,
             projectTeamAddr,
             projectTeamTokenAddr,
+            projectTeamAddr,
             this.owner
         );
         console.log(`proposalId: ${hre.ethers.utils.toUtf8String(proposalId)}`);
@@ -541,6 +567,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
+        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+
         const projectTeamAddr = this.project_team3.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
@@ -548,7 +576,7 @@ describe("Adapter - DistributeFundsV2", () => {
         await this.testtoken2.connect(this.project_team3).approve(this.distributefund.address, tradingOffTokenAmount);
         console.log(`project team project token amount: ${hre.ethers.utils.formatEther(await this.testtoken2.balanceOf(projectTeamAddr))}`);
 
-        let { proposalId } = await distributeFundsProposal(
+        let { proposalId } = await createDistributeFundsProposal(
             dao,
             this.distributefund,
             requestedFundAmount,
@@ -557,8 +585,10 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
+            stepPercentage,
             projectTeamAddr,
             projectTeamTokenAddr,
+            projectTeamAddr,
             this.owner
         );
         console.log(`new proposalID ${hre.ethers.utils.toUtf8String(proposalId)}`);
@@ -620,6 +650,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
+        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+
         const projectTeamAddr = this.project_team2.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
@@ -628,7 +660,7 @@ describe("Adapter - DistributeFundsV2", () => {
         await this.testtoken2.connect(this.project_team2).approve(distributeFundContract.address, hre.ethers.utils.parseEther("4000"));
         console.log(`project token allowance of distributeFundContract : ${hre.ethers.utils.formatEther(await this.testtoken2.allowance(this.project_team2.address, distributeFundContract.address))}`);
 
-        let { proposalId } = await distributeFundsProposal(
+        let { proposalId } = await createDistributeFundsProposal(
             dao,
             distributeFundContract,
             requestedFundAmount,
@@ -637,8 +669,10 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
+            stepPercentage,
             projectTeamAddr,
             projectTeamTokenAddr,
+            projectTeamAddr,
             this.owner
         );
         console.log(`proposalId: ${hre.ethers.utils.toUtf8String(proposalId)}`);
@@ -699,13 +733,15 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
+        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
 
         await this.testtoken2.transfer(this.project_team1.address, toBN(tradingOffTokenAmount).mul(toBN("2")));
         await this.testtoken2.connect(this.project_team1).approve(distributeFundContract.address, toBN(tradingOffTokenAmount).mul(toBN("2")));
 
-        let  proposalId  = await distributeFundsProposal(
+        let  proposalId  = await createDistributeFundsProposal(
             dao,
             distributeFundContract,
             requestedFundAmount,
@@ -714,14 +750,16 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
+            stepPercentage,
             projectTeamAddr,
             projectTeamTokenAddr,
+            projectTeamAddr,
             this.owner
         );
         console.log(`proposalId1: ${hre.ethers.utils.toUtf8String(proposalId.proposalId)}`);
         this.proposalId1 = proposalId.proposalId;
 
-        proposalId  = await distributeFundsProposal(
+        proposalId  = await createDistributeFundsProposal(
             dao,
             distributeFundContract,
             requestedFundAmount,
@@ -730,8 +768,10 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
+            stepPercentage,
             projectTeamAddr,
             projectTeamTokenAddr,
+            projectTeamAddr,
             this.owner
         );
         console.log(`proposalId2: ${hre.ethers.utils.toUtf8String(proposalId.proposalId)}`);
@@ -791,6 +831,7 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
+        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -812,7 +853,7 @@ describe("Adapter - DistributeFundsV2", () => {
         await this.testtoken2.transfer(this.project_team1.address, tradingOffTokenAmount);
         await this.testtoken2.connect(this.project_team1).approve(distributeFundContract.address, tradingOffTokenAmount);
 
-        let { proposalId } = await distributeFundsProposal(
+        let { proposalId } = await createDistributeFundsProposal(
             dao,
             distributeFundContract,
             requestedFundAmount,
@@ -821,8 +862,10 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
+            stepPercentage,
             projectTeamAddr,
             projectTeamTokenAddr,
+            projectTeamAddr,
             this.owner
         );
         console.log(`proposalId: ${hre.ethers.utils.toUtf8String(proposalId)}`);
@@ -898,6 +941,7 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
+        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -908,7 +952,7 @@ describe("Adapter - DistributeFundsV2", () => {
         await this.testtoken2.transfer(this.project_team1.address, tradingOffTokenAmount);
         // await this.testtoken2.connect(this.project_team1).approve(distributeFundContract.address, tradingOffTokenAmount);
 
-        let { proposalId } = await distributeFundsProposal(
+        let { proposalId } = await createDistributeFundsProposal(
             dao,
             distributeFundContract,
             requestedFundAmount,
@@ -917,8 +961,10 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
+            stepPercentage,
             projectTeamAddr,
             projectTeamTokenAddr,
+            projectTeamAddr,
             this.owner
         );
 
@@ -943,6 +989,7 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
+        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -953,7 +1000,7 @@ describe("Adapter - DistributeFundsV2", () => {
         // await this.testtoken2.transfer(this.project_team1.address, tradingOffTokenAmount);
         await this.testtoken2.connect(this.project_team1).approve(distributeFundContract.address, tradingOffTokenAmount);
 
-        let { proposalId } = await distributeFundsProposal(
+        let { proposalId } = await createDistributeFundsProposal(
             dao,
             distributeFundContract,
             requestedFundAmount,
@@ -962,8 +1009,10 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
+            stepPercentage,
             projectTeamAddr,
             projectTeamTokenAddr,
+            projectTeamAddr,
             this.owner
         );
 
@@ -1118,29 +1167,6 @@ describe("Voting for distribute proposal", () => {
         await fundingpoolAdapter.connect(investor).deposit(dao.address, amount);
 
         console.log(`deposited balace ${hre.ethers.utils.formatEther((await fundingpoolAdapter.balanceOf(dao.address, investor.address)).toString())}`);
-    };
-
-    const distributeFundsProposal = async (
-        dao,
-        distributeFundContract,
-        requestedFundAmount,
-        tradingOffTokenAmount,
-        vestingStartTime,
-        vestingcliffDuration,
-        stepDuration,
-        steps,
-        projectTeamAddr,
-        projectTokenAddr,
-        sender
-    ) => {
-        const tx = await distributeFundContract.connect(sender).submitProposal(
-            dao.address,
-            [projectTeamAddr, projectTokenAddr],
-            [requestedFundAmount, tradingOffTokenAmount, vestingStartTime, vestingcliffDuration,stepDuration,steps],
-        );
-        const result = await tx.wait();
-        const newProposalId = result.events[2].args.proposalId;
-        return { proposalId: newProposalId };
     };
 
     // it("Vote in SIMPLE_MAJORITY model", async () => {
@@ -1584,6 +1610,7 @@ describe("Voting for distribute proposal", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
+        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -1591,7 +1618,7 @@ describe("Voting for distribute proposal", () => {
         await this.testtoken2.transfer(this.project_team1.address, tradingOffTokenAmount);
         await this.testtoken2.connect(this.project_team1).approve(distributeFundContract.address, tradingOffTokenAmount);
 
-        let { proposalId } = await distributeFundsProposal(
+        let { proposalId } = await createDistributeFundsProposal(
             dao,
             distributeFundContract,
             requestedFundAmount,
@@ -1600,8 +1627,10 @@ describe("Voting for distribute proposal", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
+            stepPercentage,
             projectTeamAddr,
             projectTeamTokenAddr,
+            projectTeamAddr,
             this.owner
         );
         console.log(`new proposalID ${hre.ethers.utils.toUtf8String(proposalId)}`);
@@ -1658,6 +1687,7 @@ describe("Voting for distribute proposal", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
+        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
 
 
         const projectTeamAddr = this.project_team1.address;
@@ -1669,7 +1699,7 @@ describe("Voting for distribute proposal", () => {
         await this.testtoken2.transfer(this.project_team1.address, tradingOffTokenAmount);
         await this.testtoken2.connect(this.project_team1).approve(distributeFundContract.address, tradingOffTokenAmount);
 
-        let { proposalId } = await distributeFundsProposal(
+        let { proposalId } = await createDistributeFundsProposal(
             dao,
             distributeFundContract,
             requestedFundAmount,
@@ -1678,8 +1708,10 @@ describe("Voting for distribute proposal", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
+            stepPercentage,
             projectTeamAddr,
             projectTeamTokenAddr,
+            projectTeamAddr,
             this.owner
         );
         console.log(`new proposalID ${hre.ethers.utils.toUtf8String(proposalId)}`);
@@ -1737,6 +1769,7 @@ describe("Voting for distribute proposal", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
+        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -1744,7 +1777,7 @@ describe("Voting for distribute proposal", () => {
         await this.testtoken2.transfer(this.project_team1.address, tradingOffTokenAmount);
         await this.testtoken2.connect(this.project_team1).approve(distributeFundContract.address, tradingOffTokenAmount);
 
-        let { proposalId } = await distributeFundsProposal(
+        let { proposalId } = await createDistributeFundsProposal(
             dao,
             distributeFundContract,
             requestedFundAmount,
@@ -1753,8 +1786,10 @@ describe("Voting for distribute proposal", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
+            stepPercentage,
             projectTeamAddr,
             projectTeamTokenAddr,
+            projectTeamAddr,
             this.owner
         );
         console.log(`new proposalID ${hre.ethers.utils.toUtf8String(proposalId)}`);
@@ -1812,6 +1847,7 @@ describe("Voting for distribute proposal", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
+        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -1819,7 +1855,7 @@ describe("Voting for distribute proposal", () => {
         await this.testtoken2.transfer(this.project_team1.address, tradingOffTokenAmount);
         await this.testtoken2.connect(this.project_team1).approve(distributeFundContract.address, tradingOffTokenAmount);
 
-        let { proposalId } = await distributeFundsProposal(
+        let { proposalId } = await createDistributeFundsProposal(
             dao,
             distributeFundContract,
             requestedFundAmount,
@@ -1828,8 +1864,10 @@ describe("Voting for distribute proposal", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
+            stepPercentage,
             projectTeamAddr,
             projectTeamTokenAddr,
+            projectTeamAddr,
             this.owner
         );
         console.log(`new proposalID ${hre.ethers.utils.toUtf8String(proposalId)}`);

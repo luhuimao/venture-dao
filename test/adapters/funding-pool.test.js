@@ -56,10 +56,11 @@ const proposalCounter = proposalIdGenerator().generator;
 
 describe("Adapter - FundingPool", () => {
     before("deploy dao", async () => {
-        let [owner, user1, user2, project_team1] = await hre.ethers.getSigners();
+        let [owner, user1, user2, user3, project_team1] = await hre.ethers.getSigners();
         this.owner = owner;
         this.user1 = user1;
         this.user2 = user2;
+        this.user3 = user3;
         this.project_team1 = project_team1;
         const { dao, adapters, extensions, testContracts } = await deployDefaultDao({
             owner: owner,
@@ -78,6 +79,10 @@ describe("Adapter - FundingPool", () => {
         this.gpdaoExt = extensions.gpDaoExt.functions;
         this.testtoken1 = testContracts.testToken1.instance
         this.gpvoting = this.adapters.gpVotingAdapter.instance;
+
+        this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("10000000"));
+        this.testtoken1.transfer(this.user2.address, hre.ethers.utils.parseEther("10000000"));
+        this.testtoken1.transfer(this.user3.address, hre.ethers.utils.parseEther("10000000"));
 
         //add new GP
         await depositToFundingPool(this.fundingpoolAdapter, dao, this.owner, hre.ethers.utils.parseEther("1000"), this.testtoken1)
@@ -126,16 +131,15 @@ describe("Adapter - FundingPool", () => {
         const fundingPoolExt = this.extensions.fundingpoolExt.functions;
         const gpdaoExt = this.gpdaoExt;
 
-        await testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("2000"));
-        console.log("user1 test token balance: ", hre.ethers.utils.formatEther(await testtoken1.balanceOf(this.user1.address)).toString());
+
         await depositToFundingPool(fundingpoolAdapter, dao, this.user1, hre.ethers.utils.parseEther("1000"), testtoken1);
-        await depositToFundingPool(fundingpoolAdapter, dao, this.user1, hre.ethers.utils.parseEther("1000"), testtoken1);
+        await depositToFundingPool(fundingpoolAdapter, dao, this.user2, hre.ethers.utils.parseEther("1000"), testtoken1);
 
         console.log(`test usdt bal in fund pool: ${hre.ethers.utils.formatEther((await testtoken1.balanceOf(this.extensions.fundingpoolExt.address)))}`);
         console.log("user1 test token balance: ", hre.ethers.utils.formatEther(await testtoken1.balanceOf(this.user1.address)).toString());
         console.log(`total fund: ${hre.ethers.utils.formatEther((await fundingpoolAdapter.lpBalance(dao.address)))}`);
         expect(parseInt(hre.ethers.utils.formatEther(await fundingpoolAdapter.balanceOf(
-            dao.address, this.user1.address)))).equal(2000);
+            dao.address, this.user1.address)))).equal(1000);
     })
 
     it("should be impossible to withdraw funds from the fundingpool during fundraise window", async () => {
@@ -172,7 +176,7 @@ describe("Adapter - FundingPool", () => {
 
         const minInvestmentAmountForLP = await fundingpoolAdapter.getMinInvestmentForLP(dao.address);
         console.log(`min Investment Amount For LP: ${hre.ethers.utils.formatEther(minInvestmentAmountForLP.toString())}`);
-        await expectRevert(depositToFundingPool(fundingpoolAdapter, dao, this.owner, hre.ethers.utils.parseEther("100"), testtoken1), "revert");
+        await expectRevert(depositToFundingPool(fundingpoolAdapter, dao, this.user3, hre.ethers.utils.parseEther("100"), testtoken1), "revert");
 
     });
 

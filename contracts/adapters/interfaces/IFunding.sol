@@ -54,6 +54,7 @@ interface IFunding {
         uint256 tradingOffTokenAmount; //project token amount for trading off
         uint256 requestedFundAmount; // The amount project team requested.
         address recipientAddr; // The receiver address that will receive the funds.
+        address approveOwnerAddr; // owner address when approve
         address proposer;
         DistributionStatus status; // The distribution status.
         uint256 inQueueTimestamp;
@@ -68,21 +69,33 @@ interface IFunding {
         uint256 vestingCliffDuration;
         uint256 vestingStepDuration;
         uint256 vestingSteps;
+        uint256 stepPercentage;
     }
 
     event ProposalCreated(
         bytes32 proposalId,
         address projectTokenAddress,
         address projectTeamAddress,
+        address approveOwnerAddress,
         uint256 tradingOffTokenAmount,
         uint256 requestedFundAmount,
-        uint256 fullyReleasedDate,
-        uint256 lockupDate,
+        uint256 vestingStartTime,
+        uint256 vestingCliffDuration,
+        uint256 vestingStepDuration,
+        uint256 vestingSteps,
         uint256 inQueueTimestamp,
         uint256 voteStartingTimestamp,
         uint256 voteEndTimestamp,
         uint256 proposalExecuteTimestamp
     );
+
+    event StartVote(
+        bytes32 proposalID,
+        uint256 startVoteTime,
+        uint256 stopVoteTime,
+        DistributionStatus state
+    );
+
     event ProposalExecuted(
         bytes32 proposalID,
         uint256 state,
@@ -91,6 +104,7 @@ interface IFunding {
         uint128 nbNo,
         uint256 distributeState
     );
+    error InvalidStepSetting();
 
     // function distribute(DaoRegistry dao, uint256 toIndex) external;
 }

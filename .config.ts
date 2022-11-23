@@ -10,7 +10,7 @@ export const RiceStakingFactory_RINKEBY = "0x0C78577d975035563d7f0130934AF7d7B39
 export const GPDaoFactory_RINKEBY = "0x2F018184c4b87905a1BFc012d028EBf616487F8e"; //REPLACE_FLAG
 //Goerli testnet
 export const DaoFactory_GOERLI = "0x2ccF655DD0e15e97B6a677EB3ff1f3Aa4b9833a1"; //REPLACE_FLAG
-export const FundingPoolFactory_GOERLI = "0xB6aB53F3B45328FA2493A9594a3Fb5EFE2503B5b"; //REPLACE_FLAG
+export const FundingPoolFactory_GOERLI = "0x19688d00968f482f4EA405366220D600654664d5"; //REPLACE_FLAG
 export const RiceStakingFactory_GOERLI = "0x4C2b940f4410a93AfBfF5E36c7d5810Cf20e4965"; //REPLACE_FLAG
 export const GPDaoFactory_GOERLI = "0xEC72dd8c1F8eD46DcE76d39A7D8c2a56ce4A1DFc"; //REPLACE_FLAG
 //core
@@ -24,7 +24,7 @@ export const StakingRiceExtension_RINKEBY = "0xA27E96440E81A9DAC44461951b03DF390
 export const GPDaoExtension_RINKEBY = "0x217C48a06Be195c27f52095E0Ba2A0bb9eb851Af"; //REPLACE_FLAG
 
 //Goerli testnet
-export const FundingPoolExtension_GOERLI = "0xa508f45816CBCb936C63DA4a78D0A9450a6DE15d";
+export const FundingPoolExtension_GOERLI = "0x51c48Dd3b0692898C9250f6F85b515A21001b859";
 export const StakingRiceExtension_GOERLI = "0xf52b1531EFef7E2BCe7a38Aa4945216F6aB9b8FB"; //REPLACE_FLAG
 export const GPDaoExtension_GOERLI = "0x952767cF43832bdeb2fe717A019e56ceC96E416F"; //REPLACE_FLAG
 //adapters
@@ -44,7 +44,7 @@ export const AllocationAdapterContract_RINKEBY = "0x1F2b112266452b1e7553ECF4A7eF
 export const AllocationAdapterContractV2_RINKEBY = "0x0e3d60B0c62CDC2bD68C5353cEa28C43d62E5f9c"; //REPLACE_FLAG
 
 //Goerli testnet
-export const FundingPoolAdapterContract_GOERLI = "0x122abdc91a5108A5dF77427902679f81E99E7F2D"; //REPLACE_FLAG
+export const FundingPoolAdapterContract_GOERLI = "0x96cf34756e156cb719e610fc07a91600015c327c"; //REPLACE_FLAG
 export const RiceStakingAdapterContract_GOERLI = "0xf203E215601647Bf7d51B223efB1089A9eDB81a8"; //REPLACE_FLAG
 export const GPDaoAdapterContract_GOERLI = "0x80E6A7a8faF5C57f0EAdA586fc8F8b557e09648F"; //REPLACE_FLAG
 export const GPDaoOnboardingAdapterContract_GOERLI = "0x55C5938Afbb70d111c4661b1fDEE22FbB03D959b"; //REPLACE_FLAG
@@ -52,13 +52,15 @@ export const GPKickAdapterContract_GOERLI = "0xb1fD4B225970f727bdbeCCCcec4B12bc8
 export const Sablier_GOERLI = "0x74395f805c115fa29a5FC30E71a0A229861b736D"; //REPLACE_FLAG
 export const ManageMemberAdapterContract_GOERLI = ""; //REPLACE_FLAG
 export const DistributeFundContract_GOERLI = ""; //REPLACE_FLAG
-export const DistributeFundContractV2_GOERLI = "0x5560e62eA2a376E28419C737efC80fabd85C7849"; //REPLACE_FLAG
+export const DistributeFundContractV2_GOERLI = "0x51428ca00E5ad3fCC3e0BcEBb0FD920d3B7D6F07"; //REPLACE_FLAG
 export const GPVotingContract_GOERLI = "0x8FC24a76bb5A63C50830368424CD930720D9C482"; //REPLACE_FLAG
 export const GPOnboardVotingContract_GOERLI = "0x7e1c584b36530347f9e482F47251AACDF686D35b"; //REPLACE_FLAG
 export const AllocationAdapterContract_GOERLI = ""; //REPLACE_FLAG
-export const AllocationAdapterContractV2_GOERLI = "0xa0DCA4B69Db58833a329dA5E77B8De27b0Cf1670"; //REPLACE_FLAG
+export const AllocationAdapterContractV2_GOERLI = "0x67F5606Da4E637BCA0db1b98CA9f2ffC6CF79a86"; //REPLACE_FLAG
 export const ManagingAdapterContract_GOERLI = "0xdd60b84fDa3C243937F442181916a71f14334b7c"; //REPLACE_FLAG
-export const VESTING_GOERLI = ""; //REPLACE_FLAG
+export const Vesting_GOERLI = "0x4BD8C586A21Af2bA7c0D7095e86Ec7395310DB14"; //REPLACE_FLAG
+export const BentoBoxV1_GOERLI = "0x9DA1527D1dcEBf1EcC143aC63D2E442FdfC43688";//REPLACE_FLAG
+export const FundRaiseAdapterContract_GOERLI = "0x236Aab623a87591a2683778D5d766953eb107594";//REPLACE_FLAG
 //test contracts
 export const TestToken1_RINKEBY = "0x607EaF02Ac994959739FB69FCe717815b697f4EB";
 export const TestToken2_RINKEBY = "0x87E2C537e1743A4D0F2C73132c81eEcB5a40f3d1";
@@ -120,6 +122,18 @@ export function getExtensionAddressByName(ExtensionName: string, network: string
 
 export function getContractAddressByName(name: string, network: string) {
     switch (name) {
+        case 'FundRaiseAdapterContract':
+            if (network == "goerli") return FundRaiseAdapterContract_GOERLI;
+            return null;
+            break;
+        case 'BentoBoxV1':
+            if (network == "goerli") return BentoBoxV1_GOERLI;
+            return null;
+            break;
+        case 'FuroVesting':
+            if (network == "goerli") return Vesting_GOERLI;
+            return null;
+            break;
         case 'FundingPoolAdapterContract':
             if (network == "goerli") return FundingPoolAdapterContract_GOERLI;
             if (network == "rinkeby") return FundingPoolAdapterContract_RINKEBY;
