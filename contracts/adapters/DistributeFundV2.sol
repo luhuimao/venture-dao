@@ -175,7 +175,7 @@ contract DistributeFundContractV2 is
         uint256 vestingcliffDuration;
         uint256 vestingStepDuration;
         uint256 vestingSteps;
-        uint256 vestingStepPercentage;
+        uint256 vestingCliffLockAmount;
         uint256 requestedFundAmount;
         uint256 tradingOffTokenAmount;
     }
@@ -193,7 +193,7 @@ contract DistributeFundContractV2 is
                                     _uint256ArgsProposal[3]:vestingcliffDuration,
                                     _uint256ArgsProposal[4]:stepDuration,
                                     _uint256ArgsProposal[5]:steps,
-                                    _uint256ArgsProposal[6]:stepPercentage
+                                    _uint256ArgsProposal[6]:vestingCliffLockAmount
      */
     // slither-disable-next-line reentrancy-benign
     function submitProposal(
@@ -241,7 +241,7 @@ contract DistributeFundContractV2 is
         vars.vestingcliffDuration = _uint256ArgsProposal[3];
         vars.vestingStepDuration = _uint256ArgsProposal[4];
         vars.vestingSteps = _uint256ArgsProposal[5];
-        vars.vestingStepPercentage = _uint256ArgsProposal[6];
+        vars.vestingCliffLockAmount = _uint256ArgsProposal[6];
         require(
             vars.vestingStartTime > 0 &&
                 vars.vestingcliffDuration > 0 &&
@@ -249,11 +249,8 @@ contract DistributeFundContractV2 is
                 vars.vestingSteps > 0,
             "Funding::submitProposal::vesting start time, cliff duration, step duration, steps must > 0"
         );
-        if (
-            vars.vestingStepPercentage > PERCENTAGE_PRECISION ||
-            vars.vestingStepPercentage >
-            (PERCENTAGE_PRECISION / vars.vestingSteps)
-        ) revert InvalidStepSetting();
+        if (vars.vestingCliffLockAmount > vars.tradingOffTokenAmount)
+            revert InvalidStepSetting();
         require(
             vars.requestedFundAmount > 0 && vars.tradingOffTokenAmount > 0,
             "Funding::submitProposal::invalid trading-Off Token or trading off token Amount"

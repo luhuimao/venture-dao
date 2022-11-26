@@ -4,7 +4,7 @@
  * @Author: huhuimao
  * @Date: 2022-11-10 21:57:41
  * @LastEditors: huhuimao
- * @LastEditTime: 2022-11-23 12:29:58
+ * @LastEditTime: 2022-11-26 13:19:11
  */
 
 
@@ -199,7 +199,8 @@ describe("Adapter - Vesting", () => {
         const vestingcliffDuration = currentBlockTime + 1000;
         const stepDuration = oneDay;
         const steps = 7;
-        const stepPercentage = hre.ethers.utils.parseEther("1").div(toBN(10));
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount = hre.ethers.utils.parseEther("10000");
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -216,7 +217,7 @@ describe("Adapter - Vesting", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
-            stepPercentage,
+            vestingCliffLockAmount,
             projectTeamAddr,
             projectTeamTokenAddr,
             projectTeamAddr,
@@ -315,10 +316,16 @@ describe("Adapter - Vesting", () => {
             + 1])
         await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
 
+        let total = 0
+        let cliffTotal = 0;
+        let stepTotal = 0;
         for (var i = 1; i < nextVestId; i++) {
             let vestInfo = await vestingAdapter.vests(i);
             const claimableBal = await vestingAdapter.vestBalance(i);
             let totalDepositAmount = toBN(vestInfo.cliffShares.toString()).add(toBN(vestInfo.stepShares).mul(vestingSteps));
+            total += toBN(total).add(totalDepositAmount);
+            cliffTotal += toBN(cliffTotal).add(vestInfo.cliffShares);
+            stepTotal += toBN(stepTotal).add(toBN(vestInfo.stepShares).mul(vestingSteps));
             console.log(`
             cliff shares ${hre.ethers.utils.formatEther(vestInfo.cliffShares.toString())}
             step shares ${hre.ethers.utils.formatEther(vestInfo.stepShares.toString())}
@@ -345,6 +352,11 @@ describe("Adapter - Vesting", () => {
             }
 
         }
+        console.log(`
+        total cliff amount ${hre.ethers.utils.formatEther(cliffTotal.toString())}
+        total step amount ${hre.ethers.utils.formatEther(stepTotal.toString())}
+        total amount ${hre.ethers.utils.formatEther(total.toString())}
+        `);
     });
 
     it("should be impossible to create a vest twice", async () => {
@@ -358,123 +370,124 @@ describe("Adapter - Vesting", () => {
         await expectRevert(vestingAdapter.createVesting(dao.address, this.owner.address, this.proposalId), "revert");
     });
 
-    it("vesting step shares > deposit amount", async () => {
-        const dao = this.dao;
-        const distributeFundContract = this.distributefund
-        const amountToDistribute = 10;
-        const project_team1 = this.project_team1.address;
-        const vestingAdapter = this.vestingAdapter;
+    // it("vesting step shares > deposit amount", async () => {
+    //     const dao = this.dao;
+    //     const distributeFundContract = this.distributefund
+    //     const amountToDistribute = 10;
+    //     const project_team1 = this.project_team1.address;
+    //     const vestingAdapter = this.vestingAdapter;
 
-        const requestedFundAmount = hre.ethers.utils.parseEther("10000");
-        const tradingOffTokenAmount = hre.ethers.utils.parseEther("50000");
-        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        let currentBlockTime = blocktimestamp;
-        const vestingStartTime = currentBlockTime;
-        const vestingCliffDuration = currentBlockTime + 1000;
-        const stepDuration = oneDay;
-        const steps = 7;
-        const stepPercentage = hre.ethers.utils.parseEther("1").div(toBN(1));
+    //     const requestedFundAmount = hre.ethers.utils.parseEther("10000");
+    //     const tradingOffTokenAmount = hre.ethers.utils.parseEther("50000");
+    //     let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+    //     let currentBlockTime = blocktimestamp;
+    //     const vestingStartTime = currentBlockTime;
+    //     const vestingCliffDuration = currentBlockTime + 1000;
+    //     const stepDuration = oneDay;
+    //     const steps = 7;
+    //     // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+    //     const vestingCliffLockAmount = hre.ethers.utils.parseEther("10000");
 
-        const projectTeamAddr = this.project_team1.address;
-        const projectTeamTokenAddr = this.testtoken2.address;
+    //     const projectTeamAddr = this.project_team1.address;
+    //     const projectTeamTokenAddr = this.testtoken2.address;
 
-        await this.testtoken2.transfer(this.project_team1.address, tradingOffTokenAmount);
-        await this.testtoken2.connect(this.project_team1).approve(distributeFundContract.address, tradingOffTokenAmount);
+    //     await this.testtoken2.transfer(this.project_team1.address, tradingOffTokenAmount);
+    //     await this.testtoken2.connect(this.project_team1).approve(distributeFundContract.address, tradingOffTokenAmount);
 
-        await dao.setConfiguration(sha3("FUND_END_TIME"), currentBlockTime + 60000000);
+    //     await dao.setConfiguration(sha3("FUND_END_TIME"), currentBlockTime + 60000000);
 
-        await expectRevert(createDistributeFundsProposal(
-            dao,
-            distributeFundContract,
-            requestedFundAmount,
-            tradingOffTokenAmount,
-            vestingStartTime,
-            vestingCliffDuration,
-            stepDuration,
-            steps,
-            stepPercentage,
-            projectTeamAddr,
-            projectTeamTokenAddr,
-            projectTeamAddr,
-            this.owner
-        ), "revert");
-        // let { proposalId } = await createDistributeFundsProposal(
-        //     dao,
-        //     distributeFundContract,
-        //     requestedFundAmount,
-        //     tradingOffTokenAmount,
-        //     vestingStartTime,
-        //     vestingCliffDuration,
-        //     stepDuration,
-        //     steps,
-        //     stepPercentage,
-        //     projectTeamAddr,
-        //     projectTeamTokenAddr,
-        //     projectTeamAddr,
-        //     this.owner
-        // );
-        // console.log(`proposalId: ${hre.ethers.utils.toUtf8String(proposalId)}`);
-        // this.proposalId = proposalId;
+    //     await expectRevert(createDistributeFundsProposal(
+    //         dao,
+    //         distributeFundContract,
+    //         requestedFundAmount,
+    //         tradingOffTokenAmount,
+    //         vestingStartTime,
+    //         vestingCliffDuration,
+    //         stepDuration,
+    //         steps,
+    //         stepPercentage,
+    //         projectTeamAddr,
+    //         projectTeamTokenAddr,
+    //         projectTeamAddr,
+    //         this.owner
+    //     ), "revert");
+    // let { proposalId } = await createDistributeFundsProposal(
+    //     dao,
+    //     distributeFundContract,
+    //     requestedFundAmount,
+    //     tradingOffTokenAmount,
+    //     vestingStartTime,
+    //     vestingCliffDuration,
+    //     stepDuration,
+    //     steps,
+    //     stepPercentage,
+    //     projectTeamAddr,
+    //     projectTeamTokenAddr,
+    //     projectTeamAddr,
+    //     this.owner
+    // );
+    // console.log(`proposalId: ${hre.ethers.utils.toUtf8String(proposalId)}`);
+    // this.proposalId = proposalId;
 
-        // let distriInfo = await distributeFundContract.distributions(dao.address, proposalId);
-        // await distributeFundContract.startVotingProcess(dao.address, this.proposalId);
-        // distriInfo = await distributeFundContract.distributions(dao.address, proposalId);
-        // console.log(`proposal state: ${distriInfo.status}`);
+    // let distriInfo = await distributeFundContract.distributions(dao.address, proposalId);
+    // await distributeFundContract.startVotingProcess(dao.address, this.proposalId);
+    // distriInfo = await distributeFundContract.distributions(dao.address, proposalId);
+    // console.log(`proposal state: ${distriInfo.status}`);
 
-        // // owner Vote YES on the proposal
-        // await this.gpvoting.submitVote(dao.address, proposalId, 1);
-        // // gp1 Vote YES on the proposal
-        // await this.gpvoting.connect(this.gp1).submitVote(dao.address, proposalId, 1);
-        // // gp2 Vote YES on the proposal
-        // await this.gpvoting.connect(this.gp2).submitVote(dao.address, proposalId, 1);
+    // // owner Vote YES on the proposal
+    // await this.gpvoting.submitVote(dao.address, proposalId, 1);
+    // // gp1 Vote YES on the proposal
+    // await this.gpvoting.connect(this.gp1).submitVote(dao.address, proposalId, 1);
+    // // gp2 Vote YES on the proposal
+    // await this.gpvoting.connect(this.gp2).submitVote(dao.address, proposalId, 1);
 
-        // currentBlockTime = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        // console.log(`
-        // current block time ${currentBlockTime}
-        // proposal stop vote time ${distriInfo.proposalStopVotingTimestamp.toString()}
-        // `);
-        // await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(distriInfo.proposalStopVotingTimestamp) + 1])
-        // await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+    // currentBlockTime = (await hre.ethers.provider.getBlock("latest")).timestamp;
+    // console.log(`
+    // current block time ${currentBlockTime}
+    // proposal stop vote time ${distriInfo.proposalStopVotingTimestamp.toString()}
+    // `);
+    // await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(distriInfo.proposalStopVotingTimestamp) + 1])
+    // await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
 
-        // let tx = await distributeFundContract.processProposal(dao.address, this.proposalId);
-        // let rel = await tx.wait();
+    // let tx = await distributeFundContract.processProposal(dao.address, this.proposalId);
+    // let rel = await tx.wait();
 
 
-        // distriInfo = await distributeFundContract.distributions(dao.address, this.proposalId);
-        // const vestingStepDuration = distriInfo.vestInfo.vestingStepDuration;
-        // const vestingSteps = distriInfo.vestInfo.vestingSteps;
-        // await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestingStartTime) +
-        //     parseInt(vestingCliffDuration) +
-        //     parseInt(vestingStepDuration) * vestingSteps
-        //     + 1])
-        // await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+    // distriInfo = await distributeFundContract.distributions(dao.address, this.proposalId);
+    // const vestingStepDuration = distriInfo.vestInfo.vestingStepDuration;
+    // const vestingSteps = distriInfo.vestInfo.vestingSteps;
+    // await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestingStartTime) +
+    //     parseInt(vestingCliffDuration) +
+    //     parseInt(vestingStepDuration) * vestingSteps
+    //     + 1])
+    // await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
 
-        // let nextVestId = await vestingAdapter.vestIds();
-        // console.log(`
-        // nextVestId ${nextVestId.toString()}
-        // `);
-        // tx = await vestingAdapter.createVesting(dao.address, this.owner.address, this.proposalId);
+    // let nextVestId = await vestingAdapter.vestIds();
+    // console.log(`
+    // nextVestId ${nextVestId.toString()}
+    // `);
+    // tx = await vestingAdapter.createVesting(dao.address, this.owner.address, this.proposalId);
 
-        // let vestInfo = await vestingAdapter.vests(nextVestId);
-        // let claimableBal = await vestingAdapter.vestBalance(nextVestId);
-        // let totalDepositAmount = toBN(vestInfo.cliffShares.toString()).add(toBN(vestInfo.stepShares).mul(vestingSteps));
-        // console.log(`
-        // cliff shares ${hre.ethers.utils.formatEther(vestInfo.cliffShares.toString())}
-        // step shares ${hre.ethers.utils.formatEther(vestInfo.stepShares.toString())}
-        // recipient of vest ${nextVestId}: ${vestInfo.recipient}
-        // depoist amount ${hre.ethers.utils.formatEther(totalDepositAmount)}
-        // claimable balance of vest ${nextVestId}: ${hre.ethers.utils.formatEther(claimableBal)}
-        // claimed amount: ${hre.ethers.utils.formatEther(vestInfo.claimed.toString())}
-        // `)
+    // let vestInfo = await vestingAdapter.vests(nextVestId);
+    // let claimableBal = await vestingAdapter.vestBalance(nextVestId);
+    // let totalDepositAmount = toBN(vestInfo.cliffShares.toString()).add(toBN(vestInfo.stepShares).mul(vestingSteps));
+    // console.log(`
+    // cliff shares ${hre.ethers.utils.formatEther(vestInfo.cliffShares.toString())}
+    // step shares ${hre.ethers.utils.formatEther(vestInfo.stepShares.toString())}
+    // recipient of vest ${nextVestId}: ${vestInfo.recipient}
+    // depoist amount ${hre.ethers.utils.formatEther(totalDepositAmount)}
+    // claimable balance of vest ${nextVestId}: ${hre.ethers.utils.formatEther(claimableBal)}
+    // claimed amount: ${hre.ethers.utils.formatEther(vestInfo.claimed.toString())}
+    // `)
 
-        // await vestingAdapter.withdraw(dao.address, nextVestId);
+    // await vestingAdapter.withdraw(dao.address, nextVestId);
 
-        // vestInfo = await vestingAdapter.vests(nextVestId);
-        // claimableBal = await vestingAdapter.vestBalance(nextVestId);
-        // console.log(`
-        // claimable balance of vest ${i}: ${hre.ethers.utils.formatEther(claimableBal)}
-        // claimed amount: ${hre.ethers.utils.formatEther(vestInfo.claimed.toString())}
-        // `)
-    });
+    // vestInfo = await vestingAdapter.vests(nextVestId);
+    // claimableBal = await vestingAdapter.vestBalance(nextVestId);
+    // console.log(`
+    // claimable balance of vest ${i}: ${hre.ethers.utils.formatEther(claimableBal)}
+    // claimed amount: ${hre.ethers.utils.formatEther(vestInfo.claimed.toString())}
+    // `)
+    // });
 
 });

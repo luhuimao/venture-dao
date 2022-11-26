@@ -187,7 +187,7 @@ const createDistributeFundsProposal = async (
   vestingcliffDuration,
   vestingStepDuration,
   vestingSteps,
-  stepPercentage,
+  vestingCliffLockAmount,
   projectTeamAddr,
   projectTokenAddr,
   approveOwnerAddr,
@@ -207,7 +207,7 @@ const createDistributeFundsProposal = async (
       vestingcliffDuration,
       vestingStepDuration,
       vestingSteps,
-      stepPercentage
+      vestingCliffLockAmount
     ],
   );
   const result = await tx.wait();

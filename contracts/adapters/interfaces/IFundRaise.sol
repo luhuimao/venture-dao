@@ -49,6 +49,7 @@ interface IFundRaise {
         uint256 managementFeeRatio;
         uint256 redepmtFeeRatio;
         uint256 protocolFeeRatio;
+        address managementFeeAddress;
     }
     struct ProposalDetails {
         address acceptTokenAddr;
@@ -94,13 +95,15 @@ interface IFundRaise {
     _uint256ArgsFeeInfo[1]:managementFeeRatio
     _uint256ArgsFeeInfo[2]:redepmtFeeRatio
     _uint256ArgsFeeInfo[3]:protocolFeeRatio
-
+    _addressArgs[0]:managementFeeAddress
+    _addressArgs[1]:fundRaiseTokenAddress
     */
     function submitProposal(
         DaoRegistry dao,
         uint256[] calldata _uint256ArgsProposal,
         uint256[] calldata _uint256ArgsTimeInfo,
-        uint256[] calldata _uint256ArgsFeeInfo
+        uint256[] calldata _uint256ArgsFeeInfo,
+        address[] calldata _addressArgs
     ) external;
 
     function processProposal(DaoRegistry dao, bytes32 proposalId) external;

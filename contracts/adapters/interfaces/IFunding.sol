@@ -69,7 +69,7 @@ interface IFunding {
         uint256 vestingCliffDuration;
         uint256 vestingStepDuration;
         uint256 vestingSteps;
-        uint256 stepPercentage;
+        uint256 vestingCliffLockAmount;
     }
 
     event ProposalCreated(

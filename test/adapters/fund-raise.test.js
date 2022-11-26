@@ -55,11 +55,12 @@ const hre = require("hardhat");
 
 describe("Adapter - FundRaise", () => {
     before("deploy dao", async () => {
-        let [owner, gp1, gp2, user1] = await hre.ethers.getSigners();
+        let [owner, gp1, gp2, user1, user2] = await hre.ethers.getSigners();
         this.owner = owner;
         this.gp1 = gp1;
         this.gp2 = gp2;
         this.user1 = user1;
+        this.user2 = user2;
         const { dao, adapters, extensions, testContracts } = await deployDefaultDao({
             owner: owner,
         });
@@ -132,6 +133,9 @@ describe("Adapter - FundRaise", () => {
             redepmtFeeRatio,
             protocolFeeRatio
         ];
+        const managementFeeAddress = this.user2.address;
+        const fundRaiseTokenAddr = this.testtoken2.address;
+        const _addressArgs = [managementFeeAddress, fundRaiseTokenAddr];
 
         const lastFundEndTime = await fundingPoolAdapter.getFundEndTime(dao.address);
         const lastreturnDuration = await fundingPoolAdapter.getFundReturnDuration(dao.address);
@@ -154,7 +158,7 @@ describe("Adapter - FundRaise", () => {
 
         await fundingPoolAdapter.processFundRaise(dao.address);
 
-        let tx = await fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo);
+        let tx = await fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs);
         const result = await tx.wait();
         const newProposalId = result.events[result.events.length - 1].args.proposalId;
         console.log(`newProposalId: ${hre.ethers.utils.toUtf8String(newProposalId)}`);
@@ -181,6 +185,7 @@ describe("Adapter - FundRaise", () => {
         managementFeeRatio ${proposalInfo.feeInfo.managementFeeRatio}
         redepmtFeeRatio ${proposalInfo.feeInfo.redepmtFeeRatio}
         protocolFeeRatio ${proposalInfo.feeInfo.protocolFeeRatio}
+        managementFeeAddress ${proposalInfo.feeInfo.managementFeeAddress}
         `);
 
 
@@ -222,7 +227,8 @@ describe("Adapter - FundRaise", () => {
         const vestingcliffDuration = oneWeek;
         const stepDuration = oneDay;
         const steps = 7;
-        const stepPercentage = hre.ethers.utils.parseEther("1").div(toBN(steps));
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount = hre.ethers.utils.parseEther("10000");
 
         const projectTeamAddr = this.user1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -253,7 +259,7 @@ describe("Adapter - FundRaise", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
-            stepPercentage,
+            vestingCliffLockAmount,
             projectTeamAddr,
             projectTeamTokenAddr,
             projectTeamAddr,

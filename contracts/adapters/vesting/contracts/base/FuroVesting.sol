@@ -69,6 +69,7 @@ contract FuroVesting is
     // }
 
     struct CreateVestLocalVars {
+        uint256 tradingOffTokenAmount;
         uint256 depositedShares;
         uint256 vestId;
         uint128 stepShares;
@@ -124,7 +125,7 @@ contract FuroVesting is
         );
          (
             vars.tokenAddress,
-            ,
+            vars.tradingOffTokenAmount,
             ,
             ,
             ,
@@ -139,7 +140,7 @@ contract FuroVesting is
         ) = vars.distributeFundAdapter.distributions(address(dao), proposalId);
         // if (vestParams.start < block.timestamp) revert InvalidStart();
         // vars.stepPercentage=uint128(PERCENTAGE_PRECISION / vars.vestInfo.vestingSteps);
-        if (vars.vestInfo.stepPercentage > PERCENTAGE_PRECISION)
+        if (vars.vestInfo.vestingCliffLockAmount >  vars.tradingOffTokenAmount)
             revert InvalidStepSetting();
         if (vars.vestInfo.vestingStepDuration == 0 || vars.vestInfo.vestingSteps == 0)
             revert InvalidStepSetting();
@@ -159,8 +160,8 @@ contract FuroVesting is
             false
         );
         vars.stepShares = uint128(
-            (vars.vestInfo.stepPercentage * vars.depositedShares) /
-                PERCENTAGE_PRECISION
+            (vars.depositedShares * (vars.tradingOffTokenAmount -  vars.vestInfo.vestingCliffLockAmount) / vars.tradingOffTokenAmount ) /
+                vars.vestInfo.vestingSteps
         );
         vars.cliffShares = uint128(
             vars.depositedShares - (vars.stepShares * vars.vestInfo.vestingSteps)

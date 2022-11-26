@@ -67,6 +67,7 @@ contract FundRaiseAdapterContract is
         uint256 lastFundEndTime;
         IGPVoting gpVotingContract;
         address fundRaiseTokenAddr;
+        address managementFeeAddress;
         address submittedBy;
         bytes32 proposalId;
         uint256 fundRaiseTarget;
@@ -86,11 +87,30 @@ contract FundRaiseAdapterContract is
         FundingPoolAdapterContract fundingPoolAdapt;
     }
 
+    /** 
+    _uint256ArgsProposal[0]:fundRaiseTarget
+    _uint256ArgsProposal[1]:fundRaiseMaxAmount
+    _uint256ArgsProposal[2]:lpMinDepositAmount
+    _uint256ArgsProposal[3]:lpMaxDepositAmount
+    _uint256ArgsTimeInfo[0]:fundRaiseStartTime
+    _uint256ArgsTimeInfo[1]:fundRaiseEndTime
+    _uint256ArgsTimeInfo[2]:fundTerm
+    _uint256ArgsTimeInfo[3]:redemptPeriod
+    _uint256ArgsTimeInfo[4]:redemptDuration
+    _uint256ArgsTimeInfo[5]:returnDuration
+    _uint256ArgsFeeInfo[0]:proposerRewardRatio
+    _uint256ArgsFeeInfo[1]:managementFeeRatio
+    _uint256ArgsFeeInfo[2]:redepmtFeeRatio
+    _uint256ArgsFeeInfo[3]:protocolFeeRatio
+    _addressArgs[0]:managementFeeAddress
+    _addressArgs[1]:fundRaiseTokenAddress
+    */
     function submitProposal(
         DaoRegistry dao,
         uint256[] calldata _uint256ArgsProposal,
         uint256[] calldata _uint256ArgsTimeInfo,
-        uint256[] calldata _uint256ArgsFeeInfo
+        uint256[] calldata _uint256ArgsFeeInfo,
+        address[] calldata _addressArgs
     ) external override reimbursable(dao) onlyGeneralPartner(dao) {
         SubmitProposalLocalVars memory vars;
 
@@ -111,13 +131,17 @@ contract FundRaiseAdapterContract is
         require(
             _uint256ArgsProposal.length == 4 &&
                 _uint256ArgsTimeInfo.length == 6 &&
-                _uint256ArgsFeeInfo.length == 4,
+                _uint256ArgsFeeInfo.length == 4 &&
+                _addressArgs.length == 2,
             "FundRaise::submitProposal::invalid parameter number"
         );
 
-        vars.fundRaiseTokenAddr = dao.getAddressConfiguration(
-            DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
-        );
+        // vars.fundRaiseTokenAddr = dao.getAddressConfiguration(
+        //     DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+        // );
+        vars.managementFeeAddress = _addressArgs[0];
+        vars.fundRaiseTokenAddr = _addressArgs[1];
+
         vars.fundRaiseTarget = _uint256ArgsProposal[0];
         vars.fundRaiseMaxAmount = _uint256ArgsProposal[1];
         vars.lpMinDepositAmount = _uint256ArgsProposal[2];
@@ -187,10 +211,11 @@ contract FundRaiseAdapterContract is
                 vars.returnDuration
             ),
             FundRaiseRewardAndFeeInfo(
-                _uint256ArgsFeeInfo[0],
-                _uint256ArgsFeeInfo[1],
-                _uint256ArgsFeeInfo[2],
-                _uint256ArgsFeeInfo[3]
+                vars.proposerRewardRatio,
+                vars.managementFeeRatio,
+                vars.redepmtFeeRatio,
+                vars.protocolFeeRatio,
+                vars.managementFeeAddress
             ),
             ProposalState.Voting
         );
@@ -369,6 +394,16 @@ contract FundRaiseAdapterContract is
         dao.setConfiguration(
             DaoHelper.PROTOCOL_FEE,
             proposalInfo.feeInfo.protocolFeeRatio
+        );
+        //16 management fee address
+        dao.setAddressConfiguration(
+            DaoHelper.GP_ADDRESS,
+            proposalInfo.feeInfo.managementFeeAddress
+        );
+        //17 token address
+        dao.setAddressConfiguration(
+            DaoHelper.FUND_RAISING_CURRENCY_ADDRESS,
+            proposalInfo.acceptTokenAddr
         );
     }
 }

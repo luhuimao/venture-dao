@@ -194,7 +194,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration= currentBlockTime + 1000;
         const stepDuration=oneDay;
         const steps=7;
-        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount=hre.ethers.utils.parseEther("10000");
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -209,7 +210,7 @@ describe("Adapter - DistributeFundsV2", () => {
                 vestingcliffDuration,
                 stepDuration,
                 steps,
-                stepPercentage,
+                vestingCliffLockAmount,
                 projectTeamAddr,
                 projectTeamTokenAddr,
                 projectTeamAddr,
@@ -232,7 +233,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration= currentBlockTime + 1000;
         const stepDuration=oneDay;
         const steps=7;
-        let stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps-1));
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount=hre.ethers.utils.parseEther("100000");
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -247,7 +249,7 @@ describe("Adapter - DistributeFundsV2", () => {
                 vestingcliffDuration,
                 stepDuration,
                 steps,
-                stepPercentage,
+                vestingCliffLockAmount,
                 projectTeamAddr,
                 projectTeamTokenAddr,
                 projectTeamAddr,
@@ -275,7 +277,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
-        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount=hre.ethers.utils.parseEther("10000");
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -296,7 +299,7 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
-            stepPercentage,
+            vestingCliffLockAmount,
             projectTeamAddr,
             projectTeamTokenAddr,
             projectTeamAddr,
@@ -502,7 +505,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
-        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount=hre.ethers.utils.parseEther("1000");
 
         const projectTeamAddr = this.project_team2.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -521,7 +525,7 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
-            stepPercentage,
+            vestingCliffLockAmount,
             projectTeamAddr,
             projectTeamTokenAddr,
             projectTeamAddr,
@@ -567,7 +571,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
-        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount=hre.ethers.utils.parseEther("1000");
 
         const projectTeamAddr = this.project_team3.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -585,7 +590,7 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
-            stepPercentage,
+            vestingCliffLockAmount,
             projectTeamAddr,
             projectTeamTokenAddr,
             projectTeamAddr,
@@ -650,7 +655,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
-        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount=hre.ethers.utils.parseEther("1000");
 
         const projectTeamAddr = this.project_team2.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -669,7 +675,7 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
-            stepPercentage,
+            vestingCliffLockAmount,
             projectTeamAddr,
             projectTeamTokenAddr,
             projectTeamAddr,
@@ -733,7 +739,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
-        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount=hre.ethers.utils.parseEther("1000");
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -750,7 +757,7 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
-            stepPercentage,
+            vestingCliffLockAmount,
             projectTeamAddr,
             projectTeamTokenAddr,
             projectTeamAddr,
@@ -768,7 +775,7 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
-            stepPercentage,
+            vestingCliffLockAmount,
             projectTeamAddr,
             projectTeamTokenAddr,
             projectTeamAddr,
@@ -831,7 +838,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
-        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount=hre.ethers.utils.parseEther("100");
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -862,7 +870,7 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
-            stepPercentage,
+            vestingCliffLockAmount,
             projectTeamAddr,
             projectTeamTokenAddr,
             projectTeamAddr,
@@ -941,7 +949,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
-        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount=hre.ethers.utils.parseEther("100");
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -961,7 +970,7 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
-            stepPercentage,
+            vestingCliffLockAmount,
             projectTeamAddr,
             projectTeamTokenAddr,
             projectTeamAddr,
@@ -989,7 +998,8 @@ describe("Adapter - DistributeFundsV2", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
-        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount=hre.ethers.utils.parseEther("1000");
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -1009,7 +1019,7 @@ describe("Adapter - DistributeFundsV2", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
-            stepPercentage,
+            vestingCliffLockAmount,
             projectTeamAddr,
             projectTeamTokenAddr,
             projectTeamAddr,
@@ -1610,7 +1620,8 @@ describe("Voting for distribute proposal", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
-        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount=hre.ethers.utils.parseEther("1000");
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -1627,7 +1638,7 @@ describe("Voting for distribute proposal", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
-            stepPercentage,
+            vestingCliffLockAmount,
             projectTeamAddr,
             projectTeamTokenAddr,
             projectTeamAddr,
@@ -1687,8 +1698,8 @@ describe("Voting for distribute proposal", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
-        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
-
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount=hre.ethers.utils.parseEther("1000");
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -1708,7 +1719,7 @@ describe("Voting for distribute proposal", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
-            stepPercentage,
+            vestingCliffLockAmount,
             projectTeamAddr,
             projectTeamTokenAddr,
             projectTeamAddr,
@@ -1769,7 +1780,8 @@ describe("Voting for distribute proposal", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
-        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount=hre.ethers.utils.parseEther("1000");
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -1786,7 +1798,7 @@ describe("Voting for distribute proposal", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
-            stepPercentage,
+            vestingCliffLockAmount,
             projectTeamAddr,
             projectTeamTokenAddr,
             projectTeamAddr,
@@ -1847,7 +1859,8 @@ describe("Voting for distribute proposal", () => {
         const vestingcliffDuration=  oneWeek;
         const stepDuration=oneDay;
         const steps=7;
-        const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
+        const vestingCliffLockAmount=hre.ethers.utils.parseEther("1000");
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -1864,7 +1877,7 @@ describe("Voting for distribute proposal", () => {
             vestingcliffDuration,
             stepDuration,
             steps,
-            stepPercentage,
+            vestingCliffLockAmount,
             projectTeamAddr,
             projectTeamTokenAddr,
             projectTeamAddr,
