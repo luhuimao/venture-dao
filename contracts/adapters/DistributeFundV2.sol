@@ -67,7 +67,7 @@ contract DistributeFundContractV2 is
     DoubleEndedQueue.Bytes32Deque public proposalQueue;
 
     string constant PROPOSALID_PREFIX = "TFP";
-    uint256 public proposalIds = 100095;
+    uint256 public proposalIds = 100099;
     uint256 public constant PERCENTAGE_PRECISION = 1e18;
 
     /**

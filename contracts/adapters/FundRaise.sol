@@ -57,7 +57,7 @@ contract FundRaiseAdapterContract is
      */
     // Keeps track of all the Proposals executed per DAO.
     mapping(address => mapping(bytes32 => ProposalDetails)) public Proposals;
-    uint256 public proposalIds = 100010;
+    uint256 public proposalIds = 100020;
     bytes32 public latestProposalId;
     bytes32 public previousProposalId;
     /*

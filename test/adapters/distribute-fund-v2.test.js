@@ -234,11 +234,11 @@ describe("Adapter - DistributeFundsV2", () => {
         const stepDuration=oneDay;
         const steps=7;
         // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
-        const vestingCliffLockAmount=hre.ethers.utils.parseEther("100000");
+        const vestingCliffLockAmount=hre.ethers.utils.parseEther("10000000");
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
-
+        
         await expectRevert(
             createDistributeFundsProposal(
                 dao,
@@ -253,7 +253,7 @@ describe("Adapter - DistributeFundsV2", () => {
                 projectTeamAddr,
                 projectTeamTokenAddr,
                 projectTeamAddr,
-                this.user2
+                this.owner
             ),
             "revert"
         );

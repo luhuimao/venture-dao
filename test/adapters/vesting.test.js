@@ -4,7 +4,7 @@
  * @Author: huhuimao
  * @Date: 2022-11-10 21:57:41
  * @LastEditors: huhuimao
- * @LastEditTime: 2022-11-26 13:19:11
+ * @LastEditTime: 2022-11-26 17:15:39
  */
 
 
@@ -323,8 +323,8 @@ describe("Adapter - Vesting", () => {
             let vestInfo = await vestingAdapter.vests(i);
             const claimableBal = await vestingAdapter.vestBalance(i);
             let totalDepositAmount = toBN(vestInfo.cliffShares.toString()).add(toBN(vestInfo.stepShares).mul(vestingSteps));
-            total += toBN(total).add(totalDepositAmount);
-            cliffTotal += toBN(cliffTotal).add(vestInfo.cliffShares);
+            total += toBN(total).add(toBN(totalDepositAmount));
+            cliffTotal += toBN(cliffTotal).add(toBN(vestInfo.cliffShares));
             stepTotal += toBN(stepTotal).add(toBN(vestInfo.stepShares).mul(vestingSteps));
             console.log(`
             cliff shares ${hre.ethers.utils.formatEther(vestInfo.cliffShares.toString())}

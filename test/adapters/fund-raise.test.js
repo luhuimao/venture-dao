@@ -88,7 +88,13 @@ describe("Adapter - FundRaise", () => {
     it("should be impossible submit a fund raise proposal by non GP", async () => {
         const fundRaiseAdapter = this.adapters.fundRaiseAdapter.instance;
         const dao = this.dao;
-        await expectRevert(fundRaiseAdapter.connect(this.user1).submitProposal(dao.address, [0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0]), "revert");
+        await expectRevert(fundRaiseAdapter.connect(this.user1).submitProposal(dao.address,
+            [0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [this.user2.address, this.testtoken2.address]
+        ), "revert"
+        );
     })
 
     it("should be possible for GP to submit a fund raise proposal if previous fund finished", async () => {
@@ -134,7 +140,7 @@ describe("Adapter - FundRaise", () => {
             protocolFeeRatio
         ];
         const managementFeeAddress = this.user2.address;
-        const fundRaiseTokenAddr = this.testtoken2.address;
+        const fundRaiseTokenAddr = this.testtoken1.address;
         const _addressArgs = [managementFeeAddress, fundRaiseTokenAddr];
 
         const lastFundEndTime = await fundingPoolAdapter.getFundEndTime(dao.address);
@@ -295,6 +301,7 @@ describe("Adapter - FundRaise", () => {
             5,
             3
         ];
+        const _addressArgs = [this.user2.address, this.testtoken2.address];
 
         const lastFundEndTime = await dao.getConfiguration(sha3("FUND_END_TIME"));
         console.log(lastFundEndTime);
@@ -309,7 +316,7 @@ describe("Adapter - FundRaise", () => {
         //     await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
         // }
 
-        await expectRevert(fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo), "revert");
+        await expectRevert(fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs), "revert");
 
         // let tx = await fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo);
         // const result = await tx.wait();
