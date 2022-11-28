@@ -25,7 +25,7 @@ contract FlexFundingAdapterContract is
         uint256[] calldata _uint256ArgsProposal
     ) external override returns (bytes32 proposalId) {
         bytes32 propsoalId = TypeConver.bytesToBytes32(
-            abi.encodePacked("TFP", Strings.toString(proposalIds))
+            abi.encodePacked("TFRP", Strings.toString(proposalIds))
         );
     }
 

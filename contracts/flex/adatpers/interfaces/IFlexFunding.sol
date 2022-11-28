@@ -26,6 +26,18 @@ interface IFlexFunding {
         FCSF,
         FREE_IN
     }
+    enum BackerIdentificationType {
+        ERC20,
+        ERC721,
+        ERC1155,
+        WHITE_LIST
+    }
+    enum PriorityDepositType {
+        ERC20,
+        ERC721,
+        ERC1155,
+        WHITE_LIST
+    }
     /*
      * STRUCT
      */
@@ -61,6 +73,25 @@ interface IFlexFunding {
         uint256 minDepositAmount;
         uint256 maxDepositAmount;
         bool backerIdentification;
+        BackerIdentificationInfo bakckerIdentificationInfo;
+        bool priorityDeposit;
+        PriorityDepositInfo priorityDepositInfo;
+    }
+    struct BackerIdentificationInfo {
+        BackerIdentificationType bType;
+        uint32 bChainId;
+        address bTokanAddr;
+        uint256 bTokenId;
+        uint256 bMinHoldingAmount;
+    }
+    struct PriorityDepositInfo {
+        uint256 pPeriod;
+        uint256 pPeriods;
+        PriorityDepositType pType;
+        uint256 pChainId;
+        address pTokenAddr;
+        uint256 pTokenId;
+        uint256 pMinHolding;
     }
     struct ProposerRewardInfo {
         uint256 tokenRewardAmount;
