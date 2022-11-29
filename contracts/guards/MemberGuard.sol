@@ -32,6 +32,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 abstract contract MemberGuard {
+    modifier OnlyVoter(DaoRegistry dao) {
+        _;
+    }
     modifier onlyProposer(DaoRegistry dao) {
         _;
     }
