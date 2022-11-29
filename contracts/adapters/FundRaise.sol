@@ -57,7 +57,7 @@ contract FundRaiseAdapterContract is
      */
     // Keeps track of all the Proposals executed per DAO.
     mapping(address => mapping(bytes32 => ProposalDetails)) public Proposals;
-    uint256 public proposalIds = 100026;
+    uint256 public proposalIds = 100027;
     bytes32 public latestProposalId;
     bytes32 public previousProposalId;
     /*
@@ -301,8 +301,10 @@ contract FundRaiseAdapterContract is
     {
         ProcessProposalLocalVars memory vars;
 
-        vars.proposalInfo = Proposals[address(dao)][proposalId];
-
+        // vars.proposalInfo = Proposals[address(dao)][proposalId];
+        ProposalDetails storage proposalDetails = Proposals[address(dao)][
+            proposalId
+        ];
         dao.processProposal(proposalId);
         vars.fundingPoolAdapt = FundingPoolAdapterContract(
             dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
@@ -318,23 +320,23 @@ contract FundRaiseAdapterContract is
             .voteResult(dao, proposalId);
 
         if (vars.voteResult == IGPVoting.VotingState.PASS) {
-            vars.proposalInfo.state = ProposalState.Executing;
+            proposalDetails.state = ProposalState.Executing;
             // set dao configuration
-            setFundRaiseConfiguration(dao, vars.proposalInfo);
+            setFundRaiseConfiguration(dao, proposalDetails);
 
             //reset fund raise state
             vars.fundingPoolAdapt.resetFundRaiseState(dao);
-            vars.proposalInfo.state = ProposalState.Done;
+            proposalDetails.state = ProposalState.Done;
         } else if (
             vars.voteResult == IGPVoting.VotingState.NOT_PASS ||
             vars.voteResult == IGPVoting.VotingState.TIE
         ) {
-            vars.proposalInfo.state = ProposalState.Failed;
+            proposalDetails.state = ProposalState.Failed;
         } else {
             revert("FundRaise::processProposal::voting not finalized");
         }
 
-        emit proposalExecuted(proposalId, vars.proposalInfo.state);
+        emit proposalExecuted(proposalId, proposalDetails.state);
     }
 
     function setFundRaiseConfiguration(

@@ -169,7 +169,7 @@ describe("Adapter - FundRaise", () => {
         const newProposalId = result.events[result.events.length - 1].args.proposalId;
         console.log(`newProposalId: ${hre.ethers.utils.toUtf8String(newProposalId)}`);
 
-        const proposalInfo = await fundRaiseAdapter.Proposals(dao.address, newProposalId);
+        let proposalInfo = await fundRaiseAdapter.Proposals(dao.address, newProposalId);
 
 
         console.log(`
@@ -208,6 +208,13 @@ describe("Adapter - FundRaise", () => {
         await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
 
         await fundRaiseAdapter.processProposal(dao.address, newProposalId);
+        proposalInfo = await fundRaiseAdapter.Proposals(dao.address, newProposalId);
+
+        console.log(`
+        proposal executed....
+        proposal state ${proposalInfo.state}
+        `);
+
         const newFundEndTime = await dao.getConfiguration(sha3("FUND_END_TIME"));
         let maxAmount = await fundingPoolAdapter.getFundRaisingMaxAmount(dao.address);
         console.log(`
@@ -215,8 +222,6 @@ describe("Adapter - FundRaise", () => {
         fund raise max amount ${hre.ethers.utils.formatEther(maxAmount.toString())}
         `);
         console.log(newFundEndTime);
-
-
 
         await depositToFundingPool(fundingPoolAdapter, dao, this.owner, hre.ethers.utils.parseEther("20000"), this.testtoken1);
     })
