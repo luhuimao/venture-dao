@@ -57,7 +57,7 @@ contract FundRaiseAdapterContract is
      */
     // Keeps track of all the Proposals executed per DAO.
     mapping(address => mapping(bytes32 => ProposalDetails)) public Proposals;
-    uint256 public proposalIds = 100020;
+    uint256 public proposalIds = 100025;
     bytes32 public latestProposalId;
     bytes32 public previousProposalId;
     /*
@@ -158,26 +158,50 @@ contract FundRaiseAdapterContract is
         vars.managementFeeRatio = _uint256ArgsFeeInfo[1];
         vars.redepmtFeeRatio = _uint256ArgsFeeInfo[2];
         vars.protocolFeeRatio = _uint256ArgsFeeInfo[3];
-        require(
-            vars.fundRaiseTarget > 0 && //fundRaiseTarget must > 0
-                vars.fundRaiseMaxAmount > vars.fundRaiseTarget && // max amount > target
-                vars.lpMinDepositAmount > 0 && // minimal deposit amount > 0
-                vars.lpMaxDepositAmount > vars.lpMinDepositAmount && // max deposit amount > min deposit amount
-                vars.fundRaiseStartTime > 0 && //fundRaiseStartTime must > 0
-                vars.fundRaiseEndTime > vars.fundRaiseStartTime && //fundRaiseEndTime must > fundRaiseStartTime
-                vars.fundTerm > 0 && //fundTerm must > 0
-                vars.redemptPeriod > 0 && //redemptPeriod must > 0
-                vars.redemptDuration > 0 && //redemptDuration must > 0
-                vars.proposerRewardRatio < 100 &&
-                vars.proposerRewardRatio >= 0 &&
-                vars.managementFeeRatio < 100 &&
-                vars.managementFeeRatio >= 0 &&
-                vars.redepmtFeeRatio < 100 &&
-                vars.redepmtFeeRatio >= 0 &&
-                vars.protocolFeeRatio < 100 &&
-                vars.protocolFeeRatio >= 0,
-            "FundRaise::submitProposal::invalid parameter"
-        );
+        if (
+            vars.fundRaiseTarget < 0 ||
+            (vars.fundRaiseMaxAmount > 0 &&
+                vars.fundRaiseMaxAmount < vars.fundRaiseTarget) ||
+            vars.lpMinDepositAmount < 0 ||
+            (vars.lpMaxDepositAmount > 0 &&
+                vars.lpMaxDepositAmount < vars.lpMinDepositAmount) ||
+            vars.fundRaiseStartTime <= 0 ||
+            vars.fundRaiseEndTime <= 0 ||
+            vars.fundRaiseEndTime < vars.fundRaiseStartTime ||
+            vars.fundTerm <= 0 ||
+            vars.redemptPeriod <= 0 ||
+            vars.redemptDuration <= 0 ||
+            vars.proposerRewardRatio >= 100 ||
+            vars.proposerRewardRatio < 0 ||
+            vars.managementFeeRatio >= 100 ||
+            vars.managementFeeRatio < 0 ||
+            vars.redepmtFeeRatio >= 100 ||
+            vars.redepmtFeeRatio < 0 ||
+            vars.protocolFeeRatio >= 100 ||
+            vars.protocolFeeRatio < 0
+        ) {
+            revert InvalidParamsSetting();
+        }
+        // require(
+        //     vars.fundRaiseTarget > 0 && //fundRaiseTarget must > 0
+        //         vars.fundRaiseMaxAmount > vars.fundRaiseTarget && // max amount > target
+        //         vars.lpMinDepositAmount > 0 && // minimal deposit amount > 0
+        //         vars.lpMaxDepositAmount > vars.lpMinDepositAmount && // max deposit amount > min deposit amount
+        //         vars.fundRaiseStartTime > 0 && //fundRaiseStartTime must > 0
+        //         vars.fundRaiseEndTime > vars.fundRaiseStartTime && //fundRaiseEndTime must > fundRaiseStartTime
+        //         vars.fundTerm > 0 && //fundTerm must > 0
+        //         vars.redemptPeriod > 0 && //redemptPeriod must > 0
+        //         vars.redemptDuration > 0 && //redemptDuration must > 0
+        //         vars.proposerRewardRatio < 100 &&
+        //         vars.proposerRewardRatio >= 0 &&
+        //         vars.managementFeeRatio < 100 &&
+        //         vars.managementFeeRatio >= 0 &&
+        //         vars.redepmtFeeRatio < 100 &&
+        //         vars.redepmtFeeRatio >= 0 &&
+        //         vars.protocolFeeRatio < 100 &&
+        //         vars.protocolFeeRatio >= 0,
+        //     "FundRaise::submitProposal::invalid parameter"
+        // );
         vars.gpVotingContract = IGPVoting(
             dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
         );
@@ -325,10 +349,15 @@ contract FundRaiseAdapterContract is
             proposalInfo.fundRaiseTarget + currentBalance
         );
         //2 fundRaiseMaxAmount
-        dao.setConfiguration(
-            DaoHelper.FUND_RAISING_MAX,
-            proposalInfo.fundRaiseMaxAmount + currentBalance
-        );
+        if (proposalInfo.fundRaiseMaxAmount > 0) {
+            dao.setConfiguration(
+                DaoHelper.FUND_RAISING_MAX,
+                proposalInfo.fundRaiseMaxAmount + currentBalance
+            );
+        } else {
+            dao.setConfiguration(DaoHelper.FUND_RAISING_MAX, 0);
+        }
+
         //3 lpMinDepositAmount
         dao.setConfiguration(
             DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP,

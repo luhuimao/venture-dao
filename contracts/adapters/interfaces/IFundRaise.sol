@@ -107,4 +107,6 @@ interface IFundRaise {
     ) external;
 
     function processProposal(DaoRegistry dao, bytes32 proposalId) external;
+
+    error InvalidParamsSetting();
 }

@@ -161,7 +161,7 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         uint256 minDepositAmount = dao.getConfiguration(
             DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP
         );
-
+        uint256 fundRaiseCap = dao.getConfiguration(DaoHelper.FUND_RAISING_MAX);
         if (minDepositAmount > 0) {
             require(
                 amount + balanceOf(dao, msg.sender) >= minDepositAmount,
@@ -185,12 +185,13 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
                 block.timestamp,
             "FundingPoolAdapter::Deposit::not in fundraise window"
         );
+        if (fundRaiseCap > 0) {
+            require(
+                lpBalance(dao) + amount <= fundRaiseCap,
+                "FundingPoolAdapter::Deposit::Fundraise max amount reach"
+            );
+        }
 
-        require(
-            lpBalance(dao) + amount <=
-                dao.getConfiguration(DaoHelper.FUND_RAISING_MAX),
-            "FundingPoolAdapter::Deposit::Fundraise max amount reach"
-        );
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
