@@ -57,7 +57,7 @@ contract FundRaiseAdapterContract is
      */
     // Keeps track of all the Proposals executed per DAO.
     mapping(address => mapping(bytes32 => ProposalDetails)) public Proposals;
-    uint256 public proposalIds = 100025;
+    uint256 public proposalIds = 100026;
     bytes32 public latestProposalId;
     bytes32 public previousProposalId;
     /*
@@ -241,7 +241,9 @@ contract FundRaiseAdapterContract is
                 vars.protocolFeeRatio,
                 vars.managementFeeAddress
             ),
-            ProposalState.Voting
+            ProposalState.Voting,
+            block.timestamp,
+            block.timestamp + dao.getConfiguration(DaoHelper.PROPOSAL_DURATION)
         );
 
         // Starts the voting process for the gp kick proposal.

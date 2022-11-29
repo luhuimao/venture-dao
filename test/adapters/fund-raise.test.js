@@ -192,8 +192,10 @@ describe("Adapter - FundRaise", () => {
         redepmtFeeRatio ${proposalInfo.feeInfo.redepmtFeeRatio}
         protocolFeeRatio ${proposalInfo.feeInfo.protocolFeeRatio}
         managementFeeAddress ${proposalInfo.feeInfo.managementFeeAddress}
-        `);
 
+        start vote time ${proposalInfo.creationTime}
+        stop vote time ${proposalInfo.stopVoteTime}
+        `);
 
         await this.gpvoting.submitVote(dao.address, newProposalId, 1);
 
