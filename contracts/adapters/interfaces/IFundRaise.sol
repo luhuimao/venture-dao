@@ -60,6 +60,8 @@ interface IFundRaise {
         FundRiaseTimeInfo timesInfo;
         FundRaiseRewardAndFeeInfo feeInfo;
         ProposalState state;
+        uint256 creationTime;
+        uint256 stopVoteTime;
     }
     /*
      * EVENTS
