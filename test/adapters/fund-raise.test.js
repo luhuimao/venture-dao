@@ -273,8 +273,6 @@ describe("Adapter - FundRaise", () => {
 
     })
 
-
-
     it("should be impossible to summit a fund raise proposal if pre-fund not finish", async () => {
         const fundRaiseAdapter = this.adapters.fundRaiseAdapter.instance;
         const dao = this.dao;
@@ -321,5 +319,430 @@ describe("Adapter - FundRaise", () => {
         // let tx = await fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo);
         // const result = await tx.wait();
     })
+
+    it("no limit for fundraise cap, lp min deposit, lp max depoit", async () => {
+        const fundRaiseAdapter = this.adapters.fundRaiseAdapter.instance;
+        const dao = this.dao;
+        const fundingPoolAdaptContract = this.fundingpoolAdapter;
+
+        const lastFundEndTime = await dao.getConfiguration(sha3("FUND_END_TIME"));
+        const lastFundReturnDuration = await dao.getConfiguration(sha3("RETURN_DURATION"));
+
+        let currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        // if (parseInt(lastFundEndTime + lastFundReturnDuration) < currentblocktimestamp) {
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(lastFundEndTime) + parseInt(lastFundReturnDuration) + 1])
+        await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        // }
+
+        const _uint256ArgsProposal = [
+            hre.ethers.utils.parseEther("10000"),
+            0,
+            0,
+            0
+        ];
+        currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        const _uint256ArgsTimeInfo = [
+            currentblocktimestamp,
+            currentblocktimestamp + 600000,
+            60 * 60,
+            60 * 10,
+            60,
+            6000
+        ];
+        const _uint256ArgsFeeInfo = [
+            5,
+            2,
+            5,
+            3
+        ];
+        const _addressArgs = [this.user2.address, this.testtoken1.address];
+
+        let tx = await fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs);
+        const result = await tx.wait();
+        const newProposalId = result.events[result.events.length - 1].args.proposalId;
+        console.log(`newProposalId: ${hre.ethers.utils.toUtf8String(newProposalId)}`);
+        const proposalInfo = await fundRaiseAdapter.Proposals(dao.address, newProposalId);
+
+
+        console.log(`
+        acceptTokenAddr ${proposalInfo.acceptTokenAddr}
+        fundRaiseTarget ${hre.ethers.utils.formatEther(proposalInfo.fundRaiseTarget.toString())}
+        fundRaiseMaxAmount ${hre.ethers.utils.formatEther(proposalInfo.fundRaiseMaxAmount.toString())}
+        lpMinDepositAmount ${hre.ethers.utils.formatEther(proposalInfo.lpMinDepositAmount.toString())}
+        lpMaxDepositAmount ${hre.ethers.utils.formatEther(proposalInfo.lpMaxDepositAmount.toString())}
+
+        fundRaiseStartTime ${proposalInfo.timesInfo.fundRaiseStartTime}
+        fundRaiseEndTime ${proposalInfo.timesInfo.fundRaiseEndTime}
+        fundTerm ${proposalInfo.timesInfo.fundTerm}
+        redemptPeriod ${proposalInfo.timesInfo.redemptPeriod}
+        redemptDuration ${proposalInfo.timesInfo.redemptDuration}
+        returnDuration ${proposalInfo.timesInfo.returnDuration}
+
+
+        proposerRewardRatio ${proposalInfo.feeInfo.proposerRewardRatio}
+        managementFeeRatio ${proposalInfo.feeInfo.managementFeeRatio}
+        redepmtFeeRatio ${proposalInfo.feeInfo.redepmtFeeRatio}
+        protocolFeeRatio ${proposalInfo.feeInfo.protocolFeeRatio}
+        managementFeeAddress ${proposalInfo.feeInfo.managementFeeAddress}
+        `);
+
+        await this.gpvoting.submitVote(dao.address, newProposalId, 1);
+
+        const voteDuration = await dao.getConfiguration(sha3("distributeFund.proposalDuration"));
+        const voteInfo = await this.gpvoting.votes(dao.address, newProposalId);
+
+        currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        if ((parseInt(voteInfo.startingTime) + parseInt(voteDuration) + 1) > currentblocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(voteInfo.startingTime) + parseInt(voteDuration) + 1])
+            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        }
+
+        await fundRaiseAdapter.processProposal(dao.address, newProposalId);
+
+
+        await depositToFundingPool(this.fundingpoolAdapter, dao, this.owner, hre.ethers.utils.parseEther("0.000001"), this.testtoken1);
+
+        await depositToFundingPool(this.fundingpoolAdapter, dao, this.owner, hre.ethers.utils.parseEther("100000"), this.testtoken1);
+
+        const bal = await fundingPoolAdaptContract.balanceOf(dao.address, this.owner.address);
+        console.log(`
+        deposit balace ${hre.ethers.utils.formatEther(bal.toString())}
+        `);
+    });
+
+
+    it("is impossible to submit a fund raise proposal fund raise cap < target && max lp deposit < min lp deposit if fund raise cap enabled && min \ max lp deposit enabled", async () => {
+        const fundRaiseAdapter = this.adapters.fundRaiseAdapter.instance;
+        const dao = this.dao;
+        const fundingPoolAdaptContract = this.fundingpoolAdapter;
+
+        const lastFundEndTime = await dao.getConfiguration(sha3("FUND_END_TIME"));
+        const lastFundReturnDuration = await dao.getConfiguration(sha3("RETURN_DURATION"));
+
+        let currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        // if (parseInt(lastFundEndTime + lastFundReturnDuration) < currentblocktimestamp) {
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(lastFundEndTime) + parseInt(lastFundReturnDuration) + 1])
+        await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        // }
+
+        let _uint256ArgsProposal = [
+            hre.ethers.utils.parseEther("10000"),
+            hre.ethers.utils.parseEther("9000"),
+            hre.ethers.utils.parseEther("1000"),
+            hre.ethers.utils.parseEther("100")
+        ];
+        currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        let _uint256ArgsTimeInfo = [
+            currentblocktimestamp,
+            currentblocktimestamp + 600000,
+            60 * 60,
+            60 * 10,
+            60,
+            6000
+        ];
+        let _uint256ArgsFeeInfo = [
+            5,
+            2,
+            5,
+            3
+        ];
+        let _addressArgs = [this.user2.address, this.testtoken1.address];
+
+        await expectRevert(fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs), "revert");
+
+        //fundRaiseStartTime <=0
+        _uint256ArgsProposal = [
+            hre.ethers.utils.parseEther("10000"),
+            hre.ethers.utils.parseEther("100000"),
+            hre.ethers.utils.parseEther("1000"),
+            hre.ethers.utils.parseEther("10000")
+        ];
+        currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        _uint256ArgsTimeInfo = [
+            0,
+            currentblocktimestamp + 600000,
+            60 * 60,
+            60 * 10,
+            60,
+            6000
+        ];
+        _uint256ArgsFeeInfo = [
+            5,
+            2,
+            5,
+            3
+        ];
+        _addressArgs = [this.user2.address, this.testtoken1.address];
+        await expectRevert(fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs), "revert");
+
+        //fundRaiseEndTime <=0
+        _uint256ArgsProposal = [
+            hre.ethers.utils.parseEther("10000"),
+            hre.ethers.utils.parseEther("100000"),
+            hre.ethers.utils.parseEther("1000"),
+            hre.ethers.utils.parseEther("10000")
+        ];
+        currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        _uint256ArgsTimeInfo = [
+            currentblocktimestamp,
+            0,
+            60 * 60,
+            60 * 10,
+            60,
+            6000
+        ];
+        _uint256ArgsFeeInfo = [
+            5,
+            2,
+            5,
+            3
+        ];
+        _addressArgs = [this.user2.address, this.testtoken1.address];
+        await expectRevert(fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs), "revert");
+
+
+        //fundRaiseEndTime < fundRaiseStartTime
+        _uint256ArgsProposal = [
+            hre.ethers.utils.parseEther("10000"),
+            hre.ethers.utils.parseEther("100000"),
+            hre.ethers.utils.parseEther("1000"),
+            hre.ethers.utils.parseEther("10000")
+        ];
+        currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        _uint256ArgsTimeInfo = [
+            currentblocktimestamp + 10,
+            currentblocktimestamp,
+            60 * 60,
+            60 * 10,
+            60,
+            6000
+        ];
+        _uint256ArgsFeeInfo = [
+            5,
+            2,
+            5,
+            3
+        ];
+        _addressArgs = [this.user2.address, this.testtoken1.address];
+        await expectRevert(fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs), "revert");
+
+        //fundTerm <= 0
+        _uint256ArgsProposal = [
+            hre.ethers.utils.parseEther("10000"),
+            hre.ethers.utils.parseEther("100000"),
+            hre.ethers.utils.parseEther("1000"),
+            hre.ethers.utils.parseEther("10000")
+        ];
+        currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        _uint256ArgsTimeInfo = [
+            currentblocktimestamp,
+            currentblocktimestamp + 600,
+            0,
+            60 * 10,
+            60,
+            6000
+        ];
+        _uint256ArgsFeeInfo = [
+            5,
+            2,
+            5,
+            3
+        ];
+        _addressArgs = [this.user2.address, this.testtoken1.address];
+        await expectRevert(fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs), "revert");
+
+        //redemptPeriod<=0
+        _uint256ArgsProposal = [
+            hre.ethers.utils.parseEther("10000"),
+            hre.ethers.utils.parseEther("100000"),
+            hre.ethers.utils.parseEther("1000"),
+            hre.ethers.utils.parseEther("10000")
+        ];
+        currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        _uint256ArgsTimeInfo = [
+            currentblocktimestamp,
+            currentblocktimestamp + 600,
+            60 * 60,
+            0,
+            60,
+            6000
+        ];
+        _uint256ArgsFeeInfo = [
+            5,
+            2,
+            5,
+            3
+        ];
+        _addressArgs = [this.user2.address, this.testtoken1.address];
+        await expectRevert(fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs), "revert");
+
+
+        //redemptDuration<=0
+        _uint256ArgsProposal = [
+            hre.ethers.utils.parseEther("10000"),
+            hre.ethers.utils.parseEther("100000"),
+            hre.ethers.utils.parseEther("1000"),
+            hre.ethers.utils.parseEther("10000")
+        ];
+        currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        _uint256ArgsTimeInfo = [
+            currentblocktimestamp,
+            currentblocktimestamp + 600,
+            60 * 60,
+            60 * 10,
+            0,
+            6000
+        ];
+        _uint256ArgsFeeInfo = [
+            5,
+            2,
+            5,
+            3
+        ];
+        _addressArgs = [this.user2.address, this.testtoken1.address];
+        await expectRevert(fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs), "revert");
+        //returnDuration<=0
+        _uint256ArgsProposal = [
+            hre.ethers.utils.parseEther("10000"),
+            hre.ethers.utils.parseEther("100000"),
+            hre.ethers.utils.parseEther("1000"),
+            hre.ethers.utils.parseEther("10000")
+        ];
+        currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        _uint256ArgsTimeInfo = [
+            currentblocktimestamp,
+            currentblocktimestamp + 600,
+            60 * 60,
+            60 * 10,
+            60,
+            0
+        ];
+        _uint256ArgsFeeInfo = [
+            5,
+            2,
+            5,
+            3
+        ];
+        _addressArgs = [this.user2.address, this.testtoken1.address];
+        await expectRevert(fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs), "revert");
+
+        //proposerRewardRatio>=100
+        _uint256ArgsProposal = [
+            hre.ethers.utils.parseEther("10000"),
+            hre.ethers.utils.parseEther("100000"),
+            hre.ethers.utils.parseEther("1000"),
+            hre.ethers.utils.parseEther("10000")
+        ];
+        currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        _uint256ArgsTimeInfo = [
+            currentblocktimestamp,
+            currentblocktimestamp + 600,
+            60 * 60,
+            60 * 10,
+            60,
+            6000
+        ];
+        _uint256ArgsFeeInfo = [
+            105,
+            2,
+            5,
+            3
+        ];
+        _addressArgs = [this.user2.address, this.testtoken1.address];
+        await expectRevert(fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs), "revert");
+
+        //managementFeeRatio >= 100
+        _uint256ArgsProposal = [
+            hre.ethers.utils.parseEther("10000"),
+            hre.ethers.utils.parseEther("100000"),
+            hre.ethers.utils.parseEther("1000"),
+            hre.ethers.utils.parseEther("10000")
+        ];
+        currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        _uint256ArgsTimeInfo = [
+            currentblocktimestamp,
+            currentblocktimestamp + 600,
+            60 * 60,
+            60 * 10,
+            60,
+            6000
+        ];
+        _uint256ArgsFeeInfo = [
+            5,
+            102,
+            5,
+            3
+        ];
+        _addressArgs = [this.user2.address, this.testtoken1.address];
+        await expectRevert(fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs), "revert");
+
+        //redepmtFeeRatio >= 100
+        _uint256ArgsProposal = [
+            hre.ethers.utils.parseEther("10000"),
+            hre.ethers.utils.parseEther("100000"),
+            hre.ethers.utils.parseEther("1000"),
+            hre.ethers.utils.parseEther("10000")
+        ];
+        currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        _uint256ArgsTimeInfo = [
+            currentblocktimestamp,
+            currentblocktimestamp + 600,
+            60 * 60,
+            60 * 10,
+            60,
+            6000
+        ];
+        _uint256ArgsFeeInfo = [
+            5,
+            2,
+            105,
+            3
+        ];
+        _addressArgs = [this.user2.address, this.testtoken1.address];
+        await expectRevert(fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs), "revert");
+
+
+        //protocolFeeRatio >= 100
+        _uint256ArgsProposal = [
+            hre.ethers.utils.parseEther("10000"),
+            hre.ethers.utils.parseEther("100000"),
+            hre.ethers.utils.parseEther("1000"),
+            hre.ethers.utils.parseEther("10000")
+        ];
+        currentblocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        _uint256ArgsTimeInfo = [
+            currentblocktimestamp,
+            currentblocktimestamp + 600,
+            60 * 60,
+            60 * 10,
+            60,
+            6000
+        ];
+        _uint256ArgsFeeInfo = [
+            5,
+            2,
+            5,
+            103
+        ];
+        _addressArgs = [this.user2.address, this.testtoken1.address];
+        await expectRevert(fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs), "revert");
+
+    });
 
 });
