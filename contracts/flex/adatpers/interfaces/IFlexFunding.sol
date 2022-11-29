@@ -3,13 +3,12 @@ pragma solidity ^0.8.0;
 
 import "../../../core/DaoRegistry.sol";
 import "../../../helpers/DaoHelper.sol";
+import "../../../adapters/interfaces/IGPVoting.sol";
 
 interface IFlexFunding {
-    function submitProposal(
-        DaoRegistry dao,
-        address[] calldata _addressArgs,
-        uint256[] calldata _uint256ArgsProposal
-    ) external returns (bytes32 proposalId);
+    function submitProposal(DaoRegistry dao, ProposalParams calldata params)
+        external
+        returns (bytes32 proposalId);
 
     function processProposal(DaoRegistry dao, bytes32 proposalId)
         external
@@ -41,6 +40,34 @@ interface IFlexFunding {
     /*
      * STRUCT
      */
+    struct SubmitProposalLocalVars {
+        uint256 lastFundEndTime;
+        IGPVoting gpVotingContract;
+        address fundRaiseTokenAddr;
+        address managementFeeAddress;
+        address submittedBy;
+        bytes32 proposalId;
+        uint256 fundRaiseTarget;
+        uint256 fundRaiseMaxAmount;
+        uint256 lpMinDepositAmount;
+        uint256 lpMaxDepositAmount;
+        uint256 fundRaiseStartTime;
+        uint256 fundRaiseEndTime;
+        uint256 fundTerm;
+        uint256 redemptPeriod;
+        uint256 redemptDuration;
+        uint256 returnDuration;
+        uint256 proposerRewardRatio;
+        uint256 managementFeeRatio;
+        uint256 redepmtFeeRatio;
+        uint256 protocolFeeRatio;
+    }
+    struct ProposalParams {
+        FundingInfo fundingInfo;
+        VestInfo vestInfo;
+        FundRaiseInfo fundRaiseInfo;
+        ProposerRewardInfo proposerRewardInfo;
+    }
     struct ProposalInfo {
         FundingInfo fundingInfo;
         VestInfo vestInfo;

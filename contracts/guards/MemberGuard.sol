@@ -32,6 +32,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 abstract contract MemberGuard {
+    modifier onlyProposer(DaoRegistry dao) {
+        _;
+    }
     /**
      * @dev Only members of the DAO are allowed to execute the function call.
      */

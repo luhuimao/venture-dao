@@ -70,6 +70,21 @@ library DaoHelper {
     uint256 internal constant THREE_MONTH = 60 * 60 * 24 * 90;
     uint256 internal constant ONE_YEAR = 60 * 60 * 24 * 365;
 
+    // flex proposer setting
+    bytes32 internal constant FLEX_PROPOSER_MIN_DEPOSIT =
+        keccak256("FLEX_PROPOSER_MIN_DEPOSIT");
+    bytes32 internal constant FLEX_PROPOSER_ADDITIONAL_IDENTIFICATION =
+        keccak256("FLEX_PROPOSER_ADDITIONAL_IDENTIFICATION");
+    bytes32 internal constant FLEX_PROPOSER_TOKEN_TYPE =
+        keccak256("FLEX_PROPOSER_TOKEN_TYPE");
+    bytes32 internal constant FLEX_PROPOSER_CHAINID =
+        keccak256("FLEX_PROPOSER_CHAINID");
+    bytes32 internal constant FLEX_PROPOSER_TOKEN_ADDRESS =
+        keccak256("FLEX_PROPOSER_TOKEN_ADDRESS");
+    bytes32 internal constant FLEX_PROPOSER_TOKENID =
+        keccak256("FLEX_PROPOSER_TOKENID");
+    bytes32 internal constant FLEX_PROPOSER_MIN_HOLDING =
+        keccak256("FLEX_PROPOSER_MIN_HOLDING");
     //PPM
     bytes32 internal constant RETURN_DURATION = keccak256("RETURN_DURATION");
     bytes32 internal constant DAO_SQUARE_ADDRESS =
