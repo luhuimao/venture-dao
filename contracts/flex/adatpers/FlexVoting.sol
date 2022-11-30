@@ -6,9 +6,9 @@ import "../../core/DaoRegistry.sol";
 import "../../extensions/bank/Bank.sol";
 import "../../guards/MemberGuard.sol";
 import "../../guards/AdapterGuard.sol";
-import "../interfaces/IVoting.sol";
+import "./interfaces/IFlexVoting.sol";
 import "../../helpers/DaoHelper.sol";
-import "../modifiers/Reimbursable.sol";
+import "../../adapters/modifiers/Reimbursable.sol";
 import "../../helpers/GovernanceHelper.sol";
 import "hardhat/console.sol";
 
@@ -69,11 +69,11 @@ contract FlexVotingContract is
      * @param votingPeriod The voting period in seconds.
      * @param gracePeriod The grace period in seconds.
      */
-    function configureDao(
-        DaoRegistry dao,
-        uint256 votingPeriod,
-        uint256 gracePeriod
-    ) external onlyAdapter(dao) {}
+    // function configureDao(
+    //     DaoRegistry dao,
+    //     uint256 votingPeriod,
+    //     uint256 gracePeriod
+    // ) external onlyAdapter(dao) {}
 
     /**
      * @notice Stats a new voting proposal considering the block time and number.

@@ -4,7 +4,7 @@
  * @Author: huhuimao
  * @Date: 2022-11-10 19:00:47
  * @LastEditors: huhuimao
- * @LastEditTime: 2022-11-14 13:18:50
+ * @LastEditTime: 2022-11-30 10:30:58
  */
 /**
  * @notice the ids defined in this file must match the ids added to DaoHelper.sol.
@@ -12,8 +12,11 @@
 
 /** Adapters */
 export const adaptersIdsMap: Record<string, string> = {
-  FUND_RAISE:"fund-raise",
-  VESTING:"vesting",
+  FLEX_FUNDING_POOL_ADAPTER: "flex-funding-pool-adatper",
+  FLEX_VOTING: "flex-voting",
+  FLEX_FUNDING: "flex-funding",
+  FUND_RAISE: "fund-raise",
+  VESTING: "vesting",
   BEN_TO_BOX: "ben-to-box",
   GP_KICK_ADAPTER: "gp-kick",
   GP_DAO_ONBOARDING_ADAPTER: "gp-dao-onboarding",
@@ -56,6 +59,7 @@ export const adaptersIdsMap: Record<string, string> = {
 
 /** Extensions */
 export const extensionsIdsMap: Record<string, string> = {
+  FLEX_FUNDING_POOL_EXT: "flex-funding-pool-ext",
   BANK_EXT: "bank",
   FUNDING_POOL_EXT: "funding-pool-ext",
   RICE_STAKING_EXT: "rice-staking-ext",

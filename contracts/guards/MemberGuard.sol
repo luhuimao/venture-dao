@@ -36,6 +36,7 @@ abstract contract MemberGuard {
         _;
     }
     modifier onlyProposer(DaoRegistry dao) {
+        require(1 == 1, "");
         _;
     }
     /**

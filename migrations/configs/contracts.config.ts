@@ -1,4 +1,5 @@
 import {
+  flexFundingPoolExtensionAclFlagsMap,
   daoAccessFlagsMap,
   bankExtensionAclFlagsMap,
   fundingpoolExtensionAclFlagsMap,
@@ -615,6 +616,57 @@ export const contracts: Array<ContractConfig> = [
   /**
    * Adapters
    */
+  {
+    id: adaptersIdsMap.FLEX_FUNDING_POOL_ADAPTER,
+    name: "FlexFundingPoolAdapterContract",
+    alias: "flexFundingPoolAdapterContract",
+    path: "../../contracts/adapters/FlexFundingPoolAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+        [extensionsIdsMap.FLEX_FUNDING_POOL_EXT]: [
+          flexFundingPoolExtensionAclFlagsMap.WITHDRAW,
+          flexFundingPoolExtensionAclFlagsMap.SUB_FROM_BALANCE,
+          flexFundingPoolExtensionAclFlagsMap.ADD_TO_BALANCE,
+          flexFundingPoolExtensionAclFlagsMap.UPDATE_TOKEN,
+        ],
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_VOTING,
+    name: "FlexVotingContract",
+    alias: "flexVotingContract",
+    path: "../../contracts/adapters/FlexVotingContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_VOTE_TYPE],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_FUNDING,
+    name: "FlexFundingAdapterContract",
+    alias: "flexFundingAdapterContract",
+    path: "../../contracts/adapters/FlexFundingAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_VOTE_TYPE],
+      extensions: {
+        [extensionsIdsMap.FLEX_FUNDING_POOL_EXT]: [
+          flexFundingPoolExtensionAclFlagsMap.REGISTER_NEW_TOKEN,
+        ],
+      },
+    },
+  },
   {
     id: adaptersIdsMap.BEN_TO_BOX,
     name: "BentoBoxV1",

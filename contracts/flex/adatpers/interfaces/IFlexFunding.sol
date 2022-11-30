@@ -3,7 +3,8 @@ pragma solidity ^0.8.0;
 
 import "../../../core/DaoRegistry.sol";
 import "../../../helpers/DaoHelper.sol";
-import "../../../adapters/interfaces/IGPVoting.sol";
+import "./IFlexVoting.sol";
+import "../../extensions/FlexFundingPool.sol";
 
 interface IFlexFunding {
     function submitProposal(DaoRegistry dao, ProposalParams calldata params)
@@ -14,7 +15,12 @@ interface IFlexFunding {
         external
         returns (bool);
 
+    enum FundingType {
+        DIRECT,
+        POLL
+    }
     // The proposal status
+
     enum ProposalStatus {
         IN_VOTING_PROGRESS,
         IN_EXECUTE_PROGRESS,
@@ -42,7 +48,8 @@ interface IFlexFunding {
      */
     struct SubmitProposalLocalVars {
         uint256 lastFundEndTime;
-        IGPVoting gpVotingContract;
+        IFlexVoting flexVotingContract;
+        FlexFundingPoolExtension flexFundingPoolExt;
         address fundRaiseTokenAddr;
         address managementFeeAddress;
         address submittedBy;
@@ -69,10 +76,14 @@ interface IFlexFunding {
         ProposerRewardInfo proposerRewardInfo;
     }
     struct ProposalInfo {
+        address proposer;
         FundingInfo fundingInfo;
         VestInfo vestInfo;
         FundRaiseInfo fundRaiseInfo;
         ProposerRewardInfo proposerRewardInfo;
+        uint256 startVoteTime;
+        uint256 stopVoteTime;
+        ProposalStatus state;
     }
     struct FundingInfo {
         address tokenAddress;
@@ -128,7 +139,7 @@ interface IFlexFunding {
      * EVENTS
      */
 
-    event ProposalCreated(bytes32 proposalId);
+    event ProposalCreated(bytes32 proposalId, address proposer);
 
     event ProposalExecuted(bytes32 proposalId);
 }

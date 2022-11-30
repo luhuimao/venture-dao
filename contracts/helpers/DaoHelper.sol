@@ -149,6 +149,10 @@ library DaoHelper {
         keccak256("PROPOSAL_EXECUTE_DURATION");
 
     // Adapters
+    bytes32 internal constant FLEX_FUNDING_POOL_ADAPT =
+        keccak256("flex-funding-pool-adatper");
+    bytes32 internal constant FLEX_FUNDING_ADAPT = keccak256("flex-funding");
+    bytes32 internal constant FLEX_VOTING_ADAPT = keccak256("flex-voting");
     bytes32 internal constant FUND_RAISE = keccak256("fund-raise");
     bytes32 internal constant VESTWING = keccak256("vesting");
     bytes32 internal constant BEN_TO_BOX = keccak256("ben-to-box");
@@ -198,6 +202,8 @@ library DaoHelper {
         keccak256("erc20-transfer-strategy");
 
     // Extensions
+    bytes32 internal constant FLEX_FUNDING_POOL_EXT =
+        keccak256("flex-funding-pool-ext");
     bytes32 internal constant BANK = keccak256("bank");
     bytes32 internal constant RICE_STAKING_EXT = keccak256("rice-staking-ext");
     bytes32 internal constant FUNDINGPOOL_EXT = keccak256("funding-pool-ext");

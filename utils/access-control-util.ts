@@ -31,6 +31,22 @@ export const daoAccessFlagsMap: Record<string, string> = {
 
 export const daoAccessFlags: Array<string> = Object.values(daoAccessFlagsMap);
 
+export const flexFundingPoolExtensionAclFlagsMap: Record<string, string> = {
+  ADD_TO_BALANCE: "ADD_TO_BALANCE",
+  SUB_FROM_BALANCE: "SUB_FROM_BALANCE",
+  INTERNAL_TRANSFER: "INTERNAL_TRANSFER",
+  WITHDRAW: "WITHDRAW",
+  REGISTER_NEW_TOKEN: "REGISTER_NEW_TOKEN",
+  REGISTER_NEW_INTERNAL_TOKEN: "REGISTER_NEW_INTERNAL_TOKEN",
+  UPDATE_TOKEN: "UPDATE_TOKEN",
+};
+
+export const flexFundingPoolExtensionAclFlags: Array<string> = Object.values(
+  flexFundingPoolExtensionAclFlagsMap
+);
+
+
+
 export const bankExtensionAclFlagsMap: Record<string, string> = {
   ADD_TO_BALANCE: "ADD_TO_BALANCE",
   SUB_FROM_BALANCE: "SUB_FROM_BALANCE",
