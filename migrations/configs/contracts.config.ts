@@ -9,6 +9,7 @@ import {
   erc1155ExtensionAclFlagsMap,
   erc1271ExtensionAclFlagsMap,
   vestingExtensionAclFlagsMap,
+  entryFlexFundingPool,
   entryBank,
   entryRiceStaking,
   entryFundingPool,
@@ -352,6 +353,21 @@ export const contracts: Array<ContractConfig> = [
     generatesExtensionId: extensionsIdsMap.FUNDING_POOL_EXT,
   },
   {
+    id: "flex-funding-pool-factory",
+    name: "FlexFundingPoolFactory",
+    alias: "flexFundingPoolFactory",
+    path: "../../contracts/flex/extensions/FlexFundingPoolFactory",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Factory,
+    acls: {
+      dao: [],
+      extensions: {},
+    },
+    deploymentArgs: ["daoAddress"],
+    generatesExtensionId: extensionsIdsMap.FLEX_FUNDING_POOL_EXT,
+  },
+  {
     id: "rice-staking-factory",
     name: "RiceStakingFactory",
     alias: "riceStakingExtFactory",
@@ -462,10 +478,23 @@ export const contracts: Array<ContractConfig> = [
     deploymentArgs: ["daoAddress"],
     generatesExtensionId: extensionsIdsMap.ERC1155_EXT,
   },
-
   /**
    * Extensions
    */
+  {
+    id: extensionsIdsMap.FLEX_FUNDING_POOL_EXT,
+    name: "FlexFundingPoolExtension",
+    alias: "flexFundingPoolExt",
+    path: "../../contracts/flex/extensions/FlexFundingPoolExtension",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Extension,
+    buildAclFlag: entryFlexFundingPool,
+    acls: {
+      dao: [],
+      extensions: {},
+    },
+  },
   {
     id: extensionsIdsMap.ERC721_EXT,
     name: "NFTExtension",
@@ -666,6 +695,7 @@ export const contracts: Array<ContractConfig> = [
         ],
       },
     },
+    daoConfigs: [["daoAddress", "flexFundingType"]],
   },
   {
     id: adaptersIdsMap.BEN_TO_BOX,

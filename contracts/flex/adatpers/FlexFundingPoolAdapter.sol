@@ -1,6 +1,7 @@
 pragma solidity ^0.8.0;
 
 // SPDX-License-Identifier: MIT
+import "./interfaces/IFlexFunding.sol";
 import "./FlexFunding.sol";
 import "../../core/DaoRegistry.sol";
 import "../extensions/FlexFundingPool.sol";
@@ -36,6 +37,12 @@ SOFTWARE.
  */
 
 contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
+    error FundingProposalNotFinalize();
+    error NotInFundRaise();
+    error ExceedMaxDepositAmount();
+    error LessMinDepositAmount();
+    error ExceedMaxFundingAmount();
+
     /**
      * @notice Allows the member/advisor of the DAO to withdraw the funds from their internal bank account.
      * @notice Only accounts that are not reserved can withdraw the funds.
@@ -96,26 +103,87 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
     //     }(DaoHelper.GUILD, DaoHelper.ETH_TOKEN, msg.value);
     // }
 
+    struct DepositLocalVars {
+        FlexFundingAdapterContract flexFunding;
+        FlexFundingPoolExtension flexFungdingPoolExt;
+        uint256 fundRaiseStartTime;
+        uint256 fundRaiseEndTime;
+        IFlexFunding.FundRaiseType fundRaiseType;
+        uint256 minDepositAmount;
+        uint256 maxDepositAmount;
+        address token;
+        uint256 maxFundingAmount;
+    }
+
     function deposit(
         DaoRegistry dao,
         bytes32 proposalId,
         uint256 amount
     ) external reimbursable(dao) {
-        require(amount > 0, "no token sent!");
-        FlexFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
-        ).addToBalance(proposalId, msg.sender, amount);
-
-        FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
+        DepositLocalVars memory vars;
+        vars.flexFunding = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
-        address token = flexFunding.getTokenByProposalId(dao, proposalId);
-        IERC20(token).transferFrom(msg.sender, address(this), amount);
-        IERC20(token).transferFrom(
+
+        vars.flexFungdingPoolExt = FlexFundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+        );
+
+        if (
+            vars.flexFunding.getProposalState(dao, proposalId) !=
+            IFlexFunding.ProposalStatus.DONE
+        ) revert FundingProposalNotFinalize();
+
+        (vars.fundRaiseStartTime, vars.fundRaiseEndTime) = vars
+            .flexFunding
+            .getFundRaiseTimes(dao, proposalId);
+        if (
+            block.timestamp > vars.fundRaiseStartTime &&
+            block.timestamp < vars.fundRaiseEndTime
+        ) revert NotInFundRaise();
+
+        require(amount > 0, "no token sent!");
+
+        vars.fundRaiseType = vars.flexFunding.getFundRaiseType(dao, proposalId);
+
+        (vars.minDepositAmount, vars.maxDepositAmount) = vars
+            .flexFunding
+            .getDepositAmountLimit(dao, proposalId);
+        vars.maxFundingAmount = vars.flexFunding.getMaxFundingAmount(
+            dao,
+            proposalId
+        );
+        if (vars.minDepositAmount > 0 && amount < vars.minDepositAmount)
+            revert LessMinDepositAmount();
+        if (
+            vars.maxDepositAmount > 0 &&
+            vars.flexFungdingPoolExt.balanceOf(proposalId, msg.sender) +
+                amount >
+            vars.maxDepositAmount
+        ) revert ExceedMaxDepositAmount();
+        if (
+            vars.fundRaiseType == IFlexFunding.FundRaiseType.FCSF &&
+            vars.maxFundingAmount > 0
+        ) {
+            if (
+                vars.flexFungdingPoolExt.balanceOf(
+                    proposalId,
+                    DaoHelper.TOTAL
+                ) +
+                    amount >
+                vars.maxFundingAmount
+            ) revert ExceedMaxFundingAmount();
+        }
+
+        vars.token = vars.flexFunding.getTokenByProposalId(dao, proposalId);
+        IERC20(vars.token).transferFrom(msg.sender, address(this), amount);
+        IERC20(vars.token).transferFrom(
             address(this),
             dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT),
             amount
         );
+
+        vars.flexFungdingPoolExt.addToBalance(proposalId, msg.sender, amount);
 
         // IERC20(token).approve(
         //     dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT),

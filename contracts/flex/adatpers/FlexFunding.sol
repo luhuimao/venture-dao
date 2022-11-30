@@ -29,13 +29,13 @@ contract FlexFundingAdapterContract is
     /**
      * @notice Configures the DAO with the Voting and Gracing periods.
      * @param dao The gp Allocation Bonus Radio.
-     * @param _fundingType The rice Stake Allocation Radio.
+     * @param flexFundingType The rice Stake Allocation Radio.
      */
-    function configureDao(DaoRegistry dao, FundingType _fundingType)
+    function configureDao(DaoRegistry dao, FundingType flexFundingType)
         external
         onlyAdapter(dao)
     {
-        fundingType = _fundingType;
+        fundingType = flexFundingType;
         // emit ConfigureDao(gpAllocationBonusRadio, riceStakeAllocationRadio);
     }
 
@@ -140,7 +140,7 @@ contract FlexFundingAdapterContract is
         returns (bool)
     {
         require(fundingType == FundingType.POLL, "no need execute");
-        
+
         return true;
     }
 
@@ -150,5 +150,50 @@ contract FlexFundingAdapterContract is
         returns (address)
     {
         return Proposals[address(dao)][proposalId].fundingInfo.tokenAddress;
+    }
+
+    function getFundRaiseTimes(DaoRegistry dao, bytes32 proposalId)
+        external
+        returns (uint256 fundRaiseStartTime, uint256 fundRaiseEndTime)
+    {
+        fundRaiseStartTime = Proposals[address(dao)][proposalId]
+            .fundRaiseInfo
+            .fundRaiseStartTime;
+        fundRaiseEndTime = Proposals[address(dao)][proposalId]
+            .fundRaiseInfo
+            .fundRaiseEndTime;
+    }
+
+    function getFundRaiseType(DaoRegistry dao, bytes32 proposalId)
+        external
+        returns (FundRaiseType)
+    {
+        return Proposals[address(dao)][proposalId].fundRaiseInfo.fundRaiseType;
+    }
+
+    function getMaxFundingAmount(DaoRegistry dao, bytes32 proposalId)
+        external
+        returns (uint256)
+    {
+        return Proposals[address(dao)][proposalId].fundingInfo.maxFundingAmount;
+    }
+
+    function getProposalState(DaoRegistry dao, bytes32 proposalId)
+        external
+        returns (ProposalStatus)
+    {
+        return Proposals[address(dao)][proposalId].state;
+    }
+
+    function getDepositAmountLimit(DaoRegistry dao, bytes32 proposalId)
+        external
+        returns (uint256 minDepositAmount, uint256 maxDepositAmount)
+    {
+        minDepositAmount = Proposals[address(dao)][proposalId]
+            .fundRaiseInfo
+            .minDepositAmount;
+        maxDepositAmount = Proposals[address(dao)][proposalId]
+            .fundRaiseInfo
+            .maxDepositAmount;
     }
 }

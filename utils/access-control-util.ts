@@ -169,6 +169,19 @@ export const parseSelectedFlags = (
     }, {});
 };
 
+
+export const entryFlexFundingPool = (
+  contractAddress: string,
+  selectedAcls: SelectedACLs
+): ACLValue => {
+  return getEnabledExtensionFlags(
+    flexFundingPoolExtensionAclFlags,
+    extensionsIdsMap.FLEX_FUNDING_POOL_EXT,
+    contractAddress,
+    selectedAcls
+  );
+};
+
 export const entryERC721 = (
   contractAddress: string,
   selectedAcls: SelectedACLs
