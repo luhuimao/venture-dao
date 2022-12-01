@@ -126,7 +126,7 @@ contract FlexFundingAdapterContract is
         vars.flexFundingPoolExt = FlexFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
         );
-        if (fundingType == FundingType.POLL) {
+        if (fundingType == FundingType.DIRECT) {
             vars.flexFundingPoolExt.registerPotentialNewFundingProposal(
                 vars.proposalId
             );
@@ -154,6 +154,7 @@ contract FlexFundingAdapterContract is
 
     function getFundRaiseTimes(DaoRegistry dao, bytes32 proposalId)
         external
+        view
         returns (uint256 fundRaiseStartTime, uint256 fundRaiseEndTime)
     {
         fundRaiseStartTime = Proposals[address(dao)][proposalId]
@@ -166,6 +167,7 @@ contract FlexFundingAdapterContract is
 
     function getFundRaiseType(DaoRegistry dao, bytes32 proposalId)
         external
+        view
         returns (FundRaiseType)
     {
         return Proposals[address(dao)][proposalId].fundRaiseInfo.fundRaiseType;
@@ -173,6 +175,7 @@ contract FlexFundingAdapterContract is
 
     function getMaxFundingAmount(DaoRegistry dao, bytes32 proposalId)
         external
+        view
         returns (uint256)
     {
         return Proposals[address(dao)][proposalId].fundingInfo.maxFundingAmount;
@@ -180,6 +183,7 @@ contract FlexFundingAdapterContract is
 
     function getProposalState(DaoRegistry dao, bytes32 proposalId)
         external
+        view
         returns (ProposalStatus)
     {
         return Proposals[address(dao)][proposalId].state;
@@ -187,6 +191,7 @@ contract FlexFundingAdapterContract is
 
     function getDepositAmountLimit(DaoRegistry dao, bytes32 proposalId)
         external
+        view
         returns (uint256 minDepositAmount, uint256 maxDepositAmount)
     {
         minDepositAmount = Proposals[address(dao)][proposalId]

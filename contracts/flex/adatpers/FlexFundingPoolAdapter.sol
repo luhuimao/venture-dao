@@ -10,6 +10,7 @@ import "../../adapters/interfaces/IVoting.sol";
 import "../../helpers/DaoHelper.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "hardhat/console.sol";
 
 /**
@@ -37,6 +38,8 @@ SOFTWARE.
  */
 
 contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
+    using SafeERC20 for IERC20;
+
     error FundingProposalNotFinalize();
     error NotInFundRaise();
     error ExceedMaxDepositAmount();
@@ -138,8 +141,8 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
             .flexFunding
             .getFundRaiseTimes(dao, proposalId);
         if (
-            block.timestamp > vars.fundRaiseStartTime &&
-            block.timestamp < vars.fundRaiseEndTime
+            block.timestamp < vars.fundRaiseStartTime ||
+            block.timestamp > vars.fundRaiseEndTime
         ) revert NotInFundRaise();
 
         require(amount > 0, "no token sent!");
@@ -177,8 +180,7 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
 
         vars.token = vars.flexFunding.getTokenByProposalId(dao, proposalId);
         IERC20(vars.token).transferFrom(msg.sender, address(this), amount);
-        IERC20(vars.token).transferFrom(
-            address(this),
+        IERC20(vars.token).safeTransfer(
             dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT),
             amount
         );
@@ -189,5 +191,16 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
         //     dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT),
         //     amount
         // );
+    }
+
+    function balanceOf(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        address account
+    ) public view returns (uint160) {
+        FlexFundingPoolExtension flexFungdingPoolExt = FlexFundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+        );
+        return flexFungdingPoolExt.balanceOf(proposalId, msg.sender);
     }
 }

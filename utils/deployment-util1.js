@@ -698,7 +698,7 @@ const configureDao = async ({
             }
             // 2nd lookup for configs in the options object
             const configValue = options[configName];
-            if (!configValue)
+            if (configValue === undefined)
                 throw new Error(
                     `Error while configuring dao parameter[${configName}]for ${contractName}`
                 );
