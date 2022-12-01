@@ -692,6 +692,8 @@ export const contracts: Array<ContractConfig> = [
       extensions: {
         [extensionsIdsMap.FLEX_FUNDING_POOL_EXT]: [
           flexFundingPoolExtensionAclFlagsMap.REGISTER_NEW_TOKEN,
+          flexFundingPoolExtensionAclFlagsMap.WITHDRAW,
+          flexFundingPoolExtensionAclFlagsMap.SUB_FROM_BALANCE
         ],
       },
     },

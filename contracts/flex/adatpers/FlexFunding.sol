@@ -139,13 +139,87 @@ contract FlexFundingAdapterContract is
         override
         returns (bool)
     {
-        require(fundingType == FundingType.POLL, "no need execute");
+        // require(fundingType == FundingType.POLL, "no need execute");
+        ProcessProposalLocalVars memory vars;
 
+        ProposalInfo storage proposal = Proposals[address(dao)][proposalId];
+
+        if (fundingType == FundingType.POLL) {} else {
+            vars.fundRaiseEndTime = proposal.fundRaiseInfo.fundRaiseEndTime;
+            vars.minFundingAmount = proposal.fundingInfo.minFundingAmount;
+            vars.flexFundingPoolAdapt = FlexFundingPoolAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_POOL_ADAPT)
+            );
+            vars.flexFundingPoolExt = FlexFundingPoolExtension(
+                dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+            );
+            vars.recipientAddr = proposal.fundingInfo.recipientAddr;
+            if (vars.fundRaiseEndTime > block.timestamp)
+                revert FundRaiseEndTimeNotUP();
+            if (
+                vars.flexFundingPoolAdapt.balanceOf(
+                    dao,
+                    proposalId,
+                    DaoHelper.TOTAL
+                ) >= vars.minFundingAmount
+            ) {
+                vars.poolBalance = vars.flexFundingPoolAdapt.balanceOf(
+                    dao,
+                    proposalId,
+                    DaoHelper.TOTAL
+                );
+                //1
+                proposal.state = ProposalStatus.IN_EXECUTE_PROGRESS;
+                //2 protocol fee
+                vars.flexFundingPoolExt.withdrawFromAll(
+                    proposalId,
+                    toAddress,
+                    getTokenByProposalId(dao, proposalId),
+                    (vars.poolBalance *
+                        dao.getConfiguration(DaoHelper.FLEX_PROTOCOL_FEE)) / 100
+                );
+                //3 management fee
+                vars.flexFundingPoolExt.withdrawFromAll(
+                    proposalId,
+                    toAddress,
+                    getTokenByProposalId(dao, proposalId),
+                    dao.getConfiguration(DaoHelper.FLEX_MANAGEMENT_FEE_TYPE) ==
+                        0
+                        ? (vars.poolBalance *
+                            dao.getConfiguration(
+                                DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT
+                            )) / 100
+                        : dao.getConfiguration(
+                            DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT
+                        )
+                );
+                //4 proposer reward
+
+                // 5 send funding token to recipient
+                vars.flexFundingPoolExt.withdrawFromAll(
+                    proposalId,
+                    toAddress,
+                    getTokenByProposalId(dao, proposalId),
+                    vars.poolBalance -
+                        vars.protocolFee -
+                        vars.managementFee -
+                        vars.proposerReward
+                );
+
+                //6 substract
+                vars.flexFundingPoolExt.substractFromAll(
+                    proposalId,
+                    vars.poolBalance
+                );
+
+                proposal.state = ProposalStatus.DONE;
+            }
+        }
         return true;
     }
 
     function getTokenByProposalId(DaoRegistry dao, bytes32 proposalId)
-        external
+        public
         view
         returns (address)
     {

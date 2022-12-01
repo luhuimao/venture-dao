@@ -52,30 +52,30 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
      * @notice If theres is no available balance in the user's account, the transaction is reverted.
      * @param dao The DAO address.
      * @param proposalId The account to receive the funds.
-     * @param account The account to receive the funds.
+     * @param amount The account to receive the funds.
      */
     function withdraw(
         DaoRegistry dao,
         bytes32 proposalId,
-        address payable account
+        uint160 amount
     ) external reimbursable(dao) {
-        require(
-            DaoHelper.isNotReservedAddress(account),
-            "withdraw::reserved address"
-        );
+        // require(
+        //     DaoHelper.isNotReservedAddress(account),
+        //     "withdraw::reserved address"
+        // );
 
         // We do not need to check if the token is supported by the bank,
         // because if it is not, the balance will always be zero.
         FlexFundingPoolExtension flexFundingPool = FlexFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
         );
-        uint256 balance = flexFundingPool.balanceOf(proposalId, account);
-        require(balance > 0, "nothing to withdraw");
+        uint256 balance = flexFundingPool.balanceOf(proposalId, msg.sender);
+        require(balance > 0 && amount <= balance, "nothing to withdraw");
         FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
         address token = flexFunding.getTokenByProposalId(dao, proposalId);
-        flexFundingPool.withdraw(proposalId, account, token, balance);
+        flexFundingPool.withdraw(proposalId, msg.sender, token, amount);
     }
 
     // /**

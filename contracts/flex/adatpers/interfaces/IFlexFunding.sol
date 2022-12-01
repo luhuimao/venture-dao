@@ -5,6 +5,7 @@ import "../../../core/DaoRegistry.sol";
 import "../../../helpers/DaoHelper.sol";
 import "./IFlexVoting.sol";
 import "../../extensions/FlexFundingPool.sol";
+import "../FlexFundingPoolAdapter.sol";
 
 interface IFlexFunding {
     function submitProposal(DaoRegistry dao, ProposalParams calldata params)
@@ -23,6 +24,8 @@ interface IFlexFunding {
 
     enum ProposalStatus {
         IN_VOTING_PROGRESS,
+        VOTE_PASS,
+        VOTE_FAILED,
         IN_EXECUTE_PROGRESS,
         DONE,
         FAILED
@@ -46,6 +49,20 @@ interface IFlexFunding {
     /*
      * STRUCT
      */
+    struct ProcessProposalLocalVars {
+        ProposalInfo proposalInfo;
+        uint256 minFundingAmount;
+        uint256 maxFundingAmount;
+        FlexFundingPoolAdapterContract flexFundingPoolAdapt;
+        FlexFundingPoolExtension flexFundingPoolExt;
+        address recipientAddr;
+        uint256 fundRaiseEndTime;
+        uint160 poolBalance;
+        uint160 protocolFee;
+        uint160 managementFee;
+        uint160 proposerReward;
+    }
+
     struct SubmitProposalLocalVars {
         uint256 lastFundEndTime;
         IFlexVoting flexVotingContract;
@@ -142,4 +159,6 @@ interface IFlexFunding {
     event ProposalCreated(bytes32 proposalId, address proposer);
 
     event ProposalExecuted(bytes32 proposalId);
+
+    error FundRaiseEndTimeNotUP();
 }

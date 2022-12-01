@@ -10,6 +10,8 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
 import "hardhat/console.sol";
 
 /**
@@ -39,6 +41,7 @@ SOFTWARE.
 contract FlexFundingPoolExtension is IExtension, ERC165 {
     using Address for address payable;
     using SafeERC20 for IERC20;
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     // uint8 public maxExternalTokens; // the maximum number of external tokens that can be stored in the bank
 
@@ -77,6 +80,12 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
         address tokenAddr,
         uint160 amount
     );
+    event WithdrawToFromAll(
+        bytes32 proposalId,
+        address accountTo,
+        address tokenAddr,
+        uint160 amount
+    );
 
     /*
      * STRUCTURES
@@ -87,7 +96,9 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
         uint96 fromBlock;
         uint160 amount;
     }
-
+    /*
+     * PUBLIC VARIABLES
+     */
     bytes32[] public fundingProposals;
     // address[] public internalTokens;
     // tokenAddress => availability
@@ -98,6 +109,10 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
         public checkpoints;
     // proposalId => memberAddress => numCheckpoints
     mapping(bytes32 => mapping(address => uint32)) public numCheckpoints;
+    /*
+     * PRIVATE VARIABLES
+     */
+    mapping(bytes32 => EnumerableSet.AddressSet) private investors;
 
     /// @notice Clonable contract must have an empty constructor
     constructor() {}
@@ -147,7 +162,7 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
 
     function withdraw(
         bytes32 proposalId,
-        address payable member,
+        address member,
         address tokenAddr,
         uint256 amount
     ) external hasExtensionAccess(AclFlag.WITHDRAW) {
@@ -156,11 +171,11 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
             "flex funding pool::withdraw::not enough funds"
         );
         subtractFromBalance(proposalId, member, amount);
-        if (tokenAddr == DaoHelper.ETH_TOKEN) {
-            member.sendValue(amount);
-        } else {
-            IERC20(tokenAddr).safeTransfer(member, amount);
-        }
+        // if (tokenAddr == DaoHelper.ETH_TOKEN) {
+        //     member.sendValue(amount);
+        // } else {
+        IERC20(tokenAddr).safeTransfer(member, amount);
+        // }
 
         //slither-disable-next-line reentrancy-events
         emit Withdraw(proposalId, member, tokenAddr, uint160(amount));
@@ -175,7 +190,7 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
     ) external hasExtensionAccess(AclFlag.WITHDRAW) {
         require(
             balanceOf(proposalId, memberFrom) >= amount,
-            "bank::withdraw::not enough funds"
+            "flex funding pool::withdraw::not enough funds"
         );
         subtractFromBalance(proposalId, memberFrom, amount);
         if (tokenAddr == DaoHelper.ETH_TOKEN) {
@@ -189,6 +204,34 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
             proposalId,
             memberFrom,
             memberTo,
+            tokenAddr,
+            uint160(amount)
+        );
+    }
+
+    function withdrawFromAll(
+        bytes32 proposalId,
+        address toAddress,
+        address tokenAddr,
+        uint160 amount
+    ) external hasExtensionAccess(AclFlag.WITHDRAW) {
+        require(
+            balanceOf(proposalId, DaoHelper.TOTAL) >= amount,
+            "flex funding pool::withdraw::not enough funds"
+        );
+        uint160 poolBalance = balanceOf(proposalId, address(DaoHelper.TOTAL));
+        address[] memory tem = investors[proposalId].values();
+
+        // if (tokenAddr == DaoHelper.ETH_TOKEN) {
+        //     memberTo.sendValue(amount);
+        // } else {
+        IERC20(tokenAddr).safeTransfer(toAddress, amount);
+        // }
+
+        //slither-disable-next-line reentrancy-events
+        emit WithdrawToFromAll(
+            proposalId,
+            toAddress,
             tokenAddr,
             uint160(amount)
         );
@@ -363,6 +406,8 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
 
         _createNewAmountCheckpoint(proposalId, member, newAmount);
         _createNewAmountCheckpoint(proposalId, DaoHelper.TOTAL, newTotalAmount);
+
+        _newInvestor(proposalId, member);
     }
 
     /**
@@ -379,9 +424,28 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
         uint256 newAmount = balanceOf(proposalId, member) - amount;
         uint256 newTotalAmount = balanceOf(proposalId, DaoHelper.TOTAL) -
             amount;
-
+        if (balanceOf(proposalId, member) <= 0)
+            _removeInvestor(proposalId, member);
         _createNewAmountCheckpoint(proposalId, member, newAmount);
         _createNewAmountCheckpoint(proposalId, DaoHelper.TOTAL, newTotalAmount);
+    }
+
+    function substractFromAll(bytes32 proposalId, uint256 amount)
+        external
+        hasExtensionAccess(AclFlag.SUB_FROM_BALANCE)
+    {
+        address[] memory tem = investors[proposalId].values();
+
+        for (uint8 i = 0; i < tem.length; i++) {
+            address investorAddr = tem[i];
+            if (balanceOf(proposalId, investorAddr) > 0) {
+                subtractFromBalance(
+                    proposalId,
+                    investorAddr,
+                    (amount * balanceOf(proposalId, investorAddr)) / poolBalance
+                );
+            }
+        }
     }
 
     /**
@@ -548,5 +612,25 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
         }
         //slither-disable-next-line reentrancy-events
         emit NewBalance(proposalId, member, newAmount);
+    }
+
+    function _newInvestor(bytes32 proposalId, address investorAddr) internal {
+        require(
+            investorAddr != address(0x0),
+            "FundingPool::_newInvestor::invalid investor address"
+        );
+        if (!investors[proposalId].contains(investorAddr)) {
+            investors[proposalId].add(investorAddr);
+        }
+    }
+
+    function _removeInvestor(bytes32 proposalId, address investorAddr)
+        internal
+    {
+        require(
+            investorAddr != address(0x0),
+            "FundingPool::_removeInvestor::invalid investorAddr address"
+        );
+        investors[proposalId].remove(investorAddr);
     }
 }
