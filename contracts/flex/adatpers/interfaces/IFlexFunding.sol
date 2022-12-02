@@ -59,9 +59,9 @@ interface IFlexFunding {
         address recipientAddr;
         uint256 fundRaiseEndTime;
         uint160 poolBalance;
-        uint160 protocolFee;
-        uint160 managementFee;
-        uint160 proposerReward;
+        uint256 protocolFee;
+        uint256 managementFee;
+        uint256 proposerReward;
         address propodalFundingToken;
     }
 

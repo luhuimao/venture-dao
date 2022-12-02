@@ -419,9 +419,10 @@ const setDaoConfiguration = async ({ options, dao, testContracts }) => {
     const configKey_flexProtocolFee = sha3(web3.utils.encodePacked("FLEX_PROTOCOL_FEE"));
 
     log("config FLEX_MANAGEMENT_FEE_AMOUNT");
-    let tx = await dao.setConfiguration(configKey_FundRaisingTarget, options.flexManagementFeeRatio);
-    await tx.wait(); log("config FLEX_PROTOCOL_FEE");
-    tx = await dao.setConfiguration(configKey_FundRaisingTarget, options.flexProtocolFeeRatio);
+    let tx = await dao.setConfiguration(configKey_flexManagementFee, options.flexManagementFeeRatio);
+    await tx.wait(); 
+    log("config FLEX_PROTOCOL_FEE");
+    tx = await dao.setConfiguration(configKey_flexProtocolFee, options.flexProtocolFeeRatio);
     await tx.wait();
 
     log("config FUND_RAISING_TARGET");
