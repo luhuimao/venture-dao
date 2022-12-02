@@ -213,13 +213,12 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
         bytes32 proposalId,
         address toAddress,
         address tokenAddr,
-        uint160 amount
+        uint256 amount
     ) external hasExtensionAccess(AclFlag.WITHDRAW) {
         require(
             balanceOf(proposalId, DaoHelper.TOTAL) >= amount,
             "flex funding pool::withdraw::not enough funds"
         );
-        uint160 poolBalance = balanceOf(proposalId, address(DaoHelper.TOTAL));
         address[] memory tem = investors[proposalId].values();
 
         // if (tokenAddr == DaoHelper.ETH_TOKEN) {
@@ -435,7 +434,7 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
         hasExtensionAccess(AclFlag.SUB_FROM_BALANCE)
     {
         address[] memory tem = investors[proposalId].values();
-
+        uint256 poolBalance = balanceOf(proposalId, DaoHelper.TOTAL);
         for (uint8 i = 0; i < tem.length; i++) {
             address investorAddr = tem[i];
             if (balanceOf(proposalId, investorAddr) > 0) {

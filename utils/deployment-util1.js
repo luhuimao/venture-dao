@@ -415,9 +415,17 @@ const setDaoConfiguration = async ({ options, dao, testContracts }) => {
     const configKey_RedemptionFee = sha3(web3.utils.encodePacked("REDEMPTION_FEE"));
     const configKey_ProtocolFee = sha3(web3.utils.encodePacked("PROTOCOL_FEE"));
     const configKey_ProposalExecuteDuration = sha3(web3.utils.encodePacked("PROPOSAL_EXECUTE_DURATION"));
+    const configKey_flexManagementFee = sha3(web3.utils.encodePacked("FLEX_MANAGEMENT_FEE_AMOUNT"));
+    const configKey_flexProtocolFee = sha3(web3.utils.encodePacked("FLEX_PROTOCOL_FEE"));
+
+    log("config FLEX_MANAGEMENT_FEE_AMOUNT");
+    let tx = await dao.setConfiguration(configKey_FundRaisingTarget, options.flexManagementFeeRatio);
+    await tx.wait(); log("config FLEX_PROTOCOL_FEE");
+    tx = await dao.setConfiguration(configKey_FundRaisingTarget, options.flexProtocolFeeRatio);
+    await tx.wait();
 
     log("config FUND_RAISING_TARGET");
-    let tx = await dao.setConfiguration(configKey_FundRaisingTarget, options.fundRaisingTarget);
+    tx = await dao.setConfiguration(configKey_FundRaisingTarget, options.fundRaisingTarget);
     await tx.wait();
     log("config FUND_RAISING_MAX");
     tx = await dao.setConfiguration(configKey_FundRaisingMax, options.fundRaisingMax);
@@ -482,6 +490,10 @@ const setDaoAddressConfiguration = async ({ options, dao, testContracts }) => {
     const configKey_GPAddress = sha3(web3.utils.encodePacked("GP_ADDRESS"));
     const configKey_FundRaisingCurrencyAddress = sha3(web3.utils.encodePacked("FUND_RAISING_CURRENCY_ADDRESS"));
 
+    const configKey_FlexProtocolFeeReceiveAddress = sha3(web3.utils.encodePacked("FLEX_PROTOCOL_FEE_RECEIVE_ADDRESS"));
+    const configKey_FlexManagementFeeReceiveAddress = sha3(web3.utils.encodePacked("FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS"));
+
+
     log("config DAO_SQUARE_ADDRESS");
     let tx = await dao.setAddressConfiguration(configKey_DaoSquareAddress, options.daoSquareAddress);
     await tx.wait();
@@ -491,6 +503,13 @@ const setDaoAddressConfiguration = async ({ options, dao, testContracts }) => {
     log("config FUND_RAISING_CURRENCY_ADDRESS");
     tx = await dao.setAddressConfiguration(configKey_FundRaisingCurrencyAddress,
         options.fundRaisingCurrencyAddress === undefined ? testContracts.testToken1.instance.address : options.fundRaisingCurrencyAddress);
+    await tx.wait();
+
+    log("config FLEX_PROTOCOL_FEE_RECEIVE_ADDRESS");
+    tx = await dao.setAddressConfiguration(configKey_FlexProtocolFeeReceiveAddress, options.daoSquareAddress);
+    await tx.wait();
+    log("config FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS");
+    tx = await dao.setAddressConfiguration(configKey_FlexManagementFeeReceiveAddress, options.gpAddress);
     await tx.wait();
 };
 

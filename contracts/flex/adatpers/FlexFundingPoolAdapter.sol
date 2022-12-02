@@ -134,7 +134,7 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
 
         if (
             vars.flexFunding.getProposalState(dao, proposalId) !=
-            IFlexFunding.ProposalStatus.DONE
+            IFlexFunding.ProposalStatus.IN_FUND_RAISE_PROGRESS
         ) revert FundingProposalNotFinalize();
 
         (vars.fundRaiseStartTime, vars.fundRaiseEndTime) = vars
@@ -202,5 +202,16 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
             dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
         );
         return flexFungdingPoolExt.balanceOf(proposalId, msg.sender);
+    }
+
+    function getTotalFundByProposalId(DaoRegistry dao, bytes32 proposalId)
+        external
+        view
+        returns (uint160)
+    {
+        FlexFundingPoolExtension flexFungdingPoolExt = FlexFundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+        );
+        return flexFungdingPoolExt.balanceOf(proposalId, DaoHelper.TOTAL);
     }
 }

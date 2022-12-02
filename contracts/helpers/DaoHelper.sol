@@ -70,7 +70,7 @@ library DaoHelper {
     uint256 internal constant THREE_MONTH = 60 * 60 * 24 * 90;
     uint256 internal constant ONE_YEAR = 60 * 60 * 24 * 365;
 
-    // flex proposer setting
+    // flex setting
     bytes32 internal constant FLEX_MANAGEMENT_FEE_TYPE =
         keccak256("FLEX_MANAGEMENT_FEE_TYPE");
     bytes32 internal constant FLEX_MANAGEMENT_FEE_AMOUNT =
@@ -79,6 +79,8 @@ library DaoHelper {
         keccak256("FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS");
     bytes32 internal constant FLEX_PROTOCOL_FEE =
         keccak256("FLEX_PROTOCOL_FEE");
+    bytes32 internal constant FLEX_PROTOCOL_FEE_RECEIVE_ADDRESS =
+        keccak256("FLEX_PROTOCOL_FEE_RECEIVE_ADDRESS");
     bytes32 internal constant FLEX_PROPOSER_TOKEN_ADDRESS =
         keccak256("FLEX_PROPOSER_TOKEN_ADDRESS");
     bytes32 internal constant FLEX_PROPOSER_TOKENID =

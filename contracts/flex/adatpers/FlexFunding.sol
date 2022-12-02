@@ -8,6 +8,7 @@ import "./interfaces/IFlexFunding.sol";
 import "./interfaces/IFlexVoting.sol";
 import "../../utils/TypeConver.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "hardhat/console.sol";
 
 contract FlexFundingAdapterContract is
     IFlexFunding,
@@ -105,7 +106,7 @@ contract FlexFundingAdapterContract is
             block.timestamp + dao.getConfiguration(DaoHelper.PROPOSAL_DURATION),
             fundingType == FundingType.POLL
                 ? ProposalStatus.IN_VOTING_PROGRESS
-                : ProposalStatus.DONE
+                : ProposalStatus.IN_FUND_RAISE_PROGRESS
         );
 
         // Starts the voting process for the proposal.
@@ -154,52 +155,55 @@ contract FlexFundingAdapterContract is
                 dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
             );
             vars.recipientAddr = proposal.fundingInfo.recipientAddr;
+            vars.poolBalance = vars
+                .flexFundingPoolAdapt
+                .getTotalFundByProposalId(dao, proposalId);
+            vars.propodalFundingToken = getTokenByProposalId(dao, proposalId);
             if (vars.fundRaiseEndTime > block.timestamp)
                 revert FundRaiseEndTimeNotUP();
-            if (
-                vars.flexFundingPoolAdapt.balanceOf(
-                    dao,
-                    proposalId,
-                    DaoHelper.TOTAL
-                ) >= vars.minFundingAmount
-            ) {
-                vars.poolBalance = vars.flexFundingPoolAdapt.balanceOf(
-                    dao,
-                    proposalId,
-                    DaoHelper.TOTAL
-                );
+
+            if (vars.poolBalance >= vars.minFundingAmount) {
                 //1
                 proposal.state = ProposalStatus.IN_EXECUTE_PROGRESS;
                 //2 protocol fee
+                vars.protocolFee =
+                    (vars.poolBalance *
+                        dao.getConfiguration(DaoHelper.FLEX_PROTOCOL_FEE)) /
+                    100;
                 vars.flexFundingPoolExt.withdrawFromAll(
                     proposalId,
-                    toAddress,
-                    getTokenByProposalId(dao, proposalId),
-                    (vars.poolBalance *
-                        dao.getConfiguration(DaoHelper.FLEX_PROTOCOL_FEE)) / 100
+                    dao.getAddressConfiguration(
+                        DaoHelper.FLEX_PROTOCOL_FEE_RECEIVE_ADDRESS
+                    ),
+                    vars.propodalFundingToken,
+                    vars.protocolFee
                 );
                 //3 management fee
+                vars.managementFee = dao.getConfiguration(
+                    DaoHelper.FLEX_MANAGEMENT_FEE_TYPE
+                ) == 0
+                    ? (vars.poolBalance *
+                        dao.getConfiguration(
+                            DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT
+                        )) / 100
+                    : dao.getConfiguration(
+                        DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT
+                    );
                 vars.flexFundingPoolExt.withdrawFromAll(
                     proposalId,
-                    toAddress,
-                    getTokenByProposalId(dao, proposalId),
-                    dao.getConfiguration(DaoHelper.FLEX_MANAGEMENT_FEE_TYPE) ==
-                        0
-                        ? (vars.poolBalance *
-                            dao.getConfiguration(
-                                DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT
-                            )) / 100
-                        : dao.getConfiguration(
-                            DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT
-                        )
+                    dao.getAddressConfiguration(
+                        DaoHelper.FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS
+                    ),
+                    vars.propodalFundingToken,
+                    vars.managementFee
                 );
                 //4 proposer reward
 
                 // 5 send funding token to recipient
                 vars.flexFundingPoolExt.withdrawFromAll(
                     proposalId,
-                    toAddress,
-                    getTokenByProposalId(dao, proposalId),
+                    vars.recipientAddr,
+                    vars.propodalFundingToken,
                     vars.poolBalance -
                         vars.protocolFee -
                         vars.managementFee -
@@ -212,9 +216,15 @@ contract FlexFundingAdapterContract is
                     vars.poolBalance
                 );
 
+                if (proposal.fundingInfo.escrow) {}
                 proposal.state = ProposalStatus.DONE;
+            } else {
+                // didt meet the min funding amount
+                proposal.state = ProposalStatus.FAILED;
             }
         }
+        dao.processProposal(proposalId);
+
         return true;
     }
 
@@ -253,6 +263,14 @@ contract FlexFundingAdapterContract is
         returns (uint256)
     {
         return Proposals[address(dao)][proposalId].fundingInfo.maxFundingAmount;
+    }
+
+    function getMinFundingAmount(DaoRegistry dao, bytes32 proposalId)
+        external
+        view
+        returns (uint256)
+    {
+        return Proposals[address(dao)][proposalId].fundingInfo.minFundingAmount;
     }
 
     function getProposalState(DaoRegistry dao, bytes32 proposalId)

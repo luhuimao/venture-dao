@@ -25,7 +25,8 @@ interface IFlexFunding {
     enum ProposalStatus {
         IN_VOTING_PROGRESS,
         VOTE_PASS,
-        VOTE_FAILED,
+        // VOTE_FAILED,
+        IN_FUND_RAISE_PROGRESS,
         IN_EXECUTE_PROGRESS,
         DONE,
         FAILED
@@ -61,6 +62,7 @@ interface IFlexFunding {
         uint160 protocolFee;
         uint160 managementFee;
         uint160 proposerReward;
+        address propodalFundingToken;
     }
 
     struct SubmitProposalLocalVars {

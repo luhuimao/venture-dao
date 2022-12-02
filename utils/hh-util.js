@@ -186,6 +186,8 @@ const getDefaultOptions = async (options) => {
   const currentTimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
   let [owner, user1, user2, project_team1, , , , , , DAOSquare, GP] = await hre.ethers.getSigners();
   return {
+    flexProtocolFeeRatio: options.flexProtocolFeeRatio === undefined ? 3 : options.flexProtocolFeeRatio,
+    flexManagementFeeRatio: options.flexManagementFeeRatio === undefined ? 2 : options.flexManagementFeeRatio,
     flexFundingType: options.flexFundingType === undefined ? 0 : options.flexFundingType,
     daoSquareAddress: options.daoSquareAddress === undefined ? DAOSquare.address : options.daoSquareAddress,
     gpAddress: options.gpAddress === undefined ? GP.address : options.gpAddress,
