@@ -74,6 +74,24 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
         FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
+
+        uint256 redemptionFee = 0;
+        if (
+            fundRaisingState == DaoHelper.FundRaiseState.DONE &&
+            ifInRedemptionPeriod(dao, block.timestamp)
+        ) {
+            //distribute redemption fee to GP
+            redemptionFee =
+                (dao.getConfiguration(DaoHelper.REDEMPTION_FEE) * amount) /
+                1000;
+            if (redemptionFee > 0) {
+                fundingpool.distributeFunds(
+                    address(dao.getAddressConfiguration(DaoHelper.GP_ADDRESS)),
+                    tokenAddr,
+                    redemptionFee
+                );
+            }
+        }
         address token = flexFunding.getTokenByProposalId(dao, proposalId);
         flexFundingPool.withdraw(proposalId, msg.sender, token, amount);
     }
@@ -213,5 +231,51 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
             dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
         );
         return flexFungdingPoolExt.balanceOf(proposalId, DaoHelper.TOTAL);
+    }
+
+    function ifInRedemptionPeriod(DaoRegistry dao, uint256 timeStamp)
+        public
+        view
+        returns (bool)
+    {
+        uint256 fundStartTime = dao.getConfiguration(DaoHelper.FUND_START_TIME);
+        uint256 fundEndTime = dao.getConfiguration(DaoHelper.FUND_END_TIME);
+        uint256 redemptionPeriod = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_REDEMPTION_PERIOD
+        );
+        uint256 redemptionDuration = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_REDEMPTION_DURATION
+        );
+        uint256 fundDuration = fundEndTime - fundStartTime;
+        if (
+            redemptionPeriod <= 0 ||
+            redemptionDuration <= 0 ||
+            fundDuration <= 0
+        ) {
+            return false;
+        }
+
+        uint256 steps;
+        steps = fundDuration / redemptionPeriod;
+
+        uint256 redemptionEndTime;
+        uint256 redemptionStartTime;
+        uint256 i = 0;
+        while (i <= steps) {
+            redemptionEndTime = redemptionEndTime == 0
+                ? fundStartTime + redemptionPeriod
+                : redemptionEndTime + redemptionPeriod;
+            redemptionStartTime = redemptionEndTime - redemptionDuration;
+            if (
+                timeStamp > redemptionStartTime &&
+                timeStamp < redemptionEndTime &&
+                timeStamp > fundStartTime &&
+                timeStamp < fundEndTime
+            ) {
+                return true;
+            }
+            i += 1;
+        }
+        return false;
     }
 }

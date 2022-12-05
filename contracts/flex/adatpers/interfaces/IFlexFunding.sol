@@ -6,6 +6,7 @@ import "../../../helpers/DaoHelper.sol";
 import "./IFlexVoting.sol";
 import "../../extensions/FlexFundingPool.sol";
 import "../FlexFundingPoolAdapter.sol";
+import "../FlexAllocation.sol";
 
 interface IFlexFunding {
     function submitProposal(DaoRegistry dao, ProposalParams calldata params)
@@ -56,6 +57,7 @@ interface IFlexFunding {
         uint256 maxFundingAmount;
         FlexFundingPoolAdapterContract flexFundingPoolAdapt;
         FlexFundingPoolExtension flexFundingPoolExt;
+        FlexAllocationAdapterContract flexAllocAdapt;
         address recipientAddr;
         uint256 fundRaiseEndTime;
         uint160 poolBalance;

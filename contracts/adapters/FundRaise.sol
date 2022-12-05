@@ -305,6 +305,8 @@ contract FundRaiseAdapterContract is
             //reset fund raise state
             vars.fundingPoolAdapt.resetFundRaiseState(dao);
             proposalDetails.state = ProposalState.Done;
+
+            fundsCounter += 1;
         } else if (
             vars.voteResult == IGPVoting.VotingState.NOT_PASS ||
             vars.voteResult == IGPVoting.VotingState.TIE
@@ -313,7 +315,6 @@ contract FundRaiseAdapterContract is
         } else {
             revert("FundRaise::processProposal::voting not finalized");
         }
-        fundsCounter += 1;
         emit proposalExecuted(proposalId, proposalDetails.state);
     }
 

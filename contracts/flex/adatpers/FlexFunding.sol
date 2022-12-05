@@ -5,6 +5,7 @@ import "../../guards/AdapterGuard.sol";
 import "../../guards/MemberGuard.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "./interfaces/IFlexFunding.sol";
+import "./FlexAllocation.sol";
 import "./interfaces/IFlexVoting.sol";
 import "../../utils/TypeConver.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -216,7 +217,16 @@ contract FlexFundingAdapterContract is
                     vars.poolBalance
                 );
 
-                if (proposal.fundingInfo.escrow) {}
+                if (proposal.fundingInfo.escrow) {} else {
+                    vars.flexAllocAdapt = FlexAllocationAdapterContract(
+                        dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
+                    );
+                    vars.flexAllocAdapt.noEscrow(
+                        dao,
+                        proposal.proposer,
+                        proposalId
+                    );
+                }
                 proposal.state = ProposalStatus.DONE;
             } else {
                 // didt meet the min funding amount
