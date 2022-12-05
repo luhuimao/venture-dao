@@ -6,14 +6,12 @@ import "../core/DaoRegistry.sol";
 import "../guards/AdapterGuard.sol";
 import "../guards/MemberGuard.sol";
 import "./modifiers/Reimbursable.sol";
-import "./interfaces/IGPVoting.sol";
 // import "./AllocationAdapterV2.sol";
 import "./interfaces/IFundRaise.sol";
 import "./voting/GPVoting.sol";
 import "../helpers/FairShareHelper.sol";
 import "../helpers/DaoHelper.sol";
 import "../extensions/bank/Bank.sol";
-import "./FundingPoolAdapter.sol";
 import "../extensions/fundingpool/FundingPool.sol";
 import "../extensions/ricestaking/RiceStaking.sol";
 import "../utils/TypeConver.sol";
@@ -57,35 +55,14 @@ contract FundRaiseAdapterContract is
      */
     // Keeps track of all the Proposals executed per DAO.
     mapping(address => mapping(bytes32 => ProposalDetails)) public Proposals;
-    uint256 public proposalIds = 100027;
+    uint256 public proposalIds = 100030;
+    uint256 public fundsCounter = 1;
     bytes32 public latestProposalId;
     bytes32 public previousProposalId;
+
     /*
      * STRUCTURES
      */
-    struct SubmitProposalLocalVars {
-        uint256 lastFundEndTime;
-        IGPVoting gpVotingContract;
-        address fundRaiseTokenAddr;
-        address managementFeeAddress;
-        address submittedBy;
-        bytes32 proposalId;
-        uint256 fundRaiseTarget;
-        uint256 fundRaiseMaxAmount;
-        uint256 lpMinDepositAmount;
-        uint256 lpMaxDepositAmount;
-        uint256 fundRaiseStartTime;
-        uint256 fundRaiseEndTime;
-        uint256 fundTerm;
-        uint256 redemptPeriod;
-        uint256 redemptDuration;
-        uint256 returnDuration;
-        uint256 proposerRewardRatio;
-        uint256 managementFeeRatio;
-        uint256 redepmtFeeRatio;
-        uint256 protocolFeeRatio;
-        FundingPoolAdapterContract fundingPoolAdapt;
-    }
 
     /** 
     _uint256ArgsProposal[0]:fundRaiseTarget
@@ -131,7 +108,7 @@ contract FundRaiseAdapterContract is
         require(
             _uint256ArgsProposal.length == 4 &&
                 _uint256ArgsTimeInfo.length == 6 &&
-                _uint256ArgsFeeInfo.length == 4 &&
+                _uint256ArgsFeeInfo.length == 3 &&
                 _addressArgs.length == 2,
             "FundRaise::submitProposal::invalid parameter number"
         );
@@ -157,7 +134,7 @@ contract FundRaiseAdapterContract is
         vars.proposerRewardRatio = _uint256ArgsFeeInfo[0];
         vars.managementFeeRatio = _uint256ArgsFeeInfo[1];
         vars.redepmtFeeRatio = _uint256ArgsFeeInfo[2];
-        vars.protocolFeeRatio = _uint256ArgsFeeInfo[3];
+        vars.protocolFeeRatio = dao.getConfiguration(DaoHelper.PROTOCOL_FEE);
         if (
             vars.fundRaiseTarget < 0 ||
             (vars.fundRaiseMaxAmount > 0 &&
@@ -171,14 +148,15 @@ contract FundRaiseAdapterContract is
             vars.fundTerm <= 0 ||
             vars.redemptPeriod <= 0 ||
             vars.redemptDuration <= 0 ||
+            vars.returnDuration <= 0 ||
             vars.proposerRewardRatio >= 100 ||
             vars.proposerRewardRatio < 0 ||
             vars.managementFeeRatio >= 100 ||
             vars.managementFeeRatio < 0 ||
             vars.redepmtFeeRatio >= 100 ||
-            vars.redepmtFeeRatio < 0 ||
-            vars.protocolFeeRatio >= 100 ||
-            vars.protocolFeeRatio < 0
+            vars.redepmtFeeRatio < 0
+            // vars.protocolFeeRatio >= 100 ||
+            // vars.protocolFeeRatio < 0
         ) {
             revert InvalidParamsSetting();
         }
@@ -335,7 +313,7 @@ contract FundRaiseAdapterContract is
         } else {
             revert("FundRaise::processProposal::voting not finalized");
         }
-
+        fundsCounter += 1;
         emit proposalExecuted(proposalId, proposalDetails.state);
     }
 
@@ -423,11 +401,11 @@ contract FundRaiseAdapterContract is
             DaoHelper.REDEMPTION_FEE,
             proposalInfo.feeInfo.redepmtFeeRatio
         );
-        //15 protocolFeeRatio
-        dao.setConfiguration(
-            DaoHelper.PROTOCOL_FEE,
-            proposalInfo.feeInfo.protocolFeeRatio
-        );
+        // //15 protocolFeeRatio
+        // dao.setConfiguration(
+        //     DaoHelper.PROTOCOL_FEE,
+        //     proposalInfo.feeInfo.protocolFeeRatio
+        // );
         //16 management fee address
         dao.setAddressConfiguration(
             DaoHelper.GP_ADDRESS,

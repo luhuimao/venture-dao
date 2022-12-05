@@ -44,7 +44,7 @@ export const AllocationAdapterContract_RINKEBY = "0x1F2b112266452b1e7553ECF4A7eF
 export const AllocationAdapterContractV2_RINKEBY = "0x0e3d60B0c62CDC2bD68C5353cEa28C43d62E5f9c"; //REPLACE_FLAG
 
 //Goerli testnet
-export const FundingPoolAdapterContract_GOERLI = "0xC6bb98B1331D26e056Bb3E64aA612B89986ae0c8"; //REPLACE_FLAG
+export const FundingPoolAdapterContract_GOERLI = "0x6D3c55af12EB20c97cB5DDFF1a45ae1C1e63fA70"; //REPLACE_FLAG
 export const RiceStakingAdapterContract_GOERLI = "0xf203E215601647Bf7d51B223efB1089A9eDB81a8"; //REPLACE_FLAG
 export const GPDaoAdapterContract_GOERLI = "0x80E6A7a8faF5C57f0EAdA586fc8F8b557e09648F"; //REPLACE_FLAG
 export const GPDaoOnboardingAdapterContract_GOERLI = "0x55C5938Afbb70d111c4661b1fDEE22FbB03D959b"; //REPLACE_FLAG
@@ -60,7 +60,7 @@ export const AllocationAdapterContractV2_GOERLI = "0x67F5606Da4E637BCA0db1b98CA9
 export const ManagingAdapterContract_GOERLI = "0xdd60b84fDa3C243937F442181916a71f14334b7c"; //REPLACE_FLAG
 export const Vesting_GOERLI = "0xe6F5F4f71364d4D521b5Cf40E03c77098DFbCeb0"; //REPLACE_FLAG
 export const BentoBoxV1_GOERLI = "0x9DA1527D1dcEBf1EcC143aC63D2E442FdfC43688";//REPLACE_FLAG
-export const FundRaiseAdapterContract_GOERLI = "0x3957DcfcA1e9398124038E927E84a8405B67dC9C";//REPLACE_FLAG
+export const FundRaiseAdapterContract_GOERLI = "0x74dd10598AC4399E38f86D590AD5224F96cC6097";//REPLACE_FLAG
 //test contracts
 export const TestToken1_RINKEBY = "0x607EaF02Ac994959739FB69FCe717815b697f4EB";
 export const TestToken2_RINKEBY = "0x87E2C537e1743A4D0F2C73132c81eEcB5a40f3d1";

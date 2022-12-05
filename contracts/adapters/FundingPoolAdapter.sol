@@ -164,7 +164,7 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         uint256 fundRaiseCap = dao.getConfiguration(DaoHelper.FUND_RAISING_MAX);
         if (minDepositAmount > 0) {
             require(
-                amount + balanceOf(dao, msg.sender) >= minDepositAmount,
+                amount >= minDepositAmount,
                 "FundingPoolAdapter::Deposit::deposit amount cant less than min deposit amount"
             );
         }
@@ -437,5 +437,9 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
             i += 1;
         }
         return false;
+    }
+
+    function getProtocolFee(DaoRegistry dao) external view returns (uint256) {
+        return dao.getConfiguration(DaoHelper.PROTOCOL_FEE);
     }
 }

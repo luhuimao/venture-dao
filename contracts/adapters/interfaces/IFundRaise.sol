@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 
 import "../../core/DaoRegistry.sol";
+import "./IGPVoting.sol";
+import "../FundingPoolAdapter.sol";
 
 /**
 MIT License
@@ -63,6 +65,31 @@ interface IFundRaise {
         uint256 creationTime;
         uint256 stopVoteTime;
     }
+
+    struct SubmitProposalLocalVars {
+        uint256 lastFundEndTime;
+        IGPVoting gpVotingContract;
+        address fundRaiseTokenAddr;
+        address managementFeeAddress;
+        address submittedBy;
+        bytes32 proposalId;
+        uint256 fundRaiseTarget;
+        uint256 fundRaiseMaxAmount;
+        uint256 lpMinDepositAmount;
+        uint256 lpMaxDepositAmount;
+        uint256 fundRaiseStartTime;
+        uint256 fundRaiseEndTime;
+        uint256 fundTerm;
+        uint256 redemptPeriod;
+        uint256 redemptDuration;
+        uint256 returnDuration;
+        uint256 proposerRewardRatio;
+        uint256 managementFeeRatio;
+        uint256 redepmtFeeRatio;
+        uint256 protocolFeeRatio;
+        FundingPoolAdapterContract fundingPoolAdapt;
+    }
+
     /*
      * EVENTS
      */
