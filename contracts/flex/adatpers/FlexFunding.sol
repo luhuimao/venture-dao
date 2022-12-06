@@ -28,6 +28,8 @@ contract FlexFundingAdapterContract is
     uint256 public proposalIds = 1;
     FundingType public fundingType;
 
+    error invalidParam();
+
     /**
      * @notice Configures the DAO with the Voting and Gracing periods.
      * @param dao The gp Allocation Bonus Radio.
@@ -48,6 +50,11 @@ contract FlexFundingAdapterContract is
         onlyProposer(dao)
         returns (bytes32 proposalId)
     {
+        if (
+            params.fundingInfo.maxFundingAmount > 0 &&
+            params.fundingInfo.maxFundingAmount <
+            params.fundRaiseInfo.maxDepositAmount
+        ) revert invalidParam();
         SubmitProposalLocalVars memory vars;
 
         vars.flexVotingContract = IFlexVoting(
@@ -100,7 +107,7 @@ contract FlexFundingAdapterContract is
                 params.fundRaiseInfo.priorityDepositInfo
             ),
             ProposerRewardInfo(
-                params.proposerRewardInfo.cashRewardAmount,
+                params.proposerRewardInfo.tokenRewardAmount,
                 params.proposerRewardInfo.cashRewardAmount
             ),
             block.timestamp,
@@ -176,7 +183,7 @@ contract FlexFundingAdapterContract is
                 : dao.getConfiguration(DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT);
             vars.proposerReward = proposal.proposerRewardInfo.cashRewardAmount;
             if (
-                vars.poolBalance <=
+                vars.poolBalance >=
                 vars.minFundingAmount +
                     vars.protocolFee +
                     vars.managementFee +
@@ -220,18 +227,18 @@ contract FlexFundingAdapterContract is
                         vars.proposerReward
                 );
 
-                //6 substract
-                vars.flexFundingPoolExt.substractFromAll(
-                    proposalId,
-                    vars.poolBalance
-                );
-
                 if (proposal.fundingInfo.escrow) {} else {
                     vars.flexAllocAdapt = FlexAllocationAdapterContract(
                         dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
                     );
                     vars.flexAllocAdapt.noEscrow(dao, proposalId);
                 }
+
+                //6 substract
+                vars.flexFundingPoolExt.substractFromAll(
+                    proposalId,
+                    vars.poolBalance
+                );
                 proposal.state = ProposalStatus.DONE;
             } else {
                 // didt meet the min funding amount

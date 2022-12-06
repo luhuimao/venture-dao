@@ -646,6 +646,34 @@ export const contracts: Array<ContractConfig> = [
    * Adapters
    */
   {
+    id: adaptersIdsMap.FLEX_ERC721_ADAPT,
+    name: "FlexERC721",
+    alias: "flexERC721",
+    path: "../../contracts/adapters/FlexERC721",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_ALLOCATION_ADAPT,
+    name: "FlexAllocationAdapterContract",
+    alias: "flexAllocationAdapterContract",
+    path: "../../contracts/adapters/FlexAllocationAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
     id: adaptersIdsMap.FLEX_FUNDING_POOL_ADAPTER,
     name: "FlexFundingPoolAdapterContract",
     alias: "flexFundingPoolAdapterContract",

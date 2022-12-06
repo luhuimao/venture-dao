@@ -81,7 +81,6 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
             dao,
             proposalId
         );
-        // uint256 redemptionFee = 0;
         if (
             fundRaiseEndTime > block.timestamp ||
             ((fundRaiseEndTime < block.timestamp) &&
@@ -216,7 +215,7 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
         FlexFundingPoolExtension flexFungdingPoolExt = FlexFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
         );
-        return flexFungdingPoolExt.balanceOf(proposalId, msg.sender);
+        return flexFungdingPoolExt.balanceOf(proposalId, account);
     }
 
     function getTotalFundByProposalId(DaoRegistry dao, bytes32 proposalId)

@@ -15,15 +15,11 @@ contract FlexERC721 is ERC721("Flex Vesting", "FLEXVEST") {
         _;
     }
 
-    constructor(address _owner) {
-        owner = _owner;
+    constructor() {
+        owner = msg.sender;
     }
 
-    function mint(
-        DaoRegistry dao,
-        bytes32 proposalId,
-        address recipient
-    ) external returns (bool) {
+    function mint(DaoRegistry dao, bytes32 proposalId) external returns (bool) {
         FlexAllocationAdapterContract flexAlloc = FlexAllocationAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
         );
@@ -33,11 +29,13 @@ contract FlexERC721 is ERC721("Flex Vesting", "FLEXVEST") {
             "not eligible"
         );
         require(
-            flexAlloc.isNFTMinted(dao, proposalId, msg.sender),
+            !flexAlloc.isNFTMinted(dao, proposalId, msg.sender),
             "already minted"
         );
-        _mint(recipient, tokenId);
+        _mint(msg.sender, tokenId);
         tokenId += 1;
+
+        flexAlloc.nftMinted(dao, proposalId, msg.sender);
         return true;
     }
 
@@ -47,5 +45,23 @@ contract FlexERC721 is ERC721("Flex Vesting", "FLEXVEST") {
 
     function tokenURI(uint256 id) public view override returns (string memory) {
         // return ITokenURIFetcher(tokenURIFetcher).fetchTokenURIData(id);
+    }
+
+    function getTokenAmountByTokenId(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        uint256 tokenId
+    ) external view returns (uint256) {
+        FlexAllocationAdapterContract flexAlloc = FlexAllocationAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
+        );
+        address owner = ownerOf(tokenId);
+        uint256 tokenAmount;
+        (tokenAmount, ) = flexAlloc.vestingInfos(
+            address(dao),
+            proposalId,
+            owner
+        );
+        return tokenAmount;
     }
 }

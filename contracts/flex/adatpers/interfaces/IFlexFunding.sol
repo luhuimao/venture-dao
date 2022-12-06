@@ -26,7 +26,6 @@ interface IFlexFunding {
     enum ProposalStatus {
         IN_VOTING_PROGRESS,
         VOTE_PASS,
-        // VOTE_FAILED,
         IN_FUND_RAISE_PROGRESS,
         FUND_RAISE_FAILED,
         IN_EXECUTE_PROGRESS,

@@ -632,4 +632,12 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
         );
         investors[proposalId].remove(investorAddr);
     }
+
+    function getInvestorsByProposalId(bytes32 proposalId)
+        external
+        view
+        returns (address[] memory)
+    {
+        return investors[proposalId].values();
+    }
 }

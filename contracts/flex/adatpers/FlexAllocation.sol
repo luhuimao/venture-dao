@@ -7,6 +7,7 @@ import "hardhat/console.sol";
 import "../../guards/AdapterGuard.sol";
 import "../../extensions/gpdao/GPDao.sol";
 import "./FlexFundingPoolAdapter.sol";
+import "../extensions/FlexFundingPool.sol";
 import "./FlexFunding.sol";
 import "./FlexERC721.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
@@ -89,7 +90,7 @@ contract FlexAllocationAdapterContract is AdapterGuard {
     function getFundingRewards(
         DaoRegistry dao,
         bytes32 proposalId,
-        address recipient,
+        address investor,
         uint256 tokenAmount
     ) public view returns (uint256) {
         FlexFundingPoolAdapterContract fundingpool = FlexFundingPoolAdapterContract(
@@ -103,13 +104,16 @@ contract FlexAllocationAdapterContract is AdapterGuard {
             address(dao),
             proposalId
         );
+
         uint256 fundingRewards = (tokenAmount *
             (100 - proposerRewardInfo.tokenRewardAmount)) / 100;
+
         uint256 totalFund = fundingpool.getTotalFundByProposalId(
             dao,
             proposalId
         );
-        uint256 fund = fundingpool.balanceOf(dao, proposalId, recipient);
+        uint256 fund = fundingpool.balanceOf(dao, proposalId, investor);
+
         if (totalFund <= 0 || fund <= 0 || fundingRewards <= 0) {
             return 0;
         }
@@ -143,7 +147,7 @@ contract FlexAllocationAdapterContract is AdapterGuard {
     struct allocateProjectTokenLocalVars {
         // ISablier streamingPaymentContract;
         // IFuroVesting vestingContract;
-        FundingPoolExtension fundingpool;
+        FlexFundingPoolExtension fundingpool;
         FlexERC721 flexErc721;
         uint256 totalReward;
         uint256 oldAllowance;
@@ -163,24 +167,28 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         external
         returns (bool)
     {
+        require(
+            msg.sender ==
+                address(dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)),
+            "access deny"
+        );
         allocateProjectTokenLocalVars memory vars;
         FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
-
+        vars.fundingpool = FlexFundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+        );
         IFlexFunding.FundingInfo memory fundingInfo;
         (, fundingInfo, , , , , , ) = flexFunding.Proposals(
             address(dao),
             proposalId
         );
         vars.tokenAmount = fundingInfo.returnTokenAmount;
-        require(
-            msg.sender ==
-                address(dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)),
-            "access deny"
-        );
 
-        address[] memory allInvestors = vars.fundingpool.getInvestors();
+        address[] memory allInvestors = vars
+            .fundingpool
+            .getInvestorsByProposalId(proposalId);
         vars.totalReward = 0;
 
         if (allInvestors.length > 0) {

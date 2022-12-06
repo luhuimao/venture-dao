@@ -84,7 +84,7 @@ describe("Adapter - Flex Funding Succeed", () => {
         this.flexFundingAdapterContract = this.adapters.flexFundingAdapterContract.instance;
         this.flexVotingContract = this.adapters.flexVotingContract.instance;
         this.flexFundingPoolAdapterContract = this.adapters.flexFundingPoolAdapterContract.instance;
-
+        this.flexERC721Contract = this.adapters.flexERC721.instance;
         this.flexFundingPoolExt = this.extensions.flexFundingPoolExt.functions;
 
         const isGP = await extensions.gpDaoExt.functions.isGeneralPartner(owner.address);
@@ -144,7 +144,7 @@ describe("Adapter - Flex Funding Succeed", () => {
         let fundRaiseStartTime = blocktimestamp;
         let fundRaiseEndTime = fundRaiseStartTime + 100000;
         let minDepositAmount = hre.ethers.utils.parseEther("1000");
-        let maxDepositAmount = hre.ethers.utils.parseEther("100000000");
+        let maxDepositAmount = hre.ethers.utils.parseEther("10000000");
         let backerIdentification = false;
 
         let bType = 0;
@@ -192,7 +192,7 @@ describe("Adapter - Flex Funding Succeed", () => {
             priorityDepositInfo
         ];
 
-        let tokenRewardAmount = hre.ethers.utils.parseEther("1000");
+        let tokenRewardAmount = 2;
         let cashRewardAmount = hre.ethers.utils.parseEther("1000");
         let proposerRewardInfos = [
             tokenRewardAmount,
@@ -297,7 +297,7 @@ describe("Adapter - Flex Funding Succeed", () => {
         await USDT.approve(fundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
         await expectRevert(fundingPoolAdapt.deposit(dao.address, this.proposalId, hre.ethers.utils.parseEther("10")), "revert");
         // await expectRevert(fundingPoolAdapt.deposit(dao.address, this.proposalId, hre.ethers.utils.parseEther("100000")), "revert");
-        await fundingPoolAdapt.deposit(dao.address, this.proposalId, hre.ethers.utils.parseEther("10000"));
+        await fundingPoolAdapt.deposit(dao.address, this.proposalId, hre.ethers.utils.parseEther("1000000"));
         const poolBal = await this.testtoken1.balanceOf(this.extensions.flexFundingPoolExt.address);
         const bal = await this.flexFundingPoolExt.balanceOf(this.proposalId, this.owner.address);
         console.log(`
@@ -326,7 +326,8 @@ describe("Adapter - Flex Funding Succeed", () => {
         const fundingPoolAdapt = this.flexFundingPoolAdapterContract;
         const USDT = this.testtoken1;
         const flexFundingContract = this.flexFundingAdapterContract;
-
+        const flexERC721Contract = this.flexERC721Contract;
+        const flexFundingPoolExtension = this.flexFundingPoolExt;
         let fundRaiseStartTime = (await flexFundingContract.Proposals(dao.address, this.proposalId))
             .fundRaiseInfo
             .fundRaiseStartTime;
@@ -351,7 +352,7 @@ describe("Adapter - Flex Funding Succeed", () => {
         let managementFeeAccountBal = await this.testtoken1.balanceOf(managementFeeAccount);
         let receiverAccountBal = await this.testtoken1.balanceOf(this.user1.address);
         console.log(`
-        balance   ${hre.ethers.utils.formatEther(bal.toString())}
+        owner deposit balance   ${hre.ethers.utils.formatEther(bal.toString())}
         total fund ${hre.ethers.utils.formatEther(totalFund.toString())}
         state ${proposalState}
         protocol Fee Account Bal   ${hre.ethers.utils.formatEther(protocolFeeAccountBal.toString())}
@@ -375,14 +376,41 @@ describe("Adapter - Flex Funding Succeed", () => {
         protocolFeeAccountBal = await this.testtoken1.balanceOf(protocolFeeAccount);
         managementFeeAccountBal = await this.testtoken1.balanceOf(managementFeeAccount);
         receiverAccountBal = await this.testtoken1.balanceOf(this.user1.address);
+        const state = await flexFundingContract.getProposalState(dao.address, this.proposalId);
+
+        let totalSendOutAmount = totalFund.add(protocolFeeAccountBal).add(managementFeeAccountBal);
 
         console.log(`
-        balance   ${hre.ethers.utils.formatEther(bal.toString())}
+        owner deposit balance  ${hre.ethers.utils.formatEther(bal.toString())}
         total fund ${hre.ethers.utils.formatEther(totalFund.toString())}
         state ${proposalState}
         protocol Fee Account Bal   ${hre.ethers.utils.formatEther(protocolFeeAccountBal.toString())}
         management Fee Account Bal   ${hre.ethers.utils.formatEther(managementFeeAccountBal.toString())}
         receiver Account Bal   ${hre.ethers.utils.formatEther(receiverAccountBal.toString())}
+        proposal state ${state}
+        totalSendOutAmount ${hre.ethers.utils.formatEther(totalSendOutAmount.toString())}
         `);
+
+        const investors = await flexFundingPoolExtension.getInvestorsByProposalId(this.proposalId);
+        console.log("investors: ", investors);
+        console.log("mint NFT...");
+
+        let nftBal = await flexERC721Contract.balanceOf(this.owner.address);
+        console.log(`
+        nft bal ${nftBal.toString()}
+        `);
+        await flexERC721Contract.mint(dao.address, this.proposalId);
+
+        nftBal = await flexERC721Contract.balanceOf(this.owner.address);
+        console.log(`
+        nft bal ${nftBal.toString()}
+        `);
+        // const tokenId = await flexERC721Contract.
+        const tokenAmount = await flexERC721Contract.getTokenAmountByTokenId(dao.address, this.proposalId, 1);
+        console.log(`
+        token amount in future ${hre.ethers.utils.formatEther(tokenAmount.toString())}
+        `);
+
+        await expectRevert(flexERC721Contract.mint(dao.address, this.proposalId), "revert");
     });
 });
