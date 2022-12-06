@@ -75,25 +75,22 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
 
-        uint256 redemptionFee = 0;
+        uint256 fundRaiseStartTime;
+        uint256 fundRaiseEndTime;
+        (fundRaiseStartTime, fundRaiseEndTime) = flexFunding.getFundRaiseTimes(
+            dao,
+            proposalId
+        );
+        // uint256 redemptionFee = 0;
         if (
-            fundRaisingState == DaoHelper.FundRaiseState.DONE &&
-            ifInRedemptionPeriod(dao, block.timestamp)
+            fundRaiseEndTime > block.timestamp ||
+            ((fundRaiseEndTime < block.timestamp) &&
+                flexFunding.getProposalState(dao, proposalId) ==
+                IFlexFunding.ProposalStatus.FUND_RAISE_FAILED)
         ) {
-            //distribute redemption fee to GP
-            redemptionFee =
-                (dao.getConfiguration(DaoHelper.REDEMPTION_FEE) * amount) /
-                1000;
-            if (redemptionFee > 0) {
-                fundingpool.distributeFunds(
-                    address(dao.getAddressConfiguration(DaoHelper.GP_ADDRESS)),
-                    tokenAddr,
-                    redemptionFee
-                );
-            }
+            address token = flexFunding.getTokenByProposalId(dao, proposalId);
+            flexFundingPool.withdraw(proposalId, msg.sender, token, amount);
         }
-        address token = flexFunding.getTokenByProposalId(dao, proposalId);
-        flexFundingPool.withdraw(proposalId, msg.sender, token, amount);
     }
 
     // /**

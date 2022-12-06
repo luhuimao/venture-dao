@@ -162,15 +162,29 @@ contract FlexFundingAdapterContract is
             vars.propodalFundingToken = getTokenByProposalId(dao, proposalId);
             if (vars.fundRaiseEndTime > block.timestamp)
                 revert FundRaiseEndTimeNotUP();
-
-            if (vars.poolBalance >= vars.minFundingAmount) {
+            vars.protocolFee =
+                (vars.poolBalance *
+                    dao.getConfiguration(DaoHelper.FLEX_PROTOCOL_FEE)) /
+                100;
+            vars.managementFee = dao.getConfiguration(
+                DaoHelper.FLEX_MANAGEMENT_FEE_TYPE
+            ) == 0
+                ? (vars.poolBalance *
+                    dao.getConfiguration(
+                        DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT
+                    )) / 100
+                : dao.getConfiguration(DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT);
+            vars.proposerReward = proposal.proposerRewardInfo.cashRewardAmount;
+            if (
+                vars.poolBalance <=
+                vars.minFundingAmount +
+                    vars.protocolFee +
+                    vars.managementFee +
+                    vars.proposerReward
+            ) {
                 //1
                 proposal.state = ProposalStatus.IN_EXECUTE_PROGRESS;
                 //2 protocol fee
-                vars.protocolFee =
-                    (vars.poolBalance *
-                        dao.getConfiguration(DaoHelper.FLEX_PROTOCOL_FEE)) /
-                    100;
                 vars.flexFundingPoolExt.withdrawFromAll(
                     proposalId,
                     dao.getAddressConfiguration(
@@ -180,16 +194,6 @@ contract FlexFundingAdapterContract is
                     vars.protocolFee
                 );
                 //3 management fee
-                vars.managementFee = dao.getConfiguration(
-                    DaoHelper.FLEX_MANAGEMENT_FEE_TYPE
-                ) == 0
-                    ? (vars.poolBalance *
-                        dao.getConfiguration(
-                            DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT
-                        )) / 100
-                    : dao.getConfiguration(
-                        DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT
-                    );
                 vars.flexFundingPoolExt.withdrawFromAll(
                     proposalId,
                     dao.getAddressConfiguration(
@@ -199,7 +203,12 @@ contract FlexFundingAdapterContract is
                     vars.managementFee
                 );
                 //4 proposer reward
-
+                vars.flexFundingPoolExt.withdrawFromAll(
+                    proposalId,
+                    proposal.proposer,
+                    vars.propodalFundingToken,
+                    vars.proposerReward
+                );
                 // 5 send funding token to recipient
                 vars.flexFundingPoolExt.withdrawFromAll(
                     proposalId,
@@ -221,16 +230,12 @@ contract FlexFundingAdapterContract is
                     vars.flexAllocAdapt = FlexAllocationAdapterContract(
                         dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
                     );
-                    vars.flexAllocAdapt.noEscrow(
-                        dao,
-                        proposal.proposer,
-                        proposalId
-                    );
+                    vars.flexAllocAdapt.noEscrow(dao, proposalId);
                 }
                 proposal.state = ProposalStatus.DONE;
             } else {
                 // didt meet the min funding amount
-                proposal.state = ProposalStatus.FAILED;
+                proposal.state = ProposalStatus.FUND_RAISE_FAILED;
             }
         }
         dao.processProposal(proposalId);

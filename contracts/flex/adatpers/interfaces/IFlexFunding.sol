@@ -28,6 +28,7 @@ interface IFlexFunding {
         VOTE_PASS,
         // VOTE_FAILED,
         IN_FUND_RAISE_PROGRESS,
+        FUND_RAISE_FAILED,
         IN_EXECUTE_PROGRESS,
         DONE,
         FAILED
@@ -65,6 +66,7 @@ interface IFlexFunding {
         uint256 managementFee;
         uint256 proposerReward;
         address propodalFundingToken;
+        uint256 totalSendOutAmount;
     }
 
     struct SubmitProposalLocalVars {
