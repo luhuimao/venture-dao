@@ -200,11 +200,6 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
         );
 
         vars.flexFungdingPoolExt.addToBalance(proposalId, msg.sender, amount);
-
-        // IERC20(token).approve(
-        //     dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT),
-        //     amount
-        // );
     }
 
     function balanceOf(

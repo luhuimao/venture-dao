@@ -13,6 +13,8 @@ export const DaoFactory_GOERLI = "0x2ccF655DD0e15e97B6a677EB3ff1f3Aa4b9833a1"; /
 export const FundingPoolFactory_GOERLI = "0x19688d00968f482f4EA405366220D600654664d5"; //REPLACE_FLAG
 export const RiceStakingFactory_GOERLI = "0x4C2b940f4410a93AfBfF5E36c7d5810Cf20e4965"; //REPLACE_FLAG
 export const GPDaoFactory_GOERLI = "0xEC72dd8c1F8eD46DcE76d39A7D8c2a56ce4A1DFc"; //REPLACE_FLAG
+
+export const FlexFundingPoolFactory_GOERLI = "0x81dCbF3514d50cd8eF0e0528300f7bf4902F3bE0";//REPLACE_FLAG
 //core
 export const DAO_ADDRESS_RINKEBY = "0x1f55De869c6AE70DA58448C0c6a3C9f08165bc8C"; //REPLACE_FLAG
 export const DAO_ADDRESS_GOERLI = "0xd0a0582A8e82dC63056056188ED4406E45B84692"; //REPLACE_FLAG
@@ -27,6 +29,9 @@ export const GPDaoExtension_RINKEBY = "0x217C48a06Be195c27f52095E0Ba2A0bb9eb851A
 export const FundingPoolExtension_GOERLI = "0x51c48Dd3b0692898C9250f6F85b515A21001b859";
 export const StakingRiceExtension_GOERLI = "0xf52b1531EFef7E2BCe7a38Aa4945216F6aB9b8FB"; //REPLACE_FLAG
 export const GPDaoExtension_GOERLI = "0x952767cF43832bdeb2fe717A019e56ceC96E416F"; //REPLACE_FLAG
+export const FlexFundingPoolExtension_GOERLI = "0x44E21bc156645f84ca53D404096d4704A21FdfB6"; //REPLACE_FLAG
+
+
 //adapters
 //rinkeby testnet
 export const FundingPoolAdapterContract_RINKEBY = "0x93B8A68F5A234c8f97fAf5fED102aD61A864c16d"; //REPLACE_FLAG
@@ -61,6 +66,16 @@ export const ManagingAdapterContract_GOERLI = "0xdd60b84fDa3C243937F442181916a71
 export const Vesting_GOERLI = "0xe6F5F4f71364d4D521b5Cf40E03c77098DFbCeb0"; //REPLACE_FLAG
 export const BentoBoxV1_GOERLI = "0x9DA1527D1dcEBf1EcC143aC63D2E442FdfC43688";//REPLACE_FLAG
 export const FundRaiseAdapterContract_GOERLI = "0x74dd10598AC4399E38f86D590AD5224F96cC6097";//REPLACE_FLAG
+
+//flex mode
+export const FlexFundingAdapterContract_GOERLI = "0x9E22eAa53E65514CAC8954641e8d1358655CB5f9";//REPLACE_FLAG
+export const FlexVotingContract_GOERLI = "0x51E18B22C5517F7ceF2B4961EB6d4B886F55c588";//REPLACE_FLAG
+export const FlexFundingPoolAdapterContract_GOERLI = "0x1962F6C144f195f129798901971737E12D2D1E20";//REPLACE_FLAG
+export const FlexAllocationAdapterContract_GOERLI = "0x35ABbe5311ae17FFA73DfB365087C22De07412A2";//REPLACE_FLAG
+export const FlexERC721_GOERLI = "0x7f8453B3434364463E254f7B2f5BD845f9853b32";//REPLACE_FLAG
+
+
+
 //test contracts
 export const TestToken1_RINKEBY = "0x607EaF02Ac994959739FB69FCe717815b697f4EB";
 export const TestToken2_RINKEBY = "0x87E2C537e1743A4D0F2C73132c81eEcB5a40f3d1";
@@ -93,6 +108,12 @@ export function getFactoryAddressByName(factoryName: string, network: string) {
             if (network == "rinkeby") return RiceStakingFactory_RINKEBY;
             return null;
             break;
+        case 'FlexFundingPoolFactory':
+            if (network == "goerli") return FlexFundingPoolFactory_GOERLI;
+            return null;
+            break;
+
+
         default:
             return null;
     }
@@ -100,6 +121,10 @@ export function getFactoryAddressByName(factoryName: string, network: string) {
 
 export function getExtensionAddressByName(ExtensionName: string, network: string) {
     switch (ExtensionName) {
+        case 'FlexFundingPoolExtension':
+            if (network == "goerli") return FlexFundingPoolExtension_GOERLI;
+            return null;
+            break;
         case 'FundingPoolExtension':
             if (network == "goerli") return FundingPoolExtension_GOERLI;
             if (network == "rinkeby") return FundingPoolExtension_RINKEBY;
@@ -122,6 +147,27 @@ export function getExtensionAddressByName(ExtensionName: string, network: string
 
 export function getContractAddressByName(name: string, network: string) {
     switch (name) {
+        case 'FlexFundingAdapterContract':
+            if (network == "goerli") return FlexFundingAdapterContract_GOERLI;
+            return null;
+            break;
+        case 'FlexVotingContract':
+            if (network == "goerli") return FlexVotingContract_GOERLI;
+            return null;
+            break;
+        case 'FlexFundingPoolAdapterContract':
+            if (network == "goerli") return FlexFundingPoolAdapterContract_GOERLI;
+            return null;
+            break;
+        case 'FlexAllocationAdapterContract':
+            if (network == "goerli") return FlexAllocationAdapterContract_GOERLI;
+            return null;
+            break;
+        case 'FlexERC721':
+            if (network == "goerli") return FlexERC721_GOERLI;
+            return null;
+            break;
+
         case 'FundRaiseAdapterContract':
             if (network == "goerli") return FundRaiseAdapterContract_GOERLI;
             return null;

@@ -110,8 +110,11 @@ contract FlexFundingAdapterContract is
                 params.proposerRewardInfo.tokenRewardAmount,
                 params.proposerRewardInfo.cashRewardAmount
             ),
-            block.timestamp,
-            block.timestamp + dao.getConfiguration(DaoHelper.PROPOSAL_DURATION),
+            fundingType == FundingType.POLL ? block.timestamp : 0,
+            fundingType == FundingType.POLL
+                ? block.timestamp +
+                    dao.getConfiguration(DaoHelper.PROPOSAL_DURATION)
+                : 0,
             fundingType == FundingType.POLL
                 ? ProposalStatus.IN_VOTING_PROGRESS
                 : ProposalStatus.IN_FUND_RAISE_PROGRESS
