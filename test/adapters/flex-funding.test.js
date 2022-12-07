@@ -929,7 +929,7 @@ describe("Adapter - Flex Funding Failed", () => {
             fundRaiseInfo,
             proposerRewardInfos
         ];
-        console.log(fundingParams);
+        console.log("fundingParams", fundingParams);
         const tx = await flexFundingAdapterContract.submitProposal(dao.address, fundingParams);
         const result = await tx.wait();
         const ProposalId = result.events[2].args.proposalId;
