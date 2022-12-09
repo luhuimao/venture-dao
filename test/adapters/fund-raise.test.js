@@ -105,7 +105,7 @@ describe("Adapter - FundRaise", () => {
         const dao = this.dao;
         const fundingPoolAdapter = this.fundingpoolAdapter;
 
-        let fundRaiseTarget = hre.ethers.utils.parseEther("10000");
+        let fundRaiseTarget = hre.ethers.utils.parseEther("20001");
         let fundRaiseMaxAmount = hre.ethers.utils.parseEther("10000000");
         let lpMinDepositAmount = hre.ethers.utils.parseEther("100");
         let lpMaxDepositAmount = hre.ethers.utils.parseEther("100000");
@@ -285,7 +285,7 @@ describe("Adapter - FundRaise", () => {
         const dao = this.dao;
 
         const _uint256ArgsProposal = [
-            hre.ethers.utils.parseEther("10000"),
+            hre.ethers.utils.parseEther("40001"),
             0,
             hre.ethers.utils.parseEther("100"),
             0
@@ -342,7 +342,7 @@ describe("Adapter - FundRaise", () => {
         // }
 
         const _uint256ArgsProposal = [
-            hre.ethers.utils.parseEther("10000"),
+            hre.ethers.utils.parseEther("40001"),
             0,
             0,
             0
@@ -435,12 +435,16 @@ describe("Adapter - FundRaise", () => {
         }
 
         await fundingPoolAdaptContract.processFundRaise(dao.address);
+        const totalFund = await fundingPoolAdaptContract.lpBalance(dao.address);
 
         // fund raise max amount < fund raise target
-        console.log("fund raise max amount < fund raise target");
+        console.log(`
+        total fund ${hre.ethers.utils.formatEther(totalFund.toString())}
+        fund raise max amount < fund raise target
+        `);
         let _uint256ArgsProposal = [
-            hre.ethers.utils.parseEther("10000"),
-            hre.ethers.utils.parseEther("9000"),
+            totalFund.add(toBN(1)),
+            hre.ethers.utils.parseEther("50000"),
             hre.ethers.utils.parseEther("1000"),
             hre.ethers.utils.parseEther("100")
         ];
@@ -466,8 +470,8 @@ describe("Adapter - FundRaise", () => {
         //fundRaiseStartTime <=0
         console.log("fundRaiseStartTime <=0");
         _uint256ArgsProposal = [
-            hre.ethers.utils.parseEther("10000"),
-            hre.ethers.utils.parseEther("100000"),
+            totalFund.add(toBN(1)),
+            totalFund.add(toBN(1)),
             hre.ethers.utils.parseEther("1000"),
             hre.ethers.utils.parseEther("10000")
         ];
@@ -492,8 +496,8 @@ describe("Adapter - FundRaise", () => {
         //fundRaiseEndTime <=0
         console.log("fundRaiseEndTime <=0");
         _uint256ArgsProposal = [
-            hre.ethers.utils.parseEther("10000"),
-            hre.ethers.utils.parseEther("100000"),
+            totalFund.add(toBN(1)),
+            totalFund.add(toBN(1)),
             hre.ethers.utils.parseEther("1000"),
             hre.ethers.utils.parseEther("10000")
         ];
@@ -519,8 +523,8 @@ describe("Adapter - FundRaise", () => {
         //fundRaiseEndTime < fundRaiseStartTime
         console.log("fundRaiseEndTime < fundRaiseStartTime");
         _uint256ArgsProposal = [
-            hre.ethers.utils.parseEther("10000"),
-            hre.ethers.utils.parseEther("100000"),
+            totalFund.add(toBN(1)),
+            totalFund.add(toBN(1)),
             hre.ethers.utils.parseEther("1000"),
             hre.ethers.utils.parseEther("10000")
         ];
@@ -545,8 +549,8 @@ describe("Adapter - FundRaise", () => {
         //fundTerm <= 0
         console.log("fundTerm <= 0");
         _uint256ArgsProposal = [
-            hre.ethers.utils.parseEther("10000"),
-            hre.ethers.utils.parseEther("100000"),
+            totalFund.add(toBN(1)),
+            totalFund.add(toBN(1)),
             hre.ethers.utils.parseEther("1000"),
             hre.ethers.utils.parseEther("10000")
         ];
@@ -571,8 +575,8 @@ describe("Adapter - FundRaise", () => {
         //redemptPeriod<=0
         console.log("redemptPeriod<=0");
         _uint256ArgsProposal = [
-            hre.ethers.utils.parseEther("10000"),
-            hre.ethers.utils.parseEther("100000"),
+            totalFund.add(toBN(1)),
+            totalFund.add(toBN(1)),
             hre.ethers.utils.parseEther("1000"),
             hre.ethers.utils.parseEther("10000")
         ];
@@ -598,8 +602,8 @@ describe("Adapter - FundRaise", () => {
         //redemptDuration<=0
         console.log("redemptDuration<=0");
         _uint256ArgsProposal = [
-            hre.ethers.utils.parseEther("10000"),
-            hre.ethers.utils.parseEther("100000"),
+            totalFund.add(toBN(1)),
+            totalFund.add(toBN(1)),
             hre.ethers.utils.parseEther("1000"),
             hre.ethers.utils.parseEther("10000")
         ];
@@ -623,8 +627,8 @@ describe("Adapter - FundRaise", () => {
         //returnDuration<=0
         console.log("returnDuration<=0");
         _uint256ArgsProposal = [
-            hre.ethers.utils.parseEther("10000"),
-            hre.ethers.utils.parseEther("100000"),
+            totalFund.add(toBN(1)),
+            totalFund.add(toBN(1)),
             hre.ethers.utils.parseEther("1000"),
             hre.ethers.utils.parseEther("10000")
         ];
@@ -649,8 +653,8 @@ describe("Adapter - FundRaise", () => {
         //proposerRewardRatio>=100
         console.log("proposerRewardRatio>=100");
         _uint256ArgsProposal = [
-            hre.ethers.utils.parseEther("10000"),
-            hre.ethers.utils.parseEther("100000"),
+            totalFund.add(toBN(1)),
+            totalFund.add(toBN(1)),
             hre.ethers.utils.parseEther("1000"),
             hre.ethers.utils.parseEther("10000")
         ];
@@ -675,8 +679,8 @@ describe("Adapter - FundRaise", () => {
         //managementFeeRatio >= 100
         console.log("managementFeeRatio >= 100");
         _uint256ArgsProposal = [
-            hre.ethers.utils.parseEther("10000"),
-            hre.ethers.utils.parseEther("100000"),
+            totalFund.add(toBN(1)),
+            totalFund.add(toBN(1)),
             hre.ethers.utils.parseEther("1000"),
             hre.ethers.utils.parseEther("10000")
         ];
@@ -701,8 +705,8 @@ describe("Adapter - FundRaise", () => {
         //redepmtFeeRatio >= 100
         console.log("redepmtFeeRatio >= 100");
         _uint256ArgsProposal = [
-            hre.ethers.utils.parseEther("10000"),
-            hre.ethers.utils.parseEther("100000"),
+            totalFund.add(toBN(1)),
+            totalFund.add(toBN(1)),
             hre.ethers.utils.parseEther("1000"),
             hre.ethers.utils.parseEther("10000")
         ];
@@ -728,8 +732,8 @@ describe("Adapter - FundRaise", () => {
         //fund riase max  == target
         console.log("fund riase max  == target");
         _uint256ArgsProposal = [
-            hre.ethers.utils.parseEther("10000"),
-            hre.ethers.utils.parseEther("10000"),
+            totalFund.add(toBN(1)),
+            totalFund.add(toBN(1)),
             hre.ethers.utils.parseEther("1000"),
             hre.ethers.utils.parseEther("10000")
         ];
@@ -751,7 +755,6 @@ describe("Adapter - FundRaise", () => {
         _addressArgs = [this.user2.address, this.testtoken1.address];
         await fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs);
         // await expectRevert(fundRaiseAdapter.submitProposal(dao.address, _uint256ArgsProposal, _uint256ArgsTimeInfo, _uint256ArgsFeeInfo, _addressArgs), "revert");
-
     });
 
 });

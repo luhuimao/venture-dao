@@ -55,7 +55,7 @@ contract FundRaiseAdapterContract is
      */
     // Keeps track of all the Proposals executed per DAO.
     mapping(address => mapping(bytes32 => ProposalDetails)) public Proposals;
-    uint256 public proposalIds = 100030;
+    uint256 public proposalIds = 100034;
     uint256 public fundsCounter = 1;
     bytes32 public latestProposalId;
     bytes32 public previousProposalId;
@@ -136,6 +136,7 @@ contract FundRaiseAdapterContract is
         vars.redepmtFeeRatio = _uint256ArgsFeeInfo[2];
         vars.protocolFeeRatio = dao.getConfiguration(DaoHelper.PROTOCOL_FEE);
         if (
+            vars.fundRaiseTarget <= vars.fundingPoolAdapt.lpBalance(dao) ||
             vars.fundRaiseTarget < 0 ||
             (vars.fundRaiseMaxAmount > 0 &&
                 vars.fundRaiseMaxAmount < vars.fundRaiseTarget) ||
@@ -305,6 +306,8 @@ contract FundRaiseAdapterContract is
             //reset fund raise state
             vars.fundingPoolAdapt.resetFundRaiseState(dao);
             proposalDetails.state = ProposalState.Done;
+
+            fundsCounter += 1;
         } else if (
             vars.voteResult == IGPVoting.VotingState.NOT_PASS ||
             vars.voteResult == IGPVoting.VotingState.TIE
@@ -313,7 +316,6 @@ contract FundRaiseAdapterContract is
         } else {
             revert("FundRaise::processProposal::voting not finalized");
         }
-        fundsCounter += 1;
         emit proposalExecuted(proposalId, proposalDetails.state);
     }
 
@@ -325,16 +327,24 @@ contract FundRaiseAdapterContract is
         FundingPoolAdapterContract fundingPoolAdapt = FundingPoolAdapterContract(
                 dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
             );
-        uint256 currentBalance = fundingPoolAdapt.lpBalance(dao);
+        // uint256 currentBalance = fundingPoolAdapt.lpBalance(dao);
+        // dao.setConfiguration(
+        //     DaoHelper.FUND_RAISING_TARGET,
+        //     proposalInfo.fundRaiseTarget + currentBalance
+        // );
         dao.setConfiguration(
             DaoHelper.FUND_RAISING_TARGET,
-            proposalInfo.fundRaiseTarget + currentBalance
+            proposalInfo.fundRaiseTarget
         );
         //2 fundRaiseMaxAmount
         if (proposalInfo.fundRaiseMaxAmount > 0) {
+            // dao.setConfiguration(
+            //     DaoHelper.FUND_RAISING_MAX,
+            //     proposalInfo.fundRaiseMaxAmount + currentBalance
+            // );
             dao.setConfiguration(
                 DaoHelper.FUND_RAISING_MAX,
-                proposalInfo.fundRaiseMaxAmount + currentBalance
+                proposalInfo.fundRaiseMaxAmount
             );
         } else {
             dao.setConfiguration(DaoHelper.FUND_RAISING_MAX, 0);
