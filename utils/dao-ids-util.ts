@@ -4,7 +4,7 @@
  * @Author: huhuimao
  * @Date: 2022-11-10 19:00:47
  * @LastEditors: huhuimao
- * @LastEditTime: 2022-12-06 18:03:36
+ * @LastEditTime: 2022-12-13 15:32:05
  */
 /**
  * @notice the ids defined in this file must match the ids added to DaoHelper.sol.
@@ -12,6 +12,7 @@
 
 /** Adapters */
 export const adaptersIdsMap: Record<string, string> = {
+  FLEX_VESTING:"flex-vesting",
   FLEX_ERC721_ADAPT: "flex-erc721-adatper",
   FLEX_ALLOCATION_ADAPT: "flex-allocation-adatper",
   FLEX_FUNDING_POOL_ADAPTER: "flex-funding-pool-adatper",

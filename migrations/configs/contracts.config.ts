@@ -646,6 +646,20 @@ export const contracts: Array<ContractConfig> = [
    * Adapters
    */
   {
+    id: adaptersIdsMap.FLEX_VESTING,
+    name: "FlexVesting",
+    alias: "flexVesting",
+    path: "../../contracts/adapters/FlexVesting",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
     id: adaptersIdsMap.FLEX_ERC721_ADAPT,
     name: "FlexERC721",
     alias: "flexERC721",

@@ -7,6 +7,7 @@ import "./IFlexVoting.sol";
 import "../../extensions/FlexFundingPool.sol";
 import "../FlexFundingPoolAdapter.sol";
 import "../FlexAllocation.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IFlexFunding {
     function submitProposal(DaoRegistry dao, ProposalParams calldata params)
@@ -65,7 +66,10 @@ interface IFlexFunding {
         uint256 managementFee;
         uint256 proposerReward;
         address propodalFundingToken;
+        address returnToken;
+        address proposer;
         uint256 totalSendOutAmount;
+        uint256 returnTokenAmount;
     }
 
     struct SubmitProposalLocalVars {
@@ -114,6 +118,7 @@ interface IFlexFunding {
         bool escrow;
         address returnTokenAddr;
         uint256 returnTokenAmount;
+        uint256 price;
         uint256 minReturnAmount;
         uint256 maxReturnAmount;
         address approverAddr;

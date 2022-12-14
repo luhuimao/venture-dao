@@ -65,14 +65,15 @@ export const AllocationAdapterContractV2_GOERLI = "0x67F5606Da4E637BCA0db1b98CA9
 export const ManagingAdapterContract_GOERLI = "0xdd60b84fDa3C243937F442181916a71f14334b7c"; //REPLACE_FLAG
 export const Vesting_GOERLI = "0xe6F5F4f71364d4D521b5Cf40E03c77098DFbCeb0"; //REPLACE_FLAG
 export const BentoBoxV1_GOERLI = "0x9DA1527D1dcEBf1EcC143aC63D2E442FdfC43688";//REPLACE_FLAG
-export const FundRaiseAdapterContract_GOERLI = "0x74dd10598AC4399E38f86D590AD5224F96cC6097";//REPLACE_FLAG
+export const FundRaiseAdapterContract_GOERLI = "0x034f3575B0C67aF02cb0F80E5aB332095B55FBd5";//REPLACE_FLAG
 
 //flex mode
-export const FlexFundingAdapterContract_GOERLI = "0x9E22eAa53E65514CAC8954641e8d1358655CB5f9";//REPLACE_FLAG
+export const FlexFundingAdapterContract_GOERLI = "";//REPLACE_FLAG
 export const FlexVotingContract_GOERLI = "0x51E18B22C5517F7ceF2B4961EB6d4B886F55c588";//REPLACE_FLAG
 export const FlexFundingPoolAdapterContract_GOERLI = "0x1962F6C144f195f129798901971737E12D2D1E20";//REPLACE_FLAG
-export const FlexAllocationAdapterContract_GOERLI = "0x35ABbe5311ae17FFA73DfB365087C22De07412A2";//REPLACE_FLAG
+export const FlexAllocationAdapterContract_GOERLI = "";//REPLACE_FLAG
 export const FlexERC721_GOERLI = "0x7f8453B3434364463E254f7B2f5BD845f9853b32";//REPLACE_FLAG
+export const FlexVesting_GOERLI = "";//REPLACE_FLAG
 
 
 
@@ -147,6 +148,10 @@ export function getExtensionAddressByName(ExtensionName: string, network: string
 
 export function getContractAddressByName(name: string, network: string) {
     switch (name) {
+        case 'FlexVesting':
+            if (network == "goerli") return FlexVesting_GOERLI;
+            return null;
+            break;
         case 'FlexFundingAdapterContract':
             if (network == "goerli") return FlexFundingAdapterContract_GOERLI;
             return null;

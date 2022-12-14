@@ -151,6 +151,8 @@ library DaoHelper {
         keccak256("PROPOSAL_EXECUTE_DURATION");
 
     // Adapters
+    bytes32 internal constant FLEX_VESTING =
+        keccak256("flex-vesting");
     bytes32 internal constant FLEX_ERC721_ADAPT =
         keccak256("flex-erc721-adatper");
     bytes32 internal constant FLEX_ALLOCATION_ADAPT =
