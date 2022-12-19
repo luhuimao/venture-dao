@@ -186,6 +186,26 @@ const getDefaultOptions = async (options) => {
   const currentTimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
   let [owner, user1, user2, project_team1, , , , , , DAOSquare, GP] = await hre.ethers.getSigners();
   return {
+    daoName:
+      options.daoName === undefined ? "test-dao" :
+        options.daoName,
+    flexProposerAdditionalIdentificationEnable:
+      options.flexProposerAdditionalIdentificationEnable === undefined ? 0 :
+        options.flexProposerAdditionalIdentificationEnable,
+    flexProposerAdditionalIdentificationTokenType:
+      options.flexProposerAdditionalIdentificationTokenType === undefined ? 0 :
+        options.flexProposerAdditionalIdentificationTokenType,
+    // flexProposerAdditionalIdentificationTokenAddress:
+    //   options.flexProposerAdditionalIdentificationTokenAddress === undefined ? 0 :
+    //     options.flexProposerAdditionalIdentificationTokenAddress,
+    flexProposerAdditionalIdentificationTokenId:
+      options.flexProposerAdditionalIdentificationTokenId === undefined ? 0 :
+        options.flexProposerAdditionalIdentificationTokenId,
+    flexProposerAdditionalIdentificationTokenMinHolding:
+      options.flexProposerAdditionalIdentificationTokenMinHolding === undefined ? 0 :
+        options.flexProposerAdditionalIdentificationTokenMinHolding,
+    maxParticipantEnable: options.maxParticipantEnable === undefined ? 1 : options.maxParticipantEnable,
+    maxParticipants: options.maxParticipants === undefined ? 5 : options.maxParticipants,
     flexProtocolFeeRatio: options.flexProtocolFeeRatio === undefined ? 3 : options.flexProtocolFeeRatio,
     flexManagementFeeRatio: options.flexManagementFeeRatio === undefined ? 2 : options.flexManagementFeeRatio,
     flexFundingType: options.flexFundingType === undefined ? 0 : options.flexFundingType,

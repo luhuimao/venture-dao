@@ -7,6 +7,9 @@ import "../extensions/bank/Bank.sol";
 import "../extensions/fundingpool/FundingPool.sol";
 import "../extensions/gpdao/GPDao.sol";
 import "../helpers/DaoHelper.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 /**
 MIT License
@@ -36,7 +39,69 @@ abstract contract MemberGuard {
         _;
     }
     modifier onlyProposer(DaoRegistry dao) {
-        require(1 == 1, "");
+        if (
+            dao.getConfiguration(
+                DaoHelper.FLEX_PROPOSER_ADDITIONAL_IDENRIFICATION_ENABLE
+            ) == 1
+        ) {
+            //0 ERC20 1 ERC721 2 ERC1155
+            if (
+                dao.getConfiguration(
+                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TOKEN_TYPE
+                ) == 0
+            ) {
+                require(
+                    IERC20(
+                        dao.getAddressConfiguration(
+                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+                        )
+                    ).balanceOf(msg.sender) >=
+                        dao.getConfiguration(
+                            DaoHelper.FLEX_PROPOSER_MIN_HOLDING
+                        ),
+                    "dont meet min erc20 token holding requirment"
+                );
+            }
+            if (
+                dao.getConfiguration(
+                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TOKEN_TYPE
+                ) == 1
+            ) {
+                require(
+                    IERC721(
+                        dao.getAddressConfiguration(
+                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+                        )
+                    ).balanceOf(msg.sender) >=
+                        dao.getConfiguration(
+                            DaoHelper.FLEX_PROPOSER_MIN_HOLDING
+                        ),
+                    "dont meet min erc721 token holding requirment"
+                );
+            }
+            if (
+                dao.getConfiguration(
+                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TOKEN_TYPE
+                ) == 2
+            ) {
+                require(
+                    IERC1155(
+                        dao.getAddressConfiguration(
+                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+                        )
+                    ).balanceOf(
+                            msg.sender,
+                            dao.getConfiguration(
+                                DaoHelper.FLEX_PROPOSER_TOKENID
+                            )
+                        ) >=
+                        dao.getConfiguration(
+                            DaoHelper.FLEX_PROPOSER_MIN_HOLDING
+                        ),
+                    "dont meet min erc1155 token holding requirment"
+                );
+            }
+        }
         _;
     }
     /**

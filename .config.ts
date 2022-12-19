@@ -68,12 +68,12 @@ export const BentoBoxV1_GOERLI = "0x9DA1527D1dcEBf1EcC143aC63D2E442FdfC43688";//
 export const FundRaiseAdapterContract_GOERLI = "0x034f3575B0C67aF02cb0F80E5aB332095B55FBd5";//REPLACE_FLAG
 
 //flex mode
-export const FlexFundingAdapterContract_GOERLI = "";//REPLACE_FLAG
+export const FlexFundingAdapterContract_GOERLI = "0xE842eC92d59914E6F45d05737c723Da15db71692";//REPLACE_FLAG
 export const FlexVotingContract_GOERLI = "0x51E18B22C5517F7ceF2B4961EB6d4B886F55c588";//REPLACE_FLAG
-export const FlexFundingPoolAdapterContract_GOERLI = "0x1962F6C144f195f129798901971737E12D2D1E20";//REPLACE_FLAG
-export const FlexAllocationAdapterContract_GOERLI = "";//REPLACE_FLAG
+export const FlexFundingPoolAdapterContract_GOERLI = "0x2CffFCc1315e3241367070c8752416eddE93524C";//REPLACE_FLAG
+export const FlexAllocationAdapterContract_GOERLI = "0x0a4A87086c24BD97085794438AC3fE563df083B1";//REPLACE_FLAG
 export const FlexERC721_GOERLI = "0x7f8453B3434364463E254f7B2f5BD845f9853b32";//REPLACE_FLAG
-export const FlexVesting_GOERLI = "";//REPLACE_FLAG
+export const FlexVesting_GOERLI = "0x77e90751Acbd69b77e6537d96167028315b6937b";//REPLACE_FLAG
 
 
 

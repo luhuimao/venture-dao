@@ -23,7 +23,6 @@ interface IFlexFunding {
         POLL
     }
     // The proposal status
-
     enum ProposalStatus {
         IN_VOTING_PROGRESS,
         VOTE_PASS,
@@ -168,7 +167,7 @@ interface IFlexFunding {
 
     event ProposalCreated(bytes32 proposalId, address proposer);
 
-    event ProposalExecuted(bytes32 proposalId);
+    event ProposalExecuted(bytes32 proposalId, ProposalStatus state);
 
     error FundRaiseEndTimeNotUP();
 }

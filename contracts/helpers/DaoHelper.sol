@@ -81,6 +81,11 @@ library DaoHelper {
         keccak256("FLEX_PROTOCOL_FEE");
     bytes32 internal constant FLEX_PROTOCOL_FEE_RECEIVE_ADDRESS =
         keccak256("FLEX_PROTOCOL_FEE_RECEIVE_ADDRESS");
+    // flex proposer requirment setting
+    bytes32 internal constant FLEX_PROPOSER_ADDITIONAL_IDENRIFICATION_ENABLE =
+        keccak256("FLEX_PROPOSER_ADDITIONAL_IDENRIFICATION_ENABLE");
+    bytes32 internal constant FLEX_PROPOSER_IDENTIFICATION_TOKEN_TYPE =
+        keccak256("FLEX_PROPOSER_IDENTIFICATION_TOKEN_TYPE");
     bytes32 internal constant FLEX_PROPOSER_TOKEN_ADDRESS =
         keccak256("FLEX_PROPOSER_TOKEN_ADDRESS");
     bytes32 internal constant FLEX_PROPOSER_TOKENID =
@@ -88,6 +93,9 @@ library DaoHelper {
     bytes32 internal constant FLEX_PROPOSER_MIN_HOLDING =
         keccak256("FLEX_PROPOSER_MIN_HOLDING");
     //PPM
+    bytes32 internal constant MAX_PARTICIPANTS_ENABLE =
+        keccak256("MAX_PARTICIPANTS_ENABLE");
+    bytes32 internal constant MAX_PARTICIPANTS = keccak256("MAX_PARTICIPANTS");
     bytes32 internal constant RETURN_DURATION = keccak256("RETURN_DURATION");
     bytes32 internal constant DAO_SQUARE_ADDRESS =
         keccak256("DAO_SQUARE_ADDRESS");
@@ -151,8 +159,7 @@ library DaoHelper {
         keccak256("PROPOSAL_EXECUTE_DURATION");
 
     // Adapters
-    bytes32 internal constant FLEX_VESTING =
-        keccak256("flex-vesting");
+    bytes32 internal constant FLEX_VESTING = keccak256("flex-vesting");
     bytes32 internal constant FLEX_ERC721_ADAPT =
         keccak256("flex-erc721-adatper");
     bytes32 internal constant FLEX_ALLOCATION_ADAPT =

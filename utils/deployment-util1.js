@@ -418,9 +418,41 @@ const setDaoConfiguration = async ({ options, dao, testContracts }) => {
     const configKey_flexManagementFee = sha3(web3.utils.encodePacked("FLEX_MANAGEMENT_FEE_AMOUNT"));
     const configKey_flexProtocolFee = sha3(web3.utils.encodePacked("FLEX_PROTOCOL_FEE"));
 
+    const configKey_maxParticipantsEnable = sha3(web3.utils.encodePacked("MAX_PARTICIPANTS_ENABLE"));
+    const configKey_maxParticipants = sha3(web3.utils.encodePacked("MAX_PARTICIPANTS"));
+
+
+    const configKey_flexProposerAdditionalIdentificationEnable = sha3(web3.utils.encodePacked("FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_ENABLE"));
+    const configKey_flexProposerAdditionalIdentificationTokenType = sha3(web3.utils.encodePacked("FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_TOKEN_TYPE"));
+    const configKey_flexProposerAdditionalIdentificationTokenId = sha3(web3.utils.encodePacked("FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_TOKEID"));
+    const configKey_flexProposerAdditionalIdentificationTokenMinHolding = sha3(web3.utils.encodePacked("FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_TOKEN_MIN_HOLDING"));
+
+    let tx;
+
+    log("config FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_ENABLE");
+    tx = await dao.setConfiguration(configKey_flexProposerAdditionalIdentificationEnable, options.flexProposerAdditionalIdentificationEnable);
+    await tx.wait();
+    log("config FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_TOKEN_TYPE");
+    tx = await dao.setConfiguration(configKey_flexProposerAdditionalIdentificationTokenType, options.flexProposerAdditionalIdentificationTokenType);
+    await tx.wait();
+    log("config FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_TOKEID");
+    tx = await dao.setConfiguration(configKey_flexProposerAdditionalIdentificationTokenId, options.flexProposerAdditionalIdentificationTokenId);
+    await tx.wait();
+    log("config FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_TOKEN_MIN_HOLDING");
+    tx = await dao.setConfiguration(configKey_flexProposerAdditionalIdentificationTokenMinHolding, options.flexProposerAdditionalIdentificationTokenMinHolding);
+    await tx.wait();
+
+
+    log("config MAX_PARTICIPANTS_ENABLE");
+    tx = await dao.setConfiguration(configKey_maxParticipantsEnable, options.maxParticipantEnable);
+    await tx.wait();
+    log("config MAX_PARTICIPANTS");
+    tx = await dao.setConfiguration(configKey_maxParticipants, options.maxParticipants);
+    await tx.wait();
+
     log("config FLEX_MANAGEMENT_FEE_AMOUNT");
-    let tx = await dao.setConfiguration(configKey_flexManagementFee, options.flexManagementFeeRatio);
-    await tx.wait(); 
+    tx = await dao.setConfiguration(configKey_flexManagementFee, options.flexManagementFeeRatio);
+    await tx.wait();
     log("config FLEX_PROTOCOL_FEE");
     tx = await dao.setConfiguration(configKey_flexProtocolFee, options.flexProtocolFeeRatio);
     await tx.wait();
@@ -494,9 +526,20 @@ const setDaoAddressConfiguration = async ({ options, dao, testContracts }) => {
     const configKey_FlexProtocolFeeReceiveAddress = sha3(web3.utils.encodePacked("FLEX_PROTOCOL_FEE_RECEIVE_ADDRESS"));
     const configKey_FlexManagementFeeReceiveAddress = sha3(web3.utils.encodePacked("FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS"));
 
+    const configKey_flexProposerAdditionalIdentificationTokenAddress = sha3(web3.utils.encodePacked("FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_TOKEN_ADDRESS"));
+
+
+    let tx;
+
+    log("config FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_TOKEN_ADDRESS");
+    tx = await dao.setAddressConfiguration(configKey_flexProposerAdditionalIdentificationTokenAddress,
+        options.flexProposerAdditionalIdentificationTokenAddress === undefined ?
+            testContracts.testToken1.instance.address :
+            options.flexProposerAdditionalIdentificationTokenAddress);
+    await tx.wait();
 
     log("config DAO_SQUARE_ADDRESS");
-    let tx = await dao.setAddressConfiguration(configKey_DaoSquareAddress, options.daoSquareAddress);
+    tx = await dao.setAddressConfiguration(configKey_DaoSquareAddress, options.daoSquareAddress);
     await tx.wait();
     log("config GP_ADDRESS");
     tx = await dao.setAddressConfiguration(configKey_GPAddress, options.gpAddress);

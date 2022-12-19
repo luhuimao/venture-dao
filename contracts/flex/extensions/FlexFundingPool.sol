@@ -613,6 +613,14 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
         emit NewBalance(proposalId, member, newAmount);
     }
 
+    function isInvestor(bytes32 proposalId, address investorAddr)
+        external
+        view
+        returns (bool)
+    {
+        return investors[proposalId].contains(investorAddr);
+    }
+
     function _newInvestor(bytes32 proposalId, address investorAddr) internal {
         require(
             investorAddr != address(0x0),

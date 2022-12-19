@@ -420,11 +420,17 @@ describe("Adapter - Flex No Escorw Funding Succeed", () => {
 
 describe("Adapter - Flex No Escorw Funding Failed", () => {
     before("deploy dao", async () => {
-        let [owner, gp1, gp2, user1] = await hre.ethers.getSigners();
+        let [owner, gp1, gp2, user1, user2, user3, user4, user5, user6] = await hre.ethers.getSigners();
         this.owner = owner;
         this.gp1 = gp1;
         this.gp2 = gp2;
         this.user1 = user1;
+        this.user2 = user2;
+        this.user3 = user3;
+        this.user4 = user4;
+        this.user5 = user5;
+        this.user6 = user6;
+
         const { dao, adapters, extensions, testContracts } = await deployDefaultDao({
             owner: owner,
         });
@@ -653,8 +659,20 @@ describe("Adapter - Flex No Escorw Funding Failed", () => {
         }
 
         await USDT.approve(fundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
+
         await USDT.connect(this.user1).approve(fundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
+        await USDT.connect(this.user2).approve(fundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
+        await USDT.connect(this.user3).approve(fundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
+        await USDT.connect(this.user4).approve(fundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
+        await USDT.connect(this.user5).approve(fundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
+        await USDT.connect(this.user6).approve(fundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
+
         await USDT.transfer(this.user1.address, hre.ethers.utils.parseEther("10000"));
+        await USDT.transfer(this.user2.address, hre.ethers.utils.parseEther("10000"));
+        await USDT.transfer(this.user3.address, hre.ethers.utils.parseEther("10000"));
+        await USDT.transfer(this.user4.address, hre.ethers.utils.parseEther("10000"));
+        await USDT.transfer(this.user5.address, hre.ethers.utils.parseEther("10000"));
+        await USDT.transfer(this.user6.address, hre.ethers.utils.parseEther("10000"));
 
         // deposit amount cant small than min deposit amount
         await expectRevert(fundingPoolAdapt.deposit(dao.address, this.proposalId, hre.ethers.utils.parseEther("10")), "revert");
@@ -663,6 +681,18 @@ describe("Adapter - Flex No Escorw Funding Failed", () => {
 
         await fundingPoolAdapt.deposit(dao.address, this.proposalId, hre.ethers.utils.parseEther("100000"));
         await fundingPoolAdapt.connect(this.user1).deposit(dao.address, this.proposalId, hre.ethers.utils.parseEther("10000"));
+        await fundingPoolAdapt.connect(this.user2).deposit(dao.address, this.proposalId, hre.ethers.utils.parseEther("10000"));
+        await fundingPoolAdapt.connect(this.user3).deposit(dao.address, this.proposalId, hre.ethers.utils.parseEther("10000"));
+        await fundingPoolAdapt.connect(this.user4).deposit(dao.address, this.proposalId, hre.ethers.utils.parseEther("10000"));
+
+        // cant exceed max participant
+        const maxParticipantEnable = await dao.getConfiguration(sha3("MAX_PARTICIPANTS_ENABLE"));
+        const maxParticipants = await dao.getConfiguration(sha3("MAX_PARTICIPANTS"));
+        console.log(`
+        max Participant Enable ${maxParticipantEnable}
+        max Participants  ${maxParticipants}
+        `);
+        await expectRevert(fundingPoolAdapt.connect(this.user5).deposit(dao.address, this.proposalId, hre.ethers.utils.parseEther("10000")), "revert");
 
         const poolBal = await this.testtoken1.balanceOf(this.extensions.flexFundingPoolExt.address);
         const bal = await this.flexFundingPoolExt.balanceOf(this.proposalId, this.owner.address);
@@ -1026,6 +1056,7 @@ describe("Adapter - Flex Escorw Funding Succeed", () => {
         this.flexERC721Contract = this.adapters.flexERC721.instance;
         this.flexFundingPoolExt = this.extensions.flexFundingPoolExt.functions;
         this.flexVesting = this.adapters.flexVesting.instance;
+        this.flexAlloc = this.adapters.flexAllocationAdapterContract.instance;
 
         const isGP = await extensions.gpDaoExt.functions.isGeneralPartner(owner.address);
         console.log(`owner is a GP: ${isGP}`);
@@ -1225,6 +1256,11 @@ describe("Adapter - Flex Escorw Funding Succeed", () => {
         const USDT = this.testtoken1;
         const flexFundingContract = this.flexFundingAdapterContract;
 
+
+        const fundRiseTimes = await flexFundingContract.getFundRaiseTimes(dao.address, this.proposalId);
+        console.log("fundRaiseStartTime  : ", fundRiseTimes[0]);
+        console.log("fundRaiseEndTime  : ", fundRiseTimes[1]);
+
         let fundRaiseStartTime = (await flexFundingContract.Proposals(dao.address, this.proposalId))
             .fundRaiseInfo
             .fundRaiseStartTime;
@@ -1233,6 +1269,8 @@ describe("Adapter - Flex Escorw Funding Succeed", () => {
             .fundRaiseEndTime;
 
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        await USDT.approve(fundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
+        await fundingPoolAdapt.deposit(dao.address, this.proposalId, hre.ethers.utils.parseEther("10000"));
 
         console.log(`
         fundRaiseStartTime ${fundRaiseStartTime}
@@ -1245,12 +1283,18 @@ describe("Adapter - Flex Escorw Funding Succeed", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await USDT.approve(fundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
+        let poolBal = await this.testtoken1.balanceOf(this.extensions.flexFundingPoolExt.address);
+        let bal = await this.flexFundingPoolExt.balanceOf(this.proposalId, this.owner.address);
+        console.log(`
+        funding pool contract Bal ${hre.ethers.utils.formatEther(poolBal.toString())}
+        balance   ${hre.ethers.utils.formatEther(bal.toString())}
+        `);
+        console.log("deposit...");
         await expectRevert(fundingPoolAdapt.deposit(dao.address, this.proposalId, hre.ethers.utils.parseEther("10")), "revert");
         // await expectRevert(fundingPoolAdapt.deposit(dao.address, this.proposalId, hre.ethers.utils.parseEther("100000")), "revert");
         await fundingPoolAdapt.deposit(dao.address, this.proposalId, hre.ethers.utils.parseEther("1000000"));
-        const poolBal = await this.testtoken1.balanceOf(this.extensions.flexFundingPoolExt.address);
-        const bal = await this.flexFundingPoolExt.balanceOf(this.proposalId, this.owner.address);
+        poolBal = await this.testtoken1.balanceOf(this.extensions.flexFundingPoolExt.address);
+        bal = await this.flexFundingPoolExt.balanceOf(this.proposalId, this.owner.address);
         console.log(`
         funding pool contract Bal ${hre.ethers.utils.formatEther(poolBal.toString())}
         balance   ${hre.ethers.utils.formatEther(bal.toString())}
@@ -1264,10 +1308,19 @@ describe("Adapter - Flex Escorw Funding Succeed", () => {
         const USDT = this.testtoken1;
         const flexFundingContract = this.flexFundingAdapterContract;
 
+        let poolBal = await this.testtoken1.balanceOf(this.extensions.flexFundingPoolExt.address);
+
+        console.log(`
+        funding pool contract Bal ${hre.ethers.utils.formatEther(poolBal.toString())}
+        `);
+
+        console.log("withdraw...");
         await fundingPoolAdapt.withdraw(dao.address, this.proposalId, hre.ethers.utils.parseEther("1000"));
         const bal = await fundingPoolAdapt.balanceOf(dao.address, this.proposalId, this.owner.address);
+        poolBal = await this.testtoken1.balanceOf(this.extensions.flexFundingPoolExt.address);
         console.log(`
         balance   ${hre.ethers.utils.formatEther(bal.toString())}
+        funding pool contract Bal ${hre.ethers.utils.formatEther(poolBal.toString())}
         `);
     });
 
@@ -1298,7 +1351,7 @@ describe("Adapter - Flex Escorw Funding Succeed", () => {
 
         const protocolFeeAccount = await dao.getAddressConfiguration(sha3("FLEX_PROTOCOL_FEE_RECEIVE_ADDRESS"));
         const managementFeeAccount = await dao.getAddressConfiguration(sha3("FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS"));
-
+        const ownerBal1 = await this.testtoken1.balanceOf(this.owner.address);
         let protocolFeeAccountBal = await this.testtoken1.balanceOf(protocolFeeAccount);
         let managementFeeAccountBal = await this.testtoken1.balanceOf(managementFeeAccount);
         let receiverAccountBal = await this.testtoken1.balanceOf(this.user1.address);
@@ -1334,13 +1387,16 @@ describe("Adapter - Flex Escorw Funding Succeed", () => {
         managementFeeAccountBal = await this.testtoken1.balanceOf(managementFeeAccount);
         receiverAccountBal = await this.testtoken1.balanceOf(this.user1.address);
         const state = await flexFundingContract.getProposalState(dao.address, this.proposalId);
-
-        let totalSendOutAmount = totalFund.add(protocolFeeAccountBal).add(managementFeeAccountBal).add(receiverAccountBal);
+        const ownerBal2 = await this.testtoken1.balanceOf(this.owner.address);
+        const proposerCashReward = ownerBal2.sub(ownerBal1);
+        let totalSendOutAmount = protocolFeeAccountBal.add(managementFeeAccountBal).add(receiverAccountBal).add(proposerCashReward);
         escorwedTokenAmount = await flexFundingContract.escrowedTokens(dao.address, this.proposalId, this.user1.address);
+        const returnTokenEscrowInContract = await this.testtoken2.balanceOf(this.flexAlloc.address);
         console.log(`
         owner deposit balance  ${hre.ethers.utils.formatEther(bal.toString())}
         total fund ${hre.ethers.utils.formatEther(totalFund.toString())}
         state ${proposalState}
+        proposerCashReward ${hre.ethers.utils.formatEther(proposerCashReward.toString())}
         protocol Fee Account Bal   ${hre.ethers.utils.formatEther(protocolFeeAccountBal.toString())}
         management Fee Account Bal   ${hre.ethers.utils.formatEther(managementFeeAccountBal.toString())}
         receiver Account Bal   ${hre.ethers.utils.formatEther(receiverAccountBal.toString())}
@@ -1348,6 +1404,7 @@ describe("Adapter - Flex Escorw Funding Succeed", () => {
         totalSendOutAmount ${hre.ethers.utils.formatEther(totalSendOutAmount.toString())}
         escorwed Token Amount  ${hre.ethers.utils.formatEther(escorwedTokenAmount.toString())}
         return Token Amount ${hre.ethers.utils.formatEther(returnTokenAmount.toString())}
+        return Token Escrow In Contract ${hre.ethers.utils.formatEther(returnTokenEscrowInContract.toString())}
         `);
     });
 

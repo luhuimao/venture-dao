@@ -45,6 +45,7 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
     error ExceedMaxDepositAmount();
     error LessMinDepositAmount();
     error ExceedMaxFundingAmount();
+    error MaxParticipantReach();
 
     /**
      * @notice Allows the member/advisor of the DAO to withdraw the funds from their internal bank account.
@@ -130,6 +131,7 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
         uint256 maxDepositAmount;
         address token;
         uint256 maxFundingAmount;
+        uint256 investorsAmount;
     }
 
     function deposit(
@@ -145,7 +147,18 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
         vars.flexFungdingPoolExt = FlexFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
         );
-
+        vars.investorsAmount = vars
+            .flexFungdingPoolExt
+            .getInvestorsByProposalId(proposalId)
+            .length;
+        if (
+            dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS_ENABLE) == 1 &&
+            dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) > 0 &&
+            vars.investorsAmount >=
+            dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) &&
+            !vars.flexFungdingPoolExt.isInvestor(proposalId, msg.sender)
+        ) revert MaxParticipantReach();
+   
         if (
             vars.flexFunding.getProposalState(dao, proposalId) !=
             IFlexFunding.ProposalStatus.IN_FUND_RAISE_PROGRESS
