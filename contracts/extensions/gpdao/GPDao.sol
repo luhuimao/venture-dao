@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import "../../core/DaoRegistry.sol";
 import "../IExtension.sol";
 import "../fundingpool/FundingPool.sol";
-import "../../guards/AdapterGuard.sol";
+import "../../guards/MemberGuard.sol";
 import "../../helpers/DaoHelper.sol";
 // import "@openzeppelin/contracts/utils/Address.sol";
 // import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract GPDaoExtension is IExtension {
+contract GPDaoExtension is IExtension, MemberGuard {
     using EnumerableSet for EnumerableSet.AddressSet;
     enum AclFlag {
         REGISTER_NEW_GP,
@@ -50,6 +50,7 @@ contract GPDaoExtension is IExtension {
     DaoRegistry public dao;
 
     EnumerableSet.AddressSet private _generalPartners;
+    EnumerableSet.AddressSet private _whiteLists;
 
     /// @notice Clonable contract must have an empty constructor
     constructor() {}
@@ -145,6 +146,17 @@ contract GPDaoExtension is IExtension {
         }
     }
 
+    function addWhiteList(address[] calldata whiteListMembers)
+        external
+        onlyMember(dao)
+    {
+        if (whiteListMembers.length > 0) {
+            for (uint8 i = 0; i < whiteListMembers.length; i++) {
+                _whiteLists.add(whiteListMembers[i]);
+            }
+        }
+    }
+
     /**
      * Public read-only functions
      */
@@ -158,7 +170,15 @@ contract GPDaoExtension is IExtension {
         return _generalPartners.contains(addr);
     }
 
+    function isWhiteList(address account) external view returns (bool) {
+        return _whiteLists.contains(account);
+    }
+
     function getAllGPs() external view returns (address[] memory) {
         return _generalPartners.values();
+    }
+
+    function getAllWhiteList() external view returns (address[] memory) {
+        return _whiteLists.values();
     }
 }

@@ -124,7 +124,7 @@ contract ManagingContract is IManaging, AdapterGuard, Reimbursable {
         emit ProposalCreated(
             proposalId,
             block.timestamp,
-            block.timestamp + dao.getConfiguration(DaoHelper.PROPOSAL_DURATION)
+            block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD)
         );
     }
 

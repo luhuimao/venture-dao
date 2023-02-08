@@ -1,13 +1,12 @@
 pragma solidity ^0.8.0;
 
 // SPDX-License-Identifier: MIT
+import "../../../guards/AdapterGuard.sol";
 import "../../../core/DaoRegistry.sol";
 import "../../../helpers/DaoHelper.sol";
-import "../../../guards/AdapterGuard.sol";
 import "../../IExtension.sol";
 import "../../bank/Bank.sol";
 import "./IERC20TransferStrategy.sol";
-import "../../../guards/AdapterGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
@@ -213,8 +212,10 @@ contract ERC20Extension is AdapterGuard, IExtension, IERC20 {
     function approve(address spender, uint256 amount)
         public
         override
-        reentrancyGuard(dao)
-        returns (bool)
+        returns (
+            // reentrancyGuard(dao)
+            bool
+        )
     {
         address senderAddr = dao.getAddressIfDelegated(msg.sender);
         require(

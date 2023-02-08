@@ -1,3 +1,11 @@
+/*
+ * @Descripttion: 
+ * @version: 
+ * @Author: huhuimao
+ * @Date: 2022-12-14 11:12:22
+ * @LastEditors: huhuimao
+ * @LastEditTime: 2023-01-09 22:43:52
+ */
 // We require the Hardhat Runtime Environment explicitly here. This is optional
 // but useful for running the script in a standalone fashion through `node <script>`.
 //
@@ -332,6 +340,15 @@ const submitFlexDirectEscrowFundingProposal = async () => {
   `);
 }
 
+const transfer = async () => {
+  const testtoken1 = await (await hre.ethers.getContractFactory("TestToken1"))
+    .attach("0x0B133Cc91a191d8d83133690019375a362B3886D");
+
+  await testtoken1.transfer("0x059A6151bE53dCe46dcA5AA0a290F72729Eb8FdA", hre.ethers.utils.parseEther("1000"));
+
+  const bal = await testtoken1.balanceOf("0x059A6151bE53dCe46dcA5AA0a290F72729Eb8FdA");
+  console.log(hre.ethers.utils.formatEther(bal));
+}
 
 
 async function main() {
@@ -367,7 +384,7 @@ async function main() {
   // funding pool adapter deployed address ${fundingpool.address}
   // `);
 
-  await submitFlexDirectEscrowFundingProposal();
+  await transfer();
 
   // await deposit("0xd0a0582A8e82dC63056056188ED4406E45B84692", "0x466c657846756e64696e67233900000000000000000000000000000000000000", "10000");
 }

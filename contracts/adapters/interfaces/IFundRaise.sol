@@ -90,24 +90,62 @@ interface IFundRaise {
         FundingPoolAdapterContract fundingPoolAdapt;
     }
 
+    struct ProposalParams {
+        DaoRegistry dao;
+        ProposalFundRaiseInfo proposalFundRaiseInfo;
+        ProposalTimeInfo proposalTimeInfo;
+        ProposalFeeInfo proposalFeeInfo;
+        ProposalAddressInfo proposalAddressInfo;
+    }
+    struct ProposalFundRaiseInfo {
+        uint256 fundRaiseTarget;
+        uint256 fundRaiseMaxAmount;
+        uint256 lpMinDepositAmount;
+        uint256 lpMaxDepositAmount;
+    }
+
+    struct ProposalAddressInfo {
+        address managementFeeAddress;
+        address fundRaiseTokenAddress;
+    }
+    struct ProposalFeeInfo {
+        uint256 proposerRewardRatio;
+        uint256 managementFeeRatio;
+        uint256 redepmtFeeRatio;
+        // uint256 protocolFeeRatio;
+    }
+
+    struct ProposalTimeInfo {
+        uint256 fundRaiseStartTime;
+        uint256 fundRaiseEndTime;
+        uint256 fundTerm;
+        uint256 redemptPeriod;
+        uint256 redemptDuration;
+        uint256 returnDuration;
+    }
     /*
      * EVENTS
      */
     event ProposalCreated(
+        address daoAddr,
+        bytes32 proposalId
+        // address acceptTokenAddr,
+        // uint256 fundRaiseTarget,
+        // uint256 fundRaiseMaxAmount,
+        // uint256 lpMinDepositAmount,
+        // uint256 lpMaxDepositAmount,
+        // uint256 fundRaiseStartTime,
+        // uint256 fundRaiseEndTime,
+        // uint256 fundEndTime,
+        // uint256 redemptPeriod,
+        // uint256 redemptDuration,
+        // ProposalState state
+    );
+    event proposalExecuted(
+        address daoAddr,
         bytes32 proposalId,
-        address acceptTokenAddr,
-        uint256 fundRaiseTarget,
-        uint256 fundRaiseMaxAmount,
-        uint256 lpMinDepositAmount,
-        uint256 lpMaxDepositAmount,
-        uint256 fundRaiseStartTime,
-        uint256 fundRaiseEndTime,
-        uint256 fundEndTime,
-        uint256 redemptPeriod,
-        uint256 redemptDuration,
         ProposalState state
     );
-    event proposalExecuted(bytes32 proposalId, ProposalState state);
 
     /*
     _uint256ArgsProposal[0]:fundRaiseTarget
@@ -128,11 +166,12 @@ interface IFundRaise {
     _addressArgs[1]:fundRaiseTokenAddress
     */
     function submitProposal(
-        DaoRegistry dao,
-        uint256[] calldata _uint256ArgsProposal,
-        uint256[] calldata _uint256ArgsTimeInfo,
-        uint256[] calldata _uint256ArgsFeeInfo,
-        address[] calldata _addressArgs
+        // DaoRegistry dao,
+        // uint256[] calldata _uint256ArgsProposal,
+        // uint256[] calldata _uint256ArgsTimeInfo,
+        // uint256[] calldata _uint256ArgsFeeInfo,
+        // address[] calldata _addressArgs
+        ProposalParams calldata params
     ) external;
 
     function processProposal(DaoRegistry dao, bytes32 proposalId) external;

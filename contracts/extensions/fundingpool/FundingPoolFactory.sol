@@ -46,22 +46,16 @@ contract FundingPoolFactory is IFactory, CloneFactory, ReentrancyGuard {
 
     /**
      * @notice Create and initialize a new FoundingPoolExtension
-     * @param maxExternalTokens The maximum number of external tokens stored in the Bank
+     * @param dao The maximum number of external tokens stored in the Bank
      */
     // slither-disable-next-line reentrancy-events
-    function create(
-        address dao,
-        uint8 maxExternalTokens,
-        uint256 serviceFeeRatio
-    ) external nonReentrant {
+    function create(address dao) external nonReentrant {
         require(dao != address(0x0), "invalid dao addr");
         address extensionAddr = _createClone(identityAddress);
         _extensions[dao] = extensionAddr;
-        FundingPoolExtension fundingpool = FundingPoolExtension(
-            extensionAddr
-        );
-        fundingpool.setMaxExternalTokens(maxExternalTokens);
-        fundingpool.setServiceFeeRatio(serviceFeeRatio);
+        FundingPoolExtension fundingpool = FundingPoolExtension(extensionAddr);
+        // fundingpool.setMaxExternalTokens(maxExternalTokens);
+        // fundingpool.setServiceFeeRatio(serviceFeeRatio);
 
         emit FundingPoolCreated(dao, address(fundingpool));
     }

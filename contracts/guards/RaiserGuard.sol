@@ -4,12 +4,7 @@ pragma solidity ^0.8.0;
 
 import "../core/DaoRegistry.sol";
 import "../extensions/gpdao/GPDao.sol";
-import "../guards/AdapterGuard.sol";
-import "../guards/RaiserGuard.sol";
-// import "../adapters/interfaces/IVoting.sol";
 import "../helpers/DaoHelper.sol";
-import "./modifiers/Reimbursable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
 MIT License
@@ -34,17 +29,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
+abstract contract RaiserGuard {
+    /**
+     * @dev Only general partner of the DAO are allowed to execute the function call.
+     */
+    modifier onlyRaiser(DaoRegistry dao) {
+        _onlyRaiser(dao, msg.sender);
+        _;
+    }
 
-contract GPDaoAdapterContract is AdapterGuard, RaiserGuard, Reimbursable {
-    function gpQuit(DaoRegistry dao)
-        external
-        onlyRaiser(dao)
-        reimbursable(dao)
-    {
-        GPDaoExtension gpdao = GPDaoExtension(
-            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
+    function _onlyRaiser(DaoRegistry dao, address _addr) internal view {
+        address gpDAOAddress = dao.extensions(DaoHelper.GPDAO_EXT);
+        require(
+            GPDaoExtension(gpDAOAddress).isGeneralPartner(_addr),
+            "onlyRaiser"
         );
-        require(msg.sender != gpdao.sponsor(), "dao summonor must reserved");
-        gpdao.removeGneralPartner(msg.sender);
     }
 }

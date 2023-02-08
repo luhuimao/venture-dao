@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 
 import "../../core/DaoRegistry.sol";
-import "../../guards/MemberGuard.sol";
+import "../../guards/RaiserGuard.sol";
 import "../../guards/AdapterGuard.sol";
 import "../interfaces/IGPOnboardingVoting.sol";
 import "../../helpers/DaoHelper.sol";
@@ -39,7 +39,7 @@ SOFTWARE.
 
 contract GPOnboardVotingContract is
     IGPOnboardingVoting,
-    MemberGuard,
+    RaiserGuard,
     AdapterGuard,
     Reimbursable
 {
@@ -52,6 +52,7 @@ contract GPOnboardVotingContract is
     }
 
     event SubmitVote(
+        address daoAddr,
         bytes32 proposalId,
         uint256 voteTime,
         address voter,
@@ -82,8 +83,8 @@ contract GPOnboardVotingContract is
         uint256 votingPeriod,
         uint256 gracePeriod
     ) external onlyAdapter(dao) {
-        dao.setConfiguration(DaoHelper.VotingPeriod, votingPeriod);
-        dao.setConfiguration(DaoHelper.GracePeriod, gracePeriod);
+        // dao.setConfiguration(DaoHelper.VOTING_PERIOD, votingPeriod);
+        // dao.setConfiguration(DaoHelper.GracePeriod, gracePeriod);
     }
 
     /**
@@ -130,7 +131,7 @@ contract GPOnboardVotingContract is
         DaoRegistry dao,
         bytes32 proposalId,
         uint256 voteValue
-    ) external onlyGeneralPartner(dao) reimbursable(dao) {
+    ) external onlyRaiser(dao) reimbursable(dao) {
         require(
             dao.getProposalFlag(proposalId, DaoRegistry.ProposalFlag.SPONSORED),
             "the proposal has not been sponsored yet"
@@ -159,7 +160,7 @@ contract GPOnboardVotingContract is
         require(
             block.timestamp <
                 vote.startingTime +
-                    dao.getConfiguration(DaoHelper.PROPOSAL_DURATION),
+                    dao.getConfiguration(DaoHelper.VOTING_PERIOD),
             "vote has already ended"
         );
 
@@ -186,6 +187,7 @@ contract GPOnboardVotingContract is
             vote.nbNo = vote.nbNo + votingWeight;
         }
         emit SubmitVote(
+            address(dao),
             proposalId,
             block.timestamp,
             msg.sender,
@@ -227,20 +229,19 @@ contract GPOnboardVotingContract is
         if (
             // slither-disable-next-line timestamp
             block.timestamp <
-            vote.startingTime +
-                dao.getConfiguration(DaoHelper.PROPOSAL_DURATION)
+            vote.startingTime + dao.getConfiguration(DaoHelper.VOTING_PERIOD)
         ) {
             return (VotingState.IN_PROGRESS, vote.nbYes, vote.nbNo);
         }
-        if (
-            // slither-disable-next-line timestamp
-            block.timestamp <
-            vote.startingTime +
-                dao.getConfiguration(DaoHelper.PROPOSAL_DURATION) +
-                dao.getConfiguration(DaoHelper.GracePeriod)
-        ) {
-            return (VotingState.GRACE_PERIOD, vote.nbYes, vote.nbNo);
-        }
+        // if (
+        //     // slither-disable-next-line timestamp
+        //     block.timestamp <
+        //     vote.startingTime +
+        //         dao.getConfiguration(DaoHelper.VOTING_PERIOD) +
+        //         dao.getConfiguration(DaoHelper.GracePeriod)
+        // ) {
+        //     return (VotingState.GRACE_PERIOD, vote.nbYes, vote.nbNo);
+        // }
 
         DaoHelper.VoteType voteType = DaoHelper.VoteType(
             dao.getProposalVoteType(DaoHelper.ProposalType.MEMBERSHIP)

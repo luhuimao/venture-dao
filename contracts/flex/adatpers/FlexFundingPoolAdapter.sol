@@ -6,11 +6,16 @@ import "./FlexFunding.sol";
 import "../../core/DaoRegistry.sol";
 import "../extensions/FlexFundingPool.sol";
 import "../../guards/AdapterGuard.sol";
+import "../../guards/MemberGuard.sol";
+import "../../guards/FlexParticipantGuard.sol";
 import "../../adapters/interfaces/IVoting.sol";
 import "../../helpers/DaoHelper.sol";
+import "../../utils/TypeConver.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
 import "hardhat/console.sol";
 
 /**
@@ -37,8 +42,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
+contract FlexFundingPoolAdapterContract is
+    AdapterGuard,
+    MemberGuard,
+    FlexParticipantGuard,
+    Reimbursable
+{
     using SafeERC20 for IERC20;
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     error FundingProposalNotFinalize();
     error NotInFundRaise();
@@ -46,6 +57,19 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
     error LessMinDepositAmount();
     error ExceedMaxFundingAmount();
     error MaxParticipantReach();
+
+    mapping(address => mapping(bytes32 => EnumerableSet.AddressSet)) participantWhiteList;
+    mapping(address => mapping(bytes32 => ParticipantMembershipInfo))
+        public participantMemberShips;
+    mapping(address => EnumerableSet.AddressSet) priorityDepositWhitelist;
+
+    struct ParticipantMembershipInfo {
+        bool created;
+        uint8 varifyType;
+        uint256 minHolding;
+        address tokenAddress;
+        uint256 tokenId;
+    }
 
     /**
      * @notice Allows the member/advisor of the DAO to withdraw the funds from their internal bank account.
@@ -60,11 +84,6 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
         bytes32 proposalId,
         uint160 amount
     ) external reimbursable(dao) {
-        // require(
-        //     DaoHelper.isNotReservedAddress(account),
-        //     "withdraw::reserved address"
-        // );
-
         // We do not need to check if the token is supported by the bank,
         // because if it is not, the balance will always be zero.
         FlexFundingPoolExtension flexFundingPool = FlexFundingPoolExtension(
@@ -86,40 +105,62 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
             fundRaiseEndTime > block.timestamp ||
             ((fundRaiseEndTime < block.timestamp) &&
                 flexFunding.getProposalState(dao, proposalId) ==
-                IFlexFunding.ProposalStatus.FUND_RAISE_FAILED)
+                IFlexFunding.ProposalStatus.FAILED)
         ) {
             address token = flexFunding.getTokenByProposalId(dao, proposalId);
             flexFundingPool.withdraw(proposalId, msg.sender, token, amount);
         }
     }
 
-    // /**
-    //  * @notice Allows anyone to update the token balance in the bank extension
-    //  * @notice If theres is no available balance in the user's account, the transaction is reverted.
-    //  * @param dao The DAO address.
-    //  * @param token The token address to update.
-    //  */
-    // function updateToken(DaoRegistry dao, address token)
-    //     external
-    //     reentrancyGuard(dao)
-    // {
-    //     // We do not need to check if the token is supported by the bank,
-    //     // because if it is not, the balance will always be zero.
-    //     BankExtension(dao.getExtensionAddress(DaoHelper.BANK)).updateToken(
-    //         token
-    //     );
-    // }
+    function createParticipantMembership(
+        DaoRegistry dao,
+        string calldata name,
+        uint8 varifyType,
+        uint256 minHolding,
+        address tokenAddress,
+        uint256 tokenId
+    ) external onlyMember(dao) {
+        bytes32 hashedName = TypeConver.bytesToBytes32(abi.encodePacked(name));
+        require(
+            !participantMemberShips[address(dao)][hashedName].created,
+            string(
+                abi.encodePacked(
+                    "name ",
+                    name,
+                    " Participant Membership name already taken"
+                )
+            )
+        );
+        participantMemberShips[address(dao)][
+            hashedName
+        ] = ParticipantMembershipInfo(
+            true,
+            varifyType,
+            minHolding,
+            tokenAddress,
+            tokenId
+        );
+    }
 
-    /*
-     * @notice Allows anyone to send eth to the bank extension
-     * @param dao The DAO address.
-     */
-    // function sendEth(DaoRegistry dao) external payable reimbursable(dao) {
-    //     require(msg.value > 0, "no eth sent!");
-    //     BankExtension(dao.getExtensionAddress(DaoHelper.BANK)).addToBalance{
-    //         value: msg.value
-    //     }(DaoHelper.GUILD, DaoHelper.ETH_TOKEN, msg.value);
-    // }
+    function registerParticipantWhiteList(
+        DaoRegistry dao,
+        string calldata name,
+        address account
+    ) external onlyMember(dao) {
+        bytes32 hashedName = TypeConver.bytesToBytes32(abi.encodePacked(name));
+        if (!participantWhiteList[address(dao)][hashedName].contains(account)) {
+            participantWhiteList[address(dao)][hashedName].add(account);
+        }
+    }
+
+    function registerPriorityDepositWhiteList(DaoRegistry dao, address account)
+        external
+        onlyMember(dao)
+    {
+        if (!priorityDepositWhitelist[address(dao)].contains(account)) {
+            priorityDepositWhitelist[address(dao)].add(account);
+        }
+    }
 
     struct DepositLocalVars {
         FlexFundingAdapterContract flexFunding;
@@ -157,12 +198,12 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
             vars.investorsAmount >=
             dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) &&
             !vars.flexFungdingPoolExt.isInvestor(proposalId, msg.sender)
-        ) revert MaxParticipantReach();
-   
+        ) revert("Max Participant Reach");
+
         if (
             vars.flexFunding.getProposalState(dao, proposalId) !=
             IFlexFunding.ProposalStatus.IN_FUND_RAISE_PROGRESS
-        ) revert FundingProposalNotFinalize();
+        ) revert("Funding Proposal Not Finalize");
 
         (vars.fundRaiseStartTime, vars.fundRaiseEndTime) = vars
             .flexFunding
@@ -170,7 +211,7 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
         if (
             block.timestamp < vars.fundRaiseStartTime ||
             block.timestamp > vars.fundRaiseEndTime
-        ) revert NotInFundRaise();
+        ) revert("Not In Fund Raise");
 
         require(amount > 0, "no token sent!");
 
@@ -184,13 +225,13 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
             proposalId
         );
         if (vars.minDepositAmount > 0 && amount < vars.minDepositAmount)
-            revert LessMinDepositAmount();
+            revert("Less Min Deposit Amount");
         if (
             vars.maxDepositAmount > 0 &&
             vars.flexFungdingPoolExt.balanceOf(proposalId, msg.sender) +
                 amount >
             vars.maxDepositAmount
-        ) revert ExceedMaxDepositAmount();
+        ) revert("Exceed Max Deposit Amount");
         if (
             vars.fundRaiseType == IFlexFunding.FundRaiseType.FCSF &&
             vars.maxFundingAmount > 0
@@ -202,7 +243,7 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
                 ) +
                     amount >
                 vars.maxFundingAmount
-            ) revert ExceedMaxFundingAmount();
+            ) revert("Exceed Max Funding Amount");
         }
 
         vars.token = vars.flexFunding.getTokenByProposalId(dao, proposalId);
@@ -281,5 +322,64 @@ contract FlexFundingPoolAdapterContract is AdapterGuard, Reimbursable {
             i += 1;
         }
         return false;
+    }
+
+    function isParticipantWhiteList(
+        DaoRegistry dao,
+        string calldata name,
+        address account
+    ) external view returns (bool) {
+        bytes32 hashedName = TypeConver.bytesToBytes32(abi.encodePacked(name));
+
+        return participantWhiteList[address(dao)][hashedName].contains(account);
+    }
+
+    function getParticipantMembershipInfo(DaoRegistry dao, string calldata name)
+        external
+        view
+        returns (
+            bool created,
+            uint8 varifyType,
+            uint256 minHolding,
+            address tokenAddress,
+            uint256 tokenId
+        )
+    {
+        bytes32 hashedName = TypeConver.bytesToBytes32(abi.encodePacked(name));
+
+        created = participantMemberShips[address(dao)][hashedName].created;
+        varifyType = participantMemberShips[address(dao)][hashedName]
+            .varifyType;
+        minHolding = participantMemberShips[address(dao)][hashedName]
+            .minHolding;
+        tokenAddress = participantMemberShips[address(dao)][hashedName]
+            .tokenAddress;
+        tokenId = participantMemberShips[address(dao)][hashedName].tokenId;
+    }
+
+    function isPriorityDepositWhitelist(DaoRegistry dao, address account)
+        external
+        view
+        returns (bool)
+    {
+        return priorityDepositWhitelist[address(dao)].contains(account);
+    }
+
+    function getPriorityDepositWhitelist(DaoRegistry dao)
+        external
+        view
+        returns (address[] memory)
+    {
+        return priorityDepositWhitelist[address(dao)].values();
+    }
+
+    function getParticipanWhitelist(DaoRegistry dao, string calldata name)
+        external
+        view
+        returns (address[] memory)
+    {
+        bytes32 hashedName = TypeConver.bytesToBytes32(abi.encodePacked(name));
+
+        return participantWhiteList[address(dao)][hashedName].values();
     }
 }

@@ -165,14 +165,9 @@ const depositToFundingPool = async (
   investor,
   amount,
   token) => {
-  // console.log(`FUND_RAISING_WINDOW_BEGIN: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_BEGIN")))}`);
-  // console.log(`FUND_RAISING_WINDOW_END: ${(await dao.getConfiguration(sha3("FUND_RAISING_WINDOW_END")))}`);
-
-  // let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-  // console.log(`current blocktimestamp: ${blocktimestamp}`);
 
   await token.connect(investor).approve(fundingpoolAdapter.address, amount);
-  await fundingpoolAdapter.connect(investor).deposit(dao.address, amount);
+  await fundingpoolAdapter.connect(investor).deposit(dao, amount);
   console.log(`
       ${investor.address} deposit ${amount.toString()}
   `);

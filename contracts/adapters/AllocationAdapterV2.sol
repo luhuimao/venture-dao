@@ -2,13 +2,11 @@ pragma solidity ^0.8.0;
 
 // SPDX-License-Identifier: MIT
 
-import "../helpers/DaoHelper.sol";
+// import "../helpers/DaoHelper.sol";
 import "hardhat/console.sol";
 import "../guards/AdapterGuard.sol";
 import "../extensions/fundingpool/FundingPool.sol";
-// import "../extensions/ricestaking/RiceStaking.sol";
 import "../extensions/gpdao/GPDao.sol";
-// import "./vesting/contracts/base/FuroVesting.sol";
 import "./FundingPoolAdapter.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -67,7 +65,12 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         uint256 gpAllocationBonusRadio,
         uint256 riceStakeAllocationRadio
     );
-    event AllocateToken(bytes32 proposalId, address proposer, address[] lps);
+    event AllocateToken(
+        address daoAddr,
+        bytes32 proposalId,
+        address proposer,
+        address[] lps
+    );
 
     /**
      * @notice Configures the DAO with the Voting and Gracing periods.
@@ -195,12 +198,6 @@ contract AllocationAdapterContractV2 is AdapterGuard {
         vars.vestingStepDuration = uint256Args[3];
         vars.vestingSteps = uint256Args[4];
 
-        // vars.streamingPaymentContract = ISablier(
-        //     dao.getAdapterAddress(DaoHelper.STREAMING_PAYMENT_ADAPT)
-        // );
-        // vars.vestingContract = IFuroVesting(
-        //     dao.getAdapterAddress(DaoHelper.VESTWING)
-        // );
         vars.fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
@@ -240,14 +237,6 @@ contract AllocationAdapterContractV2 is AdapterGuard {
                 );
                 //bug fixed: fillter fundingRewards > 0 ;20220614
                 if (vars.fundingRewards > 0) {
-                    // vars.streamingPaymentContract.createStream(
-                    //     allInvestors[i],
-                    //     fundingRewards,
-                    //     tokenAddress,
-                    //     startTime,
-                    //     stopTime,
-                    //     proposalId
-                    // );
                     vestingInfos[address(dao)][proposalId][
                         allInvestors[vars.i]
                     ] = VestingInfo(vars.fundingRewards, false);
@@ -263,14 +252,6 @@ contract AllocationAdapterContractV2 is AdapterGuard {
                 vars.tokenAmount
             );
             if (vars.proposerBonus > 0) {
-                // vars.streamingPaymentContract.createStream(
-                //     proposerAddr,
-                //     proposerBonus,
-                //     tokenAddress,
-                //     startTime,
-                //     stopTime,
-                //     proposalId
-                // );
                 vestingInfos[address(dao)][proposalId][
                     proposerAddr
                 ] = VestingInfo(
@@ -285,7 +266,12 @@ contract AllocationAdapterContractV2 is AdapterGuard {
             vars.totalReward <= vars.tokenAmount,
             "AllocationAdapter::allocateProjectToken::distribute token amount exceeds tranding off amount"
         );
-        emit AllocateToken(proposalId, proposerAddr, allInvestors);
+        emit AllocateToken(
+            address(dao),
+            proposalId,
+            proposerAddr,
+            allInvestors
+        );
     }
 
     function streamCreated(

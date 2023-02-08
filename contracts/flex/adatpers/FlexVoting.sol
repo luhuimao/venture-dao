@@ -3,11 +3,13 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 
 import "../../core/DaoRegistry.sol";
-import "../../extensions/bank/Bank.sol";
+// import "../../extensions/bank/Bank.sol";
 import "../../guards/MemberGuard.sol";
 import "../../guards/AdapterGuard.sol";
+import "../../guards/FlexPollsterGuard.sol";
 import "./interfaces/IFlexVoting.sol";
 import "../../helpers/DaoHelper.sol";
+import "./FlexFunding.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "../../helpers/GovernanceHelper.sol";
 import "hardhat/console.sol";
@@ -40,13 +42,14 @@ contract FlexVotingContract is
     IFlexVoting,
     MemberGuard,
     AdapterGuard,
+    FlexPollsterGuard,
     Reimbursable
 {
     struct Voting {
         uint256 nbYes;
         uint256 nbNo;
         uint256 startingTime;
-        uint256 blockNumber;
+        uint256 stopTime;
         mapping(address => uint256) votes;
     }
 
@@ -65,17 +68,6 @@ contract FlexVotingContract is
     }
 
     /**
-     * @notice Configures the DAO with the Voting and Gracing periods.
-     * @param votingPeriod The voting period in seconds.
-     * @param gracePeriod The grace period in seconds.
-     */
-    // function configureDao(
-    //     DaoRegistry dao,
-    //     uint256 votingPeriod,
-    //     uint256 gracePeriod
-    // ) external onlyAdapter(dao) {}
-
-    /**
      * @notice Stats a new voting proposal considering the block time and number.
      * @notice This function is called from an Adapter to compute the voting starting period for a proposal.
      * @param proposalId The proposal id that is being started.
@@ -87,7 +79,9 @@ contract FlexVotingContract is
     ) external override onlyAdapter(dao) {
         Voting storage vote = votes[address(dao)][proposalId];
         vote.startingTime = block.timestamp;
-        vote.blockNumber = block.number;
+        vote.stopTime =
+            block.timestamp +
+            dao.getConfiguration(DaoHelper.FLEX_POLLING_VOTING_PERIOD);
     }
 
     /**
@@ -115,11 +109,11 @@ contract FlexVotingContract is
      */
     // The function is protected against reentrancy with the reimbursable modifier
     //slither-disable-next-line reentrancy-no-eth,reentrancy-benign
-    function submitVote(
+    function submitFundingVote(
         DaoRegistry dao,
         bytes32 proposalId,
         uint256 voteValue
-    ) external OnlyVoter(dao) reimbursable(dao) {
+    ) external onlyPollster(dao) reimbursable(dao) {
         require(
             dao.getProposalFlag(proposalId, DaoRegistry.ProposalFlag.SPONSORED),
             "the proposal has not been sponsored yet"
@@ -145,11 +139,7 @@ contract FlexVotingContract is
             "this proposalId has no vote going on at the moment"
         );
         // slither-disable-next-line timestamp
-        require(
-            block.timestamp <
-                vote.startingTime + dao.getConfiguration(VotingPeriod),
-            "vote has already ended"
-        );
+        require(block.timestamp < vote.stopTime, "vote has already ended");
 
         address memberAddr = dao.getAddressIfDelegated(msg.sender);
 
@@ -158,10 +148,8 @@ contract FlexVotingContract is
         vote.votes[memberAddr] = voteValue;
 
         if (voteValue == 1) {
-            // vote.nbYes = vote.nbYes + votingWeight;
             vote.nbYes += 1;
         } else if (voteValue == 2) {
-            // vote.nbNo = vote.nbNo + votingWeight;
             vote.nbNo += 1;
         }
     }
@@ -192,27 +180,18 @@ contract FlexVotingContract is
 
         if (
             // slither-disable-next-line timestamp
-            block.timestamp <
-            vote.startingTime + dao.getConfiguration(VotingPeriod)
+            block.timestamp < vote.stopTime
         ) {
             return VotingState.IN_PROGRESS;
         }
-        if (
-            // slither-disable-next-line timestamp
-            block.timestamp <
-            vote.startingTime +
-                dao.getConfiguration(VotingPeriod) +
-                dao.getConfiguration(GracePeriod)
-        ) {
-            return VotingState.GRACE_PERIOD;
-        }
 
-        if (vote.nbYes > vote.nbNo) {
+        if (
+            vote.nbYes - vote.nbNo >
+            dao.getConfiguration(DaoHelper.SUPER_MAJORITY)
+        ) {
             return VotingState.PASS;
-        } else if (vote.nbYes < vote.nbNo) {
-            return VotingState.NOT_PASS;
         } else {
-            return VotingState.TIE;
+            return VotingState.NOT_PASS;
         }
     }
 }

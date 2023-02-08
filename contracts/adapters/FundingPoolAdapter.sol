@@ -5,14 +5,15 @@ pragma solidity ^0.8.0;
 import "../core/DaoRegistry.sol";
 import "../extensions/fundingpool/FundingPool.sol";
 import "../extensions/gpdao/GPDao.sol";
-import "../extensions/bank/Bank.sol";
-import "../guards/AdapterGuard.sol";
-import "../guards/MemberGuard.sol";
+// import "../guards/AdapterGuard.sol";
+// import "../guards/MemberGuard.sol";
 import "../adapters/interfaces/IGPVoting.sol";
 import "../helpers/DaoHelper.sol";
 import "./modifiers/Reimbursable.sol";
 import "./voting/GPVoting.sol";
+import "./FundRaise.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
 
 /**
@@ -40,27 +41,20 @@ SOFTWARE.
  */
 
 contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
-    /* ========== STATE VARIABLES ========== */
-    DaoHelper.FundRaiseState public fundRaisingState;
+    using EnumerableSet for EnumerableSet.AddressSet;
 
-    /* ========== MODIFIER ========== */
-    // modifier processFundRaise(DaoRegistry dao) {
-    //     uint256 fundRaiseTarget = dao.getConfiguration(
-    //         DaoHelper.FUND_RAISING_TARGET
-    //     );
-    //     uint256 fundRaiseEndTime = dao.getConfiguration(
-    //         DaoHelper.FUND_RAISING_WINDOW_END
-    //     );
-    //     if (
-    //         block.timestamp > fundRaiseEndTime &&
-    //         fundRaisingState == DaoHelper.FundRaiseState.IN_PROGRESS
-    //     ) {
-    //         if (lpBalance(dao) >= fundRaiseTarget)
-    //             fundRaisingState = DaoHelper.FundRaiseState.DONE;
-    //         else fundRaisingState = DaoHelper.FundRaiseState.FAILED;
-    //     }
-    //     _;
-    // }
+    /* ========== STATE VARIABLES ========== */
+    // DaoHelper.FundRaiseState public fundRaisingState;
+    mapping(address => DaoHelper.FundRaiseState) public daoFundRaisingStates;
+    uint256 public protocolFee = 3;
+    mapping(address => mapping(uint256 => EnumerableSet.AddressSet)) fundParticipants;
+    event OwnerChanged(address oldOwner, address newOwner);
+
+    /// @dev Prevents calling a function from anyone except the address returned by owner
+    modifier onlyDaoFactoryOwner(DaoRegistry dao) {
+        require(msg.sender == DaoHelper.daoFactoryAddress(dao));
+        _;
+    }
 
     /**
      * @notice Updates the DAO registry with the new configurations if valid.
@@ -70,16 +64,15 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         DaoRegistry dao,
         uint32 quorum,
         uint32 superMajority
-    ) external onlyAdapter(dao) {
-        require(
-            quorum <= 100 &&
-                quorum >= 1 &&
-                superMajority >= 1 &&
-                superMajority <= 100,
-            "GPDaoOnboarding::configureDao::invalid quorum, superMajority"
-        );
-        dao.setConfiguration(DaoHelper.QUORUM, quorum);
-        dao.setConfiguration(DaoHelper.SUPER_MAJORITY, superMajority);
+    ) external onlyAdapter(dao) {}
+
+    function setProtocolFee(DaoRegistry dao, uint256 feeProtocol)
+        external
+        reentrancyGuard(dao)
+        onlyDaoFactoryOwner(dao)
+    {
+        require(feeProtocol < 100 && feeProtocol > 0);
+        protocolFee = feeProtocol;
     }
 
     /**
@@ -95,10 +88,13 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
     {
         processFundRaise(dao);
         require(
-            fundRaisingState == DaoHelper.FundRaiseState.FAILED ||
-                (fundRaisingState == DaoHelper.FundRaiseState.DONE &&
+            daoFundRaisingStates[address(dao)] ==
+                DaoHelper.FundRaiseState.FAILED ||
+                (daoFundRaisingStates[address(dao)] ==
+                    DaoHelper.FundRaiseState.DONE &&
                     ifInRedemptionPeriod(dao, block.timestamp)) ||
-                (fundRaisingState == DaoHelper.FundRaiseState.DONE &&
+                (daoFundRaisingStates[address(dao)] ==
+                    DaoHelper.FundRaiseState.DONE &&
                     block.timestamp >
                     dao.getConfiguration(DaoHelper.FUND_END_TIME)),
             "FundingPoolAdapter::Withdraw::Cant withdraw at this time"
@@ -117,7 +113,8 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
 
         uint256 redemptionFee = 0;
         if (
-            fundRaisingState == DaoHelper.FundRaiseState.DONE &&
+            daoFundRaisingStates[address(dao)] ==
+            DaoHelper.FundRaiseState.DONE &&
             ifInRedemptionPeriod(dao, block.timestamp)
         ) {
             //distribute redemption fee to GP
@@ -141,6 +138,16 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         fundingpool.withdraw(msg.sender, amount - redemptionFee);
 
         fundingpool.subtractFromBalance(msg.sender, tokenAddr, amount);
+
+        if (balanceOf(dao, msg.sender) <= 0) {
+            FundRaiseAdapterContract fundRaiseContract = FundRaiseAdapterContract(
+                    dao.getAdapterAddress(DaoHelper.FUND_RAISE)
+                );
+            uint256 fundRounds = fundRaiseContract.createdFundCounter(
+                address(dao)
+            );
+            _removeFundParticipant(dao, msg.sender, fundRounds);
+        }
     }
 
     /**
@@ -152,9 +159,12 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
      */
     function deposit(DaoRegistry dao, uint256 amount)
         external
-        // reentrancyGuard(dao)
         reimbursable(dao)
     {
+        require(
+            amount > 0,
+            "FundingPoolAdapter::Deposit:: invalid deposit amount"
+        );
         uint256 maxDepositAmount = dao.getConfiguration(
             DaoHelper.FUND_RAISING_MAX_INVESTMENT_AMOUNT_OF_LP
         );
@@ -174,10 +184,7 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
                 "FundingPoolAdapter::Deposit::deposit amount cant greater than max deposit amount"
             );
         }
-        require(
-            amount > 0,
-            "FundingPoolAdapter::Deposit:: invalid deposit amount"
-        );
+
         require(
             dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN) <
                 block.timestamp &&
@@ -195,6 +202,17 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
+        // max participant check
+        FundRaiseAdapterContract fundRaiseContract = FundRaiseAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FUND_RAISE)
+        );
+        uint256 fundRounds = fundRaiseContract.createdFundCounter(address(dao));
+        if (
+            dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS_ENABLE) == 1 &&
+            fundParticipants[address(dao)][fundRounds].length() >=
+            dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) &&
+            !fundParticipants[address(dao)][fundRounds].contains(msg.sender)
+        ) revert("exceed max participants amount");
         address token = fundingpool.getFundRaisingTokenAddress();
         IERC20(token).transferFrom(msg.sender, address(this), amount);
         IERC20(token).approve(
@@ -202,6 +220,7 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
             amount
         );
         fundingpool.addToBalance(msg.sender, amount);
+        _addFundParticipant(dao, msg.sender, fundRounds);
     }
 
     function processFundRaise(DaoRegistry dao) public returns (bool) {
@@ -213,11 +232,17 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         );
         if (
             block.timestamp > fundRaiseEndTime &&
-            fundRaisingState == DaoHelper.FundRaiseState.IN_PROGRESS
+            daoFundRaisingStates[address(dao)] ==
+            DaoHelper.FundRaiseState.IN_PROGRESS
         ) {
             if (lpBalance(dao) >= fundRaiseTarget)
-                fundRaisingState = DaoHelper.FundRaiseState.DONE;
-            else fundRaisingState = DaoHelper.FundRaiseState.FAILED;
+                daoFundRaisingStates[address(dao)] = DaoHelper
+                    .FundRaiseState
+                    .DONE;
+            else
+                daoFundRaisingStates[address(dao)] = DaoHelper
+                    .FundRaiseState
+                    .FAILED;
         }
     }
 
@@ -226,30 +251,27 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
             msg.sender == dao.getAdapterAddress(DaoHelper.FUND_RAISE),
             "FundingPoolAdapter::resetFundRaiseState::Access deny"
         );
-        fundRaisingState = DaoHelper.FundRaiseState.IN_PROGRESS;
+        daoFundRaisingStates[address(dao)] = DaoHelper
+            .FundRaiseState
+            .IN_PROGRESS;
     }
 
-    // function recoverERC20(
-    //     DaoRegistry dao,
-    //     address tokenAddress,
-    //     uint256 tokenAmount
-    // ) external onlyMember(dao) reimbursable(dao) {
-    //     FundingPoolExtension fundingpool = FundingPoolExtension(
-    //         dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-    //     );
-    //     fundingpool.recoverERC20(tokenAddress, tokenAmount, msg.sender);
-    // }
+    function _addFundParticipant(
+        DaoRegistry dao,
+        address account,
+        uint256 fundRound
+    ) internal {
+        if (!fundParticipants[address(dao)][fundRound].contains(account))
+            fundParticipants[address(dao)][fundRound].add(account);
+    }
 
-    // function setRiceTokenAddress(DaoRegistry dao, address riceAddr)
-    //     external
-    //     onlyMember(dao)
-    //     reimbursable(dao)
-    // {
-    //     FundingPoolExtension fundingpool = FundingPoolExtension(
-    //         dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-    //     );
-    //     fundingpool.setRiceTokenAddress(riceAddr);
-    // }
+    function _removeFundParticipant(
+        DaoRegistry dao,
+        address account,
+        uint256 fundRound
+    ) internal {
+        fundParticipants[address(dao)][fundRound].remove(account);
+    }
 
     function balanceOf(DaoRegistry dao, address investorAddr)
         public
@@ -367,9 +389,9 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
             redemptionDuration <= 0 ||
             fundDuration <= 0
         ) return (0, 0);
-        DaoHelper.RedemptionType redemptionT = DaoHelper.RedemptionType(
-            dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION)
-        );
+        // DaoHelper.RedemptionType redemptionT = DaoHelper.RedemptionType(
+        //     dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION)
+        // );
 
         uint256 redemptionEndTime = fundStartTime + redemptionPeriod;
         uint256 redemptionStartTime = redemptionEndTime - redemptionDuration;
@@ -437,9 +459,5 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
             i += 1;
         }
         return false;
-    }
-
-    function getProtocolFee(DaoRegistry dao) external view returns (uint256) {
-        return dao.getConfiguration(DaoHelper.PROTOCOL_FEE);
     }
 }

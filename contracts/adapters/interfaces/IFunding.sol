@@ -73,23 +73,12 @@ interface IFunding {
     }
 
     event ProposalCreated(
-        bytes32 proposalId,
-        address projectTokenAddress,
-        address projectTeamAddress,
-        address approveOwnerAddress,
-        uint256 tradingOffTokenAmount,
-        uint256 requestedFundAmount,
-        uint256 vestingStartTime,
-        uint256 vestingCliffDuration,
-        uint256 vestingStepDuration,
-        uint256 vestingSteps,
-        uint256 inQueueTimestamp,
-        uint256 voteStartingTimestamp,
-        uint256 voteEndTimestamp,
-        uint256 proposalExecuteTimestamp
+        address daoAddr,
+        bytes32 proposalId
     );
 
     event StartVote(
+        address daoAddr,
         bytes32 proposalID,
         uint256 startVoteTime,
         uint256 stopVoteTime,
@@ -97,6 +86,7 @@ interface IFunding {
     );
 
     event ProposalExecuted(
+        address daoAddr,
         bytes32 proposalID,
         uint256 state,
         uint128 allVotingWeight,

@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract FlexFundingPoolExtension is IExtension, ERC165 {
+contract FlexFundingPoolExtension is IExtension, MemberGuard, ERC165 {
     using Address for address payable;
     using SafeERC20 for IERC20;
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -96,6 +96,15 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
         uint96 fromBlock;
         uint160 amount;
     }
+
+    struct ParticipantMembership {
+        string name;
+        uint8 varifyType;
+        uint256 minHolding;
+        address tokenAddress;
+        uint256 tokenId;
+        address[] whiteList;
+    }
     /*
      * PUBLIC VARIABLES
      */
@@ -109,6 +118,7 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
         public checkpoints;
     // proposalId => memberAddress => numCheckpoints
     mapping(bytes32 => mapping(address => uint32)) public numCheckpoints;
+    mapping(string => ParticipantMembership) public participantMemberships;
     /*
      * PRIVATE VARIABLES
      */
@@ -171,11 +181,8 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
             "flex funding pool::withdraw::not enough funds"
         );
         subtractFromBalance(proposalId, member, amount);
-        // if (tokenAddr == DaoHelper.ETH_TOKEN) {
-        //     member.sendValue(amount);
-        // } else {
+
         IERC20(tokenAddr).safeTransfer(member, amount);
-        // }
 
         //slither-disable-next-line reentrancy-events
         emit Withdraw(proposalId, member, tokenAddr, uint160(amount));
@@ -221,11 +228,7 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
         );
         address[] memory tem = investors[proposalId].values();
 
-        // if (tokenAddr == DaoHelper.ETH_TOKEN) {
-        //     memberTo.sendValue(amount);
-        // } else {
         IERC20(tokenAddr).safeTransfer(toAddress, amount);
-        // }
 
         //slither-disable-next-line reentrancy-events
         emit WithdrawToFromAll(
@@ -235,35 +238,6 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
             uint160(amount)
         );
     }
-
-    /**
-     * @return Whether or not the given token is an available internal token in the bank
-     * @param token The address of the token to look up
-     */
-    // function isInternalToken(address token) external view returns (bool) {
-    //     return availableInternalTokens[token];
-    // }
-
-    /**
-     * @return Whether or not the given token is an available token in the bank
-     * @param token The address of the token to look up
-     */
-    // function isTokenAllowed(address token) public view returns (bool) {
-    //     return availableTokens[token];
-    // }
-
-    /**
-     * @notice Sets the maximum amount of external tokens allowed in the bank
-     * @param maxTokens The maximum amount of token allowed
-     */
-    // function setMaxExternalTokens(uint8 maxTokens) external {
-    //     require(!initialized, "bank already initialized");
-    //     require(
-    //         maxTokens > 0 && maxTokens <= DaoHelper.MAX_TOKENS_GUILD_BANK,
-    //         "max number of external tokens should be (0,200)"
-    //     );
-    //     maxExternalTokens = maxTokens;
-    // }
 
     /*
      * BANK
@@ -292,100 +266,12 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
     }
 
     /**
-     * @notice Registers a potential new internal token in the bank
-     * @dev Can not be a reserved token or an available token
-     * @param token The address of the token
-     */
-    // function registerPotentialNewInternalToken(address token)
-    //     external
-    //     hasExtensionAccess(AclFlag.REGISTER_NEW_INTERNAL_TOKEN)
-    // {
-    //     require(DaoHelper.isNotReservedAddress(token), "reservedToken");
-    //     require(!availableTokens[token], "availableToken");
-
-    //     if (!availableInternalTokens[token]) {
-    //         availableInternalTokens[token] = true;
-    //         internalTokens.push(token);
-    //     }
-    // }
-
-    // function updateToken(address tokenAddr)
-    //     external
-    //     hasExtensionAccess(AclFlag.UPDATE_TOKEN)
-    // {
-    //     require(isTokenAllowed(tokenAddr), "token not allowed");
-    //     uint256 totalBalance = balanceOf(DaoHelper.TOTAL, tokenAddr);
-
-    //     uint256 realBalance;
-
-    //     if (tokenAddr == DaoHelper.ETH_TOKEN) {
-    //         realBalance = address(this).balance;
-    //     } else {
-    //         IERC20 erc20 = IERC20(tokenAddr);
-    //         realBalance = erc20.balanceOf(address(this));
-    //     }
-
-    //     if (totalBalance < realBalance) {
-    //         addToBalance(
-    //             DaoHelper.GUILD,
-    //             tokenAddr,
-    //             realBalance - totalBalance
-    //         );
-    //     } else if (totalBalance > realBalance) {
-    //         uint256 tokensToRemove = totalBalance - realBalance;
-    //         uint256 guildBalance = balanceOf(DaoHelper.GUILD, tokenAddr);
-    //         if (guildBalance > tokensToRemove) {
-    //             subtractFromBalance(DaoHelper.GUILD, tokenAddr, tokensToRemove);
-    //         } else {
-    //             subtractFromBalance(DaoHelper.GUILD, tokenAddr, guildBalance);
-    //         }
-    //     }
-    // }
-
-    /**
      * Public read-only functions
      */
 
     /**
      * Internal bookkeeping
      */
-
-    /**
-     * @return The token from the bank of a given index
-     * @param index The index to look up in the bank's tokens
-     */
-    // function getToken(uint256 index) external view returns (address) {
-    //     return tokens[index];
-    // }
-
-    /**
-     * @return The amount of token addresses in the bank
-     */
-    // function nbTokens() external view returns (uint256) {
-    //     return tokens.length;
-    // }
-
-    /**
-     * @return All the tokens registered in the bank.
-     */
-    // function getTokens() external view returns (address[] memory) {
-    //     return tokens;
-    // }
-
-    /**
-     * @return The internal token at a given index
-     * @param index The index to look up in the bank's array of internal tokens
-     */
-    // function getInternalToken(uint256 index) external view returns (address) {
-    //     return internalTokens[index];
-    // }
-
-    /**
-     * @return The amount of internal token addresses in the bank
-     */
-    // function nbInternalTokens() external view returns (uint256) {
-    //     return internalTokens.length;
-    // }
 
     /**
      * @notice Adds to a member's balance of a given token
@@ -445,6 +331,29 @@ contract FlexFundingPoolExtension is IExtension, ERC165 {
                 );
             }
         }
+    }
+
+    function createParticipantMembership(
+        string calldata name,
+        uint8 varifyType,
+        uint256 miniHolding,
+        address token,
+        uint256 tokenId,
+        address[] calldata whiteList
+    ) external onlyMember(dao) {
+        if (
+            keccak256(bytes(name)) ==
+            keccak256(bytes(participantMemberships[name].name))
+        ) revert("name already token");
+
+        participantMemberships[name] = ParticipantMembership(
+            name,
+            varifyType,
+            miniHolding,
+            token,
+            tokenId,
+            whiteList
+        );
     }
 
     /**

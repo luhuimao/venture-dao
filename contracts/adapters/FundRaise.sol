@@ -4,16 +4,13 @@ pragma solidity ^0.8.0;
 
 import "../core/DaoRegistry.sol";
 import "../guards/AdapterGuard.sol";
-import "../guards/MemberGuard.sol";
+import "../guards/RaiserGuard.sol";
 import "./modifiers/Reimbursable.sol";
-// import "./AllocationAdapterV2.sol";
 import "./interfaces/IFundRaise.sol";
 import "./voting/GPVoting.sol";
 import "../helpers/FairShareHelper.sol";
 import "../helpers/DaoHelper.sol";
-import "../extensions/bank/Bank.sol";
 import "../extensions/fundingpool/FundingPool.sol";
-import "../extensions/ricestaking/RiceStaking.sol";
 import "../utils/TypeConver.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
@@ -47,7 +44,7 @@ SOFTWARE.
 contract FundRaiseAdapterContract is
     IFundRaise,
     AdapterGuard,
-    MemberGuard,
+    RaiserGuard,
     Reimbursable
 {
     /*
@@ -55,10 +52,9 @@ contract FundRaiseAdapterContract is
      */
     // Keeps track of all the Proposals executed per DAO.
     mapping(address => mapping(bytes32 => ProposalDetails)) public Proposals;
-    uint256 public proposalIds = 100034;
-    uint256 public fundsCounter = 1;
-    bytes32 public latestProposalId;
-    bytes32 public previousProposalId;
+    uint256 public proposalIds = 1;
+    mapping(address => uint256) public createdFundCounter;
+    mapping(address => bytes32) public lastProposalIds;
 
     /*
      * STRUCTURES
@@ -83,79 +79,82 @@ contract FundRaiseAdapterContract is
     _addressArgs[1]:fundRaiseTokenAddress
     */
     function submitProposal(
-        DaoRegistry dao,
-        uint256[] calldata _uint256ArgsProposal,
-        uint256[] calldata _uint256ArgsTimeInfo,
-        uint256[] calldata _uint256ArgsFeeInfo,
-        address[] calldata _addressArgs
-    ) external override reimbursable(dao) onlyGeneralPartner(dao) {
+        // DaoRegistry dao,
+        // uint256[] calldata _uint256ArgsProposal,
+        // uint256[] calldata _uint256ArgsTimeInfo,
+        // uint256[] calldata _uint256ArgsFeeInfo,
+        // address[] calldata _addressArgs
+        ProposalParams calldata params
+    )
+        external
+        override
+        reimbursable(params.dao)
+        onlyRaiser(params.dao)
+    {
+        if (
+            lastProposalIds[address(params.dao)] != bytes32(0x0) &&
+            (Proposals[address(params.dao)][
+                lastProposalIds[address(params.dao)]
+            ].state ==
+                ProposalState.Voting ||
+                Proposals[address(params.dao)][
+                    lastProposalIds[address(params.dao)]
+                ].state ==
+                ProposalState.Executing)
+        ) revert("last fund raise proposal not finalized");
         SubmitProposalLocalVars memory vars;
 
-        vars.lastFundEndTime = dao.getConfiguration(DaoHelper.FUND_END_TIME);
-        vars.returnDuration = dao.getConfiguration(DaoHelper.RETURN_DURATION);
+        vars.lastFundEndTime = params.dao.getConfiguration(
+            DaoHelper.FUND_END_TIME
+        );
+        vars.returnDuration = params.dao.getConfiguration(
+            DaoHelper.RETURN_DURATION
+        );
         vars.fundingPoolAdapt = FundingPoolAdapterContract(
-            dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
+            params.dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
         );
         require(
-            vars.fundingPoolAdapt.fundRaisingState() ==
+            vars.fundingPoolAdapt.daoFundRaisingStates(address(params.dao)) ==
+                DaoHelper.FundRaiseState.NOT_STARTED ||
+                vars.fundingPoolAdapt.daoFundRaisingStates(
+                    address(params.dao)
+                ) ==
                 DaoHelper.FundRaiseState.FAILED ||
-                (vars.fundingPoolAdapt.fundRaisingState() ==
+                (vars.fundingPoolAdapt.daoFundRaisingStates(
+                    address(params.dao)
+                ) ==
                     DaoHelper.FundRaiseState.DONE &&
                     block.timestamp >
                     vars.lastFundEndTime + vars.returnDuration),
             "FundRaise::submitProposal::cant submit fund raise proposal now"
         );
-        require(
-            _uint256ArgsProposal.length == 4 &&
-                _uint256ArgsTimeInfo.length == 6 &&
-                _uint256ArgsFeeInfo.length == 3 &&
-                _addressArgs.length == 2,
-            "FundRaise::submitProposal::invalid parameter number"
-        );
 
-        // vars.fundRaiseTokenAddr = dao.getAddressConfiguration(
-        //     DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
-        // );
-        vars.managementFeeAddress = _addressArgs[0];
-        vars.fundRaiseTokenAddr = _addressArgs[1];
-
-        vars.fundRaiseTarget = _uint256ArgsProposal[0];
-        vars.fundRaiseMaxAmount = _uint256ArgsProposal[1];
-        vars.lpMinDepositAmount = _uint256ArgsProposal[2];
-        vars.lpMaxDepositAmount = _uint256ArgsProposal[3];
-
-        vars.fundRaiseStartTime = _uint256ArgsTimeInfo[0];
-        vars.fundRaiseEndTime = _uint256ArgsTimeInfo[1];
-        vars.fundTerm = _uint256ArgsTimeInfo[2];
-        vars.redemptPeriod = _uint256ArgsTimeInfo[3];
-        vars.redemptDuration = _uint256ArgsTimeInfo[4];
-        vars.returnDuration = _uint256ArgsTimeInfo[5];
-
-        vars.proposerRewardRatio = _uint256ArgsFeeInfo[0];
-        vars.managementFeeRatio = _uint256ArgsFeeInfo[1];
-        vars.redepmtFeeRatio = _uint256ArgsFeeInfo[2];
-        vars.protocolFeeRatio = dao.getConfiguration(DaoHelper.PROTOCOL_FEE);
+        vars.protocolFeeRatio = vars.fundingPoolAdapt.protocolFee();
         if (
-            vars.fundRaiseTarget <= vars.fundingPoolAdapt.lpBalance(dao) ||
-            vars.fundRaiseTarget < 0 ||
-            (vars.fundRaiseMaxAmount > 0 &&
-                vars.fundRaiseMaxAmount < vars.fundRaiseTarget) ||
-            vars.lpMinDepositAmount < 0 ||
-            (vars.lpMaxDepositAmount > 0 &&
-                vars.lpMaxDepositAmount < vars.lpMinDepositAmount) ||
-            vars.fundRaiseStartTime <= 0 ||
-            vars.fundRaiseEndTime <= 0 ||
-            vars.fundRaiseEndTime < vars.fundRaiseStartTime ||
-            vars.fundTerm <= 0 ||
-            vars.redemptPeriod <= 0 ||
-            vars.redemptDuration <= 0 ||
-            vars.returnDuration <= 0 ||
-            vars.proposerRewardRatio >= 100 ||
-            vars.proposerRewardRatio < 0 ||
-            vars.managementFeeRatio >= 100 ||
-            vars.managementFeeRatio < 0 ||
-            vars.redepmtFeeRatio >= 100 ||
-            vars.redepmtFeeRatio < 0
+            params.proposalFundRaiseInfo.fundRaiseTarget <=
+            vars.fundingPoolAdapt.lpBalance(params.dao) ||
+            params.proposalFundRaiseInfo.fundRaiseTarget < 0 ||
+            (params.proposalFundRaiseInfo.fundRaiseMaxAmount > 0 &&
+                params.proposalFundRaiseInfo.fundRaiseMaxAmount <
+                params.proposalFundRaiseInfo.fundRaiseTarget) ||
+            params.proposalFundRaiseInfo.lpMinDepositAmount < 0 ||
+            (params.proposalFundRaiseInfo.lpMaxDepositAmount > 0 &&
+                params.proposalFundRaiseInfo.lpMaxDepositAmount <
+                params.proposalFundRaiseInfo.lpMinDepositAmount) ||
+            params.proposalTimeInfo.fundRaiseStartTime <= 0 ||
+            params.proposalTimeInfo.fundRaiseEndTime <= 0 ||
+            params.proposalTimeInfo.fundRaiseEndTime <
+            params.proposalTimeInfo.fundRaiseStartTime ||
+            params.proposalTimeInfo.fundTerm <= 0 ||
+            params.proposalTimeInfo.redemptPeriod <= 0 ||
+            params.proposalTimeInfo.redemptDuration <= 0 ||
+            params.proposalTimeInfo.returnDuration <= 0 ||
+            params.proposalFeeInfo.proposerRewardRatio >= 100 ||
+            params.proposalFeeInfo.proposerRewardRatio < 0 ||
+            params.proposalFeeInfo.managementFeeRatio >= 100 ||
+            params.proposalFeeInfo.managementFeeRatio < 0 ||
+            params.proposalFeeInfo.redepmtFeeRatio >= 100 ||
+            params.proposalFeeInfo.redepmtFeeRatio < 0
             // vars.protocolFeeRatio >= 100 ||
             // vars.protocolFeeRatio < 0
         ) {
@@ -182,87 +181,87 @@ contract FundRaiseAdapterContract is
         //     "FundRaise::submitProposal::invalid parameter"
         // );
         vars.gpVotingContract = IGPVoting(
-            dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
+            params.dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
         );
 
         vars.submittedBy = vars.gpVotingContract.getSenderAddress(
-            dao,
+            params.dao,
             address(this),
             bytes(""),
             msg.sender
         );
 
         vars.proposalId = TypeConver.bytesToBytes32(
-            abi.encodePacked("TFRP#", Strings.toString(proposalIds))
+            abi.encodePacked("Fundraise#", Strings.toString(proposalIds))
         );
 
-        dao.submitProposal(vars.proposalId);
+        params.dao.submitProposal(vars.proposalId);
 
         // Saves the state of the proposal.
-        Proposals[address(dao)][vars.proposalId] = ProposalDetails(
-            vars.fundRaiseTokenAddr,
-            vars.fundRaiseTarget,
-            vars.fundRaiseMaxAmount,
-            vars.lpMinDepositAmount,
-            vars.lpMaxDepositAmount,
+        Proposals[address(params.dao)][vars.proposalId] = ProposalDetails(
+            params.proposalAddressInfo.fundRaiseTokenAddress,
+            params.proposalFundRaiseInfo.fundRaiseTarget,
+            params.proposalFundRaiseInfo.fundRaiseMaxAmount,
+            params.proposalFundRaiseInfo.lpMinDepositAmount,
+            params.proposalFundRaiseInfo.lpMaxDepositAmount,
             FundRiaseTimeInfo(
-                vars.fundRaiseStartTime,
-                vars.fundRaiseEndTime,
-                vars.fundTerm,
-                vars.redemptPeriod,
-                vars.redemptDuration,
-                vars.returnDuration
+                params.proposalTimeInfo.fundRaiseStartTime,
+                params.proposalTimeInfo.fundRaiseEndTime,
+                params.proposalTimeInfo.fundTerm,
+                params.proposalTimeInfo.redemptPeriod,
+                params.proposalTimeInfo.redemptDuration,
+                params.proposalTimeInfo.returnDuration
             ),
             FundRaiseRewardAndFeeInfo(
-                vars.proposerRewardRatio,
-                vars.managementFeeRatio,
-                vars.redepmtFeeRatio,
+                params.proposalFeeInfo.proposerRewardRatio,
+                params.proposalFeeInfo.managementFeeRatio,
+                params.proposalFeeInfo.redepmtFeeRatio,
                 vars.protocolFeeRatio,
-                vars.managementFeeAddress
+                params.proposalAddressInfo.managementFeeAddress
             ),
             ProposalState.Voting,
             block.timestamp,
-            block.timestamp + dao.getConfiguration(DaoHelper.PROPOSAL_DURATION)
+            block.timestamp +
+                params.dao.getConfiguration(DaoHelper.VOTING_PERIOD)
         );
 
         // Starts the voting process for the gp kick proposal.
         vars.gpVotingContract.startNewVotingForProposal(
-            dao,
+            params.dao,
             vars.proposalId,
             block.timestamp,
             bytes("")
         );
 
         // Sponsors the guild kick proposal.
-        dao.sponsorProposal(
+        params.dao.sponsorProposal(
             vars.proposalId,
             vars.submittedBy,
             address(vars.gpVotingContract)
         );
         proposalIds += 1;
 
-        previousProposalId = latestProposalId;
-        latestProposalId = vars.proposalId;
+        lastProposalIds[address(params.dao)] = vars.proposalId;
         emit ProposalCreated(
-            vars.proposalId,
-            vars.fundRaiseTokenAddr,
-            vars.fundRaiseTarget,
-            vars.fundRaiseMaxAmount,
-            vars.lpMinDepositAmount,
-            vars.lpMaxDepositAmount,
-            vars.fundRaiseStartTime,
-            vars.fundRaiseEndTime,
-            vars.fundRaiseEndTime + vars.fundTerm,
-            vars.redemptPeriod,
-            vars.redemptDuration,
-            ProposalState.Voting
+            address(params.dao),
+            vars.proposalId
+            // vars.fundRaiseTokenAddr,
+            // vars.fundRaiseTarget,
+            // vars.fundRaiseMaxAmount,
+            // vars.lpMinDepositAmount,
+            // vars.lpMaxDepositAmount,
+            // vars.fundRaiseStartTime,
+            // vars.fundRaiseEndTime,
+            // vars.fundRaiseEndTime + vars.fundTerm,
+            // vars.redemptPeriod,
+            // vars.redemptDuration,
+            // ProposalState.Voting
         );
     }
 
     struct ProcessProposalLocalVars {
         bytes32 ongoingProposalId;
         GPVotingContract votingContract;
-        StakingRiceExtension stakingrice;
         FundingPoolExtension fundingpool;
         FundingPoolAdapterContract fundingPoolAdapt;
         IGPVoting.VotingState voteResult;
@@ -307,7 +306,8 @@ contract FundRaiseAdapterContract is
             vars.fundingPoolAdapt.resetFundRaiseState(dao);
             proposalDetails.state = ProposalState.Done;
 
-            fundsCounter += 1;
+            // fundsCounter += 1;
+            createdFundCounter[address(dao)] += 1;
         } else if (
             vars.voteResult == IGPVoting.VotingState.NOT_PASS ||
             vars.voteResult == IGPVoting.VotingState.TIE
@@ -316,7 +316,7 @@ contract FundRaiseAdapterContract is
         } else {
             revert("FundRaise::processProposal::voting not finalized");
         }
-        emit proposalExecuted(proposalId, proposalDetails.state);
+        emit proposalExecuted(address(dao), proposalId, proposalDetails.state);
     }
 
     function setFundRaiseConfiguration(

@@ -52,8 +52,15 @@ const { deployDao } = require("./deployment-util1.js");
 const {
   contracts: allContractConfigs,
 } = require("../migrations/configs/test.config");
+// const {
+//   vintageContracts: vintageContractConfigs,
+//   flexContracts: flexContractConfigs
+// } = require("../migrations/configs/daomodes.config");
+// const { vintageContracts: vintageContractConfigs } = require("../migrations/configs/vintageDao.config");
+// const { flexContracts: flexContractConfigs } = require("../migrations/configs/flexDao.config")
 const { ContractType } = require("../migrations/configs/contracts.config");
 const hre = require("hardhat");
+import { isConstructorTypeNode } from 'typescript';
 // import * as boutils from './boutils';
 import * as config from '../.config';
 const { exec } = require('node:child_process');
@@ -186,6 +193,8 @@ const getDefaultOptions = async (options) => {
   const currentTimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
   let [owner, user1, user2, project_team1, , , , , , DAOSquare, GP] = await hre.ethers.getSigners();
   return {
+    daoMode: options.daoMode === undefined ? 0 :
+      options.daoMode,
     daoName:
       options.daoName === undefined ? "test-dao" :
         options.daoName,
@@ -216,9 +225,9 @@ const getDefaultOptions = async (options) => {
     gpAllocationBonusRadio: options.gpAllocationBonusRadio === undefined ? 3 : options.gpAllocationBonusRadio,
     riceStakeAllocationRadio: options.riceStakerAllocationRadio === undefined ? 10 : options.riceStakerAllocationRadio,
     votingPeriod: options.votingPeriod === undefined ? 600 : options.votingPeriod,
-    gracePeriod: options.gracePeriod === undefined ? 1 : options.gracePeriod,
-    proposalDuration: options.proposalDuration === undefined ? 600 : options.proposalDuration,
-    proposalInterval: options.proposalInterval === undefined ? 600 : options.proposalInterval,
+    // gracePeriod: options.gracePeriod === undefined ? 1 : options.gracePeriod,
+    // proposalDuration: options.proposalDuration === undefined ? 600 : options.proposalDuration,
+    // proposalInterval: options.proposalInterval === undefined ? 600 : options.proposalInterval,
     proposalExecuteDurantion: options.proposalExecuteDurantion === undefined ? 600 : options.proposalExecuteDurantion,
     // fundRaisingCurrencyAddress: options.fundRaisingCurrencyAddress === undefined ? "0x7570263Be9A6D430F2ca19f8afbe28BA760618F2" : options.fundRaisingCurrencyAddress,
     fundRaisingTarget: options.fundRaisingTarget === undefined ? hre.ethers.utils.parseEther("10000") : options.fundRaisingTarget,
@@ -277,42 +286,6 @@ const getDefaultOptions = async (options) => {
     gelato: "0x1000000000000000000000000000000000000000",
   };
 };
-// const advanceTime = async (time) => {
-//   await new Promise((resolve, reject) => {
-//     web3.currentProvider.send(
-//       {
-//         jsonrpc: "2.0",
-//         method: "evm_increaseTime",
-//         params: [time],
-//         id: new Date().getTime(),
-//       },
-//       (err, result) => {
-//         if (err) {
-//           return reject(err);
-//         }
-//         return resolve(result);
-//       }
-//     );
-//   });
-
-//   await new Promise((resolve, reject) => {
-//     web3.currentProvider.send(
-//       {
-//         jsonrpc: "2.0",
-//         method: "evm_mine",
-//         id: new Date().getTime(),
-//       },
-//       (err, result) => {
-//         if (err) {
-//           return reject(err);
-//         }
-//         return resolve(result);
-//       }
-//     );
-//   });
-
-//   return true;
-// };
 
 const takeChainSnapshot = async () => {
   return await new Promise((resolve, reject) =>
@@ -366,13 +339,30 @@ const proposalIdGenerator = () => {
 
 
 const hhContracts = getHardhatContracts(allContractConfigs);
+
+const getEnalbeContractConfigs = async (daoMode) => {
+  switch (daoMode) {
+    // case 0:
+    //   return vintageContractConfigs;
+    // case 1:
+    //   return flexContractConfigs;
+    default:
+      return allContractConfigs;
+  }
+}
+
 const deployDefaultDao = async (options) => {
   const newOpts = await getDefaultOptions(options);
+  const _contractConfigs = await getEnalbeContractConfigs(newOpts.daoMode);
+  const enableHHContracts = getHardhatContracts(_contractConfigs);
+  console.log("enable HH Contracts: ", enableHHContracts);
   const result = await deployDao({
     ...newOpts,
-    ...hhContracts,
+    // ...hhContracts,
+    ...enableHHContracts,
     deployFunction,
-    contractConfigs: allContractConfigs
+    // contractConfigs: allContractConfigs
+    contractConfigs: _contractConfigs
   });
   return { ...result };
 };

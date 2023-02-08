@@ -25,9 +25,7 @@ interface IFlexFunding {
     // The proposal status
     enum ProposalStatus {
         IN_VOTING_PROGRESS,
-        VOTE_PASS,
         IN_FUND_RAISE_PROGRESS,
-        FUND_RAISE_FAILED,
         IN_EXECUTE_PROGRESS,
         DONE,
         FAILED
@@ -58,6 +56,8 @@ interface IFlexFunding {
         FlexFundingPoolAdapterContract flexFundingPoolAdapt;
         FlexFundingPoolExtension flexFundingPoolExt;
         FlexAllocationAdapterContract flexAllocAdapt;
+        IFlexVoting flexVoting;
+        IFlexVoting.VotingState voteResult;
         address recipientAddr;
         uint256 fundRaiseEndTime;
         uint160 poolBalance;
@@ -165,9 +165,17 @@ interface IFlexFunding {
      * EVENTS
      */
 
-    event ProposalCreated(bytes32 proposalId, address proposer);
+    event ProposalCreated(
+        address daoAddress,
+        bytes32 proposalId,
+        address proposer
+    );
 
-    event ProposalExecuted(bytes32 proposalId, ProposalStatus state);
+    event ProposalExecuted(
+        address daoAddress,
+        bytes32 proposalId,
+        ProposalStatus state
+    );
 
     error FundRaiseEndTimeNotUP();
 }

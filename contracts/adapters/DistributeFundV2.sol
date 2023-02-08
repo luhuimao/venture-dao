@@ -2,20 +2,17 @@ pragma solidity ^0.8.0;
 
 // SPDX-License-Identifier: MIT
 
-// import "../core/DaoRegistry.sol";
-import "../guards/AdapterGuard.sol";
-import "../guards/MemberGuard.sol";
+// import "../guards/AdapterGuard.sol";
+// import "../guards/MemberGuard.sol";
+import "../guards/RaiserGuard.sol";
 import "./modifiers/Reimbursable.sol";
 import "./interfaces/IGPVoting.sol";
 import "./AllocationAdapterV2.sol";
 import "./interfaces/IFunding.sol";
 import "./voting/GPVoting.sol";
-// import "../helpers/FairShareHelper.sol";
 import "../helpers/DaoHelper.sol";
-// import "../extensions/bank/Bank.sol";
 import "./FundingPoolAdapter.sol";
 import "../extensions/fundingpool/FundingPool.sol";
-// import "../extensions/ricestaking/RiceStaking.sol";
 import "../utils/TypeConver.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
@@ -49,7 +46,7 @@ SOFTWARE.
 contract DistributeFundContractV2 is
     IFunding,
     AdapterGuard,
-    MemberGuard,
+    RaiserGuard,
     Reimbursable
 {
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
@@ -66,9 +63,24 @@ contract DistributeFundContractV2 is
 
     DoubleEndedQueue.Bytes32Deque public proposalQueue;
 
-    string constant PROPOSALID_PREFIX = "TFP";
-    uint256 public proposalIds = 100099;
+    string constant PROPOSALID_PREFIX = "Founding#";
+    uint256 public proposalIds = 1;
     uint256 public constant PERCENTAGE_PRECISION = 1e18;
+
+    address public protocolAddress = address(0x9ac9c636404C8d46D9eb966d7179983Ba5a3941A);
+
+    modifier onlyDaoFactoryOwner(DaoRegistry dao) {
+        require(msg.sender == DaoHelper.daoFactoryAddress(dao));
+        _;
+    }
+
+    function setProtocolAddress(DaoRegistry dao, address _protocolAddress)
+        external
+        reentrancyGuard(dao)
+        onlyDaoFactoryOwner(dao)
+    {
+        protocolAddress = _protocolAddress;
+    }
 
     /**
      * @notice Configures the DAO with the Voting and Gracing periods.
@@ -82,13 +94,12 @@ contract DistributeFundContractV2 is
         uint256 proposalInterval,
         uint256 proposalExecuteDurantion
     ) external onlyAdapter(dao) {
-        dao.setConfiguration(DaoHelper.PROPOSAL_DURATION, proposalDuration);
-        dao.setConfiguration(DaoHelper.PROPOSAL_INTERVAL, proposalInterval);
-        dao.setConfiguration(
-            DaoHelper.PROPOSAL_EXECUTE_DURATION,
-            proposalExecuteDurantion
-        );
-
+        // dao.setConfiguration(DaoHelper.PROPOSAL_DURATION, proposalDuration);
+        // dao.setConfiguration(DaoHelper.PROPOSAL_INTERVAL, proposalInterval);
+        // dao.setConfiguration(
+        //     DaoHelper.PROPOSAL_EXECUTE_DURATION,
+        //     proposalExecuteDurantion
+        // );
         // emit ConfigureDao(votingPeriod, gracePeriod);
     }
 
@@ -203,7 +214,7 @@ contract DistributeFundContractV2 is
     )
         external
         override
-        onlyGeneralPartner(dao)
+        onlyRaiser(dao)
         reimbursable(dao)
         returns (bytes32 proposalId)
     {
@@ -214,7 +225,7 @@ contract DistributeFundContractV2 is
         );
         vars.fundingPoolAdapt.processFundRaise(dao);
         require(
-            vars.fundingPoolAdapt.fundRaisingState() ==
+            vars.fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
                 DaoHelper.FundRaiseState.DONE &&
                 block.timestamp >
                 vars.fundingPoolAdapt.getFundRaiseWindowCloseTime(dao) &&
@@ -262,7 +273,7 @@ contract DistributeFundContractV2 is
         );
 
         vars.proposalId = TypeConver.bytesToBytes32(
-            abi.encodePacked("TFP", Strings.toString(proposalIds))
+            abi.encodePacked(PROPOSALID_PREFIX, Strings.toString(proposalIds))
         );
         // Creates the distribution proposal.
         dao.submitProposal(vars.proposalId);
@@ -306,20 +317,21 @@ contract DistributeFundContractV2 is
 
         proposalIds += 1;
         emit ProposalCreated(
-            vars.proposalId,
-            _addressArgs[1],
-            _addressArgs[0],
-            _addressArgs[2],
-            _uint256ArgsProposal[1],
-            _uint256ArgsProposal[0],
-            vars.vestingStartTime,
-            vars.vestingcliffDuration,
-            vars.vestingStepDuration,
-            vars.vestingSteps,
-            vars.proposalInQueueTimestamp,
-            vars.proposalStartVotingTimestamp,
-            vars.proposalEndVotingTimestamp,
-            vars.proposalExecuteTimestamp
+            address(dao),
+            vars.proposalId
+            // _addressArgs[1],
+            // _addressArgs[0],
+            // _addressArgs[2],
+            // _uint256ArgsProposal[1],
+            // _uint256ArgsProposal[0],
+            // vars.vestingStartTime,
+            // vars.vestingcliffDuration,
+            // vars.vestingStepDuration,
+            // vars.vestingSteps,
+            // vars.proposalInQueueTimestamp,
+            // vars.proposalStartVotingTimestamp,
+            // vars.proposalEndVotingTimestamp,
+            // vars.proposalExecuteTimestamp
         );
     }
 
@@ -377,7 +389,7 @@ contract DistributeFundContractV2 is
     function startVotingProcess(DaoRegistry dao, bytes32 proposalId)
         external
         reimbursable(dao)
-        onlyGeneralPartner(dao)
+        onlyRaiser(dao)
         returns (bool)
     {
         //  queue is empty
@@ -413,7 +425,7 @@ contract DistributeFundContractV2 is
         vars._propsalStartVotingTimestamp = block.timestamp;
         vars._propsalStopVotingTimestamp =
             vars._propsalStartVotingTimestamp +
-            dao.getConfiguration(DaoHelper.PROPOSAL_DURATION);
+            dao.getConfiguration(DaoHelper.VOTING_PERIOD);
         //make sure there is no proposal in progress during redempt duration
         require(
             !vars.fundingPoolAdapt.ifInRedemptionPeriod(
@@ -442,11 +454,12 @@ contract DistributeFundContractV2 is
                     dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) /
                 100 +
                 (distribution.requestedFundAmount *
-                    dao.getConfiguration(DaoHelper.PROTOCOL_FEE)) /
+                    vars.fundingPoolAdapt.protocolFee()) /
                 100
         ) {
             distribution.status = IFunding.DistributionStatus.FAILED;
             emit StartVote(
+                address(dao),
                 proposalId,
                 0,
                 0,
@@ -466,6 +479,7 @@ contract DistributeFundContractV2 is
         if (!rel) {
             distribution.status = IFunding.DistributionStatus.FAILED;
             emit StartVote(
+                address(dao),
                 proposalId,
                 0,
                 0,
@@ -497,6 +511,7 @@ contract DistributeFundContractV2 is
 
         distribution.status = IFunding.DistributionStatus.IN_VOTING_PROGRESS;
         emit StartVote(
+            address(dao),
             proposalId,
             vars._propsalStartVotingTimestamp,
             vars._propsalStopVotingTimestamp,
@@ -625,6 +640,7 @@ contract DistributeFundContractV2 is
         ongoingDistributions[address(dao)] = bytes32(0);
 
         emit ProposalExecuted(
+            address(dao),
             proposalId,
             uint256(vars.voteResult),
             vars.allVotingWeight,
@@ -680,16 +696,19 @@ contract DistributeFundContractV2 is
         FundingPoolExtension fundingpoolExt = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
+        FundingPoolAdapterContract fundingPoolAdapt = FundingPoolAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
+            );
         address fundRaiseTokenAddr = fundingpoolExt
             .getFundRaisingTokenAddress();
         Distribution storage distribution = distributions[address(dao)][
             proposalId
         ];
         fundingpoolExt.distributeFunds(
-            dao.getAddressConfiguration(DaoHelper.DAO_SQUARE_ADDRESS),
+            protocolAddress,
             fundRaiseTokenAddr,
             (distribution.requestedFundAmount *
-                dao.getConfiguration(DaoHelper.PROTOCOL_FEE)) / 100
+                fundingPoolAdapt.protocolFee()) / 100
         );
     }
 
@@ -697,6 +716,9 @@ contract DistributeFundContractV2 is
         FundingPoolExtension fundingpoolExt = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
+        FundingPoolAdapterContract fundingPoolAdapt = FundingPoolAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
+            );
         address fundRaiseTokenAddr = fundingpoolExt
             .getFundRaisingTokenAddress();
         Distribution storage distribution = distributions[address(dao)][
@@ -710,7 +732,7 @@ contract DistributeFundContractV2 is
                     dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) /
                 100 +
                 (distribution.requestedFundAmount *
-                    dao.getConfiguration(DaoHelper.PROTOCOL_FEE)) /
+                    fundingPoolAdapt.protocolFee()) /
                 100
         );
     }

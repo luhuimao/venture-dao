@@ -163,6 +163,8 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
 
     DaoState public state;
 
+    address public daoFactory;
+    address public daoCreator;
     /// @notice The map that keeps track of all proposasls submitted to the DAO
     mapping(bytes32 => Proposal) public proposals;
     /// @notice The map that tracks the voting adapter address per proposalId
@@ -193,13 +195,17 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
      * @param payer The account which paid for the transaction to create the DAO, who will be an initial member
      */
     //slither-disable-next-line reentrancy-no-eth
-    function initialize(address creator, address payer) external {
+    function initialize(
+        address creator,
+        address payer,
+        address _daoFactory
+    ) external {
         require(!initialized, "dao already initialized");
         initialized = true;
         potentialNewMember(msg.sender);
         potentialNewMember(payer);
         potentialNewMember(creator);
-
+        daoCreator = creator;
         proposalVoteTypes[DaoHelper.ProposalType.FUNDING] = DaoHelper
             .VoteType
             .SUPERMAJORITY_QUORUM_REQUIRED;
@@ -209,6 +215,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         proposalVoteTypes[DaoHelper.ProposalType.KICK] = DaoHelper
             .VoteType
             .SUPERMAJORITY_QUORUM_REQUIRED;
+        daoFactory = _daoFactory;
     }
 
     /**

@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 import "./DaoRegistry.sol";
 import "./CloneFactory.sol";
+import "../utils/TypeConver.sol";
 
 /**
 MIT License
@@ -41,17 +42,26 @@ contract DaoFactory is CloneFactory {
     mapping(bytes32 => address) public addresses;
 
     address public identityAddress;
-
+    address public owner;
     /**
      * @notice Event emitted when a new DAO has been created.
      * @param _address The DAO address.
+     * @param _creator The DAO _creator.
      * @param _name The DAO name.
      */
-    event DAOCreated(address _address, string _name);
+    event DAOCreated(address _address, address _creator, string _name);
+    event OwnerChanged(address _oldOwner, address _newOwner);
 
     constructor(address _identityAddress) {
         require(_identityAddress != address(0x0), "invalid addr");
         identityAddress = _identityAddress;
+        owner = msg.sender;
+    }
+
+    function setOwner(address _owner) external {
+        require(msg.sender == owner);
+        emit OwnerChanged(owner, _owner);
+        owner = _owner;
     }
 
     /**
@@ -62,7 +72,10 @@ contract DaoFactory is CloneFactory {
      * @param creator The DAO's creator, who will be an initial member.
      */
     function createDao(string calldata daoName, address creator) external {
-        bytes32 hashedName = keccak256(abi.encode(daoName));
+        // bytes32 hashedName = keccak256(abi.encode(daoName));
+        bytes32 hashedName = TypeConver.bytesToBytes32(
+            abi.encodePacked(daoName)
+        );
         require(
             addresses[hashedName] == address(0x0),
             string(abi.encodePacked("name ", daoName, " already taken"))
@@ -73,9 +86,9 @@ contract DaoFactory is CloneFactory {
         addresses[hashedName] = daoAddr;
         daos[daoAddr] = hashedName;
 
-        dao.initialize(creator, msg.sender);
+        dao.initialize(creator, msg.sender, address(this));
         //slither-disable-next-line reentrancy-events
-        emit DAOCreated(daoAddr, daoName);
+        emit DAOCreated(daoAddr, creator, daoName);
     }
 
     /**
@@ -88,7 +101,8 @@ contract DaoFactory is CloneFactory {
         view
         returns (address)
     {
-        return addresses[keccak256(abi.encode(daoName))];
+        // return addresses[keccak256(abi.encode(daoName))];
+        return addresses[TypeConver.bytesToBytes32(abi.encodePacked(daoName))];
     }
 
     /**

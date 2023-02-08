@@ -2,6 +2,11 @@ pragma solidity ^0.8.0;
 import "../extensions/bank/Bank.sol";
 import "../extensions/gpdao/GPDao.sol";
 import "../core/DaoRegistry.sol";
+import "../core/DaoFactory.sol";
+// import "../adapters/FundRaise.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 // SPDX-License-Identifier: MIT
 
@@ -59,6 +64,7 @@ library DaoHelper {
         YEARLY
     }
     enum FundRaiseState {
+        NOT_STARTED,
         IN_PROGRESS,
         DONE,
         FAILED
@@ -70,7 +76,80 @@ library DaoHelper {
     uint256 internal constant THREE_MONTH = 60 * 60 * 24 * 90;
     uint256 internal constant ONE_YEAR = 60 * 60 * 24 * 365;
 
+    //Vintage dao raiser mambership
+    bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_ENABLE =
+        keccak256("VINTAGE_RAISER_MEMBERSHIP_ENABLE");
+    bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_TYPE =
+        keccak256("VINTAGE_RAISER_MEMBERSHIP_TYPE");
+    bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING =
+        keccak256("VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING");
+    bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS =
+        keccak256("VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS");
+    bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_TOKENID =
+        keccak256("VINTAGE_RAISER_MEMBERSHIP_TOKENID");
+
     // flex setting
+    bytes32 internal constant FLEX_FUNDRAISE_STYLE =
+        keccak256("FLEX_FUNDRAISE_STYLE");
+    // ---- flex dao priority deposit membersip
+    bytes32 internal constant FLEX_PRIORITY_DEPOSIT_ENABLE =
+        keccak256("FLEX_PRIORITY_DEPOSIT_ENABLE");
+    bytes32 internal constant FLEX_PRIORITY_DEPOSIT_TYPE =
+        keccak256("FLEX_PRIORITY_DEPOSIT_TYPE");
+    bytes32 internal constant FLEX_PRIORITY_DEPOSIT_MIN_HOLDING =
+        keccak256("FLEX_PRIORITY_DEPOSIT_MIN_HOLDING");
+    bytes32 internal constant FLEX_PRIORITY_DEPOSIT_TOKEN_ADDRESS =
+        keccak256("FLEX_PRIORITY_DEPOSIT_TOKEN_ADDRESS");
+    bytes32 internal constant FLEX_PRIORITY_DEPOSIT_TOKENID =
+        keccak256("FLEX_PRIORITY_DEPOSIT_TOKENID");
+    bytes32 internal constant FLEX_PRIORITY_DEPOSIT_PERIOD =
+        keccak256("FLEX_PRIORITY_DEPOSIT_PERIOD");
+    // ---participant membership
+    bytes32 internal constant FLEX_PARTICIPANT_MEMBERSHIP_ENABLE =
+        keccak256("FLEX_PARTICIPANT_MEMBERSHIP_ENABLE");
+    bytes32 internal constant FLEX_PARTICIPANT_TYPE =
+        keccak256("FLEX_PARTICIPANT_TYPE");
+    bytes32 internal constant FLEX_PARTICIPANT_MIN_HOLDING =
+        keccak256("FLEX_PARTICIPANT_MIN_HOLDING");
+    bytes32 internal constant FLEX_PARTICIPANT_TOKEN_ADDRESS =
+        keccak256("FLEX_PARTICIPANT_TOKEN_ADDRESS");
+    bytes32 internal constant FLEX_PARTICIPANT_TOKENID =
+        keccak256("FLEX_PARTICIPANT_TOKENID");
+    // -----polling
+    bytes32 internal constant FLEX_POLLING_VOTING_PERIOD =
+        keccak256("FLEX_POLLING_VOTING_PERIOD");
+    bytes32 internal constant FLEX_POLLING_VOTING_POWER =
+        keccak256("FLEX_POLLING_VOTING_POWER");
+    bytes32 internal constant FLEX_POLLING_SUPER_MAJORITY =
+        keccak256("FLEX_POLLING_SUPER_MAJORITY");
+    bytes32 internal constant FLEX_POLLING_QUORUM =
+        keccak256("FLEX_POLLING_QUORUM");
+    bytes32 internal constant FLEX_POLLING_PROPOSAL_EXECUTIONPEERIOD =
+        keccak256("FLEX_POLLING_PROPOSAL_EXECUTIONPEERIOD");
+    //-----pollster membership
+    bytes32 internal constant FLEX_POLLSTER_MEMBERSHIP_TYPE =
+        keccak256("FLEX_POLLSTER_MEMBERSHIP_TYPE");
+    bytes32 internal constant FLEX_POLLSTER_MEMBERSHIP_MIN_HOLDING =
+        keccak256("FLEX_POLLSTER_MEMBERSHIP_MIN_HOLDING");
+    bytes32 internal constant FLEX_POLLSTER_MEMBERSHIP_TOKEN_ADDRESS =
+        keccak256("FLEX_POLLSTER_MEMBERSHIP_TOKEN_ADDRESS");
+    bytes32 internal constant FLEX_POLLSTER_MEMBERSHIP_TOKENID =
+        keccak256("FLEX_POLLSTER_MEMBERSHIP_TOKENID");
+
+    bytes32 internal constant FLEX_FUNDING_TYPE =
+        keccak256("FLEX_FUNDING_TYPE");
+    // -----flex steward membership setting
+    bytes32 internal constant FLEX_STEWARD_MEMBERSHIP_ENABLE =
+        keccak256("FLEX_STEWARD_MEMBERSHIP_ENABLE");
+    bytes32 internal constant FLEX_STEWARD_MEMBERSHIP_TYPE =
+        keccak256("FLEX_STEWARD_MEMBERSHIP_TYPE");
+    bytes32 internal constant FLEX_STEWARD_MEMBERSHIP_MINI_HOLDING =
+        keccak256("FLEX_STEWARD_MEMBERSHIP_MINI_HOLDING");
+    bytes32 internal constant FLEX_STEWARD_MEMBERSHIP_TOKEN_ADDRESS =
+        keccak256("FLEX_STEWARD_MEMBERSHIP_TOKEN_ADDRESS");
+    bytes32 internal constant FLEX_STEWARD_MEMBERSHIP_TOKEN_ID =
+        keccak256("FLEX_STEWARD_MEMBERSHIP_TOKEN_ID");
+
     bytes32 internal constant FLEX_MANAGEMENT_FEE_TYPE =
         keccak256("FLEX_MANAGEMENT_FEE_TYPE");
     bytes32 internal constant FLEX_MANAGEMENT_FEE_AMOUNT =
@@ -81,17 +160,18 @@ library DaoHelper {
         keccak256("FLEX_PROTOCOL_FEE");
     bytes32 internal constant FLEX_PROTOCOL_FEE_RECEIVE_ADDRESS =
         keccak256("FLEX_PROTOCOL_FEE_RECEIVE_ADDRESS");
-    // flex proposer requirment setting
-    bytes32 internal constant FLEX_PROPOSER_ADDITIONAL_IDENRIFICATION_ENABLE =
-        keccak256("FLEX_PROPOSER_ADDITIONAL_IDENRIFICATION_ENABLE");
-    bytes32 internal constant FLEX_PROPOSER_IDENTIFICATION_TOKEN_TYPE =
-        keccak256("FLEX_PROPOSER_IDENTIFICATION_TOKEN_TYPE");
+    // -----flex proposer requirment setting
+    bytes32 internal constant FLEX_PROPOSER_ENABLE =
+        keccak256("FLEX_PROPOSER_ENABLE");
+    bytes32 internal constant FLEX_PROPOSER_IDENTIFICATION_TYPE =
+        keccak256("FLEX_PROPOSER_IDENTIFICATION_TYPE");
     bytes32 internal constant FLEX_PROPOSER_TOKEN_ADDRESS =
         keccak256("FLEX_PROPOSER_TOKEN_ADDRESS");
     bytes32 internal constant FLEX_PROPOSER_TOKENID =
         keccak256("FLEX_PROPOSER_TOKENID");
     bytes32 internal constant FLEX_PROPOSER_MIN_HOLDING =
         keccak256("FLEX_PROPOSER_MIN_HOLDING");
+
     //PPM
     bytes32 internal constant MAX_PARTICIPANTS_ENABLE =
         keccak256("MAX_PARTICIPANTS_ENABLE");
@@ -113,10 +193,7 @@ library DaoHelper {
         keccak256("FUND_RAISING_WINDOW_BEGIN");
     bytes32 internal constant FUND_RAISING_WINDOW_END =
         keccak256("FUND_RAISING_WINDOW_END");
-    bytes32 internal constant FUND_RAISING_LOCKUP_PERIOD =
-        keccak256("FUND_RAISING_LOCKUP_PERIOD");
-    bytes32 internal constant FUND_RAISING_REDEMPTION =
-        keccak256("FUND_RAISING_REDEMPTION");
+
     bytes32 internal constant FUND_RAISING_REDEMPTION_PERIOD =
         keccak256("FUND_RAISING_REDEMPTION_PERIOD");
     bytes32 internal constant FUND_RAISING_REDEMPTION_DURATION =
@@ -129,34 +206,22 @@ library DaoHelper {
         keccak256("REWARD_FOR_PROPOSER");
     bytes32 internal constant REWARD_FOR_GP = keccak256("REWARD_FOR_GP");
     bytes32 internal constant MANAGEMENT_FEE = keccak256("MANAGEMENT_FEE");
-    bytes32 internal constant MANAGEMENT_FEE_PER_YEAR =
-        keccak256("MANAGEMENT_FEE_PER_YEAR");
+
     bytes32 internal constant REDEMPTION_FEE = keccak256("REDEMPTION_FEE");
     bytes32 internal constant PROTOCOL_FEE = keccak256("PROTOCOL_FEE");
     bytes32 internal constant GP_MIN_INVESTMENT_AMOUNT =
         keccak256("GP_MIN_INVESTMENT_AMOUNT");
 
     //voting
-    bytes32 internal constant QUORUM = keccak256("voting.quorum");
-    bytes32 internal constant SUPER_MAJORITY =
-        keccak256("voting.supermajority");
-    bytes32 constant VotingPeriod =
-        keccak256("voting.gpOnboardingVotingPeriod");
-    bytes32 constant GracePeriod =
-        keccak256("voting.gpOnboardingVotingGracePeriod");
-
+    bytes32 internal constant QUORUM = keccak256("QUORUM");
+    bytes32 internal constant SUPER_MAJORITY = keccak256("SUPER_MAJORITY");
+    bytes32 constant VOTING_PERIOD = keccak256("VOTING_PERIOD");
+    bytes32 internal constant PROPOSAL_EXECUTE_DURATION =
+        keccak256("PROPOSAL_EXECUTE_DURATION");
     //Token
     //rice
     bytes32 internal constant RICE_TOKEN_ADDRESS =
         keccak256("rice.token.address");
-
-    //funding proposal
-    bytes32 internal constant PROPOSAL_DURATION =
-        keccak256("distributeFund.proposalDuration");
-    bytes32 internal constant PROPOSAL_INTERVAL =
-        keccak256("distributeFund.proposalInterval");
-    bytes32 internal constant PROPOSAL_EXECUTE_DURATION =
-        keccak256("PROPOSAL_EXECUTE_DURATION");
 
     // Adapters
     bytes32 internal constant FLEX_VESTING = keccak256("flex-vesting");
@@ -168,6 +233,8 @@ library DaoHelper {
         keccak256("flex-funding-pool-adatper");
     bytes32 internal constant FLEX_FUNDING_ADAPT = keccak256("flex-funding");
     bytes32 internal constant FLEX_VOTING_ADAPT = keccak256("flex-voting");
+    bytes32 internal constant FLEX_POLLING_VOTING_ADAPT =
+        keccak256("flex-polling-voting");
     bytes32 internal constant FUND_RAISE = keccak256("fund-raise");
     bytes32 internal constant VESTWING = keccak256("vesting");
     bytes32 internal constant BEN_TO_BOX = keccak256("ben-to-box");
@@ -373,5 +440,37 @@ library DaoHelper {
             (dao.getNbMembers() == 0 ||
                 dao.isMember(msg.sender) ||
                 dao.isAdapter(msg.sender));
+    }
+
+    function daoFactoryAddress(DaoRegistry dao)
+        internal
+        view
+        returns (address)
+    {
+        return DaoFactory(dao.daoFactory()).owner();
+    }
+
+    function getERC20Balance(address token, address account)
+        internal
+        view
+        returns (uint256)
+    {
+        return IERC20(token).balanceOf(account);
+    }
+
+    function getERC721Balance(address token, address account)
+        internal
+        view
+        returns (uint256)
+    {
+        return IERC721(token).balanceOf(account);
+    }
+
+    function getERC1155Balance(
+        address token,
+        uint256 tokenId,
+        address account
+    ) internal view returns (uint256) {
+        return IERC1155(token).balanceOf(account, tokenId);
     }
 }

@@ -3,9 +3,7 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 
 import "../core/DaoRegistry.sol";
-import "../extensions/bank/Bank.sol";
-import "../extensions/fundingpool/FundingPool.sol";
-import "../extensions/gpdao/GPDao.sol";
+// import "../extensions/gpdao/GPDao.sol";
 import "../helpers/DaoHelper.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -38,72 +36,6 @@ abstract contract MemberGuard {
     modifier OnlyVoter(DaoRegistry dao) {
         _;
     }
-    modifier onlyProposer(DaoRegistry dao) {
-        if (
-            dao.getConfiguration(
-                DaoHelper.FLEX_PROPOSER_ADDITIONAL_IDENRIFICATION_ENABLE
-            ) == 1
-        ) {
-            //0 ERC20 1 ERC721 2 ERC1155
-            if (
-                dao.getConfiguration(
-                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TOKEN_TYPE
-                ) == 0
-            ) {
-                require(
-                    IERC20(
-                        dao.getAddressConfiguration(
-                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
-                        )
-                    ).balanceOf(msg.sender) >=
-                        dao.getConfiguration(
-                            DaoHelper.FLEX_PROPOSER_MIN_HOLDING
-                        ),
-                    "dont meet min erc20 token holding requirment"
-                );
-            }
-            if (
-                dao.getConfiguration(
-                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TOKEN_TYPE
-                ) == 1
-            ) {
-                require(
-                    IERC721(
-                        dao.getAddressConfiguration(
-                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
-                        )
-                    ).balanceOf(msg.sender) >=
-                        dao.getConfiguration(
-                            DaoHelper.FLEX_PROPOSER_MIN_HOLDING
-                        ),
-                    "dont meet min erc721 token holding requirment"
-                );
-            }
-            if (
-                dao.getConfiguration(
-                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TOKEN_TYPE
-                ) == 2
-            ) {
-                require(
-                    IERC1155(
-                        dao.getAddressConfiguration(
-                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
-                        )
-                    ).balanceOf(
-                            msg.sender,
-                            dao.getConfiguration(
-                                DaoHelper.FLEX_PROPOSER_TOKENID
-                            )
-                        ) >=
-                        dao.getConfiguration(
-                            DaoHelper.FLEX_PROPOSER_MIN_HOLDING
-                        ),
-                    "dont meet min erc1155 token holding requirment"
-                );
-            }
-        }
-        _;
-    }
     /**
      * @dev Only members of the DAO are allowed to execute the function call.
      */
@@ -117,20 +49,8 @@ abstract contract MemberGuard {
         _;
     }
 
-    /**
-     * @dev Only general partner of the DAO are allowed to execute the function call.
-     */
-    modifier onlyGeneralPartner(DaoRegistry dao) {
-        _onlyGeneralPartner(dao, msg.sender);
-        _;
-    }
-
     function _onlyMember(DaoRegistry dao, address _addr) internal view {
         require(isActiveMember(dao, _addr), "onlyMember");
-    }
-
-    function _onlyGeneralPartner(DaoRegistry dao, address _addr) internal view {
-        require(isActiveGeneralPartner(dao, _addr), "onlyGeneralPartner");
     }
 
     function isActiveMember(DaoRegistry dao, address _addr)
@@ -139,19 +59,5 @@ abstract contract MemberGuard {
         returns (bool)
     {
         return dao.isMember(_addr);
-    }
-
-    function isActiveGeneralPartner(DaoRegistry dao, address _addr)
-        public
-        view
-        returns (bool)
-    {
-        address gpDAOAddress = dao.extensions(DaoHelper.GPDAO_EXT);
-
-        if (gpDAOAddress != address(0x0)) {
-            return GPDaoExtension(gpDAOAddress).isGeneralPartner(_addr);
-        }
-
-        return false;
     }
 }

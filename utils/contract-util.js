@@ -46,7 +46,8 @@ const toHex = ethers.utils.hexValue;
 const toWei = ethers.utils.parseEther;
 const toBN = ethers.BigNumber.from;
 const getAddress = ethers.utils.getAddress;
-
+const parseBytes32String = ethers.utils.parseBytes32String;
+const hexStripZeros = ethers.utils.hexStripZeros;
 // Dao Constants
 const GUILD = "0x000000000000000000000000000000000000dead";
 const TOTAL = "0x000000000000000000000000000000000000babe";
@@ -113,6 +114,8 @@ module.exports = {
   embedConfigs,
   encodePacked,
   getAddress,
+  parseBytes32String,
+  hexStripZeros,
   waitTx,
   maximumChunks,
   maxAmount,

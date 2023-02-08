@@ -3,20 +3,27 @@ pragma solidity ^0.8.0;
 
 import "../../guards/AdapterGuard.sol";
 import "../../guards/MemberGuard.sol";
+import "../../guards/FlexProposerGuard.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "./interfaces/IFlexFunding.sol";
+import "./interfaces/IFlexVoting.sol";
 import "./FlexAllocation.sol";
+import "./FlexVoting.sol";
 import "./interfaces/IFlexVoting.sol";
 import "../../utils/TypeConver.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
 
 contract FlexFundingAdapterContract is
     IFlexFunding,
     AdapterGuard,
     MemberGuard,
+    FlexProposerGuard,
     Reimbursable
 {
+    using EnumerableSet for EnumerableSet.AddressSet;
+
     /*
      * PUBLIC VARIABLES
      */
@@ -26,15 +33,23 @@ contract FlexFundingAdapterContract is
     // Keeps track of all the locked token amount per DAO.
     mapping(address => mapping(bytes32 => mapping(address => uint256)))
         public escrowedTokens;
-
-    uint256 public proposalIds = 15;
-    FundingType public fundingType;
+    mapping(address => EnumerableSet.AddressSet) proposerWhiteList;
+    uint256 public proposalIds = 1;
+    // FundingType public fundingType;
     uint256 public constant RETRUN_TOKEN_AMOUNT_PRECISION = 1e18;
+    uint256 public protocolFee = 3;
+    address public protocolAddress =
+        address(0x9ac9c636404C8d46D9eb966d7179983Ba5a3941A);
 
     error invalidParam();
     error InvalidReturnFundParams();
     error InvalidVestingParams();
     error EscrowTokenFailed();
+
+    modifier onlyDaoFactoryOwner(DaoRegistry dao) {
+        require(msg.sender == DaoHelper.daoFactoryAddress(dao));
+        _;
+    }
 
     /**
      * @notice Configures the DAO with the Voting and Gracing periods.
@@ -45,8 +60,34 @@ contract FlexFundingAdapterContract is
         external
         onlyAdapter(dao)
     {
-        fundingType = flexFundingType;
+        // fundingType = flexFundingType;
         // emit ConfigureDao(gpAllocationBonusRadio, riceStakeAllocationRadio);
+    }
+
+    function setProtocolAddress(DaoRegistry dao, address _protocolAddress)
+        external
+        reentrancyGuard(dao)
+        onlyDaoFactoryOwner(dao)
+    {
+        protocolAddress = _protocolAddress;
+    }
+
+    function setProtocolFee(DaoRegistry dao, uint256 feeProtocol)
+        external
+        reentrancyGuard(dao)
+        onlyDaoFactoryOwner(dao)
+    {
+        require(feeProtocol < 100 && feeProtocol > 0);
+        protocolFee = feeProtocol;
+    }
+
+    function registerProposerWhiteList(DaoRegistry dao, address account)
+        external
+        onlyMember(dao)
+    {
+        if (!proposerWhiteList[address(dao)].contains(account)) {
+            proposerWhiteList[address(dao)].add(account);
+        }
     }
 
     function submitProposal(DaoRegistry dao, ProposalParams calldata params)
@@ -60,7 +101,7 @@ contract FlexFundingAdapterContract is
             params.fundingInfo.maxFundingAmount > 0 &&
             params.fundingInfo.maxFundingAmount <
             params.fundRaiseInfo.maxDepositAmount
-        ) revert invalidParam();
+        ) revert("invalid Params");
         if (
             params.fundRaiseInfo.backerIdentification == true &&
             params.fundRaiseInfo.bakckerIdentificationInfo.bType !=
@@ -112,16 +153,20 @@ contract FlexFundingAdapterContract is
                 params.fundingInfo.returnTokenAmount <= 0 ||
                 params.fundingInfo.approverAddr == address(0x0) ||
                 params.fundingInfo.minReturnAmount <= 0
-            ) revert InvalidReturnFundParams();
+            ) revert("Invalid Return Fund Params");
             if (
                 params.vestInfo.vestingSteps <= 0 ||
                 params.vestInfo.vestingCliffLockAmount >
                 params.fundingInfo.returnTokenAmount
-            ) revert InvalidVestingParams();
+            ) revert("Invalid Vesting Params");
         }
 
         dao.submitProposal(vars.proposalId);
-
+        FundingType _fundingType = dao.getConfiguration(
+            DaoHelper.FLEX_FUNDING_TYPE
+        ) == 0
+            ? FundingType.DIRECT
+            : FundingType.POLL;
         Proposals[address(dao)][vars.proposalId] = ProposalInfo(
             msg.sender,
             FundingInfo(
@@ -159,12 +204,12 @@ contract FlexFundingAdapterContract is
                 params.proposerRewardInfo.tokenRewardAmount,
                 params.proposerRewardInfo.cashRewardAmount
             ),
-            fundingType == FundingType.POLL ? block.timestamp : 0,
-            fundingType == FundingType.POLL
+            _fundingType == FundingType.POLL ? block.timestamp : 0,
+            _fundingType == FundingType.POLL
                 ? block.timestamp +
-                    dao.getConfiguration(DaoHelper.PROPOSAL_DURATION)
+                    dao.getConfiguration(DaoHelper.FLEX_POLLING_VOTING_PERIOD)
                 : 0,
-            fundingType == FundingType.POLL
+            _fundingType == FundingType.POLL
                 ? ProposalStatus.IN_VOTING_PROGRESS
                 : ProposalStatus.IN_FUND_RAISE_PROGRESS
         );
@@ -187,40 +232,239 @@ contract FlexFundingAdapterContract is
         vars.flexFundingPoolExt = FlexFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
         );
-        if (fundingType == FundingType.DIRECT) {
+        if (_fundingType == FundingType.DIRECT) {
             vars.flexFundingPoolExt.registerPotentialNewFundingProposal(
                 vars.proposalId
             );
         }
-        emit ProposalCreated(vars.proposalId, msg.sender);
+        emit ProposalCreated(address(dao), vars.proposalId, msg.sender);
     }
 
     function processProposal(DaoRegistry dao, bytes32 proposalId)
         external
         override
+        reimbursable(dao)
         returns (bool)
     {
-        // require(fundingType == FundingType.POLL, "no need execute");
         ProcessProposalLocalVars memory vars;
-
         ProposalInfo storage proposal = Proposals[address(dao)][proposalId];
+        FundingType _fundingType = dao.getConfiguration(
+            DaoHelper.FLEX_FUNDING_TYPE
+        ) == 0
+            ? FundingType.DIRECT
+            : FundingType.POLL;
+        vars.fundRaiseEndTime = proposal.fundRaiseInfo.fundRaiseEndTime;
+        vars.minFundingAmount = proposal.fundingInfo.minFundingAmount;
+        vars.flexFundingPoolAdapt = FlexFundingPoolAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_POOL_ADAPT)
+        );
+        vars.flexFundingPoolExt = FlexFundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+        );
+        vars.recipientAddr = proposal.fundingInfo.recipientAddr;
 
-        if (fundingType == FundingType.POLL) {} else {
-            vars.fundRaiseEndTime = proposal.fundRaiseInfo.fundRaiseEndTime;
-            vars.minFundingAmount = proposal.fundingInfo.minFundingAmount;
-            vars.flexFundingPoolAdapt = FlexFundingPoolAdapterContract(
-                dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_POOL_ADAPT)
+        if (proposal.state == ProposalStatus.IN_VOTING_PROGRESS) {
+            require(
+                block.timestamp > proposal.stopVoteTime,
+                "FlexFunding::processProposal::proposal in voting period"
             );
-            vars.flexFundingPoolExt = FlexFundingPoolExtension(
-                dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+            // Checks if the proposal has passed.
+            vars.flexVoting = FlexVotingContract(dao.votingAdapter(proposalId));
+            require(
+                address(vars.flexVoting) != address(0x0),
+                "FlexFunding::processProposal::adapter not found"
             );
-            vars.recipientAddr = proposal.fundingInfo.recipientAddr;
+
+            vars.voteResult = vars.flexVoting.voteResult(dao, proposalId);
+            if (vars.voteResult == IFlexVoting.VotingState.PASS) {
+                proposal.state = ProposalStatus.IN_FUND_RAISE_PROGRESS;
+                vars.flexFundingPoolExt.registerPotentialNewFundingProposal(
+                    proposalId
+                );
+            } else {
+                proposal.state = ProposalStatus.FAILED;
+            }
+        } else if (proposal.state == ProposalStatus.IN_FUND_RAISE_PROGRESS) {
             vars.poolBalance = vars
                 .flexFundingPoolAdapt
                 .getTotalFundByProposalId(dao, proposalId);
             vars.propodalFundingToken = getTokenByProposalId(dao, proposalId);
             if (vars.fundRaiseEndTime > block.timestamp)
-                revert FundRaiseEndTimeNotUP();
+                revert("Fund Raise End Time Not UP");
+            dao.processProposal(proposalId);
+            vars.protocolFee = (vars.poolBalance * protocolFee) / 100;
+            vars.managementFee = dao.getConfiguration(
+                DaoHelper.FLEX_MANAGEMENT_FEE_TYPE
+            ) == 0
+                ? (vars.poolBalance *
+                    dao.getConfiguration(
+                        DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT
+                    )) / 100
+                : dao.getConfiguration(DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT);
+            vars.proposerReward = proposal.proposerRewardInfo.cashRewardAmount;
+            if (
+                vars.poolBalance >=
+                vars.minFundingAmount +
+                    vars.protocolFee +
+                    vars.managementFee +
+                    vars.proposerReward
+            ) {
+                //1
+                proposal.state = ProposalStatus.IN_EXECUTE_PROGRESS;
+                //2 protocol fee
+                if (vars.protocolFee > 0) {
+                    vars.flexFundingPoolExt.withdrawFromAll(
+                        proposalId,
+                        protocolAddress,
+                        vars.propodalFundingToken,
+                        vars.protocolFee
+                    );
+                }
+
+                //3 management fee
+                if (vars.managementFee > 0) {
+                    vars.flexFundingPoolExt.withdrawFromAll(
+                        proposalId,
+                        dao.getAddressConfiguration(
+                            DaoHelper.FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS
+                        ),
+                        vars.propodalFundingToken,
+                        vars.managementFee
+                    );
+                }
+
+                //4 proposer reward
+                if (vars.proposerReward > 0) {
+                    vars.flexFundingPoolExt.withdrawFromAll(
+                        proposalId,
+                        proposal.proposer,
+                        vars.propodalFundingToken,
+                        vars.proposerReward
+                    );
+                }
+
+                // 5 send funding token to recipient
+                vars.flexFundingPoolExt.withdrawFromAll(
+                    proposalId,
+                    vars.recipientAddr,
+                    vars.propodalFundingToken,
+                    vars.poolBalance -
+                        vars.protocolFee -
+                        vars.managementFee -
+                        vars.proposerReward
+                );
+
+                if (proposal.fundingInfo.escrow) {
+                    // 6 calculate && update return token amount
+                    proposal.fundingInfo.returnTokenAmount =
+                        (vars.poolBalance / proposal.fundingInfo.price) *
+                        RETRUN_TOKEN_AMOUNT_PRECISION;
+                    vars.returnTokenAmount = proposal
+                        .fundingInfo
+                        .returnTokenAmount;
+                    if (
+                        !_escrowToken(
+                            dao,
+                            proposal.fundingInfo.approverAddr,
+                            proposal.fundingInfo.returnTokenAddr,
+                            vars.returnTokenAmount
+                        )
+                    ) {
+                        proposal.state = ProposalStatus.FAILED;
+                        emit ProposalExecuted(
+                            address(dao),
+                            proposalId,
+                            proposal.state
+                        );
+                        return false;
+                    } else {
+                        escrowedTokens[address(dao)][proposalId][
+                            proposal.fundingInfo.approverAddr
+                        ] = vars.returnTokenAmount;
+                    }
+
+                    vars.flexAllocAdapt = FlexAllocationAdapterContract(
+                        dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
+                    );
+                    vars.returnToken = proposal.fundingInfo.returnTokenAddr;
+                    vars.proposer = proposal.proposer;
+
+                    IERC20(proposal.fundingInfo.returnTokenAddr).approve(
+                        dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT),
+                        vars.returnTokenAmount
+                    );
+                    vars.flexAllocAdapt.allocateProjectToken(
+                        dao,
+                        vars.returnToken,
+                        vars.proposer,
+                        proposalId,
+                        [
+                            vars.returnTokenAmount,
+                            proposal.vestInfo.vestingStartTime,
+                            proposal.vestInfo.vestingCliffDuration,
+                            proposal.vestInfo.vestingStepDuration,
+                            proposal.vestInfo.vestingSteps
+                        ]
+                    );
+                } else {
+                    vars.flexAllocAdapt = FlexAllocationAdapterContract(
+                        dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
+                    );
+                    vars.flexAllocAdapt.noEscrow(dao, proposalId);
+                }
+
+                //7 substract
+                vars.flexFundingPoolExt.substractFromAll(
+                    proposalId,
+                    vars.poolBalance
+                );
+
+                proposal.state = ProposalStatus.DONE;
+            } else {
+                // didt meet the min funding amount
+                proposal.state = ProposalStatus.FAILED;
+                emit ProposalExecuted(address(dao), proposalId, proposal.state);
+                return false;
+            }
+        } else {}
+        /*
+        if (_fundingType == FundingType.POLL) {
+            if (proposal.state == ProposalStatus.IN_VOTING_PROGRESS) {
+                require(
+                    block.timestamp > proposal.stopVoteTime,
+                    "FlexFunding::processProposal::proposal in voting period"
+                );
+                // Checks if the proposal has passed.
+                vars.flexVoting = FlexVotingContract(
+                    dao.votingAdapter(proposalId)
+                );
+                require(
+                    address(vars.flexVoting) != address(0x0),
+                    "FlexFunding::processProposal::adapter not found"
+                );
+
+                vars.voteResult = vars.flexVoting.voteResult(dao, proposalId);
+                if (vars.voteResult == VotingState.PASS) {
+                    proposal.state = ProposalStatus.IN_FUND_RAISE_PROGRESS;
+                } else {
+                    proposal.state = ProposalStatus.FAILED;
+                }
+            }
+            if (proposal.state == ProposalStatus.IN_FUND_RAISE_PROGRESS) {
+                if (vars.fundRaiseEndTime > block.timestamp)
+                    revert("Fund Raise End Time Not UP");
+                require(
+                    proposal.state != ProposalStatus.IN_EXECUTE_PROGRESS,
+                    "FlexFunding::processProposal::proposal already in execute progress"
+                );
+            }
+        } else {
+            vars.poolBalance = vars
+                .flexFundingPoolAdapt
+                .getTotalFundByProposalId(dao, proposalId);
+            vars.propodalFundingToken = getTokenByProposalId(dao, proposalId);
+            if (vars.fundRaiseEndTime > block.timestamp)
+                revert("Fund Raise End Time Not UP");
             dao.processProposal(proposalId);
             vars.protocolFee =
                 (vars.poolBalance *
@@ -354,10 +598,12 @@ contract FlexFundingAdapterContract is
             } else {
                 // didt meet the min funding amount
                 proposal.state = ProposalStatus.FUND_RAISE_FAILED;
+                emit ProposalExecuted(address(dao), proposalId, proposal.state);
                 return false;
             }
         }
-        emit ProposalExecuted(proposalId, proposal.state);
+        */
+        emit ProposalExecuted(address(dao), proposalId, proposal.state);
         return true;
     }
 
@@ -380,7 +626,7 @@ contract FlexFundingAdapterContract is
         );
 
         require(
-            proposal.state == ProposalStatus.FUND_RAISE_FAILED,
+            proposal.state == ProposalStatus.FAILED,
             "Flex Funding::retrunTokenToApprover::cant return"
         );
         escrowedTokens[address(dao)][proposalId][msg.sender] = 0;
@@ -453,6 +699,22 @@ contract FlexFundingAdapterContract is
             .maxDepositAmount;
     }
 
+    function isProposerWhiteList(DaoRegistry dao, address account)
+        external
+        view
+        returns (bool)
+    {
+        return proposerWhiteList[address(dao)].contains(account);
+    }
+
+    function getProposerWhitelist(DaoRegistry dao)
+        external
+        view
+        returns (address[] memory)
+    {
+        return proposerWhiteList[address(dao)].values();
+    }
+
     /*
      * INTERNAL
      */
@@ -474,12 +736,12 @@ contract FlexFundingAdapterContract is
         //20220916 fix potential bugs
         uint256 oldAllowance = erc20.allowance(
             address(this),
-            dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPTV2)
+            dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
         );
         uint256 newAllowance = oldAllowance + escorwAmount;
         //approve to AllocationAdapter contract
         erc20.approve(
-            dao.getAdapterAddress(DaoHelper.ALLOCATION_ADAPTV2),
+            dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT),
             newAllowance
         );
         erc20.transferFrom(approver, address(this), escorwAmount);

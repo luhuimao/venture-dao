@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 import "../../core/DaoRegistry.sol";
 import "../../companion/interfaces/IReimbursement.sol";
 import "./Reimbursable.sol";
+import "../../helpers/DaoHelper.sol";
 
 // SPDX-License-Identifier: MIT
 

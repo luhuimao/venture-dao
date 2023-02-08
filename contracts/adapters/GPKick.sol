@@ -42,7 +42,7 @@ contract GPKickAdapterContract is
     IGPKick,
     AdapterGuard,
     Reimbursable,
-    MemberGuard
+    RaiserGuard
 {
     enum ProposalState {
         Voting,
@@ -60,12 +60,14 @@ contract GPKickAdapterContract is
     }
 
     event ProposalCreated(
+        address daoAddr,
         bytes32 proposalId,
         address gpToKick,
         uint256 creationTime,
         uint256 stopVoteTime
     );
     event ProposalProcessed(
+        address daoAddr,
         bytes32 proposalId,
         IGPOnboardingVoting.VotingState voteRelsult,
         ProposalState state,
@@ -75,7 +77,7 @@ contract GPKickAdapterContract is
     );
     // Keeps track of all the kicks executed per DAO.
     mapping(address => mapping(bytes32 => GPKickProposal)) public kickProposals;
-    uint256 public proposalIds = 100030;
+    uint256 public proposalIds = 1;
 
     /**
      * @notice Creates a gp kick proposal, opens it for voting, and sponsors it.
@@ -91,7 +93,7 @@ contract GPKickAdapterContract is
         external
         override
         reimbursable(dao)
-        onlyGeneralPartner(dao)
+        onlyRaiser(dao)
     {
         IGPOnboardingVoting gpVotingContract = IGPOnboardingVoting(
             dao.getAdapterAddress(DaoHelper.GPONBOARDVOTING_ADAPT)
@@ -115,7 +117,7 @@ contract GPKickAdapterContract is
             "GPKick::submitProposal::use ragequit"
         );
         bytes32 proposalId = TypeConver.bytesToBytes32(
-            abi.encodePacked("TKP", Strings.toString(proposalIds))
+            abi.encodePacked("Raiser-Out#", Strings.toString(proposalIds))
         );
 
         // Creates a guild kick proposal.
@@ -123,7 +125,7 @@ contract GPKickAdapterContract is
 
         uint256 creationTime = block.timestamp;
         uint256 stopVoteTime = creationTime +
-            dao.getConfiguration(DaoHelper.PROPOSAL_DURATION);
+            dao.getConfiguration(DaoHelper.VOTING_PERIOD);
 
         // Saves the state of the gp kick proposal.
         kickProposals[address(dao)][proposalId] = GPKickProposal(
@@ -142,7 +144,13 @@ contract GPKickAdapterContract is
         dao.sponsorProposal(proposalId, submittedBy, address(gpVotingContract));
         proposalIds += 1;
 
-        emit ProposalCreated(proposalId, gpToKick, creationTime, stopVoteTime);
+        emit ProposalCreated(
+            address(dao),
+            proposalId,
+            gpToKick,
+            creationTime,
+            stopVoteTime
+        );
     }
 
     /**
@@ -200,6 +208,7 @@ contract GPKickAdapterContract is
         }
 
         emit ProposalProcessed(
+            address(dao),
             proposalId,
             votingState,
             proposal.state,
