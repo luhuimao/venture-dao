@@ -163,10 +163,10 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         address proposerAddr;
     }
 
-    function noEscrow(DaoRegistry dao, bytes32 proposalId)
-        external
-        returns (bool)
-    {
+    function noEscrow(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external returns (bool) {
         require(
             msg.sender ==
                 address(dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)),
@@ -292,7 +292,7 @@ contract FlexAllocationAdapterContract is AdapterGuard {
             .fundingpool
             .getInvestorsByProposalId(proposalId);
         vars.totalReward = 0;
-
+        console.log("investor amount: ", allInvestors.length);
         if (allInvestors.length > 0) {
             for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
                 vars.fundingRewards = getFundingRewards(

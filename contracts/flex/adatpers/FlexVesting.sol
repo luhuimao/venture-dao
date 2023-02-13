@@ -12,7 +12,6 @@ import "hardhat/console.sol";
 
 contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
     // IBentoBoxMinimal public immutable bentoBox;
-    address public immutable wETH;
 
     address public tokenURIFetcher;
 
@@ -31,7 +30,6 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
     // constructor(IBentoBoxMinimal _bentoBox) {
     constructor() {
         // bentoBox = _bentoBox;
-        wETH = address(0x0);
         vestIds = 1;
         // _bentoBox.registerProtocol();
     }
@@ -39,29 +37,6 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
     function setTokenURIFetcher(address _fetcher) external onlyOwner {
         tokenURIFetcher = _fetcher;
     }
-
-    // function tokenURI(uint256 id) public view override returns (string memory) {
-    //     return ITokenURIFetcher(tokenURIFetcher).fetchTokenURIData(id);
-    // }
-
-    // function setBentoBoxApproval(
-    //     address user,
-    //     bool approved,
-    //     uint8 v,
-    //     bytes32 r,
-    //     bytes32 s
-    // ) external payable override {
-    //             IBentoBoxMinimal bentoBox=IBentoBoxMinimal(dao.getAddressConfiguration(DaoHelper.BEN_TO_BOX));
-
-    //     bentoBox.setMasterContractApproval(
-    //         user,
-    //         address(this),
-    //         approved,
-    //         v,
-    //         r,
-    //         s
-    //     );
-    // }
 
     struct CreateVestLocalVars {
         uint256 returnTokenAmount;
@@ -123,35 +98,19 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
             recipientAddr
         );
 
-        //(address,
-        //struct IFlexFunding.FundingInfo memory,
-        //struct IFlexFunding.VestInfo memory,
-        //struct IFlexFunding.FundRaiseInfo memory,
-        //struct IFlexFunding.ProposerRewardInfo memory,
-        //uint256,
-        //uint256,
-        //enum IFlexFunding.ProposalStatus)
-
         (, vars.fundingInfo, vars.vestInfo, , , , , ) = vars
             .flexFundingAdapt
             .Proposals(address(dao), proposalId);
-        // if (vestParams.start < block.timestamp) revert InvalidStart();
-        // vars.stepPercentage=uint128(PERCENTAGE_PRECISION / vars.vestInfo.vestingSteps);
         if (
             vars.vestInfo.vestingCliffLockAmount >
             vars.fundingInfo.returnTokenAmount
-        ) revert InvalidStepSetting();
+        ) revert("Invalid Vesting Amount Setting");
         if (
-            vars.vestInfo.vestingStepDuration == 0 ||
-            vars.vestInfo.vestingSteps == 0
-        ) revert InvalidStepSetting();
-        // depositedShares = _depositToken(
-        //     address(vestParams.token),
-        //     msg.sender,
-        //     address(this),
-        //     vestParams.amount,
-        //     vestParams.fromBentoBox
-        // );
+            vars.vestInfo.vestingStartTime == 0 ||
+            vars.vestInfo.vestingCliffEndTime == 0 ||
+            vars.vestInfo.vestingEndTime == 0 ||
+            vars.vestInfo.vestingInterval == 0
+        ) revert("Invalid Vesting Time Setting");
 
         vars.depositedShares = _depositToken(
             dao,
@@ -161,16 +120,38 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
             vars.depositAmount,
             false
         );
+        vars.duration =
+            vars.vestInfo.vestingEndTime -
+            vars.vestInfo.vestingCliffEndTime;
+
+        vars.vestingSteps = vars.duration / vars.vestInfo.vestingInterval;
+
+        if (vars.duration <= vars.vestInfo.vestingInterval)
+            vars.vestingSteps = 1;
+
+        if (vars.duration > vars.vestInfo.vestingInterval) {
+            if (vars.vestInfo.vestingInterval % vars.duration == 0)
+                vars.vestingSteps =
+                    vars.duration /
+                    vars.vestInfo.vestingInterval;
+
+            if (
+                vars.vestingSteps * vars.vestInfo.vestingInterval <
+                vars.duration
+            )
+                vars.vestingSteps =
+                    vars.duration /
+                    vars.vestInfo.vestingInterval +
+                    1;
+        }
+
         vars.stepShares = uint128(
             ((vars.depositedShares *
                 (vars.fundingInfo.returnTokenAmount -
                     vars.vestInfo.vestingCliffLockAmount)) /
-                vars.fundingInfo.returnTokenAmount) / vars.vestInfo.vestingSteps
+                vars.fundingInfo.returnTokenAmount) / vars.vestingSteps
         );
-        vars.cliffShares = uint128(
-            vars.depositedShares -
-                (vars.stepShares * vars.vestInfo.vestingSteps)
-        );
+        vars.cliffShares = uint128(vars.vestInfo.vestingCliffLockAmount);
 
         vars.vestId = vestIds++;
 
@@ -180,9 +161,12 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
             recipient: recipientAddr,
             token: vars.fundingInfo.returnTokenAddr,
             start: uint32(vars.vestInfo.vestingStartTime),
-            cliffDuration: uint32(vars.vestInfo.vestingCliffDuration),
-            stepDuration: uint32(vars.vestInfo.vestingStepDuration),
-            steps: uint32(vars.vestInfo.vestingSteps),
+            cliffDuration: uint32(
+                vars.vestInfo.vestingCliffEndTime -
+                    vars.vestInfo.vestingStartTime
+            ),
+            stepDuration: uint32(vars.vestInfo.vestingInterval),
+            steps: uint32(vars.vestingSteps),
             cliffShares: vars.cliffShares,
             stepShares: vars.stepShares,
             claimed: 0
@@ -194,21 +178,22 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
             vars.fundingInfo.returnTokenAddr,
             recipientAddr,
             uint32(vars.vestInfo.vestingStartTime),
-            uint32(vars.vestInfo.vestingCliffDuration),
-            uint32(vars.vestInfo.vestingStepDuration),
-            uint32(vars.vestInfo.vestingSteps),
+            uint32(
+                vars.vestInfo.vestingCliffEndTime -
+                    vars.vestInfo.vestingStartTime
+            ),
+            uint32(vars.vestInfo.vestingInterval),
+            uint32(vars.vestingSteps),
             vars.cliffShares,
             vars.stepShares,
             proposalId
         );
     }
 
-    function withdraw(DaoRegistry dao, uint256 vestId)
-        external
-        override
-    // bytes calldata taskData,
-    // bool toBentoBox
-    {
+    function withdraw(
+        DaoRegistry dao,
+        uint256 vestId // bytes calldata taskData, // bool toBentoBox
+    ) external override {
         Vest storage vest = vests[vestId];
         address recipient = vest.recipient;
         if (recipient != msg.sender) revert NotVestReceiver();
@@ -232,57 +217,16 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
         emit Withdraw(vestId, vest.token, canClaim, false);
     }
 
-    // function stopVesting(uint256 vestId, bool toBentoBox) external override {
-    //     Vest memory vest = vests[vestId];
-
-    //     if (vest.owner != msg.sender) revert NotOwner();
-
-    //     uint256 amountVested = _balanceOf(vest);
-    //     uint256 canClaim = amountVested - vest.claimed;
-    //     uint256 returnShares = (vest.cliffShares +
-    //         (vest.steps * vest.stepShares)) - amountVested;
-
-    //     delete vests[vestId];
-
-    //     _transferToken(
-    //         address(vest.token),
-    //         address(this),
-    //         ownerOf[vestId],
-    //         canClaim,
-    //         toBentoBox
-    //     );
-
-    //     _transferToken(
-    //         address(vest.token),
-    //         address(this),
-    //         msg.sender,
-    //         returnShares,
-    //         toBentoBox
-    //     );
-    //     emit CancelVesting(
-    //         vestId,
-    //         returnShares,
-    //         canClaim,
-    //         vest.token,
-    //         toBentoBox
-    //     );
-    // }
-
-    function vestBalance(uint256 vestId)
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function vestBalance(
+        uint256 vestId
+    ) external view override returns (uint256) {
         Vest memory vest = vests[vestId];
         return _balanceOf(vest) - vest.claimed;
     }
 
-    function _balanceOf(Vest memory vest)
-        internal
-        view
-        returns (uint256 claimable)
-    {
+    function _balanceOf(
+        Vest memory vest
+    ) internal view returns (uint256 claimable) {
         uint256 timeAfterCliff = vest.start + vest.cliffDuration;
 
         if (block.timestamp < timeAfterCliff) {

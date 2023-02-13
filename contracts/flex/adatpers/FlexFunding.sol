@@ -56,41 +56,42 @@ contract FlexFundingAdapterContract is
      * @param dao The gp Allocation Bonus Radio.
      * @param flexFundingType The rice Stake Allocation Radio.
      */
-    function configureDao(DaoRegistry dao, FundingType flexFundingType)
-        external
-        onlyAdapter(dao)
-    {
+    function configureDao(
+        DaoRegistry dao,
+        FundingType flexFundingType
+    ) external onlyAdapter(dao) {
         // fundingType = flexFundingType;
         // emit ConfigureDao(gpAllocationBonusRadio, riceStakeAllocationRadio);
     }
 
-    function setProtocolAddress(DaoRegistry dao, address _protocolAddress)
-        external
-        reentrancyGuard(dao)
-        onlyDaoFactoryOwner(dao)
-    {
+    function setProtocolAddress(
+        DaoRegistry dao,
+        address _protocolAddress
+    ) external reentrancyGuard(dao) onlyDaoFactoryOwner(dao) {
         protocolAddress = _protocolAddress;
     }
 
-    function setProtocolFee(DaoRegistry dao, uint256 feeProtocol)
-        external
-        reentrancyGuard(dao)
-        onlyDaoFactoryOwner(dao)
-    {
+    function setProtocolFee(
+        DaoRegistry dao,
+        uint256 feeProtocol
+    ) external reentrancyGuard(dao) onlyDaoFactoryOwner(dao) {
         require(feeProtocol < 100 && feeProtocol > 0);
         protocolFee = feeProtocol;
     }
 
-    function registerProposerWhiteList(DaoRegistry dao, address account)
-        external
-        onlyMember(dao)
-    {
+    function registerProposerWhiteList(
+        DaoRegistry dao,
+        address account
+    ) external onlyMember(dao) {
         if (!proposerWhiteList[address(dao)].contains(account)) {
             proposerWhiteList[address(dao)].add(account);
         }
     }
 
-    function submitProposal(DaoRegistry dao, ProposalParams calldata params)
+    function submitProposal(
+        DaoRegistry dao,
+        ProposalParams calldata params
+    )
         external
         override
         reimbursable(dao)
@@ -155,7 +156,6 @@ contract FlexFundingAdapterContract is
                 params.fundingInfo.minReturnAmount <= 0
             ) revert("Invalid Return Fund Params");
             if (
-                params.vestInfo.vestingSteps <= 0 ||
                 params.vestInfo.vestingCliffLockAmount >
                 params.fundingInfo.returnTokenAmount
             ) revert("Invalid Vesting Params");
@@ -184,9 +184,9 @@ contract FlexFundingAdapterContract is
             ),
             VestInfo(
                 params.vestInfo.vestingStartTime,
-                params.vestInfo.vestingCliffDuration,
-                params.vestInfo.vestingStepDuration,
-                params.vestInfo.vestingSteps,
+                params.vestInfo.vestingCliffEndTime,
+                params.vestInfo.vestingEndTime,
+                params.vestInfo.vestingInterval,
                 params.vestInfo.vestingCliffLockAmount
             ),
             FundRaiseInfo(
@@ -240,12 +240,10 @@ contract FlexFundingAdapterContract is
         emit ProposalCreated(address(dao), vars.proposalId, msg.sender);
     }
 
-    function processProposal(DaoRegistry dao, bytes32 proposalId)
-        external
-        override
-        reimbursable(dao)
-        returns (bool)
-    {
+    function processProposal(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external override reimbursable(dao) returns (bool) {
         ProcessProposalLocalVars memory vars;
         ProposalInfo storage proposal = Proposals[address(dao)][proposalId];
         FundingType _fundingType = dao.getConfiguration(
@@ -382,7 +380,6 @@ contract FlexFundingAdapterContract is
                             proposal.fundingInfo.approverAddr
                         ] = vars.returnTokenAmount;
                     }
-
                     vars.flexAllocAdapt = FlexAllocationAdapterContract(
                         dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
                     );
@@ -401,9 +398,10 @@ contract FlexFundingAdapterContract is
                         [
                             vars.returnTokenAmount,
                             proposal.vestInfo.vestingStartTime,
-                            proposal.vestInfo.vestingCliffDuration,
-                            proposal.vestInfo.vestingStepDuration,
-                            proposal.vestInfo.vestingSteps
+                            proposal.vestInfo.vestingCliffEndTime -
+                                proposal.vestInfo.vestingStartTime,
+                            proposal.vestInfo.vestingInterval,
+                            proposal.vestInfo.vestingInterval
                         ]
                     );
                 } else {
@@ -607,10 +605,10 @@ contract FlexFundingAdapterContract is
         return true;
     }
 
-    function retrunTokenToApprover(DaoRegistry dao, bytes32 proposalId)
-        external
-        reimbursable(dao)
-    {
+    function retrunTokenToApprover(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external reimbursable(dao) {
         uint256 escrowedTokenAmount = escrowedTokens[address(dao)][proposalId][
             msg.sender
         ];
@@ -633,15 +631,17 @@ contract FlexFundingAdapterContract is
         erc20.transfer(msg.sender, escrowedTokenAmount);
     }
 
-    function getTokenByProposalId(DaoRegistry dao, bytes32 proposalId)
-        public
-        view
-        returns (address)
-    {
+    function getTokenByProposalId(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) public view returns (address) {
         return Proposals[address(dao)][proposalId].fundingInfo.tokenAddress;
     }
 
-    function getFundRaiseTimes(DaoRegistry dao, bytes32 proposalId)
+    function getFundRaiseTimes(
+        DaoRegistry dao,
+        bytes32 proposalId
+    )
         external
         view
         returns (uint256 fundRaiseStartTime, uint256 fundRaiseEndTime)
@@ -654,39 +654,38 @@ contract FlexFundingAdapterContract is
             .fundRaiseEndTime;
     }
 
-    function getFundRaiseType(DaoRegistry dao, bytes32 proposalId)
-        external
-        view
-        returns (FundRaiseType)
-    {
+    function getFundRaiseType(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external view returns (FundRaiseType) {
         return Proposals[address(dao)][proposalId].fundRaiseInfo.fundRaiseType;
     }
 
-    function getMaxFundingAmount(DaoRegistry dao, bytes32 proposalId)
-        external
-        view
-        returns (uint256)
-    {
+    function getMaxFundingAmount(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external view returns (uint256) {
         return Proposals[address(dao)][proposalId].fundingInfo.maxFundingAmount;
     }
 
-    function getMinFundingAmount(DaoRegistry dao, bytes32 proposalId)
-        external
-        view
-        returns (uint256)
-    {
+    function getMinFundingAmount(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external view returns (uint256) {
         return Proposals[address(dao)][proposalId].fundingInfo.minFundingAmount;
     }
 
-    function getProposalState(DaoRegistry dao, bytes32 proposalId)
-        external
-        view
-        returns (ProposalStatus)
-    {
+    function getProposalState(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external view returns (ProposalStatus) {
         return Proposals[address(dao)][proposalId].state;
     }
 
-    function getDepositAmountLimit(DaoRegistry dao, bytes32 proposalId)
+    function getDepositAmountLimit(
+        DaoRegistry dao,
+        bytes32 proposalId
+    )
         external
         view
         returns (uint256 minDepositAmount, uint256 maxDepositAmount)
@@ -699,19 +698,16 @@ contract FlexFundingAdapterContract is
             .maxDepositAmount;
     }
 
-    function isProposerWhiteList(DaoRegistry dao, address account)
-        external
-        view
-        returns (bool)
-    {
+    function isProposerWhiteList(
+        DaoRegistry dao,
+        address account
+    ) external view returns (bool) {
         return proposerWhiteList[address(dao)].contains(account);
     }
 
-    function getProposerWhitelist(DaoRegistry dao)
-        external
-        view
-        returns (address[] memory)
-    {
+    function getProposerWhitelist(
+        DaoRegistry dao
+    ) external view returns (address[] memory) {
         return proposerWhiteList[address(dao)].values();
     }
 

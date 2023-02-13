@@ -248,10 +248,9 @@ contract FlexFundingPoolExtension is IExtension, MemberGuard, ERC165 {
      * @dev Cannot be a reserved token or an available internal token
      * @param proposalId The address of the token
      */
-    function registerPotentialNewFundingProposal(bytes32 proposalId)
-        external
-        hasExtensionAccess(AclFlag.REGISTER_NEW_TOKEN)
-    {
+    function registerPotentialNewFundingProposal(
+        bytes32 proposalId
+    ) external hasExtensionAccess(AclFlag.REGISTER_NEW_TOKEN) {
         // require(DaoHelper.isNotReservedAddress(token), "reservedToken");
         // require(!availableInternalTokens[token], "internalToken");
         // require(
@@ -315,10 +314,10 @@ contract FlexFundingPoolExtension is IExtension, MemberGuard, ERC165 {
         _createNewAmountCheckpoint(proposalId, DaoHelper.TOTAL, newTotalAmount);
     }
 
-    function substractFromAll(bytes32 proposalId, uint256 amount)
-        external
-        hasExtensionAccess(AclFlag.SUB_FROM_BALANCE)
-    {
+    function substractFromAll(
+        bytes32 proposalId,
+        uint256 amount
+    ) external hasExtensionAccess(AclFlag.SUB_FROM_BALANCE) {
         address[] memory tem = investors[proposalId].values();
         uint256 poolBalance = balanceOf(proposalId, DaoHelper.TOTAL);
         for (uint8 i = 0; i < tem.length; i++) {
@@ -382,11 +381,10 @@ contract FlexFundingPoolExtension is IExtension, MemberGuard, ERC165 {
      * @param member The address to look up
      * @return The amount in account's tokenAddr balance
      */
-    function balanceOf(bytes32 proposalId, address member)
-        public
-        view
-        returns (uint160)
-    {
+    function balanceOf(
+        bytes32 proposalId,
+        address member
+    ) public view returns (uint160) {
         uint32 nCheckpoints = numCheckpoints[proposalId][member];
         return
             nCheckpoints > 0
@@ -446,13 +444,9 @@ contract FlexFundingPoolExtension is IExtension, MemberGuard, ERC165 {
         return checkpoints[proposalId][account][lower].amount;
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override returns (bool) {
         return
             super.supportsInterface(interfaceId) ||
             this.subtractFromBalance.selector == interfaceId ||
@@ -522,11 +516,10 @@ contract FlexFundingPoolExtension is IExtension, MemberGuard, ERC165 {
         emit NewBalance(proposalId, member, newAmount);
     }
 
-    function isInvestor(bytes32 proposalId, address investorAddr)
-        external
-        view
-        returns (bool)
-    {
+    function isInvestor(
+        bytes32 proposalId,
+        address investorAddr
+    ) external view returns (bool) {
         return investors[proposalId].contains(investorAddr);
     }
 
@@ -540,9 +533,10 @@ contract FlexFundingPoolExtension is IExtension, MemberGuard, ERC165 {
         }
     }
 
-    function _removeInvestor(bytes32 proposalId, address investorAddr)
-        internal
-    {
+    function _removeInvestor(
+        bytes32 proposalId,
+        address investorAddr
+    ) internal {
         require(
             investorAddr != address(0x0),
             "FundingPool::_removeInvestor::invalid investorAddr address"
@@ -550,11 +544,9 @@ contract FlexFundingPoolExtension is IExtension, MemberGuard, ERC165 {
         investors[proposalId].remove(investorAddr);
     }
 
-    function getInvestorsByProposalId(bytes32 proposalId)
-        external
-        view
-        returns (address[] memory)
-    {
+    function getInvestorsByProposalId(
+        bytes32 proposalId
+    ) external view returns (address[] memory) {
         return investors[proposalId].values();
     }
 }

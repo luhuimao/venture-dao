@@ -125,9 +125,9 @@ interface IFlexFunding {
     }
     struct VestInfo {
         uint256 vestingStartTime;
-        uint256 vestingCliffDuration;
-        uint256 vestingStepDuration;
-        uint256 vestingSteps;
+        uint256 vestingCliffEndTime;
+        uint256 vestingEndTime;
+        uint256 vestingInterval;
         uint256 vestingCliffLockAmount;
     }
     struct FundRaiseInfo {
