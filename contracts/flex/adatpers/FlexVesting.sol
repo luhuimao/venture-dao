@@ -97,7 +97,7 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
             proposalId,
             recipientAddr
         );
-
+        
         (, vars.fundingInfo, vars.vestInfo, , , , , ) = vars
             .flexFundingAdapt
             .Proposals(address(dao), proposalId);
@@ -161,6 +161,7 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
             recipient: recipientAddr,
             token: vars.fundingInfo.returnTokenAddr,
             start: uint32(vars.vestInfo.vestingStartTime),
+            end: uint32(vars.vestInfo.vestingEndTime),
             cliffDuration: uint32(
                 vars.vestInfo.vestingCliffEndTime -
                     vars.vestInfo.vestingStartTime
@@ -234,11 +235,15 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
         }
 
         uint256 passedSinceCliff = block.timestamp - timeAfterCliff;
-
         uint256 stepPassed = Math.min(
             vest.steps,
             passedSinceCliff / vest.stepDuration
         );
+        if (
+            vest.start + vest.cliffDuration + vest.steps * vest.stepDuration >
+            vest.end &&
+            block.timestamp > vest.end
+        ) stepPassed = vest.steps;
 
         claimable = vest.cliffShares + (vest.stepShares * stepPassed);
     }

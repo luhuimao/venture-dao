@@ -203,7 +203,7 @@ contract FlexFundingPoolAdapterContract is
         if (
             vars.flexFunding.getProposalState(dao, proposalId) !=
             IFlexFunding.ProposalStatus.IN_FUND_RAISE_PROGRESS
-        ) revert("Funding Proposal Not Finalize");
+        ) revert("Funding Proposal Not In Fund Raie");
 
         (vars.fundRaiseStartTime, vars.fundRaiseEndTime) = vars
             .flexFunding

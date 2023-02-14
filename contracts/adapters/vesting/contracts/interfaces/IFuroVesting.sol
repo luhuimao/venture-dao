@@ -67,6 +67,7 @@ interface IFuroVesting {
         address recipient;
         address token;
         uint32 start;
+        uint32 end;
         uint32 cliffDuration;
         uint32 stepDuration;
         uint32 steps;

@@ -32,7 +32,6 @@ contract FuroVesting is
     error NotVestReceiver();
     error InvalidStepSetting();
 
-
     // constructor(IBentoBoxMinimal _bentoBox) {
     constructor() {
         // bentoBox = _bentoBox;
@@ -75,9 +74,9 @@ contract FuroVesting is
         uint128 stepShares;
         uint128 cliffShares;
         uint128 stepPercentage;
-         AllocationAdapterContractV2 allocAdapter;
+        AllocationAdapterContractV2 allocAdapter;
         DistributeFundContractV2 distributeFundAdapter;
-          uint256 duration;
+        uint256 duration;
         uint256 ratePerSecond;
         uint256 depositAmount;
         address tokenAddress;
@@ -89,8 +88,11 @@ contract FuroVesting is
         IFunding.VestInfo vestInfo;
     }
 
-    function createVesting(DaoRegistry dao,
-       address recipientAddr, bytes32 proposalId)
+    function createVesting(
+        DaoRegistry dao,
+        address recipientAddr,
+        bytes32 proposalId
+    )
         external
         payable
         override
@@ -101,21 +103,21 @@ contract FuroVesting is
             uint128 cliffShares
         )
     {
-         CreateVestLocalVars memory vars;
+        CreateVestLocalVars memory vars;
         vars.allocAdaptAddr = dao.getAdapterAddress(
             DaoHelper.ALLOCATION_ADAPTV2
         );
         vars.allocAdapter = AllocationAdapterContractV2(vars.allocAdaptAddr);
         require(
-            vars.allocAdapter.ifEligible(dao,recipientAddr, proposalId),
+            vars.allocAdapter.ifEligible(dao, recipientAddr, proposalId),
             "Vesting::createVesting::Recipient not eligible of this proposalId"
         );
         require(
-            !vars.allocAdapter.isVestCreated(dao, proposalId,recipientAddr),
+            !vars.allocAdapter.isVestCreated(dao, proposalId, recipientAddr),
             "Vesting::createVesting::Already created"
         );
 
-         vars.distributeFundAdapter = DistributeFundContractV2(
+        vars.distributeFundAdapter = DistributeFundContractV2(
             dao.getAdapterAddress(DaoHelper.DISTRIBUTE_FUND_ADAPTV2)
         );
         (vars.depositAmount, ) = vars.allocAdapter.vestingInfos(
@@ -123,7 +125,7 @@ contract FuroVesting is
             proposalId,
             recipientAddr
         );
-         (
+        (
             vars.tokenAddress,
             vars.tradingOffTokenAmount,
             ,
@@ -136,14 +138,15 @@ contract FuroVesting is
             ,
             ,
             vars.vestInfo
-          
         ) = vars.distributeFundAdapter.distributions(address(dao), proposalId);
         // if (vestParams.start < block.timestamp) revert InvalidStart();
         // vars.stepPercentage=uint128(PERCENTAGE_PRECISION / vars.vestInfo.vestingSteps);
-        if (vars.vestInfo.vestingCliffLockAmount >  vars.tradingOffTokenAmount)
+        if (vars.vestInfo.vestingCliffLockAmount > vars.tradingOffTokenAmount)
             revert InvalidStepSetting();
-        if (vars.vestInfo.vestingStepDuration == 0 || vars.vestInfo.vestingSteps == 0)
-            revert InvalidStepSetting();
+        if (
+            vars.vestInfo.vestingStepDuration == 0 ||
+            vars.vestInfo.vestingSteps == 0
+        ) revert InvalidStepSetting();
         // depositedShares = _depositToken(
         //     address(vestParams.token),
         //     msg.sender,
@@ -152,19 +155,23 @@ contract FuroVesting is
         //     vestParams.fromBentoBox
         // );
 
-        vars.depositedShares = _depositToken(dao,
-           vars.tokenAddress,
-             vars.allocAdaptAddr,
+        vars.depositedShares = _depositToken(
+            dao,
+            vars.tokenAddress,
+            vars.allocAdaptAddr,
             address(this),
             vars.depositAmount,
             false
         );
         vars.stepShares = uint128(
-            (vars.depositedShares * (vars.tradingOffTokenAmount -  vars.vestInfo.vestingCliffLockAmount) / vars.tradingOffTokenAmount ) /
-                vars.vestInfo.vestingSteps
+            ((vars.depositedShares *
+                (vars.tradingOffTokenAmount -
+                    vars.vestInfo.vestingCliffLockAmount)) /
+                vars.tradingOffTokenAmount) / vars.vestInfo.vestingSteps
         );
         vars.cliffShares = uint128(
-            vars.depositedShares - (vars.stepShares * vars.vestInfo.vestingSteps)
+            vars.depositedShares -
+                (vars.stepShares * vars.vestInfo.vestingSteps)
         );
 
         vars.vestId = vestIds++;
@@ -179,6 +186,12 @@ contract FuroVesting is
             //     : vestParams.token,
             token: vars.tokenAddress,
             start: uint32(vars.vestInfo.vestingStartTime),
+            end: uint32(
+                vars.vestInfo.vestingStartTime +
+                    vars.vestInfo.vestingCliffDuration +
+                    vars.vestInfo.vestingStepDuration *
+                    vars.vestInfo.vestingSteps
+            ),
             cliffDuration: uint32(vars.vestInfo.vestingCliffDuration),
             stepDuration: uint32(vars.vestInfo.vestingStepDuration),
             steps: uint32(vars.vestInfo.vestingSteps),
@@ -204,10 +217,9 @@ contract FuroVesting is
 
     function withdraw(
         DaoRegistry dao,
-        uint256 vestId
-        // bytes calldata taskData,
-        // bool toBentoBox
-    ) external override {
+        uint256 vestId // bytes calldata taskData,
+    ) external override // bool toBentoBox
+    {
         Vest storage vest = vests[vestId];
         address recipient = vest.recipient;
         if (recipient != msg.sender) revert NotVestReceiver();
@@ -267,21 +279,16 @@ contract FuroVesting is
     //     );
     // }
 
-    function vestBalance(uint256 vestId)
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function vestBalance(
+        uint256 vestId
+    ) external view override returns (uint256) {
         Vest memory vest = vests[vestId];
         return _balanceOf(vest) - vest.claimed;
     }
 
-    function _balanceOf(Vest memory vest)
-        internal
-        view
-        returns (uint256 claimable)
-    {
+    function _balanceOf(
+        Vest memory vest
+    ) internal view returns (uint256 claimable) {
         uint256 timeAfterCliff = vest.start + vest.cliffDuration;
 
         if (block.timestamp < timeAfterCliff) {
@@ -313,7 +320,9 @@ contract FuroVesting is
         uint256 amount,
         bool fromBentoBox
     ) internal returns (uint256 depositedShares) {
-        IBentoBoxMinimal bentoBox=IBentoBoxMinimal(dao.getAdapterAddress(DaoHelper.BEN_TO_BOX));
+        IBentoBoxMinimal bentoBox = IBentoBoxMinimal(
+            dao.getAdapterAddress(DaoHelper.BEN_TO_BOX)
+        );
         if (fromBentoBox) {
             depositedShares = bentoBox.toShare(token, amount, false);
             bentoBox.transfer(token, from, to, depositedShares);
@@ -332,7 +341,9 @@ contract FuroVesting is
         uint256 shares,
         bool toBentoBox
     ) internal {
-                IBentoBoxMinimal bentoBox=IBentoBoxMinimal(dao.getAdapterAddress(DaoHelper.BEN_TO_BOX));
+        IBentoBoxMinimal bentoBox = IBentoBoxMinimal(
+            dao.getAdapterAddress(DaoHelper.BEN_TO_BOX)
+        );
         if (toBentoBox) {
             bentoBox.transfer(token, from, to, shares);
         } else {
