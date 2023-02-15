@@ -69,6 +69,8 @@ library DaoHelper {
         DONE,
         FAILED
     }
+    uint256 internal constant TOKEN_AMOUNT_PRECISION = 1e18;
+
     uint256 internal constant ONE_WEEK = 60 * 60 * 24 * 7;
     uint256 internal constant TWO_WEEK = 60 * 60 * 24 * 14;
     uint256 internal constant ONE_MONTH = 60 * 60 * 24 * 30;
@@ -324,21 +326,19 @@ library DaoHelper {
     /**
      * @notice calculates the total number of units.
      */
-    function priorTotalTokens(BankExtension bank, uint256 at)
-        internal
-        view
-        returns (uint256)
-    {
+    function priorTotalTokens(
+        BankExtension bank,
+        uint256 at
+    ) internal view returns (uint256) {
         return
             priorMemberTokens(bank, TOTAL, at) -
             priorMemberTokens(bank, GUILD, at);
     }
 
-    function memberTokens(BankExtension bank, address member)
-        internal
-        view
-        returns (uint256)
-    {
+    function memberTokens(
+        BankExtension bank,
+        address member
+    ) internal view returns (uint256) {
         return
             bank.balanceOf(member, UNITS) +
             bank.balanceOf(member, LOCKED_UNITS) +
@@ -373,9 +373,9 @@ library DaoHelper {
     ) internal pure returns (uint256) {
         if (getFlag(flags, flag) != value) {
             if (value) {
-                return flags + 2**flag;
+                return flags + 2 ** flag;
             } else {
-                return flags - 2**flag;
+                return flags - 2 ** flag;
             }
         } else {
             return flags;
@@ -396,9 +396,10 @@ library DaoHelper {
         return addr != address(0x0);
     }
 
-    function potentialNewMember(address memberAddress, DaoRegistry dao)
-        internal
-    {
+    function potentialNewMember(
+        address memberAddress,
+        DaoRegistry dao
+    ) internal {
         require(memberAddress != address(0x0), "invalid member address");
         dao.potentialNewMember(memberAddress);
         // if (address(bank) != address(0x0)) {
@@ -413,11 +414,10 @@ library DaoHelper {
         dao.removeMember(memberAddress);
     }
 
-    function ifGP(address memberAddress, DaoRegistry dao)
-        internal
-        view
-        returns (bool)
-    {
+    function ifGP(
+        address memberAddress,
+        DaoRegistry dao
+    ) internal view returns (bool) {
         return
             GPDaoExtension(dao.getExtensionAddress(DaoHelper.GPDAO_EXT))
                 .isGeneralPartner(memberAddress);
@@ -430,11 +430,9 @@ library DaoHelper {
      * 3. The sender is an adapter.
      */
     // slither-disable-next-line calls-loop
-    function isInCreationModeAndHasAccess(DaoRegistry dao)
-        internal
-        view
-        returns (bool)
-    {
+    function isInCreationModeAndHasAccess(
+        DaoRegistry dao
+    ) internal view returns (bool) {
         return
             dao.state() == DaoRegistry.DaoState.CREATION &&
             (dao.getNbMembers() == 0 ||
@@ -442,27 +440,23 @@ library DaoHelper {
                 dao.isAdapter(msg.sender));
     }
 
-    function daoFactoryAddress(DaoRegistry dao)
-        internal
-        view
-        returns (address)
-    {
+    function daoFactoryAddress(
+        DaoRegistry dao
+    ) internal view returns (address) {
         return DaoFactory(dao.daoFactory()).owner();
     }
 
-    function getERC20Balance(address token, address account)
-        internal
-        view
-        returns (uint256)
-    {
+    function getERC20Balance(
+        address token,
+        address account
+    ) internal view returns (uint256) {
         return IERC20(token).balanceOf(account);
     }
 
-    function getERC721Balance(address token, address account)
-        internal
-        view
-        returns (uint256)
-    {
+    function getERC721Balance(
+        address token,
+        address account
+    ) internal view returns (uint256) {
         return IERC721(token).balanceOf(account);
     }
 

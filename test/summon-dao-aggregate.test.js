@@ -4,7 +4,7 @@
  * @Author: huhuimao
  * @Date: 2022-12-19 13:50:51
  * @LastEditors: huhuimao
- * @LastEditTime: 2023-02-14 17:44:13
+ * @LastEditTime: 2023-02-15 14:17:10
  */
 // Whole-script strict mode syntax
 "use strict";
@@ -283,7 +283,7 @@ describe("Summon A Flex Dao", () => {
             [this.funding_proposer1_whitelist.address, this.funding_proposer2_whitelist.address]  // address[] whiteList;
         ];
 
-        const flexDaoManagementfee = 2;
+        const flexDaoManagementfee = hre.ethers.utils.parseEther("0.002");// 0.2%
         const flexDaoGenesisStewards = [this.genesis_steward1.address, this.genesis_steward2.address];
 
         const fundingPollEnable = false;//DIRECT mode
@@ -471,7 +471,7 @@ describe("Summon A Flex Dao", () => {
             [this.funding_proposer1_whitelist.address, this.funding_proposer2_whitelist.address]  // address[] whiteList;
         ];
 
-        const flexDaoManagementfee = 2;
+        const flexDaoManagementfee = hre.ethers.utils.parseEther("0.002");// 0.2%
         const flexDaoGenesisStewards = [this.genesis_steward1.address, this.genesis_steward2.address];
 
         const fundingPollEnable = true;//Poll mode

@@ -37,7 +37,7 @@ contract FlexFundingAdapterContract is
     uint256 public proposalIds = 1;
     // FundingType public fundingType;
     uint256 public constant RETRUN_TOKEN_AMOUNT_PRECISION = 1e18;
-    uint256 public protocolFee = 3;
+    uint256 public protocolFee = (3 * RETRUN_TOKEN_AMOUNT_PRECISION) / 1000; // 0.3%
     address public protocolAddress =
         address(0x9ac9c636404C8d46D9eb966d7179983Ba5a3941A);
 
@@ -73,10 +73,13 @@ contract FlexFundingAdapterContract is
 
     function setProtocolFee(
         DaoRegistry dao,
-        uint256 feeProtocol
+        uint256 _protocolFee
     ) external reentrancyGuard(dao) onlyDaoFactoryOwner(dao) {
-        require(feeProtocol < 100 && feeProtocol > 0);
-        protocolFee = feeProtocol;
+        require(
+            _protocolFee < 100 * RETRUN_TOKEN_AMOUNT_PRECISION &&
+                _protocolFee > 0
+        );
+        protocolFee = _protocolFee;
     }
 
     function registerProposerWhiteList(
@@ -295,15 +298,17 @@ contract FlexFundingAdapterContract is
             if (vars.fundRaiseEndTime > block.timestamp)
                 revert("Fund Raise End Time Not UP");
             dao.processProposal(proposalId);
-            vars.protocolFee = (vars.poolBalance * protocolFee) / 100;
+            vars.protocolFee =
+                (vars.poolBalance * protocolFee) /
+                RETRUN_TOKEN_AMOUNT_PRECISION;
             vars.managementFee = dao.getConfiguration(
                 DaoHelper.FLEX_MANAGEMENT_FEE_TYPE
             ) == 0
                 ? (vars.poolBalance *
                     dao.getConfiguration(
                         DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT
-                    )) / 100
-                : dao.getConfiguration(DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT);
+                    )) / RETRUN_TOKEN_AMOUNT_PRECISION
+                : dao.getConfiguration(DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT); // type 0:percentage of fund pool  type 1: fixed amount
             vars.proposerReward = proposal.proposerRewardInfo.cashRewardAmount;
             if (
                 vars.poolBalance >=
