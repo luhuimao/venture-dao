@@ -31,7 +31,8 @@ const deploySummonContract = async () => {
 }
 
 async function main() {
-    await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
+    // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
+    await deploy();
 }
 
 const summonVintageDao = async () => {
@@ -758,6 +759,17 @@ const deploy = async () => {
     // await flexPollingVotingContract.deployed();
     // console.log("flexPollingVotingContract deployed address:", flexPollingVotingContract.address);
 
+    
+    // const FlexVotingContract = await hre.ethers.getContractFactory("FlexVotingContract");
+    // const flexVotingContract = await FlexVotingContract.deploy();
+    // await flexVotingContract.deployed();
+    // console.log("flexVotingContract deployed address:", flexVotingContract.address);
+
+    // const FlexVesting = await hre.ethers.getContractFactory("FlexVesting");
+    // const flexVesting = await FlexVesting.deploy();
+    // await flexVesting.deployed();
+    // console.log("flexVesting deployed address:", flexVesting.address);
+    
 
     const SummonDao = await hre.ethers.getContractFactory("SummonDao");
     const summonDao = await SummonDao.deploy();

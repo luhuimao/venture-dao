@@ -9,15 +9,15 @@ export const FundingPoolFactory_RINKEBY = "0x22F759436F5524D550c17c89475c56906A5
 export const RiceStakingFactory_RINKEBY = "0x0C78577d975035563d7f0130934AF7d7B391f486"; //REPLACE_FLAG
 export const GPDaoFactory_RINKEBY = "0x2F018184c4b87905a1BFc012d028EBf616487F8e"; //REPLACE_FLAG
 //Goerli testnet
-export const DaoFactory_GOERLI = "0x2ccF655DD0e15e97B6a677EB3ff1f3Aa4b9833a1"; //REPLACE_FLAG
-export const FundingPoolFactory_GOERLI = "0x19688d00968f482f4EA405366220D600654664d5"; //REPLACE_FLAG
+export const DaoFactory_GOERLI = "0xC213d9093e37Aae1A7Ee1502bfa6eaE7809223B6"; //REPLACE_FLAG
+export const FundingPoolFactory_GOERLI = "0x87Ace7e37571eC0f38FF940B03C5577D705DeD9c"; //REPLACE_FLAG
 export const RiceStakingFactory_GOERLI = "0x4C2b940f4410a93AfBfF5E36c7d5810Cf20e4965"; //REPLACE_FLAG
-export const GPDaoFactory_GOERLI = "0xEC72dd8c1F8eD46DcE76d39A7D8c2a56ce4A1DFc"; //REPLACE_FLAG
+export const GPDaoFactory_GOERLI = "0x729C5D31adB33A0fb196A9345d396bb4DCb5Bf7A"; //REPLACE_FLAG
 
-export const FlexFundingPoolFactory_GOERLI = "0x81dCbF3514d50cd8eF0e0528300f7bf4902F3bE0";//REPLACE_FLAG
+export const FlexFundingPoolFactory_GOERLI = "0xB489597a3e9A45c3762f63Aa75A2Bb2F5ECdcCAa";//REPLACE_FLAG
 //core
 export const DAO_ADDRESS_RINKEBY = "0x1f55De869c6AE70DA58448C0c6a3C9f08165bc8C"; //REPLACE_FLAG
-export const DAO_ADDRESS_GOERLI = "0xd0a0582A8e82dC63056056188ED4406E45B84692"; //REPLACE_FLAG
+export const DAO_ADDRESS_GOERLI = "0x23B9D92721B6C7073F6ec0d1bbbbD2655EEa52A2"; //REPLACE_FLAG
 
 //Extensions
 //rinkeby testnet
@@ -26,10 +26,10 @@ export const StakingRiceExtension_RINKEBY = "0xA27E96440E81A9DAC44461951b03DF390
 export const GPDaoExtension_RINKEBY = "0x217C48a06Be195c27f52095E0Ba2A0bb9eb851Af"; //REPLACE_FLAG
 
 //Goerli testnet
-export const FundingPoolExtension_GOERLI = "0x51c48Dd3b0692898C9250f6F85b515A21001b859";
+export const FundingPoolExtension_GOERLI = "0x4e746e696c3Cf3E2192Fb7fd1d303BcfaB3853C3";
 export const StakingRiceExtension_GOERLI = "0xf52b1531EFef7E2BCe7a38Aa4945216F6aB9b8FB"; //REPLACE_FLAG
-export const GPDaoExtension_GOERLI = "0x952767cF43832bdeb2fe717A019e56ceC96E416F"; //REPLACE_FLAG
-export const FlexFundingPoolExtension_GOERLI = "0x44E21bc156645f84ca53D404096d4704A21FdfB6"; //REPLACE_FLAG
+export const GPDaoExtension_GOERLI = "0x98De1cA41EEa56Bce0d6FC495524CAc51C6c7ED0"; //REPLACE_FLAG
+export const FlexFundingPoolExtension_GOERLI = "0x8655b5ACde307970B3ac2Ecb78610eA8CFa4B807"; //REPLACE_FLAG
 
 
 //adapters
@@ -49,31 +49,32 @@ export const AllocationAdapterContract_RINKEBY = "0x1F2b112266452b1e7553ECF4A7eF
 export const AllocationAdapterContractV2_RINKEBY = "0x0e3d60B0c62CDC2bD68C5353cEa28C43d62E5f9c"; //REPLACE_FLAG
 
 //Goerli testnet
-export const FundingPoolAdapterContract_GOERLI = "0x6D3c55af12EB20c97cB5DDFF1a45ae1C1e63fA70"; //REPLACE_FLAG
-export const RiceStakingAdapterContract_GOERLI = "0xf203E215601647Bf7d51B223efB1089A9eDB81a8"; //REPLACE_FLAG
-export const GPDaoAdapterContract_GOERLI = "0x80E6A7a8faF5C57f0EAdA586fc8F8b557e09648F"; //REPLACE_FLAG
-export const GPDaoOnboardingAdapterContract_GOERLI = "0x55C5938Afbb70d111c4661b1fDEE22FbB03D959b"; //REPLACE_FLAG
-export const GPKickAdapterContract_GOERLI = "0xb1fD4B225970f727bdbeCCCcec4B12bc8Fd22D89"; //REPLACE_FLAG
-export const Sablier_GOERLI = "0x74395f805c115fa29a5FC30E71a0A229861b736D"; //REPLACE_FLAG
+export const FundingPoolAdapterContract_GOERLI = "0x691E412baeaC66C30C76b615DbeC288e7Ad1030E"; //REPLACE_FLAG
+export const RiceStakingAdapterContract_GOERLI = ""; //REPLACE_FLAG
+export const GPDaoAdapterContract_GOERLI = "0x8E8be48444171Ca7375CD3f19f33fA2C4bd5ce22"; //REPLACE_FLAG
+export const GPDaoOnboardingAdapterContract_GOERLI = "0x717cbE5a002164298ece492502f744a9C96dD039"; //REPLACE_FLAG
+export const GPKickAdapterContract_GOERLI = "0xB3AE32e66EF0e5f13A5EDaeec2fE2681599daddd"; //REPLACE_FLAG
+export const Sablier_GOERLI = ""; //REPLACE_FLAG
 export const ManageMemberAdapterContract_GOERLI = ""; //REPLACE_FLAG
 export const DistributeFundContract_GOERLI = ""; //REPLACE_FLAG
-export const DistributeFundContractV2_GOERLI = "0x01A30d3A5F7ebA57B86027Cf644BBc1a4a844072"; //REPLACE_FLAG
-export const GPVotingContract_GOERLI = "0x8FC24a76bb5A63C50830368424CD930720D9C482"; //REPLACE_FLAG
-export const GPOnboardVotingContract_GOERLI = "0x7e1c584b36530347f9e482F47251AACDF686D35b"; //REPLACE_FLAG
+export const DistributeFundContractV2_GOERLI = "0xeD550E8aB6Eca75FFcDb4E2D08db1672de2AAa50"; //REPLACE_FLAG
+export const GPVotingContract_GOERLI = "0x96A8681D4699bCd6bFF3C9C61DBeb6AAB642Ff7C"; //REPLACE_FLAG
+export const GPOnboardVotingContract_GOERLI = "0xB4fA2F8AFD86cC7Bb151D6544FFD63a56f03FAeD"; //REPLACE_FLAG
 export const AllocationAdapterContract_GOERLI = ""; //REPLACE_FLAG
-export const AllocationAdapterContractV2_GOERLI = "0x67F5606Da4E637BCA0db1b98CA9f2ffC6CF79a86"; //REPLACE_FLAG
-export const ManagingAdapterContract_GOERLI = "0xdd60b84fDa3C243937F442181916a71f14334b7c"; //REPLACE_FLAG
-export const Vesting_GOERLI = "0xe6F5F4f71364d4D521b5Cf40E03c77098DFbCeb0"; //REPLACE_FLAG
-export const BentoBoxV1_GOERLI = "0x9DA1527D1dcEBf1EcC143aC63D2E442FdfC43688";//REPLACE_FLAG
-export const FundRaiseAdapterContract_GOERLI = "0x034f3575B0C67aF02cb0F80E5aB332095B55FBd5";//REPLACE_FLAG
+export const AllocationAdapterContractV2_GOERLI = "0x4c4B5BBb3b37423D8DB0320f50F3900FAf3029D8"; //REPLACE_FLAG
+export const ManagingAdapterContract_GOERLI = "0x352B3E3426D4A6662655BBFab6CE84F36cC0e9bd"; //REPLACE_FLAG
+export const Vesting_GOERLI = "0x9074DA8642FE0753B358a1898A957B93e45aE450"; //REPLACE_FLAG
+export const BentoBoxV1_GOERLI = "0x7226a840199E0AC999a1552600B8bAe4cB6160B7";//REPLACE_FLAG
+export const FundRaiseAdapterContract_GOERLI = "0xA48981f1c45b3366bAFe15d51fdf72fA2d381D50";//REPLACE_FLAG
 
 //flex mode
-export const FlexFundingAdapterContract_GOERLI = "0xE842eC92d59914E6F45d05737c723Da15db71692";//REPLACE_FLAG
-export const FlexVotingContract_GOERLI = "0x51E18B22C5517F7ceF2B4961EB6d4B886F55c588";//REPLACE_FLAG
-export const FlexFundingPoolAdapterContract_GOERLI = "0x2CffFCc1315e3241367070c8752416eddE93524C";//REPLACE_FLAG
-export const FlexAllocationAdapterContract_GOERLI = "0x0a4A87086c24BD97085794438AC3fE563df083B1";//REPLACE_FLAG
-export const FlexERC721_GOERLI = "0x7f8453B3434364463E254f7B2f5BD845f9853b32";//REPLACE_FLAG
-export const FlexVesting_GOERLI = "0x77e90751Acbd69b77e6537d96167028315b6937b";//REPLACE_FLAG
+export const FlexFundingAdapterContract_GOERLI = "0x52632363F828310a04a5ea72e8CC764CD10C13c9";//REPLACE_FLAG
+export const FlexVotingContract_GOERLI = "0xCbBF3Db543b313D1bea89caECfeA1346E21fE436";//REPLACE_FLAG
+export const FlexPollingVotingContract_GOERLI = "0x0b43Ce4F7126212a6d64eB86B141DbDB77b08C69";//REPLACE_FLAG
+export const FlexFundingPoolAdapterContract_GOERLI = "0x4Cf4e9147274D22167D8775AD8F2f1B8642c8917";//REPLACE_FLAG
+export const FlexAllocationAdapterContract_GOERLI = "0xa22967739a3B388fcA1be4Df04EFC0BBD2e6DA4C";//REPLACE_FLAG
+export const FlexERC721_GOERLI = "0xcd59d08df3eF6687F2a2072FFeA3A786b2189226";//REPLACE_FLAG
+export const FlexVesting_GOERLI = "0xBAF43EC76B649cB67Cd3bF688db99B94A1518BE0";//REPLACE_FLAG
 
 
 
@@ -158,6 +159,10 @@ export function getContractAddressByName(name: string, network: string) {
             break;
         case 'FlexVotingContract':
             if (network == "goerli") return FlexVotingContract_GOERLI;
+            return null;
+            break;
+        case 'FlexPollingVotingContract':
+            if (network == "goerli") return FlexPollingVotingContract_GOERLI;
             return null;
             break;
         case 'FlexFundingPoolAdapterContract':
