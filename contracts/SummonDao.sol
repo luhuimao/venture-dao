@@ -1111,8 +1111,19 @@ contract SummonDao {
         Call[9] calls;
     }
 
-    function summonFlexDao(FlexDaoParams calldata params) external {
-        // console.log("summondaoContract address ", address(this));
+    modifier ParamCheck(FlexDaoParams calldata params) {
+        require(
+            params._flexDaoInfo.flexDaoManagementfee >= 0 &&
+                params._flexDaoInfo.flexDaoManagementfee <
+                DaoHelper.TOKEN_AMOUNT_PRECISION,
+            "Summon Flex DAO::Invalid Management Fee Amount"
+        );
+        _;
+    }
+
+    function summonFlexDao(
+        FlexDaoParams calldata params
+    ) external ParamCheck(params) {
         FlexDaoCallLocalVars memory vars;
         vars.summonFlexDao1Payload = abi.encodeWithSignature(
             "summonFlexDao1(address,string,address)",
@@ -1265,11 +1276,9 @@ contract SummonDao {
         multiCall(vars.calls);
     }
 
-    function bytesToAddress(bytes memory bys)
-        private
-        pure
-        returns (address addr)
-    {
+    function bytesToAddress(
+        bytes memory bys
+    ) private pure returns (address addr) {
         assembly {
             addr := mload(add(bys, 32))
         }
