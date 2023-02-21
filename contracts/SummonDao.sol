@@ -9,6 +9,7 @@ import "./flex/extensions/FlexFundingPoolFactory.sol";
 import "./flex/adatpers/FlexFunding.sol";
 import "./flex/adatpers/FlexFundingPoolAdapter.sol";
 import "./flex/adatpers/FlexPollingVoting.sol";
+import "./flex/adatpers/StewardManagement.sol";
 import "./helpers/DaoHelper.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
@@ -677,11 +678,19 @@ contract SummonDao {
                 uint256Params[0] == 3 &&
                 flexDaoStewardMembershipWhitelist.length > 0
             ) {
+                StewardManagementContract stewardContract = StewardManagementContract(
+                        dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_MANAGEMENT)
+                    );
                 for (
                     uint8 i = 0;
                     i < flexDaoStewardMembershipWhitelist.length;
                     i++
-                ) {}
+                ) {
+                    stewardContract.registerStewardWhiteList(
+                        dao,
+                        flexDaoStewardMembershipWhitelist[i]
+                    );
+                }
             }
         }
 

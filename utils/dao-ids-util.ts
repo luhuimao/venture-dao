@@ -12,7 +12,8 @@
 
 /** Adapters */
 export const adaptersIdsMap: Record<string, string> = {
-  FLEX_POLLING_VOTING:"flex-polling-voting",
+  FLEX_STEWARD_MANAGEMENT: "flex-steward-management",
+  FLEX_POLLING_VOTING: "flex-polling-voting",
   SUMMON_DAO: "summon-dao",
   FLEX_VESTING: "flex-vesting",
   FLEX_ERC721_ADAPT: "flex-erc721-adatper",

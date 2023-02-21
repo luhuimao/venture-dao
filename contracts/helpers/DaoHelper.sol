@@ -226,6 +226,8 @@ library DaoHelper {
         keccak256("rice.token.address");
 
     // Adapters
+    bytes32 internal constant FLEX_STEWARD_MANAGEMENT =
+        keccak256("flex-steward-management");
     bytes32 internal constant FLEX_VESTING = keccak256("flex-vesting");
     bytes32 internal constant FLEX_ERC721_ADAPT =
         keccak256("flex-erc721-adatper");

@@ -154,6 +154,51 @@ contract FlexVotingContract is
         }
     }
 
+    function submitVote(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        uint256 voteValue
+    ) external onlyMember(dao) reimbursable(dao) {
+        require(
+            dao.getProposalFlag(proposalId, DaoRegistry.ProposalFlag.SPONSORED),
+            "the proposal has not been sponsored yet"
+        );
+
+        require(
+            !dao.getProposalFlag(
+                proposalId,
+                DaoRegistry.ProposalFlag.PROCESSED
+            ),
+            "the proposal has already been processed"
+        );
+
+        require(
+            voteValue < 3 && voteValue > 0,
+            "only yes (1) and no (2) are possible values"
+        );
+
+        Voting storage vote = votes[address(dao)][proposalId];
+        // slither-disable-next-line timestamp
+        require(
+            vote.startingTime > 0,
+            "this proposalId has no vote going on at the moment"
+        );
+        // slither-disable-next-line timestamp
+        require(block.timestamp < vote.stopTime, "vote has already ended");
+
+        address memberAddr = dao.getAddressIfDelegated(msg.sender);
+
+        require(vote.votes[memberAddr] == 0, "member has already voted");
+
+        vote.votes[memberAddr] = voteValue;
+
+        if (voteValue == 1) {
+            vote.nbYes += 1;
+        } else if (voteValue == 2) {
+            vote.nbNo += 1;
+        }
+    }
+
     /**
      * @notice Computes the voting result based on a proposal.
      * @param dao The DAO address.
@@ -166,12 +211,10 @@ contract FlexVotingContract is
      * 3: not pass
      * 4: in progress
      */
-    function voteResult(DaoRegistry dao, bytes32 proposalId)
-        external
-        view
-        override
-        returns (VotingState state)
-    {
+    function fundingVoteResult(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external view override returns (VotingState state) {
         Voting storage vote = votes[address(dao)][proposalId];
 
         if (vote.startingTime == 0) {
@@ -184,6 +227,53 @@ contract FlexVotingContract is
         ) {
             return VotingState.IN_PROGRESS;
         }
+
+        if (
+            vote.nbYes - vote.nbNo >
+            dao.getConfiguration(DaoHelper.FLEX_POLLING_SUPER_MAJORITY)
+        ) {
+            return VotingState.PASS;
+        } else {
+            return VotingState.NOT_PASS;
+        }
+    }
+
+    function voteResult(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external view override returns (VotingState state) {
+        Voting storage vote = votes[address(dao)][proposalId];
+
+        if (vote.startingTime == 0) {
+            return VotingState.NOT_STARTED;
+        }
+
+        if (
+            // slither-disable-next-line timestamp
+            block.timestamp < vote.stopTime
+        ) {
+            return VotingState.IN_PROGRESS;
+        }
+        uint256 minVotes = (allGPsWeight *
+            dao.getConfiguration(DaoHelper.QUORUM)) / 100;
+
+        unchecked {
+            uint256 votes = vote.nbYes + vote.nbNo;
+            if (votes < minVotes)
+                return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
+        }
+
+        // example: 7 yes, 2 no, supermajority = 66
+        // ((7+2) * 66) / 100 = 5.94; 7 yes will pass
+        uint256 minYes = ((vote.nbYes + vote.nbNo) *
+            dao.getConfiguration(DaoHelper.SUPER_MAJORITY)) / 100;
+        // not one vote or voting power is zero should return tie .20220908
+        if (minYes == 0 && vote.nbYes == 0) {
+            return (VotingState.TIE, vote.nbYes, vote.nbNo);
+        }
+        if (vote.nbYes >= minYes)
+            return (VotingState.PASS, vote.nbYes, vote.nbNo);
+        else return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
 
         if (
             vote.nbYes - vote.nbNo >

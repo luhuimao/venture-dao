@@ -281,7 +281,7 @@ contract FlexFundingAdapterContract is
                 "FlexFunding::processProposal::adapter not found"
             );
 
-            vars.voteResult = vars.flexVoting.voteResult(dao, proposalId);
+            vars.voteResult = vars.flexVoting.fundingVoteResult(dao, proposalId);
             if (vars.voteResult == IFlexVoting.VotingState.PASS) {
                 proposal.state = ProposalStatus.IN_FUND_RAISE_PROGRESS;
                 vars.flexFundingPoolExt.registerPotentialNewFundingProposal(

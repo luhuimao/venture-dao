@@ -6,10 +6,18 @@ import "../../helpers/DaoHelper.sol";
 import "../../utils/TypeConver.sol";
 import "./FlexVoting.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
+import "../../guards/FlexStewardGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
 
-contract StewardManagementContract is Reimbursable {
+contract StewardManagementContract is
+    Reimbursable,
+    MemberGuard,
+    FlexStewardGuard
+{
+    using EnumerableSet for EnumerableSet.AddressSet;
+
     enum ProposalState {
         Voting,
         Executing,
@@ -48,14 +56,30 @@ contract StewardManagementContract is Reimbursable {
     // proposals per dao
     mapping(DaoRegistry => mapping(bytes32 => ProposalDetails))
         public proposals;
+    mapping(address => EnumerableSet.AddressSet) stewardWhiteList;
 
     uint256 public stewardInProposalIds = 1;
     uint256 public stewardOutProposalIds = 1;
 
+    function registerStewardWhiteList(
+        DaoRegistry dao,
+        address account
+    ) external onlyMember(dao) {
+        if (!stewardWhiteList[address(dao)].contains(account)) {
+            stewardWhiteList[address(dao)].add(account);
+        }
+    }
+
     function submitSteWardInProposal(
         DaoRegistry dao,
         address applicant
-    ) external reimbursable(dao) returns (bytes32 proposalId) {
+    )
+        external
+        reimbursable(dao)
+        onlyMember(dao)
+        onlySteward(dao, applicant)
+        returns (bytes32 proposalId)
+    {
         require(
             DaoHelper.isNotReservedAddress(applicant),
             "applicant is reserved address"
@@ -253,5 +277,12 @@ contract StewardManagementContract is Reimbursable {
         }
 
         emit ProposalProcessed(address(dao), proposalId, proposal.state);
+    }
+
+    function isStewardWhiteList(
+        DaoRegistry dao,
+        address account
+    ) external view returns (bool) {
+        return stewardWhiteList[address(dao)].contains(account);
     }
 }

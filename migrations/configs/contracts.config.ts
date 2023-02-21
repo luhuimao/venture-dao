@@ -349,7 +349,7 @@ export const contracts: Array<ContractConfig> = [
       dao: [],
       extensions: {},
     },
-    deploymentArgs: ["daoAddress", "maxExternalTokens", "serviceFeeRatio"],
+    deploymentArgs: ["daoAddress"],
     generatesExtensionId: extensionsIdsMap.FUNDING_POOL_EXT,
   },
   {
@@ -646,6 +646,48 @@ export const contracts: Array<ContractConfig> = [
    * Adapters
    */
   {
+    id: adaptersIdsMap.FLEX_STEWARD_MANAGEMENT,
+    name: "StewardManagementContract",
+    alias: "stewardManagementContract",
+    path: "../../contracts/adapters/StewardManagementContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.NEW_MEMBER, daoAccessFlagsMap.REMOVE_MEMBER],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_POLLING_VOTING,
+    name: "FlexPollingVotingContract",
+    alias: "flexPollingVotingContract",
+    path: "../../contracts/adapters/FlexPollingVotingContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_VOTE_TYPE],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.SUMMON_DAO,
+    name: "SummonDao",
+    alias: "summonDao",
+    path: "../../contracts/adapters/SummonDao",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
     id: adaptersIdsMap.FLEX_VESTING,
     name: "FlexVesting",
     alias: "flexVesting",
@@ -816,7 +858,7 @@ export const contracts: Array<ContractConfig> = [
         ],
       },
     },
-    daoConfigs: [["daoAddress", "quorum", "sumperMajority"]],
+    // daoConfigs: [["daoAddress", "quorum", "sumperMajority"]],
   },
   {
     id: adaptersIdsMap.DAO_REGISTRY_ADAPTER,
@@ -989,7 +1031,7 @@ export const contracts: Array<ContractConfig> = [
         ],
       },
     },
-    daoConfigs: [["daoAddress", "proposalDuration", "proposalInterval", "proposalExecuteDurantion"]],
+    // daoConfigs: [["daoAddress", "proposalDuration", "proposalInterval", "proposalExecuteDurantion"]],
   },
   {
     id: adaptersIdsMap.CONFIGURATION_ADAPTER,
@@ -1086,7 +1128,7 @@ export const contracts: Array<ContractConfig> = [
       dao: [daoAccessFlagsMap.SET_CONFIGURATION,],
       extensions: {},
     },
-    daoConfigs: [["daoAddress", "votingPeriod", "gracePeriod"]],
+    // daoConfigs: [["daoAddress", "votingPeriod", "gracePeriod"]],
   },
   // Voting Adapters
   {
@@ -1115,7 +1157,7 @@ export const contracts: Array<ContractConfig> = [
       dao: [daoAccessFlagsMap.SET_CONFIGURATION,],
       extensions: {},
     },
-    daoConfigs: [["daoAddress", "votingPeriod", "gracePeriod"]],
+    // daoConfigs: [["daoAddress", "votingPeriod", "gracePeriod"]],
   },
   {
     id: adaptersIdsMap.ALLOCATION_ADAPTER,
@@ -1143,7 +1185,7 @@ export const contracts: Array<ContractConfig> = [
       dao: [daoAccessFlagsMap.SET_CONFIGURATION,],
       extensions: {},
     },
-    daoConfigs: [["daoAddress", "gpAllocationBonusRadio", "riceStakeAllocationRadio"]],
+    // daoConfigs: [["daoAddress", "gpAllocationBonusRadio", "riceStakeAllocationRadio"]],
   },
   {
     id: adaptersIdsMap.SNAPSHOT_PROPOSAL_ADAPTER,

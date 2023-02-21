@@ -55,10 +55,10 @@ contract FlexPollingVotingContract is
 
     string public constant ADAPTER_NAME = "FlexPollingVotingContract";
 
-    function registerPollsterWhiteList(DaoRegistry dao, address account)
-        external
-        onlyMember(dao)
-    {
+    function registerPollsterWhiteList(
+        DaoRegistry dao,
+        address account
+    ) external onlyMember(dao) {
         if (!pollsterWhiteList[address(dao)].contains(account)) {
             pollsterWhiteList[address(dao)].add(account);
         }
@@ -71,20 +71,22 @@ contract FlexPollingVotingContract is
         return ADAPTER_NAME;
     }
 
-    function isPollsterWhiteList(DaoRegistry dao, address account)
-        external
-        view
-        returns (bool)
-    {
+    function isPollsterWhiteList(
+        DaoRegistry dao,
+        address account
+    ) external view returns (bool) {
         return pollsterWhiteList[address(dao)].contains(account);
     }
 
-    function voteResult(DaoRegistry dao, bytes32 proposalId)
-        external
-        view
-        override
-        returns (VotingState state)
-    {}
+    function voteResult(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external view override returns (VotingState state) {}
+
+    function fundingVoteResult(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external view override returns (VotingState state) {}
 
     /**
      * @notice Stats a new voting proposal considering the block time and number.
