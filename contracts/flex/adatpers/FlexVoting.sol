@@ -84,6 +84,19 @@ contract FlexVotingContract is
             dao.getConfiguration(DaoHelper.FLEX_POLLING_VOTING_PERIOD);
     }
 
+    function startNewVotingForNormalProposal(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        bytes calldata
+    ) external override onlyAdapter(dao) {
+        Voting storage vote = votes[address(dao)][proposalId];
+        vote.startingTime = block.timestamp;
+        vote.stopTime =
+            block.timestamp +
+            dao.getConfiguration(DaoHelper.VOTING_PERIOD);
+    }
+
+
     /**
      * @notice Returns the sender address.
      * @notice This funcion is required by the IVoting, usually offchain voting have different rules to identify the sender, but it is not the case here, so we just return the fallback argument: sender.
@@ -254,13 +267,13 @@ contract FlexVotingContract is
         ) {
             return VotingState.IN_PROGRESS;
         }
-        uint256 minVotes = (allGPsWeight *
+        // stewards amount * quorum
+        uint256 minVotes = ((dao.getNbMembers() - 2) *
             dao.getConfiguration(DaoHelper.QUORUM)) / 100;
 
         unchecked {
             uint256 votes = vote.nbYes + vote.nbNo;
-            if (votes < minVotes)
-                return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
+            if (votes < minVotes) return VotingState.NOT_PASS;
         }
 
         // example: 7 yes, 2 no, supermajority = 66
@@ -269,19 +282,9 @@ contract FlexVotingContract is
             dao.getConfiguration(DaoHelper.SUPER_MAJORITY)) / 100;
         // not one vote or voting power is zero should return tie .20220908
         if (minYes == 0 && vote.nbYes == 0) {
-            return (VotingState.TIE, vote.nbYes, vote.nbNo);
+            return VotingState.TIE;
         }
-        if (vote.nbYes >= minYes)
-            return (VotingState.PASS, vote.nbYes, vote.nbNo);
-        else return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
-
-        if (
-            vote.nbYes - vote.nbNo >
-            dao.getConfiguration(DaoHelper.SUPER_MAJORITY)
-        ) {
-            return VotingState.PASS;
-        } else {
-            return VotingState.NOT_PASS;
-        }
+        if (vote.nbYes >= minYes) return VotingState.PASS;
+        else return VotingState.NOT_PASS;
     }
 }

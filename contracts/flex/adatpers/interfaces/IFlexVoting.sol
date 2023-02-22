@@ -46,6 +46,12 @@ interface IFlexVoting {
         bytes calldata data
     ) external;
 
+    function startNewVotingForNormalProposal(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        bytes calldata data
+    ) external;
+
     function getSenderAddress(
         DaoRegistry dao,
         address actionId,

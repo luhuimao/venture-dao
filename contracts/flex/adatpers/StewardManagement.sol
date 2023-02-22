@@ -176,7 +176,11 @@ contract StewardManagementContract is
             sponsoredBy,
             dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
         );
-        flexVotingContract.startNewVotingForProposal(dao, proposalId, data);
+        flexVotingContract.startNewVotingForNormalProposal(
+            dao,
+            proposalId,
+            data
+        );
     }
 
     /**
@@ -254,9 +258,6 @@ contract StewardManagementContract is
         if (voteResult == IFlexVoting.VotingState.PASS) {
             proposal.state = ProposalState.Executing;
             address applicant = proposal.account;
-            GPDaoExtension gpdao = GPDaoExtension(
-                dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
-            );
 
             if (proposal.pType == ProposalType.STEWARD_IN) {
                 dao.potentialNewMember(applicant);

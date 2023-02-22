@@ -102,6 +102,15 @@ contract FlexPollingVotingContract is
         vote.startingTime = block.timestamp;
     }
 
+    function startNewVotingForNormalProposal(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        bytes calldata
+    ) external override onlyAdapter(dao) {
+        Voting storage vote = votes[address(dao)][proposalId];
+        vote.startingTime = block.timestamp;
+    }
+
     /**
      * @notice Returns the sender address.
      * @notice This funcion is required by the IVoting, usually offchain voting have different rules to identify the sender, but it is not the case here, so we just return the fallback argument: sender.
