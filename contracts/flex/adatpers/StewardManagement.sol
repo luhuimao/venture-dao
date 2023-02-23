@@ -80,6 +80,7 @@ contract StewardManagementContract is
         onlySteward(dao, applicant)
         returns (bytes32 proposalId)
     {
+        require(!dao.isMember(applicant), "applicant is strward already");
         require(
             DaoHelper.isNotReservedAddress(applicant),
             "applicant is reserved address"
@@ -119,7 +120,9 @@ contract StewardManagementContract is
     function submitSteWardOutProposal(
         DaoRegistry dao,
         address applicant
-    ) external reimbursable(dao) returns (bytes32 proposalId) {
+    ) external onlyMember(dao) reimbursable(dao) returns (bytes32 proposalId) {
+        require(dao.isMember(applicant), "applicant isnt strward");
+
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
                 "Steward-Out#",
@@ -278,6 +281,11 @@ contract StewardManagementContract is
         }
 
         emit ProposalProcessed(address(dao), proposalId, proposal.state);
+    }
+
+    function quit(DaoRegistry dao) external onlyMember(dao) {
+        require(dao.daoCreator() != msg.sender, "dao summonor cant quit");
+        dao.removeMember(msg.sender);
     }
 
     function isStewardWhiteList(
