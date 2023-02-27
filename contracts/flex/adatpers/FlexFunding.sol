@@ -148,7 +148,7 @@ contract FlexFundingAdapterContract is
         );
 
         vars.proposalId = TypeConver.bytesToBytes32(
-            abi.encodePacked("FlexFunding#", Strings.toString(proposalIds))
+            abi.encodePacked("Funding#", Strings.toString(proposalIds))
         );
 
         if (params.fundingInfo.escrow) {
@@ -160,7 +160,7 @@ contract FlexFundingAdapterContract is
             ) revert("Invalid Return Fund Params");
             if (
                 params.vestInfo.vestingCliffLockAmount >
-                params.fundingInfo.maxReturnAmount ||
+                RETRUN_TOKEN_AMOUNT_PRECISION ||
                 params.vestInfo.vestingCliffEndTime <
                 params.vestInfo.vestingStartTime ||
                 params.vestInfo.vestingEndTime <
@@ -311,7 +311,10 @@ contract FlexFundingAdapterContract is
                         DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT
                     )) / RETRUN_TOKEN_AMOUNT_PRECISION
                 : dao.getConfiguration(DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT); // type 0:percentage of fund pool  type 1: fixed amount
-            vars.proposerReward = proposal.proposerRewardInfo.cashRewardAmount;
+            vars.proposerReward =
+                (vars.poolBalance *
+                    proposal.proposerRewardInfo.cashRewardAmount) /
+                RETRUN_TOKEN_AMOUNT_PRECISION;
             if (
                 vars.poolBalance >=
                 vars.minFundingAmount +
@@ -324,9 +327,11 @@ contract FlexFundingAdapterContract is
                     proposal.fundingInfo.returnTokenAmount =
                         (vars.poolBalance / proposal.fundingInfo.price) *
                         RETRUN_TOKEN_AMOUNT_PRECISION;
+
                     vars.returnTokenAmount = proposal
                         .fundingInfo
                         .returnTokenAmount;
+
                     if (
                         !_escrowToken(
                             dao,

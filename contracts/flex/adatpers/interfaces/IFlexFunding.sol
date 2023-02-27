@@ -128,7 +128,7 @@ interface IFlexFunding {
         uint256 vestingCliffEndTime;
         uint256 vestingEndTime;
         uint256 vestingInterval;
-        uint256 vestingCliffLockAmount;
+        uint256 vestingCliffLockAmount; // percentage
     }
     struct FundRaiseInfo {
         FundRaiseType fundRaiseType;
@@ -158,8 +158,8 @@ interface IFlexFunding {
         uint256 pMinHolding;
     }
     struct ProposerRewardInfo {
-        uint256 tokenRewardAmount;
-        uint256 cashRewardAmount;
+        uint256 tokenRewardAmount;//percentage
+        uint256 cashRewardAmount;//percentage
     }
     /*
      * EVENTS

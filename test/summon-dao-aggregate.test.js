@@ -4,7 +4,7 @@
  * @Author: huhuimao
  * @Date: 2022-12-19 13:50:51
  * @LastEditors: huhuimao
- * @LastEditTime: 2023-02-24 15:46:43
+ * @LastEditTime: 2023-02-27 18:32:42
  */
 // Whole-script strict mode syntax
 "use strict";
@@ -562,7 +562,7 @@ describe("Summon A Flex Dao", () => {
         let vestingCliffEndTime = vestingStartTime + 60 * 60 * 1;
         let vestingEndTime = vestingCliffEndTime + 60 * 60 * 2;
         let vestingInterval = 60 * 60 * 1;
-        let vestingCliffLockAmount = hre.ethers.utils.parseEther("1000");
+        let vestingCliffLockAmount = hre.ethers.utils.parseEther("0.1"); // 10%
 
         let vestInfo = [
             vestingStartTime,
@@ -624,8 +624,9 @@ describe("Summon A Flex Dao", () => {
             priorityDepositInfo
         ];
 
-        let tokenRewardAmount = 2;
-        let cashRewardAmount = hre.ethers.utils.parseEther("1000");
+        let tokenRewardAmount = hre.ethers.utils.parseEther("0.02");// 2%
+        let cashRewardAmount = hre.ethers.utils.parseEther("0.003");// 0.3%
+
         let proposerRewardInfos = [
             tokenRewardAmount,
             cashRewardAmount
@@ -751,7 +752,7 @@ describe("Summon A Flex Dao", () => {
         let vestingCliffEndTime = vestingStartTime + 60 * 60 * 1;
         let vestingEndTime = vestingCliffEndTime + 60 * 60 * 2 + 60;
         let vestingInterval = 60 * 60 * 1;
-        let vestingCliffLockAmount = hre.ethers.utils.parseEther("1000");
+        let vestingCliffLockAmount = hre.ethers.utils.parseEther("0.1"); // 10%
 
         let vestInfo = [
             vestingStartTime,
@@ -814,8 +815,8 @@ describe("Summon A Flex Dao", () => {
             priorityDepositInfo
         ];
 
-        let tokenRewardAmount = 2;
-        let cashRewardAmount = hre.ethers.utils.parseEther("1000");
+        let tokenRewardAmount = hre.ethers.utils.parseEther("0.02");// 2%
+        let cashRewardAmount = hre.ethers.utils.parseEther("0.003");// 0.3%
 
         let proposerRewardInfos = [
             tokenRewardAmount,
@@ -945,10 +946,12 @@ describe("Summon A Flex Dao", () => {
 
         createdVestingInfo = await flexVestingContract.vests(1);
         returnTokenBal = await this.testtoken2.balanceOf(this.owner.address);
+        const nextVestId = await flexVestingContract.vestIds()
         console.log(`
         claimed...
         claimed: ${hre.ethers.utils.formatEther(createdVestingInfo.claimed)}
         return token balance ${hre.ethers.utils.formatEther(returnTokenBal)}
+        next Vest Id ${nextVestId}
         `);
     });
 
@@ -1049,8 +1052,8 @@ describe("Summon A Flex Dao", () => {
             priorityDepositInfo
         ];
 
-        let tokenRewardAmount = 2;
-        let cashRewardAmount = hre.ethers.utils.parseEther("1000");
+        let tokenRewardAmount = hre.ethers.utils.parseEther("0.02");// 2%
+        let cashRewardAmount = hre.ethers.utils.parseEther("0.003");// 0.3%
         let proposerRewardInfos = [
             tokenRewardAmount,
             cashRewardAmount
@@ -1205,7 +1208,7 @@ describe("Summon A Flex Dao", () => {
         let vestingCliffEndTime = vestingStartTime + 60 * 60 * 1;
         let vestingEndTime = vestingCliffEndTime + 60 * 60 * 2 + 60;
         let vestingInterval = 60 * 60 * 1;
-        let vestingCliffLockAmount = hre.ethers.utils.parseEther("1000");
+        let vestingCliffLockAmount = hre.ethers.utils.parseEther("0.1"); // 10%
 
         let vestInfo = [
             vestingStartTime,
@@ -1267,8 +1270,8 @@ describe("Summon A Flex Dao", () => {
             priorityDepositInfo
         ];
 
-        let tokenRewardAmount = 2;
-        let cashRewardAmount = hre.ethers.utils.parseEther("1000");
+        let tokenRewardAmount = hre.ethers.utils.parseEther("0.02");// 2%
+        let cashRewardAmount = hre.ethers.utils.parseEther("0.003");// 0.3%
         let proposerRewardInfos = [
             tokenRewardAmount,
             cashRewardAmount
@@ -1395,14 +1398,18 @@ describe("Summon A Flex Dao", () => {
         proposer reward ${hre.ethers.utils.formatEther(proposerreward3)}
         receive Amount ${hre.ethers.utils.formatEther(receiveAmount3)}
         total tributed amount ${hre.ethers.utils.formatEther(allTributedAmount)}
+        return token amount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.fundingInfo.returnTokenAmount)}
         create vesting...
         `);
 
         await flexVestingContract.createVesting(dao.address, this.investor1.address, proposalId);
         await flexVestingContract.createVesting(dao.address, this.investor2.address, proposalId);
+        await flexVestingContract.createVesting(dao.address, this.funding_proposer1_whitelist.address, proposalId);
+
 
         let createdVestingInfo = await flexVestingContract.vests(2);
         let createdVestingInfo2 = await flexVestingContract.vests(3);
+        let createdVestingInfo3 = await flexVestingContract.vests(4);
 
         const vestingBal = await flexVestingContract.vestBalance(2);
         const vestingBal2 = await flexVestingContract.vestBalance(3);
@@ -1441,6 +1448,20 @@ describe("Summon A Flex Dao", () => {
         claiable: ${hre.ethers.utils.formatEther(vestingBal2)}
         return token balance ${hre.ethers.utils.formatEther(returnTokenBal2)}
 
+
+        vesting info3 ...
+        proposalId: ${createdVestingInfo3.proposalId},
+        owner: ${createdVestingInfo3.owner},
+        recipient: ${createdVestingInfo3.recipient},
+        token: ${createdVestingInfo3.token},
+        start: ${createdVestingInfo3.start},
+        cliffDuration: ${createdVestingInfo3.cliffDuration}
+        stepDuration: ${createdVestingInfo3.stepDuration}
+        steps: ${createdVestingInfo3.steps}
+        cliffShares: ${hre.ethers.utils.formatEther(createdVestingInfo3.cliffShares)}
+        stepShares: ${hre.ethers.utils.formatEther(createdVestingInfo3.stepShares)}
+        claimed: ${createdVestingInfo3.claimed}
+
         claiming ...
         `);
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
@@ -1469,16 +1490,20 @@ describe("Summon A Flex Dao", () => {
 
         await flexVestingContract.connect(this.investor1).withdraw(dao.address, 2);
         await flexVestingContract.connect(this.investor2).withdraw(dao.address, 3);
+        await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 4);
+
         returnTokenBal = await this.testtoken2.balanceOf(this.investor1.address);
         returnTokenBal2 = await this.testtoken2.balanceOf(this.investor2.address);
 
         createdVestingInfo = await flexVestingContract.vests(2);
         createdVestingInfo2 = await flexVestingContract.vests(3);
+        createdVestingInfo3 = await flexVestingContract.vests(4);
 
         console.log(`
         claimed...
         claimed1: ${hre.ethers.utils.formatEther(createdVestingInfo.claimed)}
         claimed2: ${hre.ethers.utils.formatEther(createdVestingInfo2.claimed)}
+        claimed3: ${hre.ethers.utils.formatEther(createdVestingInfo3.claimed)}
 
         return token balance ${hre.ethers.utils.formatEther(returnTokenBal)}
         return token balance2 ${hre.ethers.utils.formatEther(returnTokenBal2)}

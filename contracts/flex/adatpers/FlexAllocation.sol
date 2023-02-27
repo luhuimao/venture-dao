@@ -105,8 +105,9 @@ contract FlexAllocationAdapterContract is AdapterGuard {
             proposalId
         );
 
-        uint256 fundingRewards = (tokenAmount *
-            (100 - proposerRewardInfo.tokenRewardAmount)) / 100;
+        uint256 fundingRewards = tokenAmount -
+            (tokenAmount * proposerRewardInfo.tokenRewardAmount) /
+            1e18;
 
         uint256 totalFund = fundingpool.getTotalFundByProposalId(
             dao,
@@ -139,7 +140,7 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         );
 
         uint256 ProposerBonus = (tokenAmount *
-            proposerRewardInfo.tokenRewardAmount) / 100;
+            proposerRewardInfo.tokenRewardAmount) / 1e18;
 
         return ProposerBonus;
     }
