@@ -46,11 +46,11 @@ interface IFlexVoting {
         bytes calldata data
     ) external;
 
-    function startNewVotingForNormalProposal(
-        DaoRegistry dao,
-        bytes32 proposalId,
-        bytes calldata data
-    ) external;
+    // function startNewVotingForNormalProposal(
+    //     DaoRegistry dao,
+    //     bytes32 proposalId,
+    //     bytes calldata data
+    // ) external;
 
     function getSenderAddress(
         DaoRegistry dao,
@@ -64,8 +64,8 @@ interface IFlexVoting {
         bytes32 proposalId
     ) external returns (VotingState state);
 
-    function fundingVoteResult(
-        DaoRegistry dao,
-        bytes32 proposalId
-    ) external returns (VotingState state);
+    // function fundingVoteResult(
+    //     DaoRegistry dao,
+    //     bytes32 proposalId
+    // ) external returns (VotingState state);
 }

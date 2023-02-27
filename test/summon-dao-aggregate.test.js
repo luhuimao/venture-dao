@@ -4,7 +4,7 @@
  * @Author: huhuimao
  * @Date: 2022-12-19 13:50:51
  * @LastEditors: huhuimao
- * @LastEditTime: 2023-02-22 17:21:44
+ * @LastEditTime: 2023-02-24 15:46:43
  */
 // Whole-script strict mode syntax
 "use strict";
@@ -1079,20 +1079,24 @@ describe("Summon A Flex Dao", () => {
 
         const flexFundingPoolAdapt = this.flexFundingPoolAdapterContract;
         const USDT = this.testtoken1;
-        const flexVoting = this.flexVotingContract;
+        const flexPollingVoting = this.flexPollingVotingContract;
         const fundRaiseStartTimes = flexFundingProposalInfo.fundRaiseInfo.fundRaiseStartTime;
         const stopVoteTime = flexFundingProposalInfo.stopVoteTime;
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
 
-        await flexVoting.connect(this.pollster_membership_whitelist1).submitFundingVote(dao.address, proposalId, 1);
-        await flexVoting.connect(this.pollster_membership_whitelist2).submitFundingVote(dao.address, proposalId, 1);
+        await flexPollingVoting.connect(this.pollster_membership_whitelist1).submitVote(dao.address, proposalId, 1);
+        await flexPollingVoting.connect(this.pollster_membership_whitelist2).submitVote(dao.address, proposalId, 1);
 
         if (parseInt(stopVoteTime) > blocktimestamp) {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1]);
             await hre.network.provider.send("evm_mine");
         }
-
+        const voteRel = await flexPollingVoting.voteResult(dao.address, proposalId);
+        console.log(`
+        voting result ${voteRel}
+        processing proposal...
+        `);
         await flexFundingAdapterContract.processProposal(dao.address, proposalId);
         flexFundingProposalInfo = await flexFundingAdapterContract.Proposals(dao.address, proposalId);
         console.log(`
@@ -1293,14 +1297,14 @@ describe("Summon A Flex Dao", () => {
 
         const flexFundingPoolAdapt = this.flexFundingPoolAdapterContract;
         const USDT = this.testtoken1;
-        const flexVoting = this.flexVotingContract;
+        const flexVoting = this.flexPollingVotingContract;
         const fundRaiseStartTimes = flexFundingProposalInfo.fundRaiseInfo.fundRaiseStartTime;
         const stopVoteTime = flexFundingProposalInfo.stopVoteTime;
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
 
-        await flexVoting.connect(this.pollster_membership_whitelist1).submitFundingVote(dao.address, proposalId, 1);
-        await flexVoting.connect(this.pollster_membership_whitelist2).submitFundingVote(dao.address, proposalId, 1);
+        await flexVoting.connect(this.pollster_membership_whitelist1).submitVote(dao.address, proposalId, 1);
+        await flexVoting.connect(this.pollster_membership_whitelist2).submitVote(dao.address, proposalId, 1);
 
         if (parseInt(stopVoteTime) > blocktimestamp) {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1]);
@@ -1482,7 +1486,7 @@ describe("Summon A Flex Dao", () => {
     });
 })
 
-describe("Steward Management", () => {
+describe("Steward-In Management", () => {
     before("summon a flex dao...", async () => {
         let [owner,
             user1, user2,
@@ -1792,6 +1796,8 @@ describe("Steward Management", () => {
         const stewardMangementContract = this.flexStewardMangement;
 
         const daoAddr = this.flexDirectdaoAddress;
+        const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
+
         const proposalId = this.stewardInProposalId;
 
         let proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
@@ -1813,9 +1819,115 @@ describe("Steward Management", () => {
 
         await stewardMangementContract.processProposal(daoAddr, proposalId);
         proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
-
+        const isSteward = await daoContract.isMember(this.user1.address);
         console.log(`
         state ${proposalDetail.state}
+        isSteward ${isSteward}
+        `);
+    });
+
+    it("submit a steward-out proposal by not steward...", async () => {
+        const stewardMangementContract = this.flexStewardMangement;
+        const daoAddr = this.flexDirectdaoAddress;
+
+        await expectRevert(stewardMangementContract.connect(this.user2).
+            submitSteWardOutProposal(daoAddr, this.user1.address), "revert");
+    });
+
+    it("submit a steward-out proposal by steward applicant not steward...", async () => {
+        const stewardMangementContract = this.flexStewardMangement;
+        const daoAddr = this.flexDirectdaoAddress;
+
+        await expectRevert(stewardMangementContract.
+            submitSteWardOutProposal(daoAddr, this.user2.address), "revert");
+    });
+
+    it("submit a steward-out proposal by steward...", async () => {
+        const stewardMangementContract = this.flexStewardMangement;
+        const daoAddr = this.flexDirectdaoAddress;
+
+        const tx = await stewardMangementContract.
+            submitSteWardOutProposal(daoAddr, this.user1.address);
+
+        const result = await tx.wait();
+        const proposalId = result.events[result.events.length - 1].args.proposalId;
+        this.stewardOutProposalId = proposalId;
+    });
+
+    it("vote for steward-out proposal and process...", async () => {
+
+        const flexVotingContract = this.flexVotingContract;
+        const stewardMangementContract = this.flexStewardMangement;
+
+        const daoAddr = this.flexDirectdaoAddress;
+        const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
+
+        const proposalId = this.stewardOutProposalId;
+
+        let proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
+        const stopVoteTime = proposalDetail.stopVoteTime;
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        console.log(`
+        stop vote time ${stopVoteTime}
+        current block time ${blocktimestamp}
+        `);
+        await flexVotingContract.submitVote(daoAddr, proposalId, 1);
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+
+
+        await stewardMangementContract.processProposal(daoAddr, proposalId);
+        proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
+        const isSteward = await daoContract.isMember(this.user1.address);
+        console.log(`
+        state ${proposalDetail.state}
+        isSteward ${isSteward}
+        `);
+    });
+
+    it("dao summonor cant quit himself...", async () => {
+        const stewardMangementContract = this.flexStewardMangement;
+        const daoAddr = this.flexDirectdaoAddress;
+
+        await expectRevert(stewardMangementContract.quit(daoAddr), "revert");
+
+    });
+
+    it("steward quit himself...", async () => {
+        const stewardMangementContract = this.flexStewardMangement;
+        const flexVotingContract = this.flexVotingContract;
+
+        const daoAddr = this.flexDirectdaoAddress;
+        const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
+
+        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address);
+        const result = await tx.wait();
+        const proposalId = result.events[result.events.length - 1].args.proposalId;
+        let proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
+        const stopVoteTime = proposalDetail.stopVoteTime;
+
+        await flexVotingContract.submitVote(daoAddr, proposalId, 1);
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+
+        await stewardMangementContract.processProposal(daoAddr, proposalId);
+
+        let isSteward = await daoContract.isMember(this.user1.address);
+        console.log(`
+        isSteward ${isSteward}
+        quit...
+        `);
+        await stewardMangementContract.connect(this.user1).quit(daoAddr);
+        isSteward = await daoContract.isMember(this.user1.address);
+        console.log(`
+        isSteward ${isSteward}
         `);
     });
 })

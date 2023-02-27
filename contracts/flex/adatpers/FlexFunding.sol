@@ -8,7 +8,7 @@ import "../../adapters/modifiers/Reimbursable.sol";
 import "./interfaces/IFlexFunding.sol";
 import "./interfaces/IFlexVoting.sol";
 import "./FlexAllocation.sol";
-import "./FlexVoting.sol";
+import "./FlexPollingVoting.sol";
 import "./interfaces/IFlexVoting.sol";
 import "../../utils/TypeConver.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -137,7 +137,7 @@ contract FlexFundingAdapterContract is
         SubmitProposalLocalVars memory vars;
 
         vars.flexVotingContract = IFlexVoting(
-            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
+            dao.getAdapterAddress(DaoHelper.FLEX_POLLING_VOTING_ADAPT)
         );
 
         vars.submittedBy = vars.flexVotingContract.getSenderAddress(
@@ -233,7 +233,7 @@ contract FlexFundingAdapterContract is
         dao.sponsorProposal(
             vars.proposalId,
             vars.submittedBy,
-            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
+            dao.getAdapterAddress(DaoHelper.FLEX_POLLING_VOTING_ADAPT)
         );
         proposalIds += 1;
         // register proposalId into funding pool
@@ -275,13 +275,15 @@ contract FlexFundingAdapterContract is
                 "FlexFunding::processProposal::proposal in voting period"
             );
             // Checks if the proposal has passed.
-            vars.flexVoting = FlexVotingContract(dao.votingAdapter(proposalId));
+            vars.flexVoting = FlexPollingVotingContract(
+                dao.votingAdapter(proposalId)
+            );
             require(
                 address(vars.flexVoting) != address(0x0),
                 "FlexFunding::processProposal::adapter not found"
             );
 
-            vars.voteResult = vars.flexVoting.fundingVoteResult(dao, proposalId);
+            vars.voteResult = vars.flexVoting.voteResult(dao, proposalId);
             if (vars.voteResult == IFlexVoting.VotingState.PASS) {
                 proposal.state = ProposalStatus.IN_FUND_RAISE_PROGRESS;
                 vars.flexFundingPoolExt.registerPotentialNewFundingProposal(
@@ -434,7 +436,9 @@ contract FlexFundingAdapterContract is
                 emit ProposalExecuted(address(dao), proposalId, proposal.state);
                 return false;
             }
-        } else {}
+        } else {
+            revert("can't process ");
+        }
         emit ProposalExecuted(address(dao), proposalId, proposal.state);
         return true;
     }

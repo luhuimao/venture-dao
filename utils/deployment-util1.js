@@ -454,7 +454,7 @@ const setDaoConfiguration = async ({ options, dao, testContracts }) => {
         log("config FUND_RAISING_WINDOW_END");
         tx = await dao.setConfiguration(configKey_FundRaisingWindowEnd, options.fundRaisingWindowEnd);
         await tx.wait();
-      
+
         log("config FUND_RAISING_REDEMPTION_PERIOD");
         tx = await dao.setConfiguration(configKey_FundRaisingRedemptionPeriod, options.fundRaisingRedemptionPeriod);
         await tx.wait();
@@ -479,7 +479,7 @@ const setDaoConfiguration = async ({ options, dao, testContracts }) => {
         log("config MANAGEMENT_FEE");
         tx = await dao.setConfiguration(configKey_MangementFee, options.managementFee);
         await tx.wait();
-      
+
         log("config REDEMPTION_FEE");
         tx = await dao.setConfiguration(configKey_RedemptionFee, options.redemptionFee);
         await tx.wait();
@@ -780,6 +780,7 @@ const configureDao = async ({
                 withAccess.push(v);
                 return withAccess;
             }, adaptersWithAccess);
+        console.log("contractsWithAccess ", contractsWithAccess);
         const tx = await daoFactory.instance.addAdapters(dao.address, contractsWithAccess);
         await tx.wait();
         log("configure adapters with access FINISHED!");

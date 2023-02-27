@@ -769,6 +769,10 @@ contract SummonDao {
                 flexDaoPriorityMembershipTokenAddress
             );
         }
+
+        //remove summondaoContract && DaoFacConctract from dao member list
+        dao.removeMember(dao.daoFactory());
+        dao.removeMember(address(this));
     }
 
     function setFlexDaoConfiguration(
@@ -1283,10 +1287,6 @@ contract SummonDao {
         vars.calls[8] = Call(address(this), vars.summonFlexDao10Payload);
 
         multiCall(vars.calls);
-
-        //remove summondaoContract && DaoFacConctract from dao member list
-        // dao.removeMember(address(this));
-        // dao.removeMember(dao.daoFactory());
     }
 
     function bytesToAddress(

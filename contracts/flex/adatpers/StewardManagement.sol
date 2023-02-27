@@ -87,7 +87,7 @@ contract StewardManagementContract is
         );
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
-                "Steward-In#",
+                "Governor-In#",
                 Strings.toString(stewardInProposalIds)
             )
         );
@@ -125,7 +125,7 @@ contract StewardManagementContract is
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
-                "Steward-Out#",
+                "Governor-Out#",
                 Strings.toString(stewardOutProposalIds)
             )
         );
@@ -179,7 +179,7 @@ contract StewardManagementContract is
             sponsoredBy,
             dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
         );
-        flexVotingContract.startNewVotingForNormalProposal(
+        flexVotingContract.startNewVotingForProposal(
             dao,
             proposalId,
             data
