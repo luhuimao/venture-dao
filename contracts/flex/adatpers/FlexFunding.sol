@@ -91,6 +91,10 @@ contract FlexFundingAdapterContract is
         }
     }
 
+    modifier proposalParamsCheck(ProposalParams calldata params) {
+        _;
+    }
+
     function submitProposal(
         DaoRegistry dao,
         ProposalParams calldata params
@@ -102,9 +106,11 @@ contract FlexFundingAdapterContract is
         returns (bytes32 proposalId)
     {
         if (
-            params.fundingInfo.maxFundingAmount > 0 &&
-            params.fundingInfo.maxFundingAmount <
-            params.fundRaiseInfo.maxDepositAmount
+            (params.fundingInfo.maxFundingAmount > 0 &&
+                params.fundingInfo.maxFundingAmount <
+                params.fundRaiseInfo.maxDepositAmount) ||
+            params.proposerRewardInfo.cashRewardAmount >
+            RETRUN_TOKEN_AMOUNT_PRECISION
         ) revert("invalid Params");
         if (
             params.fundRaiseInfo.backerIdentification == true &&
@@ -166,6 +172,10 @@ contract FlexFundingAdapterContract is
                 params.vestInfo.vestingEndTime <
                 params.vestInfo.vestingCliffEndTime
             ) revert("Invalid Vesting Params");
+            if (
+                params.proposerRewardInfo.tokenRewardAmount >
+                RETRUN_TOKEN_AMOUNT_PRECISION
+            ) revert("Invalid Token Reward Amount");
         }
 
         dao.submitProposal(vars.proposalId);

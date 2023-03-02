@@ -113,7 +113,7 @@ contract StewardManagementContract is
             applicant,
             startVoteTime,
             stopVoteTime,
-            ProposalType.STEWARD_OUT
+            ProposalType.STEWARD_IN
         );
     }
 
@@ -179,11 +179,7 @@ contract StewardManagementContract is
             sponsoredBy,
             dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
         );
-        flexVotingContract.startNewVotingForProposal(
-            dao,
-            proposalId,
-            data
-        );
+        flexVotingContract.startNewVotingForProposal(dao, proposalId, data);
     }
 
     /**
@@ -293,5 +289,11 @@ contract StewardManagementContract is
         address account
     ) external view returns (bool) {
         return stewardWhiteList[address(dao)].contains(account);
+    }
+
+    function getStewardWhitelist(
+        DaoRegistry dao
+    ) external view returns (address[] memory) {
+        return stewardWhiteList[address(dao)].values();
     }
 }

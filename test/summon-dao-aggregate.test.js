@@ -4,7 +4,7 @@
  * @Author: huhuimao
  * @Date: 2022-12-19 13:50:51
  * @LastEditors: huhuimao
- * @LastEditTime: 2023-02-27 18:32:42
+ * @LastEditTime: 2023-03-01 11:48:23
  */
 // Whole-script strict mode syntax
 "use strict";
@@ -1524,7 +1524,8 @@ describe("Steward-In Management", () => {
             participant_membership_whitelist1, participant_membership_whitelist2,
             priority_deposit_membership_whitelist1, priority_deposit_membership_whitelist2,
             pollster_membership_whitelist1, pollster_membership_whitelist2,
-            managementFeeAccount
+            managementFeeAccount,
+            steward_whitelist1, steward_whitelist2
         ] = await hre.ethers.getSigners();
         this.owner = owner;
         this.user1 = user1;
@@ -1546,6 +1547,8 @@ describe("Steward-In Management", () => {
         this.priority_deposit_membership_whitelist2 = priority_deposit_membership_whitelist2;
         this.pollster_membership_whitelist1 = pollster_membership_whitelist1;
         this.pollster_membership_whitelist2 = pollster_membership_whitelist2;
+        this.steward_whitelist1 = steward_whitelist1;
+        this.steward_whitelist2 = steward_whitelist2;
         this.managementFeeAccount = managementFeeAccount;
 
         let _daoName = "my_flex_dao1";
@@ -1955,4 +1958,202 @@ describe("Steward-In Management", () => {
         isSteward ${isSteward}
         `);
     });
+
+    it("steward whitelist in proposal", async () => {
+        const daoFactoriesAddress = [
+            this.daoFactory.address,
+            this.flexFundingPoolFactory.address
+        ];
+
+        const creator = this.owner.address;
+        const enalbeAdapters = [
+            {
+                id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd',//FlexVesting
+                addr: this.flexVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35',//FlexERC721
+                addr: this.flexERC721.address,
+                flags: 0
+            },
+            {
+                id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8',//FlexAllocationAdapterContract
+                addr: this.flexAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c',//FlexFundingPoolAdapterContract
+                addr: this.flexFundingPoolAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7',//FlexVotingContract
+                addr: this.flexVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610',//FlexPollingVotingContract
+                addr: this.flexPollingVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda',//FlexFundingAdapterContract
+                addr: this.flexFundingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
+                addr: this.managing.address,
+                flags: 59
+            },
+            {
+                id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753',//StewardMangement
+                addr: this.flexStewardMangement.address,
+                flags: 194
+            }
+        ];
+
+        const adapters1 = [
+            {
+                id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+                addr: this.flexFundingPoolAdapterContract.address,//FlexFundingPoolAdapterContract
+                flags: 75
+            },
+            {
+                id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+                addr: this.flexFundingAdapterContract.address,//FlexFundingAdapterContract
+                flags: 26
+            }
+        ];
+
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        const flexDaoParticipantCapInfo = [
+            true,//bool enable;
+            5//uint256 maxParticipantsAmount;
+        ]
+
+        const flexDaoParticipantMembershipEnalbe = true;
+
+        const flexDaoParticipantsMemberships = [
+            "participantmembershipInfo01", // string name;
+            0,// uint8 varifyType;
+            hre.ethers.utils.parseEther("100"),  // uint256 minHolding;
+            this.testtoken1.address, // address tokenAddress;
+            0,// uint256 tokenId;
+            [ZERO_ADDRESS]//whiteList;
+        ];
+        const flexDaoStewardMembershipInfo = [
+            1, // bool enable;
+            3, // uint256 varifyType;
+            hre.ethers.utils.parseEther("100"), // uint256 minHolding;
+            this.testtoken1.address,  // address tokenAddress;
+            0,  // uint256 tokenId;
+            [this.user1.address, this.user2.address] // address[] whiteList;
+        ];
+
+        const flexDaoVotingInfo = [
+            60 * 60 * 2,// uint256 votingPeriod;
+            0, // uint8 votingPower;
+            60, // uint256 superMajority;
+            66, // uint256 quorum;
+            // 60 * 10    // uint256 proposalExecutePeriod;
+        ];
+
+        const flexDaoPollsterMembershipInfo = [
+            0, // uint8 varifyType;
+            hre.ethers.utils.parseEther("100"), // uint256 minHolding;
+            this.testtoken1.address, // address tokenAddress;
+            0,  // uint256 tokenId;
+            [ZERO_ADDRESS] //address[] whiteList;
+        ];
+        const flexDaoPollingInfo = [
+            60 * 10,// uint256 votingPeriod;
+            0,// uint8 votingPower;
+            60, // uint256 superMajority;
+            66, // uint256 quorum;
+            // 60 * 10 // uint256 proposalExecutePeriod;
+        ];
+
+        const flexDaoProposerMembershipInfo = [
+            3,  // uint8 varifyType;
+            0,  // uint256 minHolding;
+            ZERO_ADDRESS,  // address tokenAddress;
+            0,   // uint256 tokenId;
+            [this.funding_proposer1_whitelist.address, this.funding_proposer2_whitelist.address]  // address[] whiteList;
+        ];
+
+        const flexDaoManagementfee = hre.ethers.utils.parseEther("0.002");// 0.2%
+        const flexDaoGenesisStewards = [this.genesis_steward1.address, this.genesis_steward2.address];
+
+        const fundingPollEnable = false;//DIRECT mode
+        const flexDaoFundriaseStyle = 0// 0 - FCFS 1- Free in
+
+      let  _daoName = "my_flex_dao3";
+        const flexDaoInfo = {
+            name: _daoName,// string name;
+            creator: this.owner.address,  // address creator;
+            flexDaoManagementfee: flexDaoManagementfee,   // uint256 flexDaoManagementfee;
+            managementFeeAddress: this.genesis_steward1.address,
+            flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
+            flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+        }
+
+        const flexDaoPriorityDepositEnalbe = true;
+
+        const flexDaoPriorityDepositMembershipInfo = {
+            varifyType: 0,    // uint8 varifyType;
+            minHolding: hre.ethers.utils.parseEther("1000"), // uint256 minHolding;
+            tokenAddress: this.testtoken1.address,// address tokenAddress;
+            tokenId: 0,  // uint256 tokenId;
+            whiteList: [],   // address[] whiteList;
+            priorityPeriod: 60 * 10      // uint256 priorityPeriod;
+        }
+
+        const flexDaoParams = [
+            daoFactoriesAddress, // address[] daoFactoriesAddress;
+            enalbeAdapters, // DaoFactory.Adapter[] enalbeAdapters;
+            adapters1, // DaoFactory.Adapter[] adapters1;
+            fundingPollEnable, // bool fundingPollEnable;
+            flexDaoParticipantCapInfo, // flexDaoParticipantCapInfo _flexDaoParticipantCapInfo;
+            flexDaoParticipantMembershipEnalbe,
+            flexDaoParticipantsMemberships,   // flexDaoParticipantsMemberships _flexDaoParticipantsMemberships;
+            flexDaoPriorityDepositEnalbe,
+            flexDaoPriorityDepositMembershipInfo,
+            flexDaoStewardMembershipInfo, // flexDaoStewardMembershipInfo _flexDaoStewardMembershipInfo;
+            flexDaoVotingInfo, // flexDaoVotingInfo _flexDaoVotingInfo;
+            flexDaoPollsterMembershipInfo,// flexDaoPollsterMembershipInfo _flexDaoPollsterMembershipInfo;
+            flexDaoPollingInfo, // flexDaoPollingInfo _flexDaoPollingInfo;
+            flexDaoProposerMembershipInfo, // flexDaoProposerMembershipInfo _flexDaoProposerMembershipInfo;
+            flexDaoInfo,    //    flexDaoInfo _flexDaoInfo;
+        ];
+
+
+        const { daoAddr, daoName } = await sommonFlexDao(this.summonDao, this.daoFactory, flexDaoParams);
+        const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
+        const fundingpoolextensionAddr = await daoContract.getExtensionAddress(sha3("flex-funding-pool-ext"));
+        console.log(`
+        new dao address ${daoAddr}
+        new dao name ${toUtf8(daoName)}
+        funding pool extensionAddr ${fundingpoolextensionAddr}
+        `);
+
+        const stewardMangementContract = this.flexStewardMangement;
+        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address);
+        const result = await tx.wait();
+        const proposalId = result.events[result.events.length - 1].args.proposalId;
+        this.stewardInProposalId = proposalId;
+        console.log(`
+        succeed...
+        proposalID ${proposalId}
+        `
+        );
+    }
+    );
 })
