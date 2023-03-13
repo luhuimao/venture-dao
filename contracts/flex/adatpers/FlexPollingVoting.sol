@@ -46,6 +46,17 @@ contract FlexPollingVotingContract is
 {
     using EnumerableSet for EnumerableSet.AddressSet;
 
+    event SubmitVote(
+        address daoAddr,
+        bytes32 proposalId,
+        uint256 votingTime,
+        uint256 voteStartTime,
+        uint256 voteStopTime,
+        address voter,
+        uint256 voteValue,
+        uint256 nbYes,
+        uint256 nbNo
+    );
     struct Voting {
         uint256 nbYes;
         uint256 nbNo;
@@ -135,6 +146,18 @@ contract FlexPollingVotingContract is
         } else if (voteValue == 2) {
             vote.nbNo += 1;
         }
+
+        emit SubmitVote(
+            address(dao),
+            proposalId,
+            block.timestamp,
+            vote.startingTime,
+            vote.stopTime,
+            msg.sender,
+            voteValue,
+            vote.nbYes,
+            vote.nbNo
+        );
     }
 
     function voteResult(

@@ -296,4 +296,14 @@ contract StewardManagementContract is
     ) external view returns (address[] memory) {
         return stewardWhiteList[address(dao)].values();
     }
+
+    function getStewardAmount(DaoRegistry dao) external view returns (uint256) {
+        return DaoHelper.getActiveMemberNb(dao);
+    }
+
+    function getAllSteward(
+        DaoRegistry dao
+    ) external view returns (address[] memory) {
+        return DaoHelper.getAllActiveMember(dao);
+    }
 }

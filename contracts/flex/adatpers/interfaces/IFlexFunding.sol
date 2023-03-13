@@ -10,13 +10,15 @@ import "../FlexAllocation.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IFlexFunding {
-    function submitProposal(DaoRegistry dao, ProposalParams calldata params)
-        external
-        returns (bytes32 proposalId);
+    function submitProposal(
+        DaoRegistry dao,
+        ProposalParams calldata params
+    ) external returns (bytes32 proposalId);
 
-    function processProposal(DaoRegistry dao, bytes32 proposalId)
-        external
-        returns (bool);
+    function processProposal(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external returns (bool);
 
     enum FundingType {
         DIRECT,
@@ -102,7 +104,7 @@ interface IFlexFunding {
     }
     struct ProposalInfo {
         address proposer;
-        FundingInfo fundingInfo;
+        ProposalFundingInfo fundingInfo;
         VestInfo vestInfo;
         FundRaiseInfo fundRaiseInfo;
         ProposerRewardInfo proposerRewardInfo;
@@ -114,6 +116,20 @@ interface IFlexFunding {
         address tokenAddress;
         uint256 minFundingAmount;
         uint256 maxFundingAmount;
+        bool escrow;
+        address returnTokenAddr;
+        uint256 returnTokenAmount;
+        uint256 price;
+        uint256 minReturnAmount;
+        uint256 maxReturnAmount;
+        address approverAddr;
+        address recipientAddr;
+    }
+    struct ProposalFundingInfo {
+        address tokenAddress;
+        uint256 minFundingAmount;
+        uint256 maxFundingAmount;
+        uint256 finalRaisedAmount;
         bool escrow;
         address returnTokenAddr;
         uint256 returnTokenAmount;
@@ -158,8 +174,8 @@ interface IFlexFunding {
         uint256 pMinHolding;
     }
     struct ProposerRewardInfo {
-        uint256 tokenRewardAmount;//percentage
-        uint256 cashRewardAmount;//percentage
+        uint256 tokenRewardAmount; //percentage
+        uint256 cashRewardAmount; //percentage
     }
     /*
      * EVENTS

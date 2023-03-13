@@ -187,10 +187,11 @@ contract FlexFundingAdapterContract is
 
         Proposals[address(dao)][vars.proposalId] = ProposalInfo(
             msg.sender,
-            FundingInfo(
+            ProposalFundingInfo(
                 params.fundingInfo.tokenAddress,
                 params.fundingInfo.minFundingAmount,
                 params.fundingInfo.maxFundingAmount,
+                0,
                 params.fundingInfo.escrow,
                 params.fundingInfo.returnTokenAddr,
                 params.fundingInfo.returnTokenAmount,
@@ -332,16 +333,15 @@ contract FlexFundingAdapterContract is
                     vars.managementFee +
                     vars.proposerReward
             ) {
+                proposal.fundingInfo.finalRaisedAmount = vars.poolBalance;
+                // calculate && update return token amount
+                proposal.fundingInfo.returnTokenAmount =
+                    (vars.poolBalance / proposal.fundingInfo.price) *
+                    RETRUN_TOKEN_AMOUNT_PRECISION;
                 if (proposal.fundingInfo.escrow) {
-                    // calculate && update return token amount
-                    proposal.fundingInfo.returnTokenAmount =
-                        (vars.poolBalance / proposal.fundingInfo.price) *
-                        RETRUN_TOKEN_AMOUNT_PRECISION;
-
                     vars.returnTokenAmount = proposal
                         .fundingInfo
                         .returnTokenAmount;
-
                     if (
                         !_escrowToken(
                             dao,

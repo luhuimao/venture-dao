@@ -22,7 +22,7 @@ const {
     oneDay
 } = require("../utils/contract-util");
 const { checkBalance, depositToFundingPool, createDistributeFundsProposal } = require("../utils/test-util");
-
+const summonFlexDaoContractAddress = "0xceeb2b45a74a4d9f8348f09c33f70cedeb0b7878";
 const deploySummonContract = async () => {
     const SummonDao = await hre.ethers.getContractFactory("SummonDao");
     const summonDao = await SummonDao.deploy();
@@ -32,7 +32,134 @@ const deploySummonContract = async () => {
 
 async function main() {
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
-    await deploy();
+    // await deploy();
+    // await checkStewardWhitelist();
+    // await summonFlexDao("202303091010");
+    // await submitStewardInProposal("0xffd855c2ec6cefeb9a82f7d14afd28efc5264597", "0x540881ecaf34c85efb352727fc2f9858b19c4b08");
+    // await voteForStewarProposal("0xffd855c2ec6cefeb9a82f7d14afd28efc5264597",
+    //     "0x476f7665726e6f722d4f75742332000000000000000000000000000000000000", 1);
+    // await processStewardProposal("0xffd855c2ec6cefeb9a82f7d14afd28efc5264597",
+    //     "0x476f7665726e6f722d4f75742332000000000000000000000000000000000000");
+
+    // await stewardQuit("0xffd855c2ec6cefeb9a82f7d14afd28efc5264597");
+    // await submitStewardOutProposal("0xffd855c2ec6cefeb9a82f7d14afd28efc5264597",
+    //     "0x540881ecaf34c85efb352727fc2f9858b19c4b08");
+    // await getVoteResult("0xffd855c2ec6cefeb9a82f7d14afd28efc5264597",
+    //     "0x476f7665726e6f722d496e233200000000000000000000000000000000000000");
+
+    // await createFlexFundingProposal("0xb6fe544d3ec35701fd33fe631256de87bcef76e4");
+    // await voteForFundingProposal("0xb6fe544d3ec35701fd33fe631256de87bcef76e4",
+    //     "0x46756e64696e6723380000000000000000000000000000000000000000000000",
+    //     1);
+    // await processFundingProposal("0xb6fe544d3ec35701fd33fe631256de87bcef76e4",
+    //     "0x46756e64696e6723380000000000000000000000000000000000000000000000");
+    await deposit("0xff81fca6050a4dfc654865fcbb2400dc888b74d3",
+        "0x46756e64696e6723320000000000000000000000000000000000000000000000");
+}
+
+const GOERLI_CONTRACTS = {
+    DaoFactory: "0x70050Ae33Ab726bd3Ad89c49532e127ba14E67de",
+    FlexFundingPoolFactory: "0xB489597a3e9A45c3762f63Aa75A2Bb2F5ECdcCAa",
+    StewardManagementContract: "0x2095ffd55D14D7F0937948f91457bf8A0f30E4e0",
+    FlexPollingVotingContract: "0xfbEC02c4b44c80Fb5171826De380f5832D80fEdb",
+    SummonDao: "0xceeb2b45a74a4d9f8348f09c33f70cedeb0b7878",
+    FlexVesting: "0x5eA8274048fbbCd27bDf1DfF4841Af611f430e1b",
+    FlexERC721: "0xcd59d08df3eF6687F2a2072FFeA3A786b2189226",
+    FlexAllocationAdapterContract: "0x163b4496c4DA8173f1682BB0950238695cb06a35",
+    FlexFundingPoolAdapterContract: "0xf73aC3dea5137BD2a7e7c13fe0Be3e110e4D5B0B",
+    FlexVotingContract: "0x6781102e688e403FF89F57093493E6D86dd63Ca4",
+    FlexFundingAdapterContract: "0xF08e9f7F821Af8AF9f9E3e9b8b484F2EB5bDE4A8",
+    BentoBoxV1: "0x7226a840199E0AC999a1552600B8bAe4cB6160B7",
+    ManagingContract: "0x352B3E3426D4A6662655BBFab6CE84F36cC0e9bd",
+    TestToken1: "0x44844Cf72EeaB45D305DBD4C08054E3A027c396C",
+    TestToken2: "0xE3aC90d9aC6ed9074de8CaabF234E5E0a1c308Bc"
+}
+
+const MUMBAI_CONTRACTS = {
+    DaoFactory: "0xceEb2b45a74A4d9F8348F09C33f70CEdEB0B7878",
+    FlexFundingPoolFactory: "0x6B93AAD680B156D68F90aC62e61058728f071716",
+    StewardManagementContract: "0x8906fE795D8e07a60F9962382550Cc8365eBA24d",
+    FlexPollingVotingContract: "0xCB718Bb0DB4395Bf5bC6A7Ec3C33C258A398Eca6",
+    SummonDao: "0x8ed6b538357889cFddFfF4a26633982eE74EBa73",
+    FlexVesting: "0x874320C07A247cD6Ca314C03f1e90e7959E9339b",
+    FlexERC721: "0x5025e698c0475a4Dde679B94f74b46d29D753a16",
+    FlexAllocationAdapterContract: "0x1770235638d80327f2Df2Ac0848dD817A59b6C27",
+    FlexFundingPoolAdapterContract: "0x7e0D554725E239F14bF654D69F6c71358d67F2Ba",
+    FlexVotingContract: "0x2BA88e7a66524F2395BcB65f0b3c0D8A9A6B5eA8",
+    FlexFundingAdapterContract: "0xB40798f82ae5937b7Ab37E37fF9f6Cdc584008C2",
+    BentoBoxV1: "0x207513Ce3bd9E798F817655DaD18E828Cab67623",
+    ManagingContract: "0xfEA36Da2805A57216cc610eac89447a79aBeD5c8",
+    TestToken1: "0x043572b715D78B22BC1BBCAEA8aB6cd57F050adc",
+    TestToken2: "0x043572b715D78B22BC1BBCAEA8aB6cd57F050adc"
+}
+
+
+const deposit = async (daoAddress, proposalId) => {
+    const [account1, account2, account3, account4, account5] = await hre.ethers.getSigners();
+
+    const dao = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddress);
+    let testUSDT;
+    if (hre.network.name == "mumbai") {
+        testUSDT = MUMBAI_CONTRACTS.TestToken1;
+    } else if (hre.network.name == "goerli") {
+        testUSDT = GOERLI_CONTRACTS.TestToken1;
+    }
+    const TestUSDTContractInstance = (await hre.ethers.getContractFactory("TestToken1")).attach(testUSDT);
+    const flexFundingPoolAdaptAddr = await dao.getAdapterAddress("0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c");
+    const flexFundingPoolAdaptContractInstance = (await hre.ethers.getContractFactory("FlexFundingPoolAdapterContract"))
+        .attach(flexFundingPoolAdaptAddr);
+    let tx;
+    const amount = hre.ethers.utils.parseEther("5000");
+    // tx = await TestUSDTContractInstance.connect(account1).
+    //     approve(flexFundingPoolAdaptAddr, hre.ethers.utils.parseEther("5000"));
+    // await tx.wait();
+    // console.log("account1 approved...");
+
+    // tx = await flexFundingPoolAdaptContractInstance.connect(account1)
+    //     .deposit(daoAddress, proposalId, amount);
+    // await tx.wait();
+    // console.log("account1 deposited...");
+
+    // tx = await TestUSDTContractInstance.connect(account2).
+    //     approve(flexFundingPoolAdaptAddr, hre.ethers.utils.parseEther("5000"));
+    // await tx.wait();
+    // console.log("account2 approved...");
+
+    // tx = await flexFundingPoolAdaptContractInstance.connect(account2)
+    //     .deposit(daoAddress, proposalId, amount);
+    // await tx.wait();
+    // console.log("account2 deposited...");
+
+    // tx = await TestUSDTContractInstance.connect(account3).
+    //     approve(flexFundingPoolAdaptAddr, hre.ethers.utils.parseEther("5000"));
+    // await tx.wait();
+    // console.log("account3 approved...");
+
+    tx = await flexFundingPoolAdaptContractInstance.connect(account3)
+        .deposit(daoAddress, proposalId, amount);
+    await tx.wait();
+    console.log("account3 deposited...");
+
+
+    tx = await TestUSDTContractInstance.connect(account4).
+        approve(flexFundingPoolAdaptAddr, hre.ethers.utils.parseEther("5000"));
+    await tx.wait();
+    console.log("account4 approved...");
+
+    tx = await flexFundingPoolAdaptContractInstance.connect(account4)
+        .deposit(daoAddress, proposalId, amount);
+    await tx.wait();
+    console.log("account4 deposited...");
+
+    tx = await TestUSDTContractInstance.connect(account5).
+        approve(flexFundingPoolAdaptAddr, hre.ethers.utils.parseEther("5000"));
+    await tx.wait();
+    console.log("account5 approved...");
+
+    tx = await flexFundingPoolAdaptContractInstance.connect(account5)
+        .deposit(daoAddress, proposalId, amount);
+    await tx.wait();
+    console.log("account5 deposited...");
 }
 
 const summonVintageDao = async () => {
@@ -310,105 +437,120 @@ const createVintageFundingProposal = async () => {
     `);
 }
 
-const summonFlexDao = async () => {
-    const summonDaoContractAddress = "0x15011A10B50f63CC0Ff649F6501383FAF7861471";
-    const summonDaoContract = await (await hre.ethers.getContractFactory("SummonDao"))
-        .attach(summonDaoContractAddress);
-    this.daoFactory = await (await hre.ethers.getContractFactory("DaoFactory"))
-        .attach("0xC213d9093e37Aae1A7Ee1502bfa6eaE7809223B6");
+const summonFlexDaoParamsMumbai = (_daoName) => {
 
     const daoFactoriesAddress = [
-        "0xC213d9093e37Aae1A7Ee1502bfa6eaE7809223B6",
-        "0xB489597a3e9A45c3762f63Aa75A2Bb2F5ECdcCAa"
+        MUMBAI_CONTRACTS.DaoFactory,
+        MUMBAI_CONTRACTS.FlexFundingPoolFactory
     ];
-    const _daoName = "my_flex_dao020";
-    const _creator = "0x540881ECaF34C85EfB352727FC2F9858B19C4b08";
+    // const _daoName = "Crypto Labs";
+    const _creator = "0xDF9DFA21F47659cf742FE61030aCb0F15f659707";
+
     const enalbeAdapters = [
         {
             id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd',//FlexVesting
-            addr: "0x5B2dE848f82638716C9aEf173279F5b54C8aD471",
+            addr: MUMBAI_CONTRACTS.FlexVesting,
             flags: 0
         },
         {
             id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35',//FlexERC721
-            addr: "0xcd59d08df3eF6687F2a2072FFeA3A786b2189226",
+            addr: MUMBAI_CONTRACTS.FlexERC721,
             flags: 0
         },
         {
             id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8',//FlexAllocationAdapterContract
-            addr: "0xa22967739a3B388fcA1be4Df04EFC0BBD2e6DA4C",
+            addr: MUMBAI_CONTRACTS.FlexAllocationAdapterContract,
             flags: 0
         },
         {
             id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c',//FlexFundingPoolAdapterContract
-            addr: "0xa9e45844AFfECA5D1e23457677133771628c1DCd",
+            addr: MUMBAI_CONTRACTS.FlexFundingPoolAdapterContract,
             flags: 0
         },
         {
             id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7',//FlexVotingContract
-            addr: "0x976D6E3a24465715793c40268C0EE68275e5afbB",
+            addr: MUMBAI_CONTRACTS.FlexVotingContract,
             flags: 258
         },
         {
             id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610',//FlexPollingVotingContract
-            addr: "0x0b43Ce4F7126212a6d64eB86B141DbDB77b08C69",
+            addr: MUMBAI_CONTRACTS.FlexPollingVotingContract,
             flags: 258
         },
         {
             id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda',//FlexFundingAdapterContract
-            addr: "0xade2D6CA47D63faCE468Ae298a2cAD823aA41894",
+            addr: MUMBAI_CONTRACTS.FlexFundingAdapterContract,
             flags: 258
         },
         {
             id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
-            addr: "0x7226a840199E0AC999a1552600B8bAe4cB6160B7",
+            addr: MUMBAI_CONTRACTS.BentoBoxV1,
             flags: 0
         },
         {
             id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-            addr: "0x352B3E3426D4A6662655BBFab6CE84F36cC0e9bd",
+            addr: MUMBAI_CONTRACTS.ManagingContract,
             flags: 59
+        },
+        {
+            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753',//StewardMangement
+            addr: MUMBAI_CONTRACTS.StewardManagementContract,
+            flags: 194
         }
     ];
+
     const adapters1 = [
         {
             id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
-            addr: "0xa9e45844AFfECA5D1e23457677133771628c1DCd",//FlexFundingPoolAdapterContract
+            addr: MUMBAI_CONTRACTS.FlexFundingPoolAdapterContract,//FlexFundingPoolAdapterContract
             flags: 75
         },
         {
             id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
-            addr: "0xade2D6CA47D63faCE468Ae298a2cAD823aA41894",//FlexFundingAdapterContract
+            addr: MUMBAI_CONTRACTS.FlexFundingAdapterContract,//FlexFundingAdapterContract
             flags: 26
         }
     ];
 
-    let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+    const fundingPollEnable = true;
 
     const flexDaoParticipantCapInfo = [
-        true,//bool enable;
+        false,//bool enable;
         5//uint256 maxParticipantsAmount;
     ];
-
-    const flexDaoParticipantMembershipEnalbe = true;
+    const flexDaoParticipantMembershipEnalbe = false;
 
     const flexDaoParticipantsMemberships = [
-        "participantmembershipInfo01", // string name;
+        "", // string name;
         0,// uint8 varifyType;
-        hre.ethers.utils.parseEther("100"),  // uint256 minHolding;
-        "0x0B133Cc91a191d8d83133690019375a362B3886D", // address tokenAddress;
+        "0",  // uint256 minHolding;
+        "0x0000000000000000000000000000000000000000", // address tokenAddress;
         0,// uint256 tokenId;
-        [ZERO_ADDRESS]//whiteList;
+        ['0x0000000000000000000000000000000000000000']//whiteList;
 
     ];
+
+    const flexDaoPriorityDepositEnalbe = false;
+
+    const flexDaoPriorityDepositMembershipInfo = {
+        varifyType: 0,    // uint8 varifyType;
+        minHolding: 10000000000000, // uint256 minHolding;
+        tokenAddress: "0x0000000000000000000000000000000000000000",// address tokenAddress;
+        tokenId: 0,  // uint256 tokenId;
+        whiteList: [],   // address[] whiteList;
+        priorityPeriod: 0      // uint256 priorityPeriod;
+    }
 
     const flexDaoStewardMembershipInfo = [
         1, // bool enable;
-        0, // uint256 varifyType;
-        hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-        "0x0B133Cc91a191d8d83133690019375a362B3886D",// address tokenAddress;
+        3, // uint256 varifyType;
+        "0", // uint256 minHolding;
+        "0x0000000000000000000000000000000000000000",// address tokenAddress;
         0,  // uint256 tokenId;
-        [] // address[] whiteList;
+        [
+            "0x540881ECaF34C85EfB352727FC2F9858B19C4b08",
+            "0x9ab302974abd84c875343d6beea05309bede2f10"
+        ] // address[] whiteList;
     ];
 
     const flexDaoVotingInfo = [
@@ -416,60 +558,60 @@ const summonFlexDao = async () => {
         0, // uint8 votingPower;
         60, // uint256 superMajority;
         66, // uint256 quorum;
-        60 * 10    // uint256 proposalExecutePeriod;
+        // 60 * 10    // uint256 proposalExecutePeriod;
     ];
 
     const flexDaoPollsterMembershipInfo = [
-        0, // uint8 varifyType;
-        hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-        "0x0B133Cc91a191d8d83133690019375a362B3886D", // address tokenAddress;
+        3, // uint8 varifyType;
+        10000000000000, // uint256 minHolding;
+        "0x0000000000000000000000000000000000000000", // address tokenAddress;
         0, // uint256 tokenId;
-        [ZERO_ADDRESS] //address[] whiteList;
+        [
+            '0x0309d2DC027e0843ab2bC72c69149ad1D746db55',
+            "0x764e1631B166aB9c05e4bEF355A4AEB52B77f647",
+            "0x04A0de3995B91fA6ab1c1037Bb0a6d1040dFDc61",
+            "0x5E78937e2cB15c8d96FB66B575cdCBdf0Cfa7935"
+        ] //address[] whiteList;
 
     ];
 
     const flexDaoPollingInfo = [
         60 * 10,// uint256 votingPeriod;
         0,// uint8 votingPower;
-        60, // uint256 superMajority;
-        66, // uint256 quorum;
-        60 * 10 // uint256 proposalExecutePeriod;
+        1, // uint256 superMajority;
+        1 // uint256 quorum;
     ];
 
     const flexDaoProposerMembershipInfo = [
-        0,  // uint8 varifyType;
+        3,  // uint8 varifyType;
         hre.ethers.utils.parseEther("100"),  // uint256 minHolding;
         "0x0B133Cc91a191d8d83133690019375a362B3886D",  // address tokenAddress;
         0,   // uint256 tokenId;
-        []  // address[] whiteList;
+        [
+            '0x0309d2DC027e0843ab2bC72c69149ad1D746db55',
+            "0x764e1631B166aB9c05e4bEF355A4AEB52B77f647",
+            "0x04A0de3995B91fA6ab1c1037Bb0a6d1040dFDc61",
+            "0x5E78937e2cB15c8d96FB66B575cdCBdf0Cfa7935"
+        ]  // address[] whiteList;
     ];
-    const flexDaoManagementfee = 2;
+    // const flexDaoManagementfee = 2;
+    const flexDaoManagementfee = hre.ethers.utils.parseEther("0.002");// 0.2%
 
     const flexDaoGenesisStewards = [
-        "0x9ac9c636404C8d46D9eb966d7179983Ba5a3941A",
-        "0xb7a0f269468DA74E4b71569c903cf20ce4a507A8"
+        '0x0309d2DC027e0843ab2bC72c69149ad1D746db55',
+        "0x764e1631B166aB9c05e4bEF355A4AEB52B77f647",
+        "0x04A0de3995B91fA6ab1c1037Bb0a6d1040dFDc61",
+        "0x5E78937e2cB15c8d96FB66B575cdCBdf0Cfa7935"
     ];
 
-    const fundingPollEnable = false;
 
-    const flexDaoFundriaseStyle = 0// 0 - FCFS 1- Free in
     const flexDaoInfo = {
         name: _daoName,// string name;
         creator: _creator,  // address creator;
         flexDaoManagementfee: flexDaoManagementfee,   // uint256 flexDaoManagementfee;
+        managementFeeAddress: "0x0309d2DC027e0843ab2bC72c69149ad1D746db55",
         flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-        flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
-    }
-
-    const flexDaoPriorityDepositEnalbe = true;
-
-    const flexDaoPriorityDepositMembershipInfo = {
-        varifyType: 0,    // uint8 varifyType;
-        minHolding: hre.ethers.utils.parseEther("1000"), // uint256 minHolding;
-        tokenAddress: "0x0B133Cc91a191d8d83133690019375a362B3886D",// address tokenAddress;
-        tokenId: 0,  // uint256 tokenId;
-        whiteList: [],   // address[] whiteList;
-        priorityPeriod: 60 * 10      // uint256 priorityPeriod;
+        flexDaoFundriaseStyle: 0// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
     }
 
     const flexDaoParams = [
@@ -490,57 +632,225 @@ const summonFlexDao = async () => {
         flexDaoInfo,    //    flexDaoInfo _flexDaoInfo;
     ];
 
+    return flexDaoParams;
+}
 
-    let tx = await summonDaoContract.summonFlexDao1(flexDaoParams);
-    let result = await tx.wait();
-    const daoAddr = result.events[result.events.length - 1].args.daoAddr;
-    const daoName = await this.daoFactory.daos(daoAddr);
+const summonFlexDaoParamsGoerli = (_daoName) => {
+    const daoFactoriesAddress = [
+        GOERLI_CONTRACTS.DaoFactory,
+        GOERLI_CONTRACTS.FlexFundingPoolFactory
+    ];
+    // const _daoName = "Crypto Labs";
+    const _creator = "0xDF9DFA21F47659cf742FE61030aCb0F15f659707";
 
-    console.log(`
-        new dao address ${daoAddr}
-        new dao name ${toUtf8(daoName)}
-        `)
+    const enalbeAdapters = [
+        {
+            id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd',//FlexVesting
+            addr: GOERLI_CONTRACTS.FlexVesting,
+            flags: 0
+        },
+        {
+            id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35',//FlexERC721
+            addr: GOERLI_CONTRACTS.FlexERC721,
+            flags: 0
+        },
+        {
+            id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8',//FlexAllocationAdapterContract
+            addr: GOERLI_CONTRACTS.FlexAllocationAdapterContract,
+            flags: 0
+        },
+        {
+            id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c',//FlexFundingPoolAdapterContract
+            addr: GOERLI_CONTRACTS.FlexFundingPoolAdapterContract,
+            flags: 0
+        },
+        {
+            id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7',//FlexVotingContract
+            addr: GOERLI_CONTRACTS.FlexVotingContract,
+            flags: 258
+        },
+        {
+            id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610',//FlexPollingVotingContract
+            addr: GOERLI_CONTRACTS.FlexPollingVotingContract,
+            flags: 258
+        },
+        {
+            id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda',//FlexFundingAdapterContract
+            addr: GOERLI_CONTRACTS.FlexFundingAdapterContract,
+            flags: 258
+        },
+        {
+            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+            addr: GOERLI_CONTRACTS.BentoBoxV1,
+            flags: 0
+        },
+        {
+            id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
+            addr: GOERLI_CONTRACTS.ManagingContract,
+            flags: 59
+        },
+        {
+            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753',//StewardMangement
+            addr: GOERLI_CONTRACTS.StewardManagementContract,
+            flags: 194
+        }
+    ];
+
+    const adapters1 = [
+        {
+            id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+            addr: GOERLI_CONTRACTS.FlexFundingPoolAdapterContract,//FlexFundingPoolAdapterContract
+            flags: 75
+        },
+        {
+            id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+            addr: GOERLI_CONTRACTS.FlexFundingAdapterContract,//FlexFundingAdapterContract
+            flags: 26
+        }
+    ];
+
+    const fundingPollEnable = true;
+
+    const flexDaoParticipantCapInfo = [
+        false,//bool enable;
+        5//uint256 maxParticipantsAmount;
+    ];
+    const flexDaoParticipantMembershipEnalbe = false;
+
+    const flexDaoParticipantsMemberships = [
+        "", // string name;
+        0,// uint8 varifyType;
+        "0",  // uint256 minHolding;
+        "0x0000000000000000000000000000000000000000", // address tokenAddress;
+        0,// uint256 tokenId;
+        ['0x0000000000000000000000000000000000000000']//whiteList;
+
+    ];
+
+    const flexDaoPriorityDepositEnalbe = false;
+
+    const flexDaoPriorityDepositMembershipInfo = {
+        varifyType: 0,    // uint8 varifyType;
+        minHolding: 10000000000000, // uint256 minHolding;
+        tokenAddress: "0x0000000000000000000000000000000000000000",// address tokenAddress;
+        tokenId: 0,  // uint256 tokenId;
+        whiteList: [],   // address[] whiteList;
+        priorityPeriod: 0      // uint256 priorityPeriod;
+    }
+
+    const flexDaoStewardMembershipInfo = [
+        1, // bool enable;
+        3, // uint256 varifyType;
+        "0", // uint256 minHolding;
+        "0x0000000000000000000000000000000000000000",// address tokenAddress;
+        0,  // uint256 tokenId;
+        [
+            "0x540881ECaF34C85EfB352727FC2F9858B19C4b08",
+            "0x9ab302974abd84c875343d6beea05309bede2f10"
+        ] // address[] whiteList;
+    ];
+
+    const flexDaoVotingInfo = [
+        60 * 10,// uint256 votingPeriod;
+        0, // uint8 votingPower;
+        60, // uint256 superMajority;
+        66, // uint256 quorum;
+        // 60 * 10    // uint256 proposalExecutePeriod;
+    ];
+
+    const flexDaoPollsterMembershipInfo = [
+        3, // uint8 varifyType;
+        10000000000000, // uint256 minHolding;
+        "0x0000000000000000000000000000000000000000", // address tokenAddress;
+        0, // uint256 tokenId;
+        [
+            '0x0309d2DC027e0843ab2bC72c69149ad1D746db55',
+            "0x764e1631B166aB9c05e4bEF355A4AEB52B77f647",
+            "0x04A0de3995B91fA6ab1c1037Bb0a6d1040dFDc61",
+            "0x5E78937e2cB15c8d96FB66B575cdCBdf0Cfa7935"
+        ] //address[] whiteList;
+
+    ];
+
+    const flexDaoPollingInfo = [
+        60 * 10,// uint256 votingPeriod;
+        0,// uint8 votingPower;
+        1, // uint256 superMajority;
+        1 // uint256 quorum;
+    ];
+
+    const flexDaoProposerMembershipInfo = [
+        3,  // uint8 varifyType;
+        hre.ethers.utils.parseEther("100"),  // uint256 minHolding;
+        "0x0B133Cc91a191d8d83133690019375a362B3886D",  // address tokenAddress;
+        0,   // uint256 tokenId;
+        [
+            '0x0309d2DC027e0843ab2bC72c69149ad1D746db55',
+            "0x764e1631B166aB9c05e4bEF355A4AEB52B77f647",
+            "0x04A0de3995B91fA6ab1c1037Bb0a6d1040dFDc61",
+            "0x5E78937e2cB15c8d96FB66B575cdCBdf0Cfa7935"
+        ]  // address[] whiteList;
+    ];
+    // const flexDaoManagementfee = 2;
+    const flexDaoManagementfee = hre.ethers.utils.parseEther("0.002");// 0.2%
+
+    const flexDaoGenesisStewards = [
+        '0x0309d2DC027e0843ab2bC72c69149ad1D746db55',
+        "0x764e1631B166aB9c05e4bEF355A4AEB52B77f647",
+        "0x04A0de3995B91fA6ab1c1037Bb0a6d1040dFDc61",
+        "0x5E78937e2cB15c8d96FB66B575cdCBdf0Cfa7935"
+    ];
 
 
-    tx = await summonDaoContract.summonFlexDao2(flexDaoParams, daoAddr);
-    result = await tx.wait();
-    console.log("summonFlexDao2 finished...");
-    tx = await summonDaoContract.summonFlexDao3(flexDaoParams, daoAddr);
-    result = await tx.wait();
-    console.log("summonFlexDao3 finished...");
+    const flexDaoInfo = {
+        name: _daoName,// string name;
+        creator: _creator,  // address creator;
+        flexDaoManagementfee: flexDaoManagementfee,   // uint256 flexDaoManagementfee;
+        managementFeeAddress: "0x0309d2DC027e0843ab2bC72c69149ad1D746db55",
+        flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
+        flexDaoFundriaseStyle: 0// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+    }
 
-    tx = await summonDaoContract.summonFlexDao4(flexDaoParams, daoAddr);
-    result = await tx.wait();
-    console.log("summonFlexDao4 finished...");
+    const flexDaoParams = [
+        daoFactoriesAddress, // address[] daoFactoriesAddress;
+        enalbeAdapters, // DaoFactory.Adapter[] enalbeAdapters;
+        adapters1, // DaoFactory.Adapter[] adapters1;
+        fundingPollEnable, // bool fundingPollEnable;
+        flexDaoParticipantCapInfo, // flexDaoParticipantCapInfo _flexDaoParticipantCapInfo;
+        flexDaoParticipantMembershipEnalbe,
+        flexDaoParticipantsMemberships,   // flexDaoParticipantsMemberships _flexDaoParticipantsMemberships;
+        flexDaoPriorityDepositEnalbe,
+        flexDaoPriorityDepositMembershipInfo,
+        flexDaoStewardMembershipInfo, // flexDaoStewardMembershipInfo _flexDaoStewardMembershipInfo;
+        flexDaoVotingInfo, // flexDaoVotingInfo _flexDaoVotingInfo;
+        flexDaoPollsterMembershipInfo,// flexDaoPollsterMembershipInfo _flexDaoPollsterMembershipInfo;
+        flexDaoPollingInfo, // flexDaoPollingInfo _flexDaoPollingInfo;
+        flexDaoProposerMembershipInfo, // flexDaoProposerMembershipInfo _flexDaoProposerMembershipInfo;
+        flexDaoInfo,    //    flexDaoInfo _flexDaoInfo;
+    ];
 
-    tx = await summonDaoContract.summonFlexDao5(flexDaoParams, daoAddr);
-    result = await tx.wait();
-    console.log("summonFlexDao5 finished...");
+    return flexDaoParams;
+}
 
-    tx = await summonDaoContract.summonFlexDao6(flexDaoParams, daoAddr);
-    result = await tx.wait();
-    console.log("summonFlexDao6 finished...");
+const summonFlexDao = async (_daoName) => {
+    console.log(hre.network.name);
+    if (hre.network.name == "mumbai") {
+        const summonDaoContract = await (await hre.ethers.getContractFactory("SummonDao"))
+            .attach(MUMBAI_CONTRACTS.SummonDao);
+        const params = summonFlexDaoParamsMumbai(_daoName);
 
-    tx = await summonDaoContract.summonFlexDao7(flexDaoParams, daoAddr);
-    result = await tx.wait();
-    console.log("summonFlexDao7 finished...");
+        const tx = await summonDaoContract.summonFlexDao(params);
+        const result = await tx.wait();
+        console.log("created... ");
+    } else if (hre.network.name == "goerli") {
+        const summonDaoContract = await (await hre.ethers.getContractFactory("SummonDao"))
+            .attach(GOERLI_CONTRACTS.SummonDao);
+        const params = summonFlexDaoParamsGoerli(_daoName);
 
-    tx = await summonDaoContract.summonFlexDao8(flexDaoParams, daoAddr);
-    result = await tx.wait();
-    console.log("summonFlexDao8 finished...");
-
-    // let daoAddr = "0xf680B96E88fE0eeA1C797f59a4Ce0bFA647E5112";
-    tx = await summonDaoContract.summonFlexDao9(flexDaoParams, daoAddr);
-    result = await tx.wait();
-    console.log("summonFlexDao9 finished...");
-
-    tx = await summonDaoContract.summonFlexDao10(flexDaoParams, daoAddr);
-    result = await tx.wait();
-    console.log("summonFlexDao10 finished...");
-
-    tx = await summonDaoContract.summonFlexDao11(flexDaoParams, daoAddr);
-    result = await tx.wait();
-    console.log("summonFlexDao11 finished...");
+        const tx = await summonDaoContract.summonFlexDao(params);
+        const result = await tx.wait();
+        console.log("created... ");
+    } else { }
 }
 
 const flexDaoParticipantDepositWhitelist = async () => {
@@ -589,29 +899,22 @@ const flexDaoProposerWhitelist = async () => {
     `);
 }
 
-
-
-const createFlexFundingProposal = async () => {
-
-    // submit fle funding proposal...
-    const flexFundingContract = await (await hre.ethers.getContractFactory("FlexFundingAdapterContract"))
-        .attach("0xade2D6CA47D63faCE468Ae298a2cAD823aA41894");
-    const daoAddr = "0x222b7f1d7f7973fb90157f999c1ac2bdaea9fe90";
-    this.testtoken1 = await (await hre.ethers.getContractFactory("TestToken1"))
-        .attach("0x0B133Cc91a191d8d83133690019375a362B3886D");
-    this.testtoken2 = await (await hre.ethers.getContractFactory("TestToken2"))
-        .attach("0x4fca7dEf684C9eA41729D852F16014fc796b15Bb");
-    let tokenAddress = this.testtoken1.address;
+const flexFundingProposalParams_MUMBAI = async () => {
+    // this.testtoken1 = await(await hre.ethers.getContractFactory("TestToken1"))
+    //     .attach(MUMBAI_CONTRACTS.TestToken1);
+    // this.testtoken2 = await(await hre.ethers.getContractFactory("TestToken2"))
+    //     .attach(MUMBAI_CONTRACTS.TestToken2);
+    let tokenAddress = MUMBAI_CONTRACTS.TestToken1;
     let minFundingAmount = hre.ethers.utils.parseEther("10000");
     let maxFundingAmount = hre.ethers.utils.parseEther("10000000");
-    let escrow = false;
-    let returnTokenAddr = this.testtoken2.address;
+    let escrow = true;
+    let returnTokenAddr = MUMBAI_CONTRACTS.TestToken2;
     let returnTokenAmount = hre.ethers.utils.parseEther("1000000");
     let price = hre.ethers.utils.parseEther("0.6");
-    let minReturnAmount = hre.ethers.utils.parseEther("1000000");
-    let maxReturnAmount = hre.ethers.utils.parseEther("1000000");
-    let approverAddr = "0x540881ECaF34C85EfB352727FC2F9858B19C4b08";
-    let recipientAddr = "0x540881ECaF34C85EfB352727FC2F9858B19C4b08";
+    let minReturnAmount = toBN(minFundingAmount).div(toBN(price)).mul(toBN(hre.ethers.utils.parseEther("1")));
+    let maxReturnAmount = toBN(maxFundingAmount).div(toBN(price)).mul(toBN(hre.ethers.utils.parseEther("1")));
+    let approverAddr = "0xDF9DFA21F47659cf742FE61030aCb0F15f659707";
+    let recipientAddr = "0xDF9DFA21F47659cf742FE61030aCb0F15f659707";
 
     let fundingInfo = [
         tokenAddress,
@@ -627,32 +930,34 @@ const createFlexFundingProposal = async () => {
         recipientAddr
     ];
 
-    blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+    let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
-    let vestingStartTime = blocktimestamp + 60 * 1;
-    let vestingCliffDuration = 60 * 1;
-    let vestingStepDuration = 60 * 10;
-    let vestingSteps = 5;
-    let vestingCliffLockAmount = hre.ethers.utils.parseEther("1000");
+    let fundRaiseStartTime = blocktimestamp;
+    let fundRaiseEndTime = fundRaiseStartTime + 60 * 20;
+
+    let vestingStartTime = fundRaiseEndTime + 60 * 60 * 1;
+    let vestingCliffEndTime = vestingStartTime + 60 * 60 * 1;
+    let vestingEndTime = vestingCliffEndTime + 60 * 60 * 2 + 60;
+    let vestingInterval = 60 * 60 * 1;
+    let vestingCliffLockAmount = hre.ethers.utils.parseEther("0.1"); // 10%
 
     let vestInfo = [
         vestingStartTime,
-        vestingCliffDuration,
-        vestingStepDuration,
-        vestingSteps,
+        vestingCliffEndTime,
+        vestingEndTime,
+        vestingInterval,
         vestingCliffLockAmount
     ];
 
     let fundRaiseType = 1;
-    let fundRaiseStartTime = blocktimestamp;
-    let fundRaiseEndTime = fundRaiseStartTime + 60 * 20;
+
     let minDepositAmount = hre.ethers.utils.parseEther("1000");
-    let maxDepositAmount = hre.ethers.utils.parseEther("100000");
+    let maxDepositAmount = hre.ethers.utils.parseEther("10000");
     let backerIdentification = false;
 
     let bType = 0;
     let bChainId = 1;
-    let bTokanAddr = this.testtoken1.address;
+    let bTokanAddr = "0x4fca7dEf684C9eA41729D852F16014fc796b15Bb";
     let bTokenId = 1;
     let bMinHoldingAmount = 100;
     let bakckerIdentificationInfo = [
@@ -663,13 +968,13 @@ const createFlexFundingProposal = async () => {
         bMinHoldingAmount
     ];
 
-    let priorityDeposit = false;
+    let priorityDeposit = true;
 
     let pPeriod = 100;
     let pPeriods = 10;
     let pType = 0;
     let pChainId = 1;
-    let pTokenAddr = this.testtoken1.address;
+    let pTokenAddr = "0x4fca7dEf684C9eA41729D852F16014fc796b15Bb";
     let pTokenId = 1;
     let pMinHolding = 10;
 
@@ -695,8 +1000,8 @@ const createFlexFundingProposal = async () => {
         priorityDepositInfo
     ];
 
-    let tokenRewardAmount = 2;
-    let cashRewardAmount = hre.ethers.utils.parseEther("100");
+    let tokenRewardAmount = hre.ethers.utils.parseEther("0.02");// 2%
+    let cashRewardAmount = hre.ethers.utils.parseEther("0.003");// 0.3%
     let proposerRewardInfos = [
         tokenRewardAmount,
         cashRewardAmount
@@ -707,13 +1012,176 @@ const createFlexFundingProposal = async () => {
         fundRaiseInfo,
         proposerRewardInfos
     ];
-    console.log(fundingParams);
-    // await this.testtoken1.transfer(this.funding_proposer1.address, hre.ethers.utils.parseEther("10000"));
-    const tx1 = await flexFundingContract.submitProposal(daoAddr, fundingParams);
-    const result1 = await tx1.wait();
-    const ProposalId = result1.events[2].args.proposalId;
-    console.log(`flex funding ProposalId: ${hre.ethers.utils.toUtf8String(ProposalId)}`);
 
+    return fundingParams;
+}
+
+const flexFundingProposalParams_Goerli = async () => {
+    // this.testtoken1 = await(await hre.ethers.getContractFactory("TestToken1"))
+    //     .attach(GOERLI_CONTRACTS.TestToken1);
+    // this.testtoken2 = await(await hre.ethers.getContractFactory("TestToken2"))
+    //     .attach(GOERLI_CONTRACTS.TestToken2);
+    let tokenAddress = GOERLI_CONTRACTS.TestToken1;
+    let minFundingAmount = hre.ethers.utils.parseEther("10000");
+    let maxFundingAmount = hre.ethers.utils.parseEther("10000000");
+    let escrow = false;
+    let returnTokenAddr = GOERLI_CONTRACTS.TestToken2;
+    let returnTokenAmount = hre.ethers.utils.parseEther("1000000");
+    let price = hre.ethers.utils.parseEther("0.6");
+    let minReturnAmount = hre.ethers.utils.parseEther("1000000");
+    let maxReturnAmount = hre.ethers.utils.parseEther("1000000");
+    let approverAddr = "0xDF9DFA21F47659cf742FE61030aCb0F15f659707";
+    let recipientAddr = "0xDF9DFA21F47659cf742FE61030aCb0F15f659707";
+
+    let fundingInfo = [
+        tokenAddress,
+        minFundingAmount,
+        maxFundingAmount,
+        escrow,
+        returnTokenAddr,
+        returnTokenAmount,
+        price,
+        minReturnAmount,
+        maxReturnAmount,
+        approverAddr,
+        recipientAddr
+    ];
+
+    let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+    let fundRaiseStartTime = blocktimestamp;
+    let fundRaiseEndTime = fundRaiseStartTime + 60 * 60 * 1;
+
+    let vestingStartTime = fundRaiseEndTime + 60 * 60 * 1;
+    let vestingCliffEndTime = vestingStartTime + 60 * 60 * 1;
+    let vestingEndTime = vestingCliffEndTime + 60 * 60 * 2 + 60;
+    let vestingInterval = 60 * 60 * 1;
+    let vestingCliffLockAmount = hre.ethers.utils.parseEther("0.1"); // 10%
+
+    let vestInfo = [
+        vestingStartTime,
+        vestingCliffEndTime,
+        vestingEndTime,
+        vestingInterval,
+        vestingCliffLockAmount
+    ];
+
+    let fundRaiseType = 1;
+
+    let minDepositAmount = hre.ethers.utils.parseEther("1000");
+    let maxDepositAmount = hre.ethers.utils.parseEther("10000");
+    let backerIdentification = false;
+
+    let bType = 0;
+    let bChainId = 1;
+    let bTokanAddr = "0x4fca7dEf684C9eA41729D852F16014fc796b15Bb";
+    let bTokenId = 1;
+    let bMinHoldingAmount = 100;
+    let bakckerIdentificationInfo = [
+        bType,
+        bChainId,
+        bTokanAddr,
+        bTokenId,
+        bMinHoldingAmount
+    ];
+
+    let priorityDeposit = true;
+
+    let pPeriod = 100;
+    let pPeriods = 10;
+    let pType = 0;
+    let pChainId = 1;
+    let pTokenAddr = "0x4fca7dEf684C9eA41729D852F16014fc796b15Bb";
+    let pTokenId = 1;
+    let pMinHolding = 10;
+
+    let priorityDepositInfo = [
+        pPeriod,
+        pPeriods,
+        pType,
+        pChainId,
+        pTokenAddr,
+        pTokenId,
+        pMinHolding
+    ];
+
+    let fundRaiseInfo = [
+        fundRaiseType,
+        fundRaiseStartTime,
+        fundRaiseEndTime,
+        minDepositAmount,
+        maxDepositAmount,
+        backerIdentification,
+        bakckerIdentificationInfo,
+        priorityDeposit,
+        priorityDepositInfo
+    ];
+
+    let tokenRewardAmount = hre.ethers.utils.parseEther("0.02");// 2%
+    let cashRewardAmount = hre.ethers.utils.parseEther("0.003");// 0.3%
+    let proposerRewardInfos = [
+        tokenRewardAmount,
+        cashRewardAmount
+    ];
+    const fundingParams = [
+        fundingInfo,
+        vestInfo,
+        fundRaiseInfo,
+        proposerRewardInfos
+    ];
+
+    return fundingParams;
+}
+
+
+const createFlexFundingProposal = async (daoAddr) => {
+    const [account1, account2, account3, account4, account5] = await hre.ethers.getSigners();
+    if (hre.network.name == "mumbai") {
+        const flexFundingContract = await (await hre.ethers.getContractFactory("FlexFundingAdapterContract"))
+            .attach(MUMBAI_CONTRACTS.FlexFundingAdapterContract);
+        const fundingParams = await flexFundingProposalParams_MUMBAI();
+        const tx1 = await flexFundingContract.connect(account2).submitProposal(daoAddr, fundingParams);
+        const result1 = await tx1.wait();
+        const ProposalId = result1.events[2].args.proposalId;
+        console.log(`flex funding ProposalId: ${hre.ethers.utils.toUtf8String(ProposalId)}`);
+    } else if (hre.network.name == "goerli") {
+        const flexFundingContract = await (await hre.ethers.getContractFactory("FlexFundingAdapterContract"))
+            .attach(GOERLI_CONTRACTS.FlexFundingAdapterContract);
+        const fundingParams = await flexFundingProposalParams_Goerli();
+
+        const tx1 = await flexFundingContract.connect(account2).submitProposal(daoAddr, fundingParams);
+        const result1 = await tx1.wait();
+        const ProposalId = result1.events[2].args.proposalId;
+        console.log(`flex funding ProposalId: ${hre.ethers.utils.toUtf8String(ProposalId)}`);
+    } else { }
+
+
+}
+
+const processFundingProposal = async (daoAddr, proposalId) => {
+    const [account1, account2, account3, account4, account5] = await hre.ethers.getSigners();
+
+    if (hre.network.name == "mumbai") {
+        const testReturnToken = (await hre.ethers.getContractFactory("TestToken2"))
+            .attach(MUMBAI_CONTRACTS.TestToken1);
+        const flexFundingContract = await (await hre.ethers.getContractFactory("FlexFundingAdapterContract"))
+            .attach(MUMBAI_CONTRACTS.FlexFundingAdapterContract);
+
+        const proposalInfo = await flexFundingContract.Proposals(daoAddr, proposalId);
+        const maxReturnAmount = proposalInfo.fundingInfo.maxReturnAmount;
+        let tx = await testReturnToken.connect(account1).
+            approve(MUMBAI_CONTRACTS.FlexFundingAdapterContract, maxReturnAmount);
+        await tx.wait();
+        const tx1 = await flexFundingContract.connect(account1).processProposal(daoAddr, proposalId);
+        const result1 = await tx1.wait();
+        console.log("processed...");
+    } else if (hre.network.name == "goerli") {
+        const flexFundingContract = await (await hre.ethers.getContractFactory("FlexFundingAdapterContract"))
+            .attach(GOERLI_CONTRACTS.FlexFundingAdapterContract);
+        const tx1 = await flexFundingContract.connect(account1).processProposal(daoAddr, proposalId);
+        const result1 = await tx1.wait();
+        console.log("processed...");
+    } else { }
 }
 
 const deploy = async () => {
@@ -722,6 +1190,15 @@ const deploy = async () => {
     // await distributeFundContractV2.deployed();
     // console.log("distributeFundContractV2 deployed address:", distributeFundContractV2.address);
 
+    // const DaoRegistry = await hre.ethers.getContractFactory("DaoRegistry");
+    // const daoRegistry = await DaoRegistry.deploy();
+    // await daoRegistry.deployed();
+    // console.log("daoRegistry deployed address:", daoRegistry.address);
+
+    // const DaoFactory = await hre.ethers.getContractFactory("DaoFactory");
+    // const daoFactory = await DaoFactory.deploy("0x658d94BBaD60EA8A82D160a00eB2E7F486aC2A39");
+    // await daoFactory.deployed();
+    // console.log("daoFactory deployed address:", daoFactory.address);
 
     // const FundingPoolAdapterContract = await hre.ethers.getContractFactory("FundingPoolAdapterContract");
     // const fundingPoolAdapterContract = await FundingPoolAdapterContract.deploy();
@@ -759,7 +1236,7 @@ const deploy = async () => {
     // await flexPollingVotingContract.deployed();
     // console.log("flexPollingVotingContract deployed address:", flexPollingVotingContract.address);
 
-    
+
     // const FlexVotingContract = await hre.ethers.getContractFactory("FlexVotingContract");
     // const flexVotingContract = await FlexVotingContract.deploy();
     // await flexVotingContract.deployed();
@@ -769,13 +1246,36 @@ const deploy = async () => {
     // const flexVesting = await FlexVesting.deploy();
     // await flexVesting.deployed();
     // console.log("flexVesting deployed address:", flexVesting.address);
-    
 
-    const SummonDao = await hre.ethers.getContractFactory("SummonDao");
-    const summonDao = await SummonDao.deploy();
-    await summonDao.deployed();
-    console.log("summonDao deployed address:", summonDao.address);
 
+    // const StewardManagementContract = await hre.ethers.getContractFactory("StewardManagementContract");
+    // const stewardManagementContract = await StewardManagementContract.deploy();
+    // await stewardManagementContract.deployed();
+    // console.log("stewardManagementContract deployed address:", stewardManagementContract.address);
+
+
+    const FlexAllocationAdapterContract = await hre.ethers.getContractFactory("FlexAllocationAdapterContract");
+    const flexAllocationAdapterContract = await FlexAllocationAdapterContract.deploy();
+    await flexAllocationAdapterContract.deployed();
+    console.log("flexAllocationAdapterContract deployed address:", flexAllocationAdapterContract.address);
+
+
+    // const SummonDao = await hre.ethers.getContractFactory("SummonDao");
+    // const summonDao = await SummonDao.deploy();
+    // await summonDao.deployed();
+    // console.log("summonDao deployed address:", summonDao.address);
+
+
+
+    // const TestToken1 = await hre.ethers.getContractFactory("TestToken1");
+    // const testToken1 = await TestToken1.deploy(100000000);
+    // await testToken1.deployed();
+    // console.log("testToken1 deployed address:", testToken1.address);
+
+    // const TestToken2 = await hre.ethers.getContractFactory("TestToken2");
+    // const testToken2 = await TestToken2.deploy(100000000);
+    // await testToken2.deployed();
+    // console.log("testToken2 deployed address:", testToken2.address);
 }
 
 
@@ -786,6 +1286,106 @@ const getDaoInfo = async (daoAddr) => {
     flex-funding-pool-ext address ${flexFundingPoolExtAddress}
     `);
 }
+
+const checkStewardWhitelist = async (account) => {
+    const stewardManagementContract = (await hre.ethers.getContractFactory("StewardManagementContract")).
+        attach("0x6B93AAD680B156D68F90aC62e61058728f071716");
+    const rel = await stewardManagementContract.
+        isStewardWhiteList("0xcfd0a2a42f02a9161f2ae06d527dccabf8e3c3c0", "0x540881ECaF34C85EfB352727FC2F9858B19C4b08");
+    console.log(rel);
+}
+
+const submitStewardInProposal = async (daoAddr, account) => {
+    const stewardManagementContract = (await hre.ethers.getContractFactory("StewardManagementContract")).attach("0x8906fE795D8e07a60F9962382550Cc8365eBA24d");
+    await stewardManagementContract.submitSteWardInProposal(daoAddr, account);
+}
+
+const submitStewardOutProposal = async (daoAddr, account) => {
+    const stewardManagementContract = (await hre.ethers.getContractFactory("StewardManagementContract")).attach("0x8906fE795D8e07a60F9962382550Cc8365eBA24d");
+    const tx = await stewardManagementContract.submitSteWardOutProposal(daoAddr, account);
+    await tx.wait();
+}
+
+const processStewardProposal = async (daoAddress, proposalId) => {
+    const stewardManagementContract = (await hre.ethers.getContractFactory("StewardManagementContract")).attach("0x8906fE795D8e07a60F9962382550Cc8365eBA24d");
+    const tx = await stewardManagementContract.processProposal(daoAddress, proposalId);
+    const result = await tx.wait();
+    console.log("processed...");
+}
+
+const voteForStewarProposal = async (daoAddr, proposalId, value) => {
+    const [account1, account2, account3, account4, account5] = await hre.ethers.getSigners();
+    const flexVotingContract = (await hre.ethers.getContractFactory("FlexVotingContract")).attach("0x2BA88e7a66524F2395BcB65f0b3c0D8A9A6B5eA8");
+    let tx = await flexVotingContract.connect(account1).submitVote(daoAddr, proposalId, value);
+    await tx.wait();
+    console.log("account1 voted...");
+    // tx = await flexVotingContract.connect(account2).submitVote(daoAddr, proposalId, value);
+    // await tx.wait();
+    // console.log("account2 voted...");
+
+    // tx = await flexVotingContract.connect(account3).submitVote(daoAddr, proposalId, value);
+    // await tx.wait();
+    // console.log("account3 voted...");
+
+    tx = await flexVotingContract.connect(account4).submitVote(daoAddr, proposalId, value);
+    await tx.wait();
+    console.log("account4 voted...");
+
+    tx = await flexVotingContract.connect(account5).submitVote(daoAddr, proposalId, value);
+    await tx.wait();
+    console.log("account5 voted...");
+
+}
+
+
+const voteForFundingProposal = async (daoAddr, proposalId, value) => {
+    const [account1, account2, account3, account4, account5] = await hre.ethers.getSigners();
+    const daoInstance = (await hre.ethers.getContractFactory("DaoRegistry")).
+        attach(daoAddr);
+    const flexPollVotingContractAddress = await daoInstance.
+        getAdapterAddress("0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610");
+    const flexPollingVotingContract = (await hre.ethers.getContractFactory("FlexPollingVotingContract")).
+        attach(flexPollVotingContractAddress);
+    let tx;
+    // tx = await flexPollingVotingContract.connect(account1).submitVote(daoAddr, proposalId, value);
+    // await tx.wait();
+    // console.log("account1 voted...");
+    tx = await flexPollingVotingContract.connect(account2).submitVote(daoAddr, proposalId, value);
+    await tx.wait();
+    console.log("account2 voted...");
+
+    tx = await flexPollingVotingContract.connect(account3).submitVote(daoAddr, proposalId, value);
+    await tx.wait();
+    console.log("account3 voted...");
+
+    tx = await flexPollingVotingContract.connect(account4).submitVote(daoAddr, proposalId, value);
+    await tx.wait();
+    console.log("account4 voted...");
+
+    tx = await flexPollingVotingContract.connect(account5).submitVote(daoAddr, proposalId, value);
+    await tx.wait();
+    console.log("account5 voted...");
+
+}
+
+
+
+const stewardQuit = async (daoAddr) => {
+    const [account1, account2, account3, account4, account5] = await hre.ethers.getSigners();
+    const stewardManagementContract = (await hre.ethers.getContractFactory("StewardManagementContract")).attach("0x8906fE795D8e07a60F9962382550Cc8365eBA24d");
+    const tx = await stewardManagementContract.connect(account3).quit(daoAddr);
+    await tx.wait();
+    console.log("quited...");
+}
+
+
+const getVoteResult = async (daoAddr, proposalId) => {
+    const flexVotingContract = (await hre.ethers.getContractFactory("FlexVotingContract")).attach("0x2BA88e7a66524F2395BcB65f0b3c0D8A9A6B5eA8");
+    const voteRel = await flexVotingContract.voteResult(daoAddr, proposalId);
+    console.log("vote result: ", voteRel);
+    return voteRel;
+}
+
 
 main()
     .then(() => process.exit(0))

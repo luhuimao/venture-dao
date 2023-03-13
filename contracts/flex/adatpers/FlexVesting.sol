@@ -57,7 +57,7 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
         uint256 vestingSteps;
         address allocAdaptAddr;
         IFlexFunding.VestInfo vestInfo;
-        IFlexFunding.FundingInfo fundingInfo;
+        IFlexFunding.ProposalFundingInfo fundingInfo;
     }
 
     function createVesting(

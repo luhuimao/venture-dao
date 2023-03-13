@@ -180,7 +180,7 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         vars.fundingpool = FlexFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
         );
-        IFlexFunding.FundingInfo memory fundingInfo;
+        IFlexFunding.ProposalFundingInfo memory fundingInfo;
         (, fundingInfo, , , , , , ) = flexFunding.Proposals(
             address(dao),
             proposalId

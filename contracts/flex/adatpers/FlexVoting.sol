@@ -52,6 +52,18 @@ contract FlexVotingContract is
         mapping(address => uint256) votes;
     }
 
+    event SubmitVote(
+        address daoAddr,
+        bytes32 proposalId,
+        uint256 votingTime,
+        uint256 voteStartTime,
+        uint256 voteStopTime,
+        address voter,
+        uint256 voteValue,
+        uint256 nbYes,
+        uint256 nbNo
+    );
+
     bytes32 constant VotingPeriod = keccak256("voting.votingPeriod");
     bytes32 constant GracePeriod = keccak256("voting.gracePeriod");
 
@@ -140,6 +152,18 @@ contract FlexVotingContract is
         } else if (voteValue == 2) {
             vote.nbNo += 1;
         }
+
+        emit SubmitVote(
+            address(dao),
+            proposalId,
+            block.timestamp,
+            vote.startingTime,
+            vote.stopTime,
+            msg.sender,
+            voteValue,
+            vote.nbYes,
+            vote.nbNo
+        );
     }
 
     /**
@@ -171,7 +195,7 @@ contract FlexVotingContract is
             return VotingState.IN_PROGRESS;
         }
         // stewards amount * quorum
-        uint256 minVotes = ((dao.getNbMembers()) *
+        uint256 minVotes = ((DaoHelper.getActiveMemberNb(dao)) *
             dao.getConfiguration(DaoHelper.QUORUM)) / 100;
 
         unchecked {

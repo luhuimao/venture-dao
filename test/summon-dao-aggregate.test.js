@@ -4,7 +4,7 @@
  * @Author: huhuimao
  * @Date: 2022-12-19 13:50:51
  * @LastEditors: huhuimao
- * @LastEditTime: 2023-03-01 11:48:23
+ * @LastEditTime: 2023-03-10 17:52:34
  */
 // Whole-script strict mode syntax
 "use strict";
@@ -640,6 +640,7 @@ describe("Summon A Flex Dao", () => {
         // console.log(fundingParams);
         console.log(`
         create flex funding proposal...
+        ${dao.address}
         `)
         const tx = await flexFundingAdapterContract.connect(this.funding_proposer1_whitelist).
             submitProposal(dao.address, fundingParams);
@@ -705,6 +706,8 @@ describe("Summon A Flex Dao", () => {
         console.log(`
         processed...
         state ${flexFundingProposalInfo.state}
+        finalRaiseAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.fundingInfo.finalRaisedAmount)}
+        returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.fundingInfo.returnTokenAmount)}
         protocol Fee ${hre.ethers.utils.formatEther(protocolFee)}
         management Fee ${hre.ethers.utils.formatEther(managementFee)}
         proposer reward ${hre.ethers.utils.formatEther(proposerreward)}
@@ -904,6 +907,8 @@ describe("Summon A Flex Dao", () => {
         console.log(`
         processed...
         state ${flexFundingProposalInfo.state}
+        finalRaiseAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.fundingInfo.finalRaisedAmount)}
+        returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.fundingInfo.returnTokenAmount)}
         protocol Fee ${hre.ethers.utils.formatEther(protocolFee)}
         management Fee ${hre.ethers.utils.formatEther(managementFee)}
         proposer reward ${hre.ethers.utils.formatEther(proposerreward)}
@@ -1164,6 +1169,8 @@ describe("Summon A Flex Dao", () => {
         console.log(`
         processed...
         state ${flexFundingProposalInfo.state}
+        finalRaiseAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.fundingInfo.finalRaisedAmount)}
+        returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.fundingInfo.returnTokenAmount)}
         protocol Fee ${hre.ethers.utils.formatEther(protocolFee3)}
         management Fee ${hre.ethers.utils.formatEther(managementFee3)}
         proposer reward ${hre.ethers.utils.formatEther(proposerreward3)}
@@ -1393,6 +1400,8 @@ describe("Summon A Flex Dao", () => {
         console.log(`
         processed...
         state ${flexFundingProposalInfo.state}
+        finalRaiseAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.fundingInfo.finalRaisedAmount)}
+        returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.fundingInfo.returnTokenAmount)}
         protocol Fee ${hre.ethers.utils.formatEther(protocolFee3)}
         management Fee ${hre.ethers.utils.formatEther(managementFee3)}
         proposer reward ${hre.ethers.utils.formatEther(proposerreward3)}
@@ -1714,7 +1723,10 @@ describe("Steward-In Management", () => {
         ];
 
         const flexDaoManagementfee = hre.ethers.utils.parseEther("0.002");// 0.2%
-        const flexDaoGenesisStewards = [this.genesis_steward1.address, this.genesis_steward2.address];
+        const flexDaoGenesisStewards = [
+            this.genesis_steward1.address,
+            this.genesis_steward2.address
+        ];
 
         const fundingPollEnable = false;//DIRECT mode
         const flexDaoFundriaseStyle = 0// 0 - FCFS 1- Free in
@@ -1766,8 +1778,10 @@ describe("Steward-In Management", () => {
         new dao address ${daoAddr}
         new dao name ${toUtf8(daoName)}
         funding pool extensionAddr ${fundingpoolextensionAddr}
-        `)
+        `);
 
+        // await daoContract.removeMember(this.daoFactory.address);
+        // await daoContract.removeMember(this.summonDao.address);
         this.flexDirectdaoAddress = daoAddr;
     });
 
@@ -1957,6 +1971,20 @@ describe("Steward-In Management", () => {
         console.log(`
         isSteward ${isSteward}
         `);
+        isSteward = await daoContract.isMember(this.genesis_steward1.address);
+        console.log(`
+        is genesis_steward1 Steward ${isSteward}
+        genesis_steward1 quit...
+        `);
+        await stewardMangementContract.connect(this.genesis_steward1).quit(daoAddr);
+        isSteward = await daoContract.isMember(this.genesis_steward1.address);
+        const allStewards = await stewardMangementContract.getAllSteward(daoAddr);
+        console.log(allStewards);
+        console.log(`
+        is genesis_steward1 Steward ${isSteward}
+        allStewards ${allStewards}
+        `);
+
     });
 
     it("steward whitelist in proposal", async () => {
@@ -2095,7 +2123,7 @@ describe("Steward-In Management", () => {
         const fundingPollEnable = false;//DIRECT mode
         const flexDaoFundriaseStyle = 0// 0 - FCFS 1- Free in
 
-      let  _daoName = "my_flex_dao3";
+        let _daoName = "my_flex_dao3";
         const flexDaoInfo = {
             name: _daoName,// string name;
             creator: this.owner.address,  // address creator;

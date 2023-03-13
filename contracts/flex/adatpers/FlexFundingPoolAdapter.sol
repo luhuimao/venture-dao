@@ -71,6 +71,19 @@ contract FlexFundingPoolAdapterContract is
         uint256 tokenId;
     }
 
+    event Deposit(
+        address daoAddress,
+        bytes32 proposalId,
+        uint256 amount,
+        address account
+    );
+    event WithDraw(
+        address daoAddress,
+        bytes32 proposalId,
+        uint256 amount,
+        address account
+    );
+
     /**
      * @notice Allows the member/advisor of the DAO to withdraw the funds from their internal bank account.
      * @notice Only accounts that are not reserved can withdraw the funds.
@@ -110,6 +123,7 @@ contract FlexFundingPoolAdapterContract is
             address token = flexFunding.getTokenByProposalId(dao, proposalId);
             flexFundingPool.withdraw(proposalId, msg.sender, token, amount);
         }
+        emit WithDraw(address(dao), proposalId, amount, msg.sender);
     }
 
     function createParticipantMembership(
@@ -153,10 +167,10 @@ contract FlexFundingPoolAdapterContract is
         }
     }
 
-    function registerPriorityDepositWhiteList(DaoRegistry dao, address account)
-        external
-        onlyMember(dao)
-    {
+    function registerPriorityDepositWhiteList(
+        DaoRegistry dao,
+        address account
+    ) external onlyMember(dao) {
         if (!priorityDepositWhitelist[address(dao)].contains(account)) {
             priorityDepositWhitelist[address(dao)].add(account);
         }
@@ -254,6 +268,7 @@ contract FlexFundingPoolAdapterContract is
         );
 
         vars.flexFungdingPoolExt.addToBalance(proposalId, msg.sender, amount);
+        emit Deposit(address(dao), proposalId, amount, msg.sender);
     }
 
     function balanceOf(
@@ -267,22 +282,20 @@ contract FlexFundingPoolAdapterContract is
         return flexFungdingPoolExt.balanceOf(proposalId, account);
     }
 
-    function getTotalFundByProposalId(DaoRegistry dao, bytes32 proposalId)
-        external
-        view
-        returns (uint160)
-    {
+    function getTotalFundByProposalId(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external view returns (uint160) {
         FlexFundingPoolExtension flexFungdingPoolExt = FlexFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
         );
         return flexFungdingPoolExt.balanceOf(proposalId, DaoHelper.TOTAL);
     }
 
-    function ifInRedemptionPeriod(DaoRegistry dao, uint256 timeStamp)
-        public
-        view
-        returns (bool)
-    {
+    function ifInRedemptionPeriod(
+        DaoRegistry dao,
+        uint256 timeStamp
+    ) public view returns (bool) {
         uint256 fundStartTime = dao.getConfiguration(DaoHelper.FUND_START_TIME);
         uint256 fundEndTime = dao.getConfiguration(DaoHelper.FUND_END_TIME);
         uint256 redemptionPeriod = dao.getConfiguration(
@@ -334,7 +347,10 @@ contract FlexFundingPoolAdapterContract is
         return participantWhiteList[address(dao)][hashedName].contains(account);
     }
 
-    function getParticipantMembershipInfo(DaoRegistry dao, string calldata name)
+    function getParticipantMembershipInfo(
+        DaoRegistry dao,
+        string calldata name
+    )
         external
         view
         returns (
@@ -357,27 +373,23 @@ contract FlexFundingPoolAdapterContract is
         tokenId = participantMemberShips[address(dao)][hashedName].tokenId;
     }
 
-    function isPriorityDepositWhitelist(DaoRegistry dao, address account)
-        external
-        view
-        returns (bool)
-    {
+    function isPriorityDepositWhitelist(
+        DaoRegistry dao,
+        address account
+    ) external view returns (bool) {
         return priorityDepositWhitelist[address(dao)].contains(account);
     }
 
-    function getPriorityDepositWhitelist(DaoRegistry dao)
-        external
-        view
-        returns (address[] memory)
-    {
+    function getPriorityDepositWhitelist(
+        DaoRegistry dao
+    ) external view returns (address[] memory) {
         return priorityDepositWhitelist[address(dao)].values();
     }
 
-    function getParticipanWhitelist(DaoRegistry dao, string calldata name)
-        external
-        view
-        returns (address[] memory)
-    {
+    function getParticipanWhitelist(
+        DaoRegistry dao,
+        string calldata name
+    ) external view returns (address[] memory) {
         bytes32 hashedName = TypeConver.bytesToBytes32(abi.encodePacked(name));
 
         return participantWhiteList[address(dao)][hashedName].values();

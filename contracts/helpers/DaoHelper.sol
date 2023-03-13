@@ -321,6 +321,23 @@ library DaoHelper {
 
     uint8 internal constant MAX_TOKENS_GUILD_BANK = 200;
 
+    function getActiveMemberNb(
+        DaoRegistry dao
+    ) internal view returns (uint256) {
+        uint256 memberNb = dao.getNbMembers();
+        uint256 activeMemberAmount = 0;
+        for (uint8 i = 0; i < memberNb; i++) {
+            if (dao.isMember(dao.getMemberAddress(i))) activeMemberAmount += 1;
+        }
+        return activeMemberAmount;
+    }
+
+    function getAllActiveMember(
+        DaoRegistry dao
+    ) internal view returns (address[] memory) {
+        return dao.getAllSteward();
+    }
+
     function totalTokens(BankExtension bank) internal view returns (uint256) {
         return memberTokens(bank, TOTAL) - memberTokens(bank, GUILD); //GUILD is accounted for twice otherwise
     }
