@@ -217,4 +217,17 @@ contract FlexPollingVotingContract is
     ) external pure override returns (address) {
         return sender;
     }
+
+    function checkIfVoted(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        address voterAddr
+    ) external view returns (bool) {
+        Voting storage vote = votes[address(dao)][proposalId];
+        if (vote.votes[voterAddr] == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }

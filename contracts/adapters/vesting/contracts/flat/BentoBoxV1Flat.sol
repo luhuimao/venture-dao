@@ -33,10 +33,10 @@ interface IERC20 {
 
     function balanceOf(address account) external view returns (uint256);
 
-    function allowance(address owner, address spender)
-        external
-        view
-        returns (uint256);
+    function allowance(
+        address owner,
+        address spender
+    ) external view returns (uint256);
 
     function approve(address spender, uint256 amount) external returns (bool);
 
@@ -117,9 +117,10 @@ interface IStrategy {
     /// @param balance The amount of tokens the caller thinks it has invested.
     /// @param sender The address of the initiator of this transaction. Can be used for reimbursements, etc.
     /// @return amountAdded The delta (+profit or -loss) that occured in contrast to `balance`.
-    function harvest(uint256 balance, address sender)
-        external
-        returns (int256 amountAdded);
+    function harvest(
+        uint256 balance,
+        address sender
+    ) external returns (int256 amountAdded);
 
     /// @notice Withdraw assets. The returned amount can differ from the requested amount due to rounding.
     /// @dev The `actualAmount` should be very close to the amount.
@@ -149,11 +150,7 @@ library BoringERC20 {
     /// @param token The address of the ERC-20 token.
     /// @param to Transfer tokens to.
     /// @param amount The token amount.
-    function safeTransfer(
-        IERC20 token,
-        address to,
-        uint256 amount
-    ) internal {
+    function safeTransfer(IERC20 token, address to, uint256 amount) internal {
         (bool success, bytes memory data) = address(token).call(
             abi.encodeWithSelector(SIG_TRANSFER, to, amount)
         );
@@ -349,19 +346,19 @@ library RebaseLibrary {
 
     /// @notice Add `elastic` to `total` and update storage.
     /// @return newElastic Returns updated `elastic`.
-    function addElastic(Rebase storage total, uint256 elastic)
-        internal
-        returns (uint256 newElastic)
-    {
+    function addElastic(
+        Rebase storage total,
+        uint256 elastic
+    ) internal returns (uint256 newElastic) {
         newElastic = total.elastic = total.elastic.add(elastic.to128());
     }
 
     /// @notice Subtract `elastic` from `total` and update storage.
     /// @return newElastic Returns updated `elastic`.
-    function subElastic(Rebase storage total, uint256 elastic)
-        internal
-        returns (uint256 newElastic)
-    {
+    function subElastic(
+        Rebase storage total,
+        uint256 elastic
+    ) internal returns (uint256 newElastic) {
         newElastic = total.elastic = total.elastic.sub(elastic.to128());
     }
 }
@@ -571,11 +568,9 @@ contract MasterContractManager is BoringOwnable, BoringFactory {
         );
     }
 
-    function _calculateDomainSeparator(uint256 chainId)
-        private
-        view
-        returns (bytes32)
-    {
+    function _calculateDomainSeparator(
+        uint256 chainId
+    ) private view returns (bytes32) {
         return
             keccak256(
                 abi.encode(
@@ -606,10 +601,10 @@ contract MasterContractManager is BoringOwnable, BoringFactory {
     }
 
     /// @notice Enables or disables a contract for approval without signed message.
-    function whitelistMasterContract(address masterContract, bool approved)
-        public
-        onlyOwner
-    {
+    function whitelistMasterContract(
+        address masterContract,
+        bool approved
+    ) public onlyOwner {
         // Checks
         require(masterContract != address(0), "MasterCMgr: Cannot approve 0");
 
@@ -698,11 +693,9 @@ contract MasterContractManager is BoringOwnable, BoringFactory {
 contract BaseBoringBatchable {
     /// @dev Helper function to extract a useful revert message from a failed call.
     /// If the returned data is malformed or not correctly abi encoded then this call can fail itself.
-    function _getRevertMsg(bytes memory _returnData)
-        internal
-        pure
-        returns (string memory)
-    {
+    function _getRevertMsg(
+        bytes memory _returnData
+    ) internal pure returns (string memory) {
         // If the _res length is less than 68, then the transaction failed silently (without a revert message)
         if (_returnData.length < 68) return "Transaction reverted silently";
 
@@ -722,7 +715,10 @@ contract BaseBoringBatchable {
     // F2: Calls in the batch may be payable, delegatecall operates in the same context, so each call in the batch has access to msg.value
     // C3: The length of the loop is fully under user control, so can't be exploited
     // C7: Delegatecall is only used on the same contract, so it's safe
-    function batch(bytes[] calldata calls, bool revertOnFail)
+    function batch(
+        bytes[] calldata calls,
+        bool revertOnFail
+    )
         external
         payable
         returns (bool[] memory successes, bytes[] memory results)
@@ -898,11 +894,9 @@ contract BentoBoxV1 is MasterContractManager, BoringBatchable {
 
     /// @dev Returns the total balance of `token` this contracts holds,
     /// plus the total amount this contract thinks the strategy holds.
-    function _tokenBalanceOf(IERC20 token)
-        internal
-        view
-        returns (uint256 amount)
-    {
+    function _tokenBalanceOf(
+        IERC20 token
+    ) internal view returns (uint256 amount) {
         amount = token.balanceOf(address(this)).add(
             strategyData[token].balance
         );
@@ -976,6 +970,7 @@ contract BentoBoxV1 is MasterContractManager, BoringBatchable {
         if (share == 0) {
             // value of the share may be lower than the amount due to rounding, that's ok
             share = total.toBase(amount, false);
+            console.log("BentoBox deposit", share);
             // Any deposit should lead to at least the minimum share balance, otherwise it's ignored (no amount taken)
             if (total.base.add(share.to128()) < MINIMUM_SHARE_BALANCE) {
                 return (0, 0);
@@ -1201,10 +1196,10 @@ contract BentoBoxV1 is MasterContractManager, BoringBatchable {
     /// @dev Only the owner of this contract is allowed to change this.
     /// @param token The address of the token that maps to a strategy to change.
     /// @param targetPercentage_ The new target in percent. Must be lesser or equal to `MAX_TARGET_PERCENTAGE`.
-    function setStrategyTargetPercentage(IERC20 token, uint64 targetPercentage_)
-        public
-        onlyOwner
-    {
+    function setStrategyTargetPercentage(
+        IERC20 token,
+        uint64 targetPercentage_
+    ) public onlyOwner {
         // Checks
         require(
             targetPercentage_ <= MAX_TARGET_PERCENTAGE,

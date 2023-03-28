@@ -67,7 +67,12 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         uint256 gpAllocationBonusRadio,
         uint256 riceStakeAllocationRadio
     );
-    event AllocateToken(bytes32 proposalId, address proposer, address[] lps);
+    event AllocateToken(
+        bytes32 proposalId,
+        address daoAddr,
+        address proposer,
+        address[] lps
+    );
 
     /**
      * @notice Configures the DAO with the Voting and Gracing periods.
@@ -333,7 +338,12 @@ contract FlexAllocationAdapterContract is AdapterGuard {
             vars.totalReward <= vars.tokenAmount,
             "AllocationAdapter::allocateProjectToken::distribute token amount exceeds tranding off amount"
         );
-        emit AllocateToken(proposalId, proposerAddr, allInvestors);
+        emit AllocateToken(
+            proposalId,
+            address(dao),
+            proposerAddr,
+            allInvestors
+        );
     }
 
     function vestCreated(

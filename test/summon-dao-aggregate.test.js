@@ -4,7 +4,7 @@
  * @Author: huhuimao
  * @Date: 2022-12-19 13:50:51
  * @LastEditors: huhuimao
- * @LastEditTime: 2023-03-10 17:52:34
+ * @LastEditTime: 2023-03-22 11:07:06
  */
 // Whole-script strict mode syntax
 "use strict";
@@ -907,6 +907,7 @@ describe("Summon A Flex Dao", () => {
         console.log(`
         processed...
         state ${flexFundingProposalInfo.state}
+        price ${hre.ethers.utils.formatEther(flexFundingProposalInfo.fundingInfo.price)}
         finalRaiseAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.fundingInfo.finalRaisedAmount)}
         returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.fundingInfo.returnTokenAmount)}
         protocol Fee ${hre.ethers.utils.formatEther(protocolFee)}
@@ -1312,9 +1313,14 @@ describe("Summon A Flex Dao", () => {
         const stopVoteTime = flexFundingProposalInfo.stopVoteTime;
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
+        let voted = await flexVoting.checkIfVoted(dao.address, proposalId, this.pollster_membership_whitelist1.address);
+        console.log("pollster_membership_whitelist1 voted: ", voted);
 
         await flexVoting.connect(this.pollster_membership_whitelist1).submitVote(dao.address, proposalId, 1);
         await flexVoting.connect(this.pollster_membership_whitelist2).submitVote(dao.address, proposalId, 1);
+
+        voted = await flexVoting.checkIfVoted(dao.address, proposalId, this.pollster_membership_whitelist1.address);
+        console.log("pollster_membership_whitelist1 voted: ", voted);
 
         if (parseInt(stopVoteTime) > blocktimestamp) {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1]);
@@ -1422,9 +1428,11 @@ describe("Summon A Flex Dao", () => {
 
         const vestingBal = await flexVestingContract.vestBalance(2);
         const vestingBal2 = await flexVestingContract.vestBalance(3);
+        const vestingBal3 = await flexVestingContract.vestBalance(4);
 
         let returnTokenBal = await this.testtoken2.balanceOf(this.investor1.address);
         let returnTokenBal2 = await this.testtoken2.balanceOf(this.investor2.address);
+        let returnTokenBal3 = await this.testtoken2.balanceOf(this.funding_proposer1_whitelist.address);
 
         console.log(`
         vesting info1 ...
@@ -1470,6 +1478,8 @@ describe("Summon A Flex Dao", () => {
         cliffShares: ${hre.ethers.utils.formatEther(createdVestingInfo3.cliffShares)}
         stepShares: ${hre.ethers.utils.formatEther(createdVestingInfo3.stepShares)}
         claimed: ${createdVestingInfo3.claimed}
+        claiable: ${hre.ethers.utils.formatEther(vestingBal3)}
+        return token balance ${hre.ethers.utils.formatEther(returnTokenBal3)}
 
         claiming ...
         `);
@@ -1503,7 +1513,8 @@ describe("Summon A Flex Dao", () => {
 
         returnTokenBal = await this.testtoken2.balanceOf(this.investor1.address);
         returnTokenBal2 = await this.testtoken2.balanceOf(this.investor2.address);
-
+        returnTokenBal3 = await this.testtoken2.balanceOf(this.funding_proposer1_whitelist.address);
+        
         createdVestingInfo = await flexVestingContract.vests(2);
         createdVestingInfo2 = await flexVestingContract.vests(3);
         createdVestingInfo3 = await flexVestingContract.vests(4);
@@ -1516,6 +1527,7 @@ describe("Summon A Flex Dao", () => {
 
         return token balance ${hre.ethers.utils.formatEther(returnTokenBal)}
         return token balance2 ${hre.ethers.utils.formatEther(returnTokenBal2)}
+        return token balance3 ${hre.ethers.utils.formatEther(returnTokenBal3)}
         `);
     });
 })
@@ -1913,7 +1925,11 @@ describe("Steward-In Management", () => {
         stop vote time ${stopVoteTime}
         current block time ${blocktimestamp}
         `);
+        let voted = await flexVotingContract.checkIfVoted(daoAddr, proposalId, this.owner.address);
+        console.log("voted: ", voted);
         await flexVotingContract.submitVote(daoAddr, proposalId, 1);
+        voted = await flexVotingContract.checkIfVoted(daoAddr, proposalId, this.owner.address);
+        console.log("voted: ", voted);
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(stopVoteTime) > blocktimestamp) {

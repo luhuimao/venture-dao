@@ -214,4 +214,17 @@ contract FlexVotingContract is
         if (vote.nbYes >= minYes) return VotingState.PASS;
         else return VotingState.NOT_PASS;
     }
+
+    function checkIfVoted(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        address voterAddr
+    ) external view returns (bool) {
+        Voting storage vote = votes[address(dao)][proposalId];
+        if (vote.votes[voterAddr] == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }

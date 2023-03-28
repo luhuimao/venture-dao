@@ -32,9 +32,9 @@ const deploySummonContract = async () => {
 
 async function main() {
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
-    // await deploy();
+    await deploy();
     // await checkStewardWhitelist();
-    // await summonFlexDao("202303091010");
+    // await summonFlexDao("202303160944");
     // await submitStewardInProposal("0xffd855c2ec6cefeb9a82f7d14afd28efc5264597", "0x540881ecaf34c85efb352727fc2f9858b19c4b08");
     // await voteForStewarProposal("0xffd855c2ec6cefeb9a82f7d14afd28efc5264597",
     //     "0x476f7665726e6f722d4f75742332000000000000000000000000000000000000", 1);
@@ -47,14 +47,17 @@ async function main() {
     // await getVoteResult("0xffd855c2ec6cefeb9a82f7d14afd28efc5264597",
     //     "0x476f7665726e6f722d496e233200000000000000000000000000000000000000");
 
-    // await createFlexFundingProposal("0xb6fe544d3ec35701fd33fe631256de87bcef76e4");
-    // await voteForFundingProposal("0xb6fe544d3ec35701fd33fe631256de87bcef76e4",
+    // await createFlexFundingProposal("0xff81fca6050a4dfc654865fcbb2400dc888b74d3");
+    // await voteForFundingProposal("0xff81fca6050a4dfc654865fcbb2400dc888b74d3",
     //     "0x46756e64696e6723380000000000000000000000000000000000000000000000",
     //     1);
-    // await processFundingProposal("0xb6fe544d3ec35701fd33fe631256de87bcef76e4",
+    // await processFundingProposal("0xff81fca6050a4dfc654865fcbb2400dc888b74d3",
     //     "0x46756e64696e6723380000000000000000000000000000000000000000000000");
-    await deposit("0xff81fca6050a4dfc654865fcbb2400dc888b74d3",
-        "0x46756e64696e6723320000000000000000000000000000000000000000000000");
+    // await deposit("0xff81fca6050a4dfc654865fcbb2400dc888b74d3",
+    //     "0x46756e64696e6723380000000000000000000000000000000000000000000000");
+
+    // await createVesting("0xe8f1df25a257bc72c005bb982ccb5cc5a1695095",
+    //     "0x46756e64696e6723323700000000000000000000000000000000000000000000");
 }
 
 const GOERLI_CONTRACTS = {
@@ -110,30 +113,30 @@ const deposit = async (daoAddress, proposalId) => {
         .attach(flexFundingPoolAdaptAddr);
     let tx;
     const amount = hre.ethers.utils.parseEther("5000");
-    // tx = await TestUSDTContractInstance.connect(account1).
-    //     approve(flexFundingPoolAdaptAddr, hre.ethers.utils.parseEther("5000"));
-    // await tx.wait();
-    // console.log("account1 approved...");
+    tx = await TestUSDTContractInstance.connect(account1).
+        approve(flexFundingPoolAdaptAddr, hre.ethers.utils.parseEther("5000"));
+    await tx.wait();
+    console.log("account1 approved...");
 
-    // tx = await flexFundingPoolAdaptContractInstance.connect(account1)
-    //     .deposit(daoAddress, proposalId, amount);
-    // await tx.wait();
-    // console.log("account1 deposited...");
+    tx = await flexFundingPoolAdaptContractInstance.connect(account1)
+        .deposit(daoAddress, proposalId, amount);
+    await tx.wait();
+    console.log("account1 deposited...");
 
-    // tx = await TestUSDTContractInstance.connect(account2).
-    //     approve(flexFundingPoolAdaptAddr, hre.ethers.utils.parseEther("5000"));
-    // await tx.wait();
-    // console.log("account2 approved...");
+    tx = await TestUSDTContractInstance.connect(account2).
+        approve(flexFundingPoolAdaptAddr, hre.ethers.utils.parseEther("5000"));
+    await tx.wait();
+    console.log("account2 approved...");
 
-    // tx = await flexFundingPoolAdaptContractInstance.connect(account2)
-    //     .deposit(daoAddress, proposalId, amount);
-    // await tx.wait();
-    // console.log("account2 deposited...");
+    tx = await flexFundingPoolAdaptContractInstance.connect(account2)
+        .deposit(daoAddress, proposalId, amount);
+    await tx.wait();
+    console.log("account2 deposited...");
 
-    // tx = await TestUSDTContractInstance.connect(account3).
-    //     approve(flexFundingPoolAdaptAddr, hre.ethers.utils.parseEther("5000"));
-    // await tx.wait();
-    // console.log("account3 approved...");
+    tx = await TestUSDTContractInstance.connect(account3).
+        approve(flexFundingPoolAdaptAddr, hre.ethers.utils.parseEther("5000"));
+    await tx.wait();
+    console.log("account3 approved...");
 
     tx = await flexFundingPoolAdaptContractInstance.connect(account3)
         .deposit(daoAddress, proposalId, amount);
@@ -1024,12 +1027,14 @@ const flexFundingProposalParams_Goerli = async () => {
     let tokenAddress = GOERLI_CONTRACTS.TestToken1;
     let minFundingAmount = hre.ethers.utils.parseEther("10000");
     let maxFundingAmount = hre.ethers.utils.parseEther("10000000");
-    let escrow = false;
+    let escrow = true;
     let returnTokenAddr = GOERLI_CONTRACTS.TestToken2;
     let returnTokenAmount = hre.ethers.utils.parseEther("1000000");
     let price = hre.ethers.utils.parseEther("0.6");
-    let minReturnAmount = hre.ethers.utils.parseEther("1000000");
-    let maxReturnAmount = hre.ethers.utils.parseEther("1000000");
+    let minReturnAmount = toBN(minFundingAmount).div(toBN(price)).mul(toBN(hre.ethers.utils.parseEther("1")));
+    let maxReturnAmount = toBN(maxFundingAmount).div(toBN(price)).mul(toBN(hre.ethers.utils.parseEther("1")));
+    // let minReturnAmount = hre.ethers.utils.parseEther("1000000");
+    // let maxReturnAmount = hre.ethers.utils.parseEther("1000000");
     let approverAddr = "0xDF9DFA21F47659cf742FE61030aCb0F15f659707";
     let recipientAddr = "0xDF9DFA21F47659cf742FE61030aCb0F15f659707";
 
@@ -1185,6 +1190,9 @@ const processFundingProposal = async (daoAddr, proposalId) => {
 }
 
 const deploy = async () => {
+    const [account1, account2, account3, account4, account5] = await hre.ethers.getSigners();
+    const bal = hre.ethers.utils.formatEther((await account5.getBalance()).toString());
+    console.log("ETH balance: ", bal);
     // const DistributeFundContractV2 = await hre.ethers.getContractFactory("DistributeFundContractV2");
     // const distributeFundContractV2 = await DistributeFundContractV2.deploy();
     // await distributeFundContractV2.deployed();
@@ -1254,10 +1262,10 @@ const deploy = async () => {
     // console.log("stewardManagementContract deployed address:", stewardManagementContract.address);
 
 
-    const FlexAllocationAdapterContract = await hre.ethers.getContractFactory("FlexAllocationAdapterContract");
-    const flexAllocationAdapterContract = await FlexAllocationAdapterContract.deploy();
-    await flexAllocationAdapterContract.deployed();
-    console.log("flexAllocationAdapterContract deployed address:", flexAllocationAdapterContract.address);
+    // const FlexAllocationAdapterContract = await hre.ethers.getContractFactory("FlexAllocationAdapterContract");
+    // const flexAllocationAdapterContract = await FlexAllocationAdapterContract.deploy();
+    // await flexAllocationAdapterContract.deployed();
+    // console.log("flexAllocationAdapterContract deployed address:", flexAllocationAdapterContract.address);
 
 
     // const SummonDao = await hre.ethers.getContractFactory("SummonDao");
@@ -1276,6 +1284,11 @@ const deploy = async () => {
     // const testToken2 = await TestToken2.deploy(100000000);
     // await testToken2.deployed();
     // console.log("testToken2 deployed address:", testToken2.address);
+
+    const BentoBoxV1 = await hre.ethers.getContractFactory("BentoBoxV1");
+    const bentoBoxV1 = await BentoBoxV1.connect(account5).deploy();
+    await bentoBoxV1.connect(account5).deployed();
+    console.log("bentoBoxV1 deployed address:", bentoBoxV1.address);
 }
 
 
@@ -1365,6 +1378,17 @@ const voteForFundingProposal = async (daoAddr, proposalId, value) => {
     tx = await flexPollingVotingContract.connect(account5).submitVote(daoAddr, proposalId, value);
     await tx.wait();
     console.log("account5 voted...");
+
+}
+
+const createVesting = async (daoAddr, proposalId) => {
+    const [account1, account2, account3, account4, account5] = await hre.ethers.getSigners();
+    let tx;
+    const flexVestingContract = (await hre.ethers.getContractFactory("FlexVesting")).
+        attach(GOERLI_CONTRACTS.FlexVesting);
+    tx = await flexVestingContract.createVesting(daoAddr, account3.address, proposalId);
+    await tx.wait();
+    console.log("vesting created...");
 
 }
 
