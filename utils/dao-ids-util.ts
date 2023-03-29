@@ -4,7 +4,7 @@
  * @Author: huhuimao
  * @Date: 2022-11-10 19:00:47
  * @LastEditors: huhuimao
- * @LastEditTime: 2023-01-16 11:25:21
+ * @LastEditTime: 2023-03-29 16:41:27
  */
 /**
  * @notice the ids defined in this file must match the ids added to DaoHelper.sol.
@@ -12,6 +12,9 @@
 
 /** Adapters */
 export const adaptersIdsMap: Record<string, string> = {
+  //vintage
+  VINTAGE_VOTING:"vintage-voting",
+  //flex
   FLEX_STEWARD_MANAGEMENT: "flex-steward-management",
   FLEX_POLLING_VOTING: "flex-polling-voting",
   SUMMON_DAO: "summon-dao",
@@ -66,6 +69,7 @@ export const adaptersIdsMap: Record<string, string> = {
 /** Extensions */
 export const extensionsIdsMap: Record<string, string> = {
   FLEX_FUNDING_POOL_EXT: "flex-funding-pool-ext",
+  VINTAGE_FUNDING_POOL_EXT: "vintage-funding-pool-ext",
   BANK_EXT: "bank",
   FUNDING_POOL_EXT: "funding-pool-ext",
   RICE_STAKING_EXT: "rice-staking-ext",

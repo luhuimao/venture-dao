@@ -1,5 +1,6 @@
 import {
   flexFundingPoolExtensionAclFlagsMap,
+  vintageFundingPoolExtensionAclFlagsMap,
   daoAccessFlagsMap,
   bankExtensionAclFlagsMap,
   fundingpoolExtensionAclFlagsMap,
@@ -10,6 +11,7 @@ import {
   erc1271ExtensionAclFlagsMap,
   vestingExtensionAclFlagsMap,
   entryFlexFundingPool,
+  entryVintageFundingPool,
   entryBank,
   entryRiceStaking,
   entryFundingPool,
@@ -368,6 +370,21 @@ export const contracts: Array<ContractConfig> = [
     generatesExtensionId: extensionsIdsMap.FLEX_FUNDING_POOL_EXT,
   },
   {
+    id: "vintage-funding-pool-factory",
+    name: "VintageFundingPoolFactory",
+    alias: "vintageFundingPoolFactory",
+    path: "../../contracts/flex/extensions/VintageFundingPoolFactory",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Factory,
+    acls: {
+      dao: [],
+      extensions: {},
+    },
+    deploymentArgs: ["daoAddress"],
+    generatesExtensionId: extensionsIdsMap.VINTAGE_FUNDING_POOL_EXT,
+  },
+  {
     id: "rice-staking-factory",
     name: "RiceStakingFactory",
     alias: "riceStakingExtFactory",
@@ -481,6 +498,20 @@ export const contracts: Array<ContractConfig> = [
   /**
    * Extensions
    */
+  {
+    id: extensionsIdsMap.VINTAGE_FUNDING_POOL_EXT,
+    name: "VintageFundingPoolExtension",
+    alias: "vintageFundingPoolExt",
+    path: "../../contracts/vintage/extensions/VintageFundingPoolExtension",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Extension,
+    buildAclFlag: entryVintageFundingPool,
+    acls: {
+      dao: [],
+      extensions: {},
+    },
+  },
   {
     id: extensionsIdsMap.FLEX_FUNDING_POOL_EXT,
     name: "FlexFundingPoolExtension",
@@ -645,6 +676,57 @@ export const contracts: Array<ContractConfig> = [
   /**
    * Adapters
    */
+
+  // vitage
+  {
+    id: adaptersIdsMap.VINTAGE_FUNDING_POOL_ADAPTER,
+    name: "VintageFundingPoolAdapterContract",
+    alias: "vintageFundingPoolAdapterContract",
+    path: "../../contracts/adapters/VintageFundingPoolAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+        [extensionsIdsMap.VINTAGE_FUNDING_POOL_EXT]: [
+          vintageFundingPoolExtensionAclFlagsMap.WITHDRAW,
+          vintageFundingPoolExtensionAclFlagsMap.SUB_FROM_BALANCE,
+          vintageFundingPoolExtensionAclFlagsMap.ADD_TO_BALANCE,
+          vintageFundingPoolExtensionAclFlagsMap.UPDATE_TOKEN,
+        ],
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.VINTAGE_VOTING,
+    name: "VintageVotingContract",
+    alias: "vintageVotingContract",
+    path: "../../contracts/adapters/VintageVotingContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_VOTE_TYPE],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FUND_RAISE,
+    name: "FundRaiseAdapterContract",
+    alias: "fundRaiseAdapter",
+    path: "../../contracts/adapters/FundRaiseAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_CONFIGURATION],
+      extensions: {
+      },
+    },
+  },
+  // flex
   {
     id: adaptersIdsMap.FLEX_STEWARD_MANAGEMENT,
     name: "StewardManagementContract",

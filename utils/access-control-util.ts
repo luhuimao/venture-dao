@@ -46,6 +46,21 @@ export const flexFundingPoolExtensionAclFlags: Array<string> = Object.values(
 );
 
 
+export const vintageFundingPoolExtensionAclFlagsMap: Record<string, string> = {
+  ADD_TO_BALANCE: "ADD_TO_BALANCE",
+  SUB_FROM_BALANCE: "SUB_FROM_BALANCE",
+  INTERNAL_TRANSFER: "INTERNAL_TRANSFER",
+  WITHDRAW: "WITHDRAW",
+  REGISTER_NEW_TOKEN: "REGISTER_NEW_TOKEN",
+  REGISTER_NEW_INTERNAL_TOKEN: "REGISTER_NEW_INTERNAL_TOKEN",
+  UPDATE_TOKEN: "UPDATE_TOKEN",
+};
+
+export const vintageFundingPoolExtensionAclFlags: Array<string> = Object.values(
+  vintageFundingPoolExtensionAclFlagsMap
+);
+
+
 
 export const bankExtensionAclFlagsMap: Record<string, string> = {
   ADD_TO_BALANCE: "ADD_TO_BALANCE",
@@ -169,6 +184,17 @@ export const parseSelectedFlags = (
     }, {});
 };
 
+export const entryVintageFundingPool = (
+  contractAddress: string,
+  selectedAcls: SelectedACLs
+): ACLValue => {
+  return getEnabledExtensionFlags(
+    vintageFundingPoolExtensionAclFlags,
+    extensionsIdsMap.VINTAGE_FUNDING_POOL_EXT,
+    contractAddress,
+    selectedAcls
+  );
+};
 
 export const entryFlexFundingPool = (
   contractAddress: string,
