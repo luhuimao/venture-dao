@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "./DaoRegistry.sol";
 import "./CloneFactory.sol";
 import "../utils/TypeConver.sol";
+import "hardhat/console.sol";
 
 /**
 MIT License
@@ -122,7 +123,7 @@ contract DaoFactory is CloneFactory {
             dao.state() == DaoRegistry.DaoState.CREATION,
             "this DAO has already been setup"
         );
-
+        console.log("addAdapters");
         for (uint256 i = 0; i < adapters.length; i++) {
             //slither-disable-next-line calls-loop
             dao.replaceAdapter(

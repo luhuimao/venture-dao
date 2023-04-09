@@ -1,6 +1,7 @@
 pragma solidity ^0.8.0;
 import "../extensions/bank/Bank.sol";
 import "../extensions/gpdao/GPDao.sol";
+import "../flex/extensions/FlexFundingPool.sol";
 import "../core/DaoRegistry.sol";
 import "../core/DaoFactory.sol";
 // import "../adapters/FundRaise.sol";
@@ -226,6 +227,12 @@ library DaoHelper {
         keccak256("rice.token.address");
 
     // Adapters
+    //vintage
+    bytes32 internal constant VINTAGE_FUNDING_POOL_ADAPT =
+        keccak256("vintage-funding-pool-adatper");
+    bytes32 internal constant VINTAGE_VOTING_ADAPT =
+        keccak256("vintage-voting");
+    //flex
     bytes32 internal constant FLEX_STEWARD_MANAGEMENT =
         keccak256("flex-steward-management");
     bytes32 internal constant FLEX_VESTING = keccak256("flex-vesting");
@@ -288,6 +295,8 @@ library DaoHelper {
         keccak256("erc20-transfer-strategy");
 
     // Extensions
+    bytes32 internal constant VINTAGE_FUNDING_POOL_EXT =
+        keccak256("vintage-funding-pool-ext");
     bytes32 internal constant FLEX_FUNDING_POOL_EXT =
         keccak256("flex-funding-pool-ext");
     bytes32 internal constant BANK = keccak256("bank");
@@ -485,5 +494,22 @@ library DaoHelper {
         address account
     ) internal view returns (uint256) {
         return IERC1155(token).balanceOf(account, tokenId);
+    }
+
+    function getStewardInvestorNB(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) internal view returns (uint256) {
+        FlexFundingPoolExtension flexFungdingPoolExt = FlexFundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+        );
+        address[] memory investors = flexFungdingPoolExt
+            .getInvestorsByProposalId(proposalId);
+
+        uint256 nb = 0;
+        for (uint8 i = 0; i < investors.length; i++) {
+            if (dao.isMember(investors[i])) nb += 1;
+        }
+        return nb;
     }
 }

@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import "../../../core/DaoRegistry.sol";
 import "./IVoting.sol";
-import "../FundingPoolAdapter.sol";
+import "../VintageFundingPoolAdapter.sol";
 
 /**
 MIT License
@@ -87,7 +87,7 @@ interface IFundRaise {
         uint256 managementFeeRatio;
         uint256 redepmtFeeRatio;
         uint256 protocolFeeRatio;
-        FundingPoolAdapterContract fundingPoolAdapt;
+        VintageFundingPoolAdapterContract fundingPoolAdapt;
     }
 
     struct ProposalParams {

@@ -206,13 +206,32 @@ contract FlexFundingPoolAdapterContract is
             .flexFungdingPoolExt
             .getInvestorsByProposalId(proposalId)
             .length;
+
         if (
             dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS_ENABLE) == 1 &&
             dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) > 0 &&
-            vars.investorsAmount >=
-            dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) &&
+            (vars.investorsAmount >=
+                dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) ||
+                (vars.investorsAmount <
+                    dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) &&
+                    ((
+                        vars.investorsAmount >=
+                            DaoHelper.getStewardInvestorNB(dao, proposalId)
+                            ? vars.investorsAmount -
+                                DaoHelper.getStewardInvestorNB(dao, proposalId)
+                            : 0
+                    ) >=
+                        (
+                            dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) >=
+                                DaoHelper.getActiveMemberNb(dao)
+                                ? dao.getConfiguration(
+                                    DaoHelper.MAX_PARTICIPANTS
+                                ) - DaoHelper.getActiveMemberNb(dao)
+                                : 0
+                        )) &&
+                    !dao.isMember(msg.sender))) &&
             !vars.flexFungdingPoolExt.isInvestor(proposalId, msg.sender)
-        ) revert("Max Participant Reach");
+        ) revert("Participant Cap Reach");
 
         if (
             vars.flexFunding.getProposalState(dao, proposalId) !=

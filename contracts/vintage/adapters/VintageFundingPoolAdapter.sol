@@ -8,8 +8,8 @@ import "../extensions/fundingpool/VintageFundingPool.sol";
 import "./interfaces/IVoting.sol";
 import "../../helpers/DaoHelper.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
-import "./Voting.sol";
-import "./FundRaise.sol";
+import "./VintageVoting.sol";
+import "./VintageFundRaise.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
+contract VintageFundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     /* ========== STATE VARIABLES ========== */
@@ -98,7 +98,7 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
             "FundingPoolAdapter::Withdraw::Cant withdraw at this time"
         );
         FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
         );
 
         address tokenAddr = fundingpool.getFundRaisingTokenAddress();
@@ -138,7 +138,7 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         fundingpool.subtractFromBalance(msg.sender, tokenAddr, amount);
 
         if (balanceOf(dao, msg.sender) <= 0) {
-            FundRaiseAdapterContract fundRaiseContract = FundRaiseAdapterContract(
+            VintageFundRaiseAdapterContract fundRaiseContract = VintageFundRaiseAdapterContract(
                     dao.getAdapterAddress(DaoHelper.FUND_RAISE)
                 );
             uint256 fundRounds = fundRaiseContract.createdFundCounter(
@@ -192,16 +192,16 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         );
         if (fundRaiseCap > 0) {
             require(
-                lpBalance(dao) + amount <= fundRaiseCap,
+                poolBalance(dao) + amount <= fundRaiseCap,
                 "FundingPoolAdapter::Deposit::Fundraise max amount reach"
             );
         }
 
         FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
         );
         // max participant check
-        FundRaiseAdapterContract fundRaiseContract = FundRaiseAdapterContract(
+        VintageFundRaiseAdapterContract fundRaiseContract = VintageFundRaiseAdapterContract(
             dao.getAdapterAddress(DaoHelper.FUND_RAISE)
         );
         uint256 fundRounds = fundRaiseContract.createdFundCounter(address(dao));
@@ -214,7 +214,7 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         address token = fundingpool.getFundRaisingTokenAddress();
         IERC20(token).transferFrom(msg.sender, address(this), amount);
         IERC20(token).approve(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT),
+            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT),
             amount
         );
         fundingpool.addToBalance(msg.sender, amount);
@@ -233,7 +233,7 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
             daoFundRaisingStates[address(dao)] ==
             DaoHelper.FundRaiseState.IN_PROGRESS
         ) {
-            if (lpBalance(dao) >= fundRaiseTarget)
+            if (poolBalance(dao) >= fundRaiseTarget)
                 daoFundRaisingStates[address(dao)] = DaoHelper
                     .FundRaiseState
                     .DONE;
@@ -277,21 +277,21 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         returns (uint256)
     {
         FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
         );
         return fundingpool.balanceOf(investorAddr);
     }
 
-    function lpBalance(DaoRegistry dao) public view returns (uint256) {
+    function poolBalance(DaoRegistry dao) public view returns (uint256) {
         FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
         );
         return fundingpool.balanceOf(address(DaoHelper.DAOSQUARE_TREASURY));
     }
 
-    function gpBalance(DaoRegistry dao) public view returns (uint256) {
+    function raiserBalance(DaoRegistry dao) public view returns (uint256) {
         FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
         );
         return fundingpool.balanceOf(address(DaoHelper.GP_POOL));
     }

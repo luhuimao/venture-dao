@@ -1191,7 +1191,7 @@ const processFundingProposal = async (daoAddr, proposalId) => {
 
 const deploy = async () => {
     const [account1, account2, account3, account4, account5] = await hre.ethers.getSigners();
-    const bal = hre.ethers.utils.formatEther((await account5.getBalance()).toString());
+    const bal = hre.ethers.utils.formatEther((await account1.getBalance()).toString());
     console.log("ETH balance: ", bal);
     // const DistributeFundContractV2 = await hre.ethers.getContractFactory("DistributeFundContractV2");
     // const distributeFundContractV2 = await DistributeFundContractV2.deploy();
@@ -1235,8 +1235,8 @@ const deploy = async () => {
     // console.log("flexFundingAdapterContract deployed address:", flexFundingAdapterContract.address);
 
     // const FlexFundingPoolAdapterContract = await hre.ethers.getContractFactory("FlexFundingPoolAdapterContract");
-    // const flexFundingPoolAdapterContract = await FlexFundingPoolAdapterContract.deploy();
-    // await flexFundingPoolAdapterContract.deployed();
+    // const flexFundingPoolAdapterContract = await FlexFundingPoolAdapterContract.connect(account5).deploy();
+    // await flexFundingPoolAdapterContract.connect(account5).deployed();
     // console.log("flexFundingPoolAdapterContract deployed address:", flexFundingPoolAdapterContract.address);
 
     // const FlexPollingVotingContract = await hre.ethers.getContractFactory("FlexPollingVotingContract");
@@ -1268,10 +1268,10 @@ const deploy = async () => {
     // console.log("flexAllocationAdapterContract deployed address:", flexAllocationAdapterContract.address);
 
 
-    // const SummonDao = await hre.ethers.getContractFactory("SummonDao");
-    // const summonDao = await SummonDao.deploy();
-    // await summonDao.deployed();
-    // console.log("summonDao deployed address:", summonDao.address);
+    const SummonDao = await hre.ethers.getContractFactory("SummonDao");
+    const summonDao = await SummonDao.connect(account5).deploy();
+    await summonDao.connect(account5).deployed();
+    console.log("summonDao deployed address:", summonDao.address);
 
 
 
@@ -1285,10 +1285,21 @@ const deploy = async () => {
     // await testToken2.deployed();
     // console.log("testToken2 deployed address:", testToken2.address);
 
-    const BentoBoxV1 = await hre.ethers.getContractFactory("BentoBoxV1");
-    const bentoBoxV1 = await BentoBoxV1.connect(account5).deploy();
-    await bentoBoxV1.connect(account5).deployed();
-    console.log("bentoBoxV1 deployed address:", bentoBoxV1.address);
+    // const BentoBoxV1 = await hre.ethers.getContractFactory("BentoBoxV1");
+    // const bentoBoxV1 = await BentoBoxV1.connect(account5).deploy();
+    // await bentoBoxV1.connect(account5).deployed();
+    // console.log("bentoBoxV1 deployed address:", bentoBoxV1.address);
+
+    
+    // const FlexFundingPoolFactory = await hre.ethers.getContractFactory("FlexFundingPoolFactory");
+    // const flexFundingPoolFactory = await FlexFundingPoolFactory.deploy("0x4eb0572B36c56de82C1695Bf7d98E51a4DF0d7eE");
+    // await flexFundingPoolFactory.deployed();
+    // console.log("flexFundingPoolFactory deployed address:", flexFundingPoolFactory.address);
+
+    // const FlexFundingPoolExtension = await hre.ethers.getContractFactory("FlexFundingPoolExtension");
+    // const flexFundingPoolExtension = await FlexFundingPoolExtension.deploy();
+    // await flexFundingPoolExtension.deployed();
+    // console.log("flexFundingPoolExtension deployed address:", flexFundingPoolExtension.address);
 }
 
 

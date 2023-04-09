@@ -8,7 +8,7 @@ import "../../guards/RaiserGuard.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "./interfaces/IFundRaise.sol";
 import "./interfaces/IVoting.sol";
-import "./Voting.sol";
+import "./VintageVoting.sol";
 import "../../helpers/FairShareHelper.sol";
 import "../../helpers/DaoHelper.sol";
 import "../extensions/fundingpool/VintageFundingPool.sol";
@@ -42,7 +42,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract FundRaiseAdapterContract is
+contract VintageFundRaiseAdapterContract is
     IFundRaise,
     AdapterGuard,
     RaiserGuard,
@@ -63,7 +63,7 @@ contract FundRaiseAdapterContract is
 
     function submitProposal(
         ProposalParams calldata params
-    ) external override reimbursable(params.dao) onlyRaiser(params.dao) {
+    ) external override reimbursable(params.dao) {
         if (
             lastProposalIds[address(params.dao)] != bytes32(0x0) &&
             (Proposals[address(params.dao)][
@@ -83,8 +83,12 @@ contract FundRaiseAdapterContract is
         vars.returnDuration = params.dao.getConfiguration(
             DaoHelper.RETURN_DURATION
         );
-        vars.fundingPoolAdapt = FundingPoolAdapterContract(
-            params.dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
+        vars.fundingPoolAdapt = VintageFundingPoolAdapterContract(
+            params.dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
+        );
+        require(
+            vars.fundingPoolAdapt.poolBalance(params.dao) <= 0,
+            "FundRaise::submitProposal::pool balance must = 0"
         );
         require(
             vars.fundingPoolAdapt.daoFundRaisingStates(address(params.dao)) ==
@@ -104,9 +108,7 @@ contract FundRaiseAdapterContract is
 
         vars.protocolFeeRatio = vars.fundingPoolAdapt.protocolFee();
         if (
-            params.proposalFundRaiseInfo.fundRaiseMinTarget <=
-            vars.fundingPoolAdapt.lpBalance(params.dao) ||
-            params.proposalFundRaiseInfo.fundRaiseMinTarget < 0 ||
+            params.proposalFundRaiseInfo.fundRaiseMinTarget <= 0 ||
             (params.proposalFundRaiseInfo.fundRaiseMaxCap > 0 &&
                 params.proposalFundRaiseInfo.fundRaiseMaxCap <
                 params.proposalFundRaiseInfo.fundRaiseMinTarget) ||
@@ -137,7 +139,7 @@ contract FundRaiseAdapterContract is
         }
 
         vars.votingContract = IVoting(
-            params.dao.getAdapterAddress(DaoHelper.GPVOTING_ADAPT)
+            params.dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
 
         vars.submittedBy = vars.votingContract.getSenderAddress(
@@ -203,9 +205,9 @@ contract FundRaiseAdapterContract is
 
     struct ProcessProposalLocalVars {
         bytes32 ongoingProposalId;
-        VotingContract votingContract;
+        VintageVotingContract votingContract;
         FundingPoolExtension fundingpool;
-        FundingPoolAdapterContract fundingPoolAdapt;
+        VintageFundingPoolAdapterContract fundingPoolAdapt;
         IVoting.VotingState voteResult;
         uint128 nbYes;
         uint128 nbNo;
@@ -224,10 +226,12 @@ contract FundRaiseAdapterContract is
             proposalId
         ];
         dao.processProposal(proposalId);
-        vars.fundingPoolAdapt = FundingPoolAdapterContract(
+        vars.fundingPoolAdapt = VintageFundingPoolAdapterContract(
             dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
         );
-        vars.votingContract = VotingContract(dao.votingAdapter(proposalId));
+        vars.votingContract = VintageVotingContract(
+            dao.votingAdapter(proposalId)
+        );
         require(
             address(vars.votingContract) != address(0x0),
             "FundRaise::processProposal::voting adapter not found"
@@ -264,7 +268,7 @@ contract FundRaiseAdapterContract is
         ProposalDetails memory proposalInfo
     ) internal {
         //1 fundRaiseTarget
-        FundingPoolAdapterContract fundingPoolAdapt = FundingPoolAdapterContract(
+        VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
                 dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
             );
         // uint256 currentBalance = fundingPoolAdapt.lpBalance(dao);

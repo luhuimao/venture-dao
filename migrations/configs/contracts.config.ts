@@ -677,7 +677,21 @@ export const contracts: Array<ContractConfig> = [
    * Adapters
    */
 
-  // vitage
+  // vintage
+  {
+    id: adaptersIdsMap.SUMMON_VINTAGE_DAO,
+    name: "SummonVintageDao",
+    alias: "summonVintageDao",
+    path: "../../contracts/adapters/SummonVintageDao",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
   {
     id: adaptersIdsMap.VINTAGE_FUNDING_POOL_ADAPTER,
     name: "VintageFundingPoolAdapterContract",
@@ -713,10 +727,10 @@ export const contracts: Array<ContractConfig> = [
     },
   },
   {
-    id: adaptersIdsMap.FUND_RAISE,
-    name: "FundRaiseAdapterContract",
-    alias: "fundRaiseAdapter",
-    path: "../../contracts/adapters/FundRaiseAdapterContract",
+    id: adaptersIdsMap.VINTAGE_FUND_RAISE,
+    name: "VintageFundRaiseAdapterContract",
+    alias: "vintageFundRaiseAdapter",
+    path: "../../contracts/adapters/VintageFundRaiseAdapterContract",
     enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,

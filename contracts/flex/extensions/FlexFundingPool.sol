@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "../../core/DaoRegistry.sol";
 import "../../extensions/IExtension.sol";
 import "../../guards/AdapterGuard.sol";
+import "../../guards/MemberGuard.sol";
 import "../../helpers/DaoHelper.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";

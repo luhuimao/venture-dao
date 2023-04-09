@@ -36,7 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract VotingContract is IVoting, RaiserGuard, AdapterGuard, Reimbursable {
+contract VintageVotingContract is IVoting, RaiserGuard, AdapterGuard, Reimbursable {
     struct Voting {
         uint128 nbYes;
         uint128 nbNo;
