@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 
 import "../../../core/DaoRegistry.sol";
-import "./IVoting.sol";
+import "./IVintageVoting.sol";
 import "../VintageFundingPoolAdapter.sol";
 
 /**
@@ -68,7 +68,7 @@ interface IFundRaise {
 
     struct SubmitProposalLocalVars {
         uint256 lastFundEndTime;
-        IVoting votingContract;
+        IVintageVoting votingContract;
         address fundRaiseTokenAddr;
         address managementFeeAddress;
         address submittedBy;

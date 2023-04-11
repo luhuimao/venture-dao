@@ -2,10 +2,10 @@ pragma solidity ^0.8.0;
 
 // SPDX-License-Identifier: MIT
 
-import "../../core/DaoRegistry.sol";
+// import "../../core/DaoRegistry.sol";
 import "../../guards/RaiserGuard.sol";
 import "../../guards/AdapterGuard.sol";
-import "./interfaces/IVoting.sol";
+import "./interfaces/IVintageVoting.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "../../helpers/GovernanceHelper.sol";
 import "../../extensions/fundingpool/FundingPool.sol";
@@ -36,7 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract VintageVotingContract is IVoting, RaiserGuard, AdapterGuard, Reimbursable {
+contract VintageVotingContract is IVintageVoting, RaiserGuard, AdapterGuard, Reimbursable {
     struct Voting {
         uint128 nbYes;
         uint128 nbNo;

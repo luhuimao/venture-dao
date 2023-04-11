@@ -4,7 +4,6 @@ import "../extensions/gpdao/GPDao.sol";
 import "../flex/extensions/FlexFundingPool.sol";
 import "../core/DaoRegistry.sol";
 import "../core/DaoFactory.sol";
-// import "../adapters/FundRaise.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
@@ -86,6 +85,8 @@ library DaoHelper {
         keccak256("VINTAGE_RAISER_MEMBERSHIP_TYPE");
     bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING =
         keccak256("VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING");
+    bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_MIN_DEPOSIT =
+        keccak256("VINTAGE_RAISER_MEMBERSHIP_MIN_DEPOSIT");
     bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS =
         keccak256("VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS");
     bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_TOKENID =
@@ -232,6 +233,9 @@ library DaoHelper {
         keccak256("vintage-funding-pool-adatper");
     bytes32 internal constant VINTAGE_VOTING_ADAPT =
         keccak256("vintage-voting");
+    bytes32 internal constant VINTAGE_RAISER_MANAGEMENT =
+        keccak256("vintage-raiser-management");
+
     //flex
     bytes32 internal constant FLEX_STEWARD_MANAGEMENT =
         keccak256("flex-steward-management");

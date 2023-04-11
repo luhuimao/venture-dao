@@ -28,7 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-interface IVoting {
+interface IVintageVoting {
     enum VotingState {
         NOT_STARTED,
         TIE,

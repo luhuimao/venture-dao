@@ -4,7 +4,7 @@
  * @Author: huhuimao
  * @Date: 2022-12-19 13:50:51
  * @LastEditors: huhuimao
- * @LastEditTime: 2023-04-06 19:44:40
+ * @LastEditTime: 2023-04-11 13:38:34
  */
 // Whole-script strict mode syntax
 "use strict";
@@ -1882,7 +1882,7 @@ describe("Summon A Flex Dao", () => {
 
         await flexFundingPoolAdapt.connect(this.genesis_steward2).deposit(dao.address, proposalId, hre.ethers.utils.parseEther("1000"));
         console.log("genesis_steward2 deposited...");
-        await flexFundingPoolAdapt.connect(this.investor2).deposit(dao.address, proposalId, hre.ethers.utils.parseEther("1000"));
+        await expectRevert(flexFundingPoolAdapt.connect(this.investor2).deposit(dao.address, proposalId, hre.ethers.utils.parseEther("1000")), "revert");
         console.log("investor2 deposited...");
         await expectRevert(flexFundingPoolAdapt.connect(this.user1).deposit(dao.address, proposalId, hre.ethers.utils.parseEther("1000")), "revert");
 

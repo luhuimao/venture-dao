@@ -727,6 +727,20 @@ export const contracts: Array<ContractConfig> = [
     },
   },
   {
+    id: adaptersIdsMap.VINTAGE_RAISER_MANAGEMENT,
+    name: "VintageRaiserManagementContract",
+    alias: "vintageRaiserManagementContract",
+    path: "../../contracts/adapters/VintageRaiserManagementContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_CONFIGURATION, daoAccessFlagsMap.REMOVE_MEMBER],
+      extensions: {
+      },
+    },
+  },
+  {
     id: adaptersIdsMap.VINTAGE_FUND_RAISE,
     name: "VintageFundRaiseAdapterContract",
     alias: "vintageFundRaiseAdapter",

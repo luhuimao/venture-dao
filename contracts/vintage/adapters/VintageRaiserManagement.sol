@@ -5,17 +5,13 @@ import "../../core/DaoRegistry.sol";
 import "../../helpers/DaoHelper.sol";
 import "../../utils/TypeConver.sol";
 import "./VintageVoting.sol";
+import "./VintageFundingPoolAdapter.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
-import "../../guards/FlexStewardGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
 
-contract VintageRaiserManagementContract is
-    Reimbursable,
-    MemberGuard,
-    FlexStewardGuard
-{
+contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     enum ProposalState {
@@ -61,6 +57,63 @@ contract VintageRaiserManagementContract is
     uint256 public raiserInProposalIds = 1;
     uint256 public raiserdOutProposalIds = 1;
 
+    modifier onlyRaiser(DaoRegistry dao, address account) {
+        if (
+            dao.getConfiguration(DaoHelper.VINTAGE_RAISER_MEMBERSHIP_ENABLE) ==
+            1
+        ) {
+            uint256 varifyType = dao.getConfiguration(
+                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TYPE
+            );
+            uint256 minHolding = dao.getConfiguration(
+                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING
+            );
+            uint256 minDeposit = dao.getConfiguration(
+                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_MIN_DEPOSIT
+            );
+            uint256 tokenId = dao.getConfiguration(
+                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKENID
+            );
+            address tokenAddress = dao.getAddressConfiguration(
+                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS
+            );
+            VintageFundingPoolAdapterContract fundingpoolAdapt = VintageFundingPoolAdapterContract(
+                    dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
+                );
+            //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS 4 DEPOSIT
+            if (varifyType == 0) {
+                require(
+                    IERC20(tokenAddress).balanceOf(account) >= minHolding,
+                    "dont meet min erc20 token holding requirment"
+                );
+            } else if (varifyType == 1) {
+                require(
+                    IERC721(tokenAddress).balanceOf(account) >= minHolding,
+                    "dont meet min erc721 token holding requirment"
+                );
+            } else if (varifyType == 2) {
+                require(
+                    IERC1155(tokenAddress).balanceOf(account, tokenId) >=
+                        minHolding,
+                    "dont meet min erc1155 token holding requirment"
+                );
+            } else if (varifyType == 3) {
+                require(
+                    isRaiserWhiteList(dao, account),
+                    "not in raiser whitelist"
+                );
+            } else if (varifyType == 4) {
+                require(
+                    fundingpoolAdapt.balanceOf(dao, account) >= minDeposit,
+                    "dont meet min depoist requirment"
+                );
+            } else {
+                revert("invalid membership type");
+            }
+        }
+        _;
+    }
+
     function registerRaiserWhiteList(
         DaoRegistry dao,
         address account
@@ -77,7 +130,7 @@ contract VintageRaiserManagementContract is
         external
         reimbursable(dao)
         onlyMember(dao)
-        onlySteward(dao, applicant)
+        onlyRaiser(dao, applicant)
         returns (bytes32 proposalId)
     {
         require(!dao.isMember(applicant), "applicant is raiser already");
@@ -96,7 +149,7 @@ contract VintageRaiserManagementContract is
         uint256 stopVoteTime = startVoteTime +
             dao.getConfiguration(DaoHelper.VOTING_PERIOD);
 
-        _submitStewardInProposal(
+        _submitRaiserInProposal(
             dao,
             proposalId,
             applicant,
@@ -165,10 +218,10 @@ contract VintageRaiserManagementContract is
         uint256 startVotingTime,
         bytes memory data
     ) internal {
-        IFlexVoting flexVotingContract = IFlexVoting(
-            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
+        IVintageVoting vintageVotingContract = IVintageVoting(
+            dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
-        address sponsoredBy = flexVotingContract.getSenderAddress(
+        address sponsoredBy = vintageVotingContract.getSenderAddress(
             dao,
             address(this),
             data,
@@ -177,9 +230,14 @@ contract VintageRaiserManagementContract is
         dao.sponsorProposal(
             proposalId,
             sponsoredBy,
-            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
+            dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
-        flexVotingContract.startNewVotingForProposal(dao, proposalId, data);
+        vintageVotingContract.startNewVotingForProposal(
+            dao,
+            proposalId,
+            block.timestamp,
+            data
+        );
     }
 
     /**
@@ -241,35 +299,41 @@ contract VintageRaiserManagementContract is
             ),
             "proposal already processed"
         );
-        IFlexVoting flexVotingContract = IFlexVoting(
-            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
+        IVintageVoting vintageVotingContract = IVintageVoting(
+            dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
 
-        require(address(flexVotingContract) != address(0), "adapter not found");
+        require(
+            address(vintageVotingContract) != address(0),
+            "adapter not found"
+        );
 
-        IFlexVoting.VotingState voteResult;
+        IVintageVoting.VotingState voteResult;
         uint128 nbYes;
         uint128 nbNo;
-        voteResult = flexVotingContract.voteResult(dao, proposalId);
+        (voteResult, nbYes, nbNo) = vintageVotingContract.voteResult(
+            dao,
+            proposalId
+        );
 
         dao.processProposal(proposalId);
 
-        if (voteResult == IFlexVoting.VotingState.PASS) {
+        if (voteResult == IVintageVoting.VotingState.PASS) {
             proposal.state = ProposalState.Executing;
             address applicant = proposal.account;
 
-            if (proposal.pType == ProposalType.STEWARD_IN) {
+            if (proposal.pType == ProposalType.RAISER_IN) {
                 dao.potentialNewMember(applicant);
             }
 
-            if (proposal.pType == ProposalType.STEWARD_OUT) {
+            if (proposal.pType == ProposalType.RAISER_OUT) {
                 dao.removeMember(applicant);
             }
 
             proposal.state = ProposalState.Done;
         } else if (
-            voteResult == IFlexVoting.VotingState.NOT_PASS ||
-            voteResult == IFlexVoting.VotingState.TIE
+            voteResult == IVintageVoting.VotingState.NOT_PASS ||
+            voteResult == IVintageVoting.VotingState.TIE
         ) {
             proposal.state = ProposalState.Failed;
         } else {
@@ -284,24 +348,24 @@ contract VintageRaiserManagementContract is
         dao.removeMember(msg.sender);
     }
 
-    function isStewardWhiteList(
+    function isRaiserWhiteList(
         DaoRegistry dao,
         address account
-    ) external view returns (bool) {
-        return stewardWhiteList[address(dao)].contains(account);
+    ) public view returns (bool) {
+        return raiserWhiteList[address(dao)].contains(account);
     }
 
-    function getStewardWhitelist(
+    function getRaiserWhitelist(
         DaoRegistry dao
     ) external view returns (address[] memory) {
-        return stewardWhiteList[address(dao)].values();
+        return raiserWhiteList[address(dao)].values();
     }
 
-    function getStewardAmount(DaoRegistry dao) external view returns (uint256) {
+    function getRaiserAmount(DaoRegistry dao) external view returns (uint256) {
         return DaoHelper.getActiveMemberNb(dao);
     }
 
-    function getAllSteward(
+    function getAllRaiser(
         DaoRegistry dao
     ) external view returns (address[] memory) {
         return DaoHelper.getAllActiveMember(dao);

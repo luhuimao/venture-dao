@@ -7,7 +7,7 @@ import "../../guards/AdapterGuard.sol";
 import "../../guards/RaiserGuard.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "./interfaces/IFundRaise.sol";
-import "./interfaces/IVoting.sol";
+import "./interfaces/IVintageVoting.sol";
 import "./VintageVoting.sol";
 import "../../helpers/FairShareHelper.sol";
 import "../../helpers/DaoHelper.sol";
@@ -138,7 +138,7 @@ contract VintageFundRaiseAdapterContract is
             revert("Invalid Params");
         }
 
-        vars.votingContract = IVoting(
+        vars.votingContract = IVintageVoting(
             params.dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
 
@@ -208,7 +208,7 @@ contract VintageFundRaiseAdapterContract is
         VintageVotingContract votingContract;
         FundingPoolExtension fundingpool;
         VintageFundingPoolAdapterContract fundingPoolAdapt;
-        IVoting.VotingState voteResult;
+        IVintageVoting.VotingState voteResult;
         uint128 nbYes;
         uint128 nbNo;
         uint128 allVotingWeight;
@@ -241,7 +241,7 @@ contract VintageFundRaiseAdapterContract is
             .votingContract
             .voteResult(dao, proposalId);
 
-        if (vars.voteResult == IVoting.VotingState.PASS) {
+        if (vars.voteResult == IVintageVoting.VotingState.PASS) {
             proposalDetails.state = ProposalState.Executing;
             // set dao configuration
             setFundRaiseConfiguration(dao, proposalDetails);
@@ -253,8 +253,8 @@ contract VintageFundRaiseAdapterContract is
             // fundsCounter += 1;
             createdFundCounter[address(dao)] += 1;
         } else if (
-            vars.voteResult == IVoting.VotingState.NOT_PASS ||
-            vars.voteResult == IVoting.VotingState.TIE
+            vars.voteResult == IVintageVoting.VotingState.NOT_PASS ||
+            vars.voteResult == IVintageVoting.VotingState.TIE
         ) {
             proposalDetails.state = ProposalState.Failed;
         } else {
