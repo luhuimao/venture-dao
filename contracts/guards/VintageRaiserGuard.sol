@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import "../core/DaoRegistry.sol";
 import "../helpers/DaoHelper.sol";
-// import "../vintage/adapters/VintageRaiserManagement.sol";
+import "../vintage/adapters/VintageRaiserManagement.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
@@ -71,15 +71,15 @@ abstract contract VintageRaiserGuard {
                 );
             }
             if (varifyType == 3) {
-                // VintageRaiserManagementContract vintageStewardManagement = VintageRaiserManagementContract(
-                //         dao.getAdapterAddress(
-                //             DaoHelper.VINTAGE_RAISER_MANAGEMENT
-                //         )
-                //     );
-                // require(
-                //     DaoHelper.isRaiserWhiteList(dao, account),
-                //     "not in raiser whitelist"
-                // );
+                VintageRaiserManagementContract vintageStewardManagement = VintageRaiserManagementContract(
+                        dao.getAdapterAddress(
+                            DaoHelper.VINTAGE_RAISER_MANAGEMENT
+                        )
+                    );
+                require(
+                    vintageStewardManagement.isRaiserWhiteList(dao, account),
+                    "not in raiser whitelist"
+                );
             }
         }
         _;

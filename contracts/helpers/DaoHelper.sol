@@ -92,6 +92,11 @@ library DaoHelper {
     bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_TOKENID =
         keccak256("VINTAGE_RAISER_MEMBERSHIP_TOKENID");
 
+    bytes32 internal constant VINTAGE_VOTING_ELIGIBILITY_TYPE =
+        keccak256("VINTAGE_VOTING_ELIGIBILITY_TYPE");
+    bytes32 internal constant VINTAGE_VOTING_WEIGHTED_TYPE =
+        keccak256("VINTAGE_VOTING_WEIGHTED_TYPE");
+
     // flex setting
     bytes32 internal constant FLEX_FUNDRAISE_STYLE =
         keccak256("FLEX_FUNDRAISE_STYLE");

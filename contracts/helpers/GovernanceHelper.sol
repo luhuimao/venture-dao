@@ -8,6 +8,7 @@ import "../extensions/bank/Bank.sol";
 import "../extensions/fundingpool/FundingPool.sol";
 import "../extensions/gpdao/GPDao.sol";
 import "../extensions/token/erc20/ERC20TokenExtension.sol";
+import "../vintage/extensions/fundingpool/VintageFundingPool.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import "hardhat/console.sol";
@@ -109,11 +110,10 @@ library GovernanceHelper {
         }
     }
 
-    function getAllGPVotingWeight(DaoRegistry dao, address token)
-        internal
-        view
-        returns (uint128)
-    {
+    function getAllGPVotingWeight(
+        DaoRegistry dao,
+        address token
+    ) internal view returns (uint128) {
         address[] memory gps = GPDaoExtension(
             dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
         ).getAllGPs();
@@ -133,7 +133,7 @@ library GovernanceHelper {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        uint256 balanceInEther = fundingpool.balanceOf(voterAddr) / 10**18;
+        uint256 balanceInEther = fundingpool.balanceOf(voterAddr) / 10 ** 18;
         //need to fix 2022.6.14
         if (balanceInEther <= 0) {
             return 0;
@@ -162,5 +162,72 @@ library GovernanceHelper {
         }
         // }
         return weight;
+    }
+
+    function getVintageVotingWeight(
+        DaoRegistry dao,
+        address account
+    ) internal view returns (uint128) {
+        uint256 etype = dao.getConfiguration(
+            DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TYPE
+        ); // 1. raiser membership type 2.deposit 3.raiser allocation
+        uint256 votingWeightedType = dao.getConfiguration(
+            DaoHelper.VINTAGE_VOTING_WEIGHTED_TYPE
+        ); // 1. log2 2. 1 voter 1 vote
+        if (votingWeightedType == 1) {
+            if (etype == 0) {
+                // 1. raiser membership
+                uint256 varifyType = dao.getConfiguration(
+                    DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TYPE
+                ); //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS 4 DEPOSIT
+                uint256 tokenId = dao.getConfiguration(
+                    DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKENID
+                );
+                address tokenAddress = dao.getAddressConfiguration(
+                    DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS
+                );
+                uint256 bal = 0;
+                if (varifyType == 0) {
+                    //0 ERC20
+                    bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                } else if (varifyType == 1) {
+                    //ERC721
+                    bal = IERC721(tokenAddress).balanceOf(account);
+                } else if (varifyType == 2) {
+                    //ERC1155
+                    bal = IERC1155(tokenAddress).balanceOf(account, tokenId);
+                } else if (varifyType == 3) {
+                    //WHITELIS
+                    return 1;
+                } else if (varifyType == 3) {
+                    //DEPOSIT
+                    VintageFundingPoolExtension vintageFundingPoolExt = VintageFundingPoolExtension(
+                            dao.getExtensionAddress(
+                                DaoHelper.VINTAGE_FUNDING_POOL_EXT
+                            )
+                        );
+                    bal = vintageFundingPoolExt.balanceOf(account) / 10 ** 18;
+                } else {
+                    return 0;
+                }
+                if (bal <= 0) return 0;
+                if (bal >= 9223372036854775807) return 50;
+                uint128 votingWeight = ABDKMath64x64.toUInt(
+                    ABDKMath64x64.log_2(ABDKMath64x64.fromUInt(bal))
+                );
+                return votingWeight;
+            } else if (etype == 1) {
+                //deposit
+            } else if (etype == 2) {
+                //.raiser allocation
+                return 1;
+            } else {
+                return 0;
+            }
+        } else if (votingWeightedType == 2) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 }

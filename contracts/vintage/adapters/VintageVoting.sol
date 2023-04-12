@@ -36,7 +36,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract VintageVotingContract is IVintageVoting, RaiserGuard, AdapterGuard, Reimbursable {
+contract VintageVotingContract is
+    IVintageVoting,
+    RaiserGuard,
+    AdapterGuard,
+    Reimbursable
+{
     struct Voting {
         uint128 nbYes;
         uint128 nbNo;
@@ -194,14 +199,11 @@ contract VintageVotingContract is IVintageVoting, RaiserGuard, AdapterGuard, Rei
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
-        address token = fundingpool.fundRaisingTokenAddress();
 
-        //+1 to resolve voting power = 0 when summon a dao fund raise not open balance=0
-        uint128 votingWeight = GovernanceHelper.getGPVotingWeight(
+        uint128 votingWeight = GovernanceHelper.getVintageVotingWeight(
             dao,
-            msg.sender,
-            token
-        ) + 1;
+            msg.sender
+        );
         voteWeights[address(dao)][proposalId][msg.sender] = votingWeight;
         vote.votes[msg.sender] = voteValue;
         vote.voters += 1;
