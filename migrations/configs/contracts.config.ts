@@ -754,6 +754,68 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
+  {
+    id: adaptersIdsMap.VINTAGE_VESTING_ADAPTER,
+    name: "VintageVesting",
+    alias: "vintageVesting",
+    path: "../../contracts/adapters/VintageVesting",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.VINTAGE_ALLOCATION_ADAPTER,
+    name: "VintageAllocationAdapterContract",
+    alias: "vintageAllocationAdapterContract",
+    path: "../../contracts/adapters/VintageAllocationAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.VINTAGE_FUNDING_ADAPTER,
+    name: "VintageFundingAdapterContract",
+    alias: "vintageFundingAdapterContract",
+    path: "../../contracts/adapters/VintageFundingAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_VOTE_TYPE],
+      extensions: {
+        [extensionsIdsMap.VINTAGE_FUNDING_POOL_EXT]: [
+          vintageFundingPoolExtensionAclFlagsMap.REGISTER_NEW_TOKEN,
+          vintageFundingPoolExtensionAclFlagsMap.WITHDRAW,
+          vintageFundingPoolExtensionAclFlagsMap.SUB_FROM_BALANCE
+        ],
+      },
+    },
+    daoConfigs: [["daoAddress"]],
+  },
+  {
+    id: adaptersIdsMap.VINTAGE_SUMMON_DAO,
+    name: "SummonVintageDao",
+    alias: "summonVintageDao",
+    path: "../../contracts/adapters/SummonVintageDao",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
   // flex
   {
     id: adaptersIdsMap.FLEX_STEWARD_MANAGEMENT,
