@@ -39,9 +39,10 @@ abstract contract RaiserGuard {
     }
 
     function _onlyRaiser(DaoRegistry dao, address _addr) internal view {
-        address gpDAOAddress = dao.extensions(DaoHelper.GPDAO_EXT);
+        // address gpDAOAddress = dao.extensions(DaoHelper.GPDAO_EXT);
         require(
-            GPDaoExtension(gpDAOAddress).isGeneralPartner(_addr),
+            // GPDaoExtension(gpDAOAddress).isGeneralPartner(_addr),
+            dao.isMember(_addr),
             "onlyRaiser"
         );
     }

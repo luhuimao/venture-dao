@@ -1041,11 +1041,12 @@ contract BentoBoxV1 is MasterContractManager, BoringBatchable {
         balanceOf[token][from] = balanceOf[token][from].sub(share);
         total.elastic = total.elastic.sub(amount.to128());
         total.base = total.base.sub(share.to128());
+
         // There have to be at least 1000 shares left to prevent reseting the share/amount ratio (unless it's fully emptied)
-        require(
-            total.base >= MINIMUM_SHARE_BALANCE || total.base == 0,
-            "BentoBox: cannot empty"
-        );
+        // require(
+        //     total.base >= MINIMUM_SHARE_BALANCE || total.base == 0,
+        //     "BentoBox: cannot empty"
+        // );
         totals[token] = total;
 
         // Interactions

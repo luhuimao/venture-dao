@@ -61,7 +61,9 @@ contract FlexVotingContract is
         address voter,
         uint256 voteValue,
         uint256 nbYes,
-        uint256 nbNo
+        uint256 nbNo,
+        uint256 currentQuorum,
+        uint256 currentSupport
     );
 
     bytes32 constant VotingPeriod = keccak256("voting.votingPeriod");
@@ -152,7 +154,9 @@ contract FlexVotingContract is
         } else if (voteValue == 2) {
             vote.nbNo += 1;
         }
-
+        uint256 currentQuorum = (vote.nbYes * 100) / (vote.nbYes + vote.nbNo);
+        uint256 currentSupport = (((vote.nbYes + vote.nbNo) * 100) /
+            DaoHelper.getActiveMemberNb(dao));
         emit SubmitVote(
             address(dao),
             proposalId,
@@ -162,7 +166,9 @@ contract FlexVotingContract is
             msg.sender,
             voteValue,
             vote.nbYes,
-            vote.nbNo
+            vote.nbNo,
+            currentQuorum,
+            currentSupport
         );
     }
 

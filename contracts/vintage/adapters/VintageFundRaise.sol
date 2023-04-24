@@ -171,11 +171,14 @@ contract VintageFundRaiseAdapterContract is
                 params.proposalTimeInfo.returnPeriod
             ),
             FundRaiseRewardAndFeeInfo(
-                // params.proposalFeeInfo.proposerRewardRatio,
                 params.proposalFeeInfo.managementFeeRatio,
                 params.proposalFeeInfo.redepmtFeeRatio,
                 vars.protocolFeeRatio,
                 params.proposalAddressInfo.managementFeeAddress
+            ),
+            ProoserReward(
+                params.proposerReward.fundFromInverstor,
+                params.proposerReward.projectTokenFromInvestor
             ),
             ProposalState.Voting,
             block.timestamp,
@@ -227,7 +230,7 @@ contract VintageFundRaiseAdapterContract is
         ];
         dao.processProposal(proposalId);
         vars.fundingPoolAdapt = VintageFundingPoolAdapterContract(
-            dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
+            dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
         );
         vars.votingContract = VintageVotingContract(
             dao.votingAdapter(proposalId)
@@ -269,23 +272,15 @@ contract VintageFundRaiseAdapterContract is
     ) internal {
         //1 fundRaiseTarget
         VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
-                dao.getAdapterAddress(DaoHelper.FUNDING_POOL_ADAPT)
+                dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
             );
-        // uint256 currentBalance = fundingPoolAdapt.lpBalance(dao);
-        // dao.setConfiguration(
-        //     DaoHelper.FUND_RAISING_TARGET,
-        //     proposalInfo.fundRaiseTarget + currentBalance
-        // );
+        //fundRaiseTarget
         dao.setConfiguration(
             DaoHelper.FUND_RAISING_TARGET,
             proposalInfo.fundRaiseTarget
         );
         //2 fundRaiseMaxAmount
         if (proposalInfo.fundRaiseMaxAmount > 0) {
-            // dao.setConfiguration(
-            //     DaoHelper.FUND_RAISING_MAX,
-            //     proposalInfo.fundRaiseMaxAmount + currentBalance
-            // );
             dao.setConfiguration(
                 DaoHelper.FUND_RAISING_MAX,
                 proposalInfo.fundRaiseMaxAmount
@@ -315,10 +310,7 @@ contract VintageFundRaiseAdapterContract is
             proposalInfo.timesInfo.fundRaiseEndTime
         );
         //7 fundStartTime
-        dao.setConfiguration(
-            DaoHelper.FUND_START_TIME,
-            proposalInfo.timesInfo.fundRaiseEndTime
-        );
+        dao.setConfiguration(DaoHelper.FUND_START_TIME, block.timestamp);
         //8 fundEndTime
         dao.setConfiguration(
             DaoHelper.FUND_END_TIME,
@@ -369,6 +361,18 @@ contract VintageFundRaiseAdapterContract is
         dao.setAddressConfiguration(
             DaoHelper.FUND_RAISING_CURRENCY_ADDRESS,
             proposalInfo.acceptTokenAddr
+        );
+
+        //18 proposer reward fund from investors
+        dao.setConfiguration(
+            DaoHelper.VINTAGE_PROPOSER_FUND_REWARD_RADIO,
+            proposalInfo.proposerReward.fundFromInverstor
+        );
+
+        //19 proposer reward project token from investors
+        dao.setConfiguration(
+            DaoHelper.VINTAGE_PROPOSER_TOKEN_REWARD_RADIO,
+            proposalInfo.proposerReward.projectTokenFromInvestor
         );
     }
 }

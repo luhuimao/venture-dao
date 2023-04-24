@@ -55,7 +55,9 @@ contract FlexPollingVotingContract is
         address voter,
         uint256 voteValue,
         uint256 nbYes,
-        uint256 nbNo
+        uint256 nbNo,
+        uint256 currentQuorum,
+        uint256 currentSupportf
     );
     struct Voting {
         uint256 nbYes;
@@ -146,7 +148,10 @@ contract FlexPollingVotingContract is
         } else if (voteValue == 2) {
             vote.nbNo += 1;
         }
-
+        uint256 currentQuorum = 0;
+        uint256 currentSupport = dao.getConfiguration(
+            DaoHelper.FLEX_POLLING_SUPER_MAJORITY
+        );
         emit SubmitVote(
             address(dao),
             proposalId,
@@ -156,7 +161,9 @@ contract FlexPollingVotingContract is
             msg.sender,
             voteValue,
             vote.nbYes,
-            vote.nbNo
+            vote.nbNo,
+            currentQuorum,
+            currentSupport
         );
     }
 

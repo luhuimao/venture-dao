@@ -36,13 +36,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract VintageFundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
+contract VintageFundingPoolAdapterContract is
+    AdapterGuard,
+    MemberGuard,
+    Reimbursable
+{
     using EnumerableSet for EnumerableSet.AddressSet;
 
     /* ========== STATE VARIABLES ========== */
     // DaoHelper.FundRaiseState public fundRaisingState;
     mapping(address => DaoHelper.FundRaiseState) public daoFundRaisingStates;
-    uint256 public protocolFee = 3;
+    uint256 public protocolFee = (3 * 1e18) / 1000; // 0.3%
+
     mapping(address => mapping(uint256 => EnumerableSet.AddressSet)) fundParticipants;
     event OwnerChanged(address oldOwner, address newOwner);
 
@@ -62,12 +67,11 @@ contract VintageFundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbur
         uint32 superMajority
     ) external onlyAdapter(dao) {}
 
-    function setProtocolFee(DaoRegistry dao, uint256 feeProtocol)
-        external
-        reentrancyGuard(dao)
-        onlyDaoFactoryOwner(dao)
-    {
-        require(feeProtocol < 100 && feeProtocol > 0);
+    function setProtocolFee(
+        DaoRegistry dao,
+        uint256 feeProtocol
+    ) external reentrancyGuard(dao) onlyDaoFactoryOwner(dao) {
+        require(feeProtocol < 1e18 && feeProtocol > 0);
         protocolFee = feeProtocol;
     }
 
@@ -78,10 +82,10 @@ contract VintageFundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbur
      * @param dao The DAO address.
      * @param amount The amount to withdraw.
      */
-    function withdraw(DaoRegistry dao, uint256 amount)
-        external
-        reimbursable(dao)
-    {
+    function withdraw(
+        DaoRegistry dao,
+        uint256 amount
+    ) external reimbursable(dao) {
         processFundRaise(dao);
         require(
             daoFundRaisingStates[address(dao)] ==
@@ -137,7 +141,7 @@ contract VintageFundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbur
 
         if (balanceOf(dao, msg.sender) <= 0) {
             VintageFundRaiseAdapterContract fundRaiseContract = VintageFundRaiseAdapterContract(
-                    dao.getAdapterAddress(DaoHelper.FUND_RAISE)
+                    dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
                 );
             uint256 fundRounds = fundRaiseContract.createdFundCounter(
                 address(dao)
@@ -153,10 +157,10 @@ contract VintageFundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbur
      * @param dao The DAO address.
      * @param amount The amount user depoist to foundingpool.
      */
-    function deposit(DaoRegistry dao, uint256 amount)
-        external
-        reimbursable(dao)
-    {
+    function deposit(
+        DaoRegistry dao,
+        uint256 amount
+    ) external reimbursable(dao) {
         require(
             amount > 0,
             "FundingPoolAdapter::Deposit:: invalid deposit amount"
@@ -200,8 +204,8 @@ contract VintageFundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbur
         );
         // max participant check
         VintageFundRaiseAdapterContract fundRaiseContract = VintageFundRaiseAdapterContract(
-            dao.getAdapterAddress(DaoHelper.FUND_RAISE)
-        );
+                dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
+            );
         uint256 fundRounds = fundRaiseContract.createdFundCounter(address(dao));
         if (
             dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS_ENABLE) == 1 &&
@@ -244,7 +248,8 @@ contract VintageFundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbur
 
     function resetFundRaiseState(DaoRegistry dao) external {
         require(
-            msg.sender == dao.getAdapterAddress(DaoHelper.FUND_RAISE),
+            msg.sender ==
+                dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER),
             "FundingPoolAdapter::resetFundRaiseState::Access deny"
         );
         daoFundRaisingStates[address(dao)] = DaoHelper
@@ -269,11 +274,10 @@ contract VintageFundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbur
         fundParticipants[address(dao)][fundRound].remove(account);
     }
 
-    function balanceOf(DaoRegistry dao, address investorAddr)
-        public
-        view
-        returns (uint256)
-    {
+    function balanceOf(
+        DaoRegistry dao,
+        address investorAddr
+    ) public view returns (uint256) {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
         );
@@ -294,57 +298,45 @@ contract VintageFundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbur
         return fundingpool.balanceOf(address(DaoHelper.GP_POOL));
     }
 
-    function getFundRaisingMaxAmount(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getFundRaisingMaxAmount(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.FUND_RAISING_MAX);
     }
 
-    function getMinInvestmentForLP(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getMinInvestmentForLP(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return
             dao.getConfiguration(
                 DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP
             );
     }
 
-    function getMaxInvestmentForLP(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getMaxInvestmentForLP(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return
             dao.getConfiguration(
                 DaoHelper.FUND_RAISING_MAX_INVESTMENT_AMOUNT_OF_LP
             );
     }
 
-    function getFundRaisingTarget(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getFundRaisingTarget(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.FUND_RAISING_TARGET);
     }
 
-    function getFundRaiseWindowOpenTime(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getFundRaiseWindowOpenTime(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN);
     }
 
-    function getFundRaiseWindowCloseTime(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getFundRaiseWindowCloseTime(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END);
     }
 
@@ -356,19 +348,15 @@ contract VintageFundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbur
         return dao.getConfiguration(DaoHelper.FUND_END_TIME);
     }
 
-    function getFundReturnDuration(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getFundReturnDuration(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.RETURN_DURATION);
     }
 
-    function latestRedempteTime(DaoRegistry dao)
-        public
-        view
-        returns (uint256, uint256)
-    {
+    function latestRedempteTime(
+        DaoRegistry dao
+    ) public view returns (uint256, uint256) {
         uint256 fundStartTime = dao.getConfiguration(DaoHelper.FUND_START_TIME);
         uint256 fundEndTime = dao.getConfiguration(DaoHelper.FUND_END_TIME);
         uint256 redemptionPeriod = dao.getConfiguration(
@@ -399,11 +387,9 @@ contract VintageFundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbur
         return (redemptionStartTime, redemptionEndTime);
     }
 
-    function getRedemptDuration(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getRedemptDuration(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION_DURATION);
     }
 
@@ -411,11 +397,10 @@ contract VintageFundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbur
         return dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION_PERIOD);
     }
 
-    function ifInRedemptionPeriod(DaoRegistry dao, uint256 timeStamp)
-        public
-        view
-        returns (bool)
-    {
+    function ifInRedemptionPeriod(
+        DaoRegistry dao,
+        uint256 timeStamp
+    ) public view returns (bool) {
         uint256 fundStartTime = dao.getConfiguration(DaoHelper.FUND_START_TIME);
         uint256 fundEndTime = dao.getConfiguration(DaoHelper.FUND_END_TIME);
         uint256 redemptionPeriod = dao.getConfiguration(
@@ -434,16 +419,17 @@ contract VintageFundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbur
         }
 
         uint256 steps;
-        steps = fundDuration / redemptionPeriod;
+        steps = fundDuration / redemptionDuration;
 
         uint256 redemptionEndTime;
         uint256 redemptionStartTime;
         uint256 i = 0;
+
         while (i <= steps) {
             redemptionEndTime = redemptionEndTime == 0
-                ? fundStartTime + redemptionPeriod
-                : redemptionEndTime + redemptionPeriod;
-            redemptionStartTime = redemptionEndTime - redemptionDuration;
+                ? fundStartTime + redemptionDuration
+                : redemptionEndTime + redemptionDuration;
+            redemptionStartTime = redemptionEndTime - redemptionPeriod;
             if (
                 timeStamp > redemptionStartTime &&
                 timeStamp < redemptionEndTime &&

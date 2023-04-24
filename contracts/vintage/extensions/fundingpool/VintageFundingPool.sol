@@ -289,10 +289,10 @@ contract VintageFundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
      * @param depositer The depositer whose balance will be updated
      * @param amount The new balance
      */
-    function addToBalance(address depositer, uint256 amount)
-        public
-        hasExtensionAccess(AclFlag.ADD_TO_BALANCE)
-    {
+    function addToBalance(
+        address depositer,
+        uint256 amount
+    ) public hasExtensionAccess(AclFlag.ADD_TO_BALANCE) {
         address fundTokenAddr = getFundRaisingTokenAddress();
         _newInvestor(depositer);
         IERC20 erc20 = IERC20(fundTokenAddr);
@@ -301,7 +301,7 @@ contract VintageFundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         uint256 validTotalFunds = balanceOf(
             address(DaoHelper.DAOSQUARE_TREASURY)
         );
-        if (DaoHelper.ifGP(depositer, dao)) {
+        if (dao.isMember(depositer)) {
             _createNewAmountCheckpoint(
                 address(DaoHelper.GP_POOL),
                 fundTokenAddr,
@@ -318,10 +318,10 @@ contract VintageFundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         erc20.transferFrom(msg.sender, address(this), amount);
     }
 
-    function withdraw(address recipientAddr, uint256 amount)
-        external
-        hasExtensionAccess(AclFlag.WITHDRAW)
-    {
+    function withdraw(
+        address recipientAddr,
+        uint256 amount
+    ) external hasExtensionAccess(AclFlag.WITHDRAW) {
         address fundTokenAddr = getFundRaisingTokenAddress();
         uint256 actualWithdrawAmount = amount;
         if (balanceOf(recipientAddr) < amount) {
@@ -350,10 +350,9 @@ contract VintageFundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         emit Recovered(tokenAddress, tokenAmount);
     }
 
-    function setRiceTokenAddress(address riceAddr)
-        external
-        hasExtensionAccess(AclFlag.SET_RICE_ADDRESS)
-    {
+    function setRiceTokenAddress(
+        address riceAddr
+    ) external hasExtensionAccess(AclFlag.SET_RICE_ADDRESS) {
         require(
             riceAddr != address(0x0),
             "FundingPoolExt::setRiceTokenAddress::invalid rice address"
@@ -416,7 +415,7 @@ contract VintageFundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
             token,
             newTotalFund
         );
-        if (DaoHelper.ifGP(member, dao)) {
+        if (dao.isMember(member)) {
             uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL));
             uint256 newGPFunds;
             unchecked {
@@ -439,10 +438,10 @@ contract VintageFundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
      * @param token The token to update
      * @param amount The token amount distribute to a project team
      */
-    function subtractAllFromBalance(address token, uint256 amount)
-        public
-        hasExtensionAccess(AclFlag.SUB_FROM_BALANCE)
-    {
+    function subtractAllFromBalance(
+        address token,
+        uint256 amount
+    ) public hasExtensionAccess(AclFlag.SUB_FROM_BALANCE) {
         uint256 treasuryBalance = balanceOf(
             address(DaoHelper.DAOSQUARE_TREASURY)
         );

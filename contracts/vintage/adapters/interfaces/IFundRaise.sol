@@ -47,7 +47,6 @@ interface IFundRaise {
     }
 
     struct FundRaiseRewardAndFeeInfo {
-        // uint256 proposerRewardRatio;
         uint256 managementFeeRatio;
         uint256 redepmtFeeRatio;
         uint256 protocolFeeRatio;
@@ -61,6 +60,7 @@ interface IFundRaise {
         uint256 lpMaxDepositAmount;
         FundRiaseTimeInfo timesInfo;
         FundRaiseRewardAndFeeInfo feeInfo;
+        ProoserReward proposerReward;
         ProposalState state;
         uint256 creationTime;
         uint256 stopVoteTime;

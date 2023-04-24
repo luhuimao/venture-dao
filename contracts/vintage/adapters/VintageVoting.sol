@@ -183,6 +183,7 @@ contract VintageVotingContract is
         );
 
         Voting storage vote = votes[address(dao)][proposalId];
+        console.log("vote.startingTime ", vote.startingTime);
         require(
             block.timestamp > vote.startingTime && vote.startingTime > 0,
             "Voting::submitVote::this proposalId has not start voting"
@@ -196,9 +197,9 @@ contract VintageVotingContract is
         );
 
         require(vote.votes[msg.sender] == 0, "member has already voted");
-        FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        );
+        // FundingPoolExtension fundingpool = FundingPoolExtension(
+        //     dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+        // );
 
         uint128 votingWeight = GovernanceHelper.getVintageVotingWeight(
             dao,
@@ -252,58 +253,58 @@ contract VintageVotingContract is
 
         if (
             // slither-disable-next-line timestamp
-            block.timestamp <
+            block.timestamp <=
             vote.startingTime + dao.getConfiguration(VotingPeriod)
         ) {
             return (VotingState.IN_PROGRESS, vote.nbYes, vote.nbNo);
         }
 
-        DaoHelper.VoteType voteType = DaoHelper.VoteType(
-            dao.getProposalVoteType(DaoHelper.ProposalType.FUNDING)
+        uint256 vintageSupportType = dao.getConfiguration(
+            DaoHelper.VINTAGE_VOTING_SUPPORT_TYPE
         );
-
-        uint128 allGPsWeight = getAllGPWeight(dao);
+        // 0. - YES / (YES + NO) > X%
+        // 1. - YES - NO > X
+        uint256 vintageQuorumType = dao.getConfiguration(
+            DaoHelper.VINTAGE_VOTING_QUORUM_TYPE
+        );
+        // 0. - (YES + NO) / Total > X%
+        // 1. - YES + NO > X
+        uint128 allRaisersWeight = getAllRaiserWeight(dao);
         // rule out any failed quorums
-        if (
-            voteType == DaoHelper.VoteType.SIMPLE_MAJORITY_QUORUM_REQUIRED ||
-            voteType == DaoHelper.VoteType.SUPERMAJORITY_QUORUM_REQUIRED
-        ) {
-            uint256 minVotes = (allGPsWeight *
+        if (vintageQuorumType == 0) {
+            uint256 minVotes = (allRaisersWeight *
                 dao.getConfiguration(DaoHelper.QUORUM)) / 100;
 
             unchecked {
                 uint256 votes = vote.nbYes + vote.nbNo;
-                if (votes < minVotes)
+                if (votes <= minVotes)
                     return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
             }
         }
-
-        // simple majority check
-        if (
-            voteType == DaoHelper.VoteType.SIMPLE_MAJORITY ||
-            voteType == DaoHelper.VoteType.SIMPLE_MAJORITY_QUORUM_REQUIRED
-        ) {
-            if (vote.nbYes > vote.nbNo)
-                return (VotingState.PASS, vote.nbYes, vote.nbNo);
-            else if (vote.nbYes < vote.nbNo) {
+        if (vintageQuorumType == 1) {
+            uint256 votes = vote.nbYes + vote.nbNo;
+            if (votes <= dao.getConfiguration(DaoHelper.QUORUM))
                 return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
-            } else {
-                return (VotingState.TIE, vote.nbYes, vote.nbNo);
-            }
-            // supermajority check
-        } else {
-            // example: 7 yes, 2 no, supermajority = 66
-            // ((7+2) * 66) / 100 = 5.94; 7 yes will pass
-            uint256 minYes = ((vote.nbYes + vote.nbNo) *
+        }
+
+        // supermajority check
+        if (vintageSupportType == 0) {
+            uint256 votes = vote.nbYes + vote.nbNo;
+            uint256 minYes = (votes *
                 dao.getConfiguration(DaoHelper.SUPER_MAJORITY)) / 100;
-            // not one vote or voting power is zero should return tie .20220908
             if (minYes == 0 && vote.nbYes == 0) {
                 return (VotingState.TIE, vote.nbYes, vote.nbNo);
             }
-            if (vote.nbYes >= minYes)
-                return (VotingState.PASS, vote.nbYes, vote.nbNo);
-            else return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
+
+            if (vote.nbYes <= minYes)
+                return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
         }
+        if (vintageSupportType == 1) {
+            uint128 nbYN = vote.nbYes >= vote.nbNo ? vote.nbYes - vote.nbNo : 0;
+            if (nbYN <= dao.getConfiguration(DaoHelper.SUPER_MAJORITY))
+                return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
+        }
+        return (VotingState.PASS, vote.nbYes, vote.nbNo);
     }
 
     function checkIfVoted(
@@ -319,15 +320,15 @@ contract VintageVotingContract is
         }
     }
 
-    function getAllGPWeight(DaoRegistry dao) public view returns (uint128) {
-        FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        );
-        address token = fundingpool.fundRaisingTokenAddress();
-        uint128 allGPsWeight = GovernanceHelper.getAllGPVotingWeight(
-            dao,
-            token
-        );
+    function getAllRaiserWeight(DaoRegistry dao) public view returns (uint128) {
+        uint128 allGPsWeight = GovernanceHelper.getAllRaiserVotingWeight(dao);
         return allGPsWeight;
+    }
+
+    function getVotingWeight(
+        DaoRegistry dao,
+        address account
+    ) public view returns (uint128) {
+        return GovernanceHelper.getVintageVotingWeight(dao, account);
     }
 }

@@ -164,16 +164,49 @@ library GovernanceHelper {
         return weight;
     }
 
+    function getRaiserDepositVotingWeight(
+        DaoRegistry dao,
+        address voterAddr
+    ) internal view returns (uint128) {
+        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
+        );
+        uint256 balanceInEther = fundingpool.balanceOf(voterAddr) / 10 ** 18;
+        //need to fix 2022.6.14
+        if (balanceInEther <= 0) {
+            return 0;
+        }
+        if (balanceInEther >= 9223372036854775807) {
+            return 50;
+        }
+
+        uint128 weight = ABDKMath64x64.toUInt(
+            ABDKMath64x64.log_2(ABDKMath64x64.fromUInt(balanceInEther))
+        );
+        return weight;
+    }
+
+    function getAllRaiserVotingWeight(
+        DaoRegistry dao
+    ) internal view returns (uint128) {
+        address[] memory allRaisers = dao.getAllSteward();
+        uint128 allRaiserweight;
+        for (uint8 i = 0; i < allRaisers.length; i++) {
+            allRaiserweight += getVintageVotingWeight(dao, allRaisers[i]);
+        }
+        return allRaiserweight;
+    }
+
     function getVintageVotingWeight(
         DaoRegistry dao,
         address account
     ) internal view returns (uint128) {
         uint256 etype = dao.getConfiguration(
             DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TYPE
-        ); // 1. raiser membership type 2.deposit 3.raiser allocation
+        ); // 0. raiser membership type 1.deposit 2.raiser allocation
         uint256 votingWeightedType = dao.getConfiguration(
             DaoHelper.VINTAGE_VOTING_WEIGHTED_TYPE
-        ); // 1. log2 2. 1 voter 1 vote
+        ); // 0. quantity 1. log2 2. 1 voter 1 vote
         if (votingWeightedType == 1) {
             if (etype == 0) {
                 // 1. raiser membership
@@ -218,6 +251,11 @@ library GovernanceHelper {
                 return votingWeight;
             } else if (etype == 1) {
                 //deposit
+                uint128 votingWeight = getRaiserDepositVotingWeight(
+                    dao,
+                    account
+                );
+                return votingWeight;
             } else if (etype == 2) {
                 //.raiser allocation
                 return 1;
