@@ -314,8 +314,7 @@ contract VintageFundRaiseAdapterContract is
         //8 fundEndTime
         dao.setConfiguration(
             DaoHelper.FUND_END_TIME,
-            proposalInfo.timesInfo.fundRaiseEndTime +
-                proposalInfo.timesInfo.fundTerm
+            block.timestamp + proposalInfo.timesInfo.fundTerm
         );
         //9 redemptPeriod
         dao.setConfiguration(

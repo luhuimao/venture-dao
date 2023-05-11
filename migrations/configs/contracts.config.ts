@@ -816,6 +816,20 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
+  {
+    id: adaptersIdsMap.VINTAGE_ESCROW_FUND_ADAPTER,
+    name: "VintageEscrowFundAdapterContract",
+    alias: "vintageEscrowFundAdapterContract",
+    path: "../../contracts/adapters/VintageEscrowFundAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
   // flex
   {
     id: adaptersIdsMap.FLEX_STEWARD_MANAGEMENT,

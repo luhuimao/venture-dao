@@ -276,6 +276,9 @@ library DaoHelper {
 
     bytes32 internal constant VINTAGE_FUND_RAISE_ADAPTER =
         keccak256("vintage-fund-raise");
+
+    bytes32 internal constant VINTAGE_ESCROW_FUND_ADAPTER =
+        keccak256("vintage-escrow-fund");
     /* 
     vintage Adapters **************************************************************************************************
      */

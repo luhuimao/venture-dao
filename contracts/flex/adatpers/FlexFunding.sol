@@ -108,7 +108,7 @@ contract FlexFundingAdapterContract is
         if (
             (params.fundingInfo.maxFundingAmount > 0 &&
                 params.fundingInfo.maxFundingAmount <
-                params.fundRaiseInfo.maxDepositAmount) ||
+                params.fundingInfo.minFundingAmount) ||
             params.proposerRewardInfo.cashRewardAmount >
             RETRUN_TOKEN_AMOUNT_PRECISION
         ) revert("invalid Params");
@@ -336,7 +336,10 @@ contract FlexFundingAdapterContract is
                 proposal.fundingInfo.finalRaisedAmount = vars.poolBalance;
                 // calculate && update return token amount
                 proposal.fundingInfo.returnTokenAmount =
-                    (vars.poolBalance / proposal.fundingInfo.price) *
+                    ((vars.poolBalance -
+                        vars.protocolFee -
+                        vars.managementFee -
+                        vars.proposerReward) / proposal.fundingInfo.price) *
                     RETRUN_TOKEN_AMOUNT_PRECISION;
                 if (proposal.fundingInfo.escrow) {
                     vars.returnTokenAmount = proposal
@@ -518,7 +521,28 @@ contract FlexFundingAdapterContract is
         DaoRegistry dao,
         bytes32 proposalId
     ) external view returns (uint256) {
-        return Proposals[address(dao)][proposalId].fundingInfo.maxFundingAmount;
+        ProposalInfo storage proposal = Proposals[address(dao)][proposalId];
+        uint256 maxFundingAmount = 0;
+        uint256 maxFundingTargetAmount = Proposals[address(dao)][proposalId]
+            .fundingInfo
+            .maxFundingAmount;
+
+        if (dao.getConfiguration(DaoHelper.FLEX_MANAGEMENT_FEE_TYPE) == 0)
+            maxFundingAmount =
+                (maxFundingTargetAmount * RETRUN_TOKEN_AMOUNT_PRECISION) /
+                (RETRUN_TOKEN_AMOUNT_PRECISION -
+                    dao.getConfiguration(DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT) -
+                    protocolFee -
+                    proposal.proposerRewardInfo.cashRewardAmount);
+        else {
+            maxFundingAmount =
+                ((maxFundingTargetAmount +
+                    dao.getConfiguration(
+                        DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT
+                    )) * RETRUN_TOKEN_AMOUNT_PRECISION) /
+                (protocolFee - proposal.proposerRewardInfo.cashRewardAmount);
+        }
+        return maxFundingAmount;
     }
 
     function getMinFundingAmount(

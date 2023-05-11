@@ -1,10 +1,10 @@
 /*
- * @Descripttion: 
- * @version: 
+ * @Descripttion:
+ * @version:
  * @Author: huhuimao
  * @Date: 2022-12-19 13:50:51
  * @LastEditors: huhuimao
- * @LastEditTime: 2023-04-24 16:32:24
+ * @LastEditTime: 2023-05-11 15:10:47
  */
 // Whole-script strict mode syntax
 "use strict";
@@ -127,10 +127,15 @@ describe("Summon A Vintage Dao", () => {
 
         this.flexFundingPoolExtension = extensions.flexFundingPoolExt.functions;
 
+
+        this.vintageRaiserManagementContract = adapters.vintageRaiserManagementContract.instance;
         this.vintageFundRaiseAdapterContract = adapters.vintageFundRaiseAdapter.instance;
         this.vintageFundingPoolAdapterContract = adapters.vintageFundingPoolAdapterContract.instance;
         this.vintageVotingAdapterContract = adapters.vintageVotingContract.instance;
-        this.vintageRaiserManagementContract = adapters.vintageRaiserManagementContract.instance;
+        this.vintageFundingAdapterContract = adapters.vintageFundingAdapterContract.instance;
+        this.vintageVesting = adapters.vintageVesting.instance;
+        this.vintageAllocationAdapterContract = adapters.vintageAllocationAdapterContract.instance;
+
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
@@ -190,6 +195,21 @@ describe("Summon A Vintage Dao", () => {
                 flags: 138
             },
             {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
                 id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
@@ -201,8 +221,15 @@ describe("Summon A Vintage Dao", () => {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
                 addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
                 flags: 75
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                flags: 26
             }
+
         ];
+
 
 
         const vintageDaoParticipantCapInfo = [
@@ -229,11 +256,11 @@ describe("Summon A Vintage Dao", () => {
         ];
 
         const vintageDaoVotingInfo = [
-            0,//eligibilityType 
-            0, // uint8 votingPower; 
+            0,//eligibilityType
+            0, // uint8 votingPower;
             0,//  uint256 supportType;
             0,//uint256 quorumType;
-            60, // uint256 support;  
+            60, // uint256 support;
             66, // uint256 quorum;
             60 * 10,// uint256 votingPeriod;
             60 * 10  // uint256 proposalExecutePeriod;
@@ -319,7 +346,7 @@ describe("Summon A Vintage Dao", () => {
 
         const detail = await this.vintageFundRaiseAdapterContract.Proposals(this.vintagedaoAddress, proposalId);
         console.log(`
-    proposal detail:
+        proposal detail:
          acceptTokenAddr ${detail.acceptTokenAddr}
          fundRaiseTarget ${hre.ethers.utils.formatEther(detail.fundRaiseTarget)}
          fundRaiseMaxAmount ${hre.ethers.utils.formatEther(detail.fundRaiseMaxAmount)}
@@ -402,9 +429,13 @@ describe("verify raiser membership...", () => {
 
         this.flexFundingPoolExtension = extensions.flexFundingPoolExt.functions;
 
+        this.vintageRaiserManagementContract = adapters.vintageRaiserManagementContract.instance;
         this.vintageFundRaiseAdapterContract = adapters.vintageFundRaiseAdapter.instance;
         this.vintageFundingPoolAdapterContract = adapters.vintageFundingPoolAdapterContract.instance;
         this.vintageVotingAdapterContract = adapters.vintageVotingContract.instance;
+        this.vintageFundingAdapterContract = adapters.vintageFundingAdapterContract.instance;
+        this.vintageVesting = adapters.vintageVesting.instance;
+        this.vintageAllocationAdapterContract = adapters.vintageAllocationAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -456,18 +487,38 @@ describe("verify raiser membership...", () => {
                 flags: 138
             },
             {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
                 id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
             }
         ];
-
         const adapters1 = [
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
                 addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
                 flags: 75
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                flags: 26
             }
+
         ];
 
 
@@ -539,11 +590,11 @@ describe("verify raiser membership...", () => {
         ];
 
         const vintageDaoVotingInfo = [
-            0,//eligibilityType 
-            0, // uint8 votingPower; 
+            0,//eligibilityType
+            0, // uint8 votingPower;
             0,//  uint256 supportType;
             0,//uint256 quorumType;
-            60, // uint256 support;  
+            60, // uint256 support;
             66, // uint256 quorum;
             60 * 10,// uint256 votingPeriod;
             60 * 10  // uint256 proposalExecutePeriod;
@@ -781,9 +832,13 @@ describe("voting....", () => {
 
         this.flexFundingPoolExtension = extensions.flexFundingPoolExt.functions;
 
+        this.vintageRaiserManagementContract = adapters.vintageRaiserManagementContract.instance;
         this.vintageFundRaiseAdapterContract = adapters.vintageFundRaiseAdapter.instance;
         this.vintageFundingPoolAdapterContract = adapters.vintageFundingPoolAdapterContract.instance;
         this.vintageVotingAdapterContract = adapters.vintageVotingContract.instance;
+        this.vintageFundingAdapterContract = adapters.vintageFundingAdapterContract.instance;
+        this.vintageVesting = adapters.vintageVesting.instance;
+        this.vintageAllocationAdapterContract = adapters.vintageAllocationAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -830,6 +885,21 @@ describe("voting....", () => {
                 flags: 138
             },
             {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
                 id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
@@ -841,7 +911,13 @@ describe("voting....", () => {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
                 addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
                 flags: 75
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                flags: 26
             }
+
         ];
 
 
@@ -918,7 +994,7 @@ describe("voting....", () => {
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
             0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
             0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
-            60, // uint256 support;  
+            60, // uint256 support;
             66, // uint256 quorum;
             60 * 10,// uint256 votingPeriod;
             60 * 10  // uint256 proposalExecutePeriod;
@@ -929,7 +1005,7 @@ describe("voting....", () => {
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
             1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
             1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
-            2, // uint256 support;  
+            2, // uint256 support;
             2, // uint256 quorum;
             60 * 10,// uint256 votingPeriod;
             60 * 10  // uint256 proposalExecutePeriod;
@@ -940,7 +1016,7 @@ describe("voting....", () => {
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
             0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
             0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
-            60, // uint256 support;  
+            60, // uint256 support;
             66, // uint256 quorum;
             60 * 10,// uint256 votingPeriod;
             60 * 10  // uint256 proposalExecutePeriod;
@@ -951,7 +1027,7 @@ describe("voting....", () => {
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
             0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
             0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
-            60, // uint256 support;  
+            60, // uint256 support;
             66, // uint256 quorum;
             60 * 10,// uint256 votingPeriod;
             60 * 10  // uint256 proposalExecutePeriod;
@@ -962,7 +1038,7 @@ describe("voting....", () => {
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
             0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
             0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
-            60, // uint256 support;  
+            60, // uint256 support;
             66, // uint256 quorum;
             60 * 10,// uint256 votingPeriod;
             60 * 10  // uint256 proposalExecutePeriod;
@@ -1397,7 +1473,8 @@ describe("voting....", () => {
     });
 });
 
-describe("funding...", () => {
+
+describe("fund term...", () => {
     before("deploy contracts...", async () => {
         let [owner,
             user1, user2,
@@ -1435,15 +1512,6 @@ describe("funding...", () => {
         this.managementFeeAccount = managementFeeAccount;
 
         const _daoName1 = "my_vintage_dao1";
-        const _daoName2 = "my_vintage_dao2";
-        const _daoName3 = "my_vintage_dao3";
-        const _daoName4 = "my_vintage_dao4";
-        const _daoName5 = "my_vintage_dao5";
-        const _daoName6 = "my_vintage_dao6";
-        const _daoName7 = "my_vintage_dao7";
-        const _daoName8 = "my_vintage_dao8";
-        const _daoName9 = "my_vintage_dao9";
-        const _daoName10 = "my_vintage_dao10";
 
         const { dao, factories, adapters, extensions, testContracts } = await deployDefaultDao({
             owner: this.owner,
@@ -1462,6 +1530,7 @@ describe("funding...", () => {
 
         this.flexFundingPoolExtension = extensions.flexFundingPoolExt.functions;
 
+        this.vintageRaiserManagementContract = adapters.vintageRaiserManagementContract.instance;
         this.vintageFundRaiseAdapterContract = adapters.vintageFundRaiseAdapter.instance;
         this.vintageFundingPoolAdapterContract = adapters.vintageFundingPoolAdapterContract.instance;
         this.vintageVotingAdapterContract = adapters.vintageVotingContract.instance;
@@ -1540,7 +1609,409 @@ describe("funding...", () => {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
                 addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
                 flags: 75
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                flags: 26
             }
+
+        ];
+
+
+        const vintageDaoParticipantCapInfo = [
+            true,//bool enable;
+            5//uint256 maxParticipantsAmount;
+        ];
+
+        const vintageDaoBackerMembershipInfo = [
+            1, // bool enable;
+            0, // uint256 varifyType;
+            hre.ethers.utils.parseEther("100"), // uint256 minHolding;
+            this.testtoken1.address,  // address tokenAddress;
+            0,  // uint256 tokenId;
+            [ZERO_ADDRESS] // address[] whiteList;
+        ];
+
+        //erc20
+        const vintageDaoRaiserMembershipInfo1 = [
+            1, // bool enable;
+            0, // uint256 varifyType;erc20
+            hre.ethers.utils.parseEther("100"), // uint256 minHolding;
+            this.testtoken1.address,  // address tokenAddress;
+            0,  // uint256 tokenId;
+            [ZERO_ADDRESS] // address[] whiteList;
+        ];
+
+        const vintageDaoVotingInfo1 = [
+            0,//eligibilityType 0. raiser membership type 1.deposit 2.raiser allocation
+            1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
+            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            60, // uint256 support;
+            66, // uint256 quorum;
+            60 * 10,// uint256 votingPeriod;
+            60 * 10  // uint256 proposalExecutePeriod;
+        ];
+
+        const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
+
+        const vintageDaoParams1 = [
+            _daoName1,
+            creator,
+            daoFactoriesAddress, // address[] daoFactoriesAddress;
+            enalbeAdapters, // DaoFactory.Adapter[] enalbeAdapters;
+            adapters1, // DaoFactory.Adapter[] adapters1;
+            vintageDaoParticipantCapInfo,
+            vintageDaoBackerMembershipInfo,
+            vintageDaoRaiserMembershipInfo1,
+            vintageDaoVotingInfo1,
+            vintageDaoGenesisRaisers
+        ];
+
+        let obj = await sommonVintageDao(this.summonDao, this.daoFactory, vintageDaoParams1);
+        console.log("summon vintage dao1 succeed...", obj.daoAddr);
+        this.daoAddr1 = obj.daoAddr;
+        const dao1Contract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(this.daoAddr1);
+        this.dao1Contract = dao1Contract;
+    });
+
+    const sommonVintageDao = async (summonDaoContract, daoFactoryContract, vintageDaoParams) => {
+        let tx = await summonDaoContract.summonVintageDao(vintageDaoParams);
+        let result = await tx.wait();
+        const daoAddr = await daoFactoryContract.getDaoAddress(vintageDaoParams[0]);
+        console.log("daoAddr ", daoAddr);
+        const daoName = await daoFactoryContract.daos(daoAddr);
+        return { daoAddr: daoAddr, daoName: daoName };
+    };
+
+    const createFundRaiseProposal = async (vintageFundRaiseAdapterContract, params) => {
+        const tx = await vintageFundRaiseAdapterContract.submitProposal(params);
+        const result = await tx.wait();
+        const proposalId = result.events[result.events.length - 1].args.proposalId;
+        return proposalId;
+    }
+
+    it("redemption...", async () => {
+        const dao = (await hre.ethers.getContractFactory("DaoRegistry")).attach(this.daoAddr1);
+        const vintageFundingAdapterContract = this.vintageFundingAdapterContract;
+        const vintageVesting = this.vintageVesting;
+        const vintageFundingPoolAdapterContract = this.vintageFundingPoolAdapterContract;
+        const vintageVotingAdapterContract = this.vintageVotingAdapterContract;
+        const vintageAllocationAdapterContract = this.vintageAllocationAdapterContract;
+
+        const fundRaiseMinTarget = hre.ethers.utils.parseEther("10000");
+        const fundRaiseMaxCap = hre.ethers.utils.parseEther("20000");
+        const lpMinDepositAmount = hre.ethers.utils.parseEther("100");
+        const lpMaxDepositAmount = hre.ethers.utils.parseEther("10000");
+        const fundRaiseType = 0; // 0 FCFS 1 Free In
+
+        //submit fund raise proposal
+        const proposalFundRaiseInfo = [
+            fundRaiseMinTarget,
+            fundRaiseMaxCap,
+            lpMinDepositAmount,
+            lpMaxDepositAmount,
+            fundRaiseType // 0 FCFS 1 Free In
+        ];
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        const startTime = blocktimestamp + 60 * 1;
+        const endTime = startTime + 60 * 60 * 2;
+        const fundTerm = 60 * 60 * 24 * 30;
+        const redemptPeriod = 60 * 60 * 1;
+        const redemptInterval = 60 * 60 * 24 * 7;
+        const returnPeriod = 60 * 60 * 1;
+        const proposalTimeInfo = [
+            startTime,
+            endTime,
+            fundTerm,
+            redemptPeriod,
+            redemptInterval,
+            returnPeriod
+        ];
+
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
+        const proposalFeeInfo = [
+            managementFeeRatio,
+            redepmtFeeRatio
+        ];
+
+
+        const managementFeeAddress = this.user1.address;
+        const fundRaiseTokenAddress = this.testtoken1.address;
+        const proposalAddressInfo = [
+            managementFeeAddress,
+            fundRaiseTokenAddress
+        ];
+
+        const fundFromInverstor = hre.ethers.utils.parseEther("0.004");
+        const projectTokenFromInvestor = hre.ethers.utils.parseEther("0.004");
+        const proposerReward = [
+            fundFromInverstor,
+            projectTokenFromInvestor
+        ];
+
+        const fundRaiseParams = [
+            this.daoAddr1,
+            proposalFundRaiseInfo,
+            proposalTimeInfo,
+            proposalFeeInfo,
+            proposalAddressInfo,
+            proposerReward
+        ],
+
+        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+        console.log(`
+        fund raise proposal created ${fundRaiserProposalId}
+        vote for proposal...
+        `);
+
+        await vintageVotingAdapterContract.submitVote(this.daoAddr1, fundRaiserProposalId, 1);
+        let fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, fundRaiserProposalId);
+        const stopVoteTime = fundRaiseProposalInfo.stopVoteTime;
+
+        if (parseInt(stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1])
+            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        }
+
+        console.log(`
+        voted. processing...
+        `);
+        await this.vintageFundRaiseAdapterContract.processProposal(this.daoAddr1, fundRaiserProposalId);
+        fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, fundRaiserProposalId);
+        console.log(`
+        processed...
+        state ${fundRaiseProposalInfo.state}
+        `);
+
+        //deposit
+        await this.testtoken1.approve(vintageFundingPoolAdapterContract.address, hre.ethers.utils.parseEther("10000"));
+        await this.testtoken1.connect(this.investor1).approve(vintageFundingPoolAdapterContract.address, hre.ethers.utils.parseEther("10000"));
+
+
+
+
+        await this.testtoken1.transfer(this.investor1.address, hre.ethers.utils.parseEther("10000"));
+
+        await vintageFundingPoolAdapterContract.deposit(this.daoAddr1, hre.ethers.utils.parseEther("10000"));
+        await vintageFundingPoolAdapterContract.connect(this.investor1).deposit(this.daoAddr1, hre.ethers.utils.parseEther("10000"));
+        //withdraw
+        await expectRevert(vintageFundingPoolAdapterContract.withdraw(this.daoAddr1, hre.ethers.utils.parseEther("1000")), "revert");
+
+        let bal = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.owner.address);
+        let bal1 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.investor1.address);
+
+        console.log(`
+        deposited ${hre.ethers.utils.formatEther(bal)}
+        deposited ${hre.ethers.utils.formatEther(bal1)}
+        process fund raise...
+        `);
+
+        await vintageFundingPoolAdapterContract.processFundRaise(this.daoAddr1);
+        fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, fundRaiserProposalId);
+        console.log(`
+        processed...
+        state ${fundRaiseProposalInfo.state}
+        `);
+
+        const fundStartTime = await vintageFundingPoolAdapterContract.getFundStartTime(this.daoAddr1);
+        const fundEndTime = await vintageFundingPoolAdapterContract.getFundEndTime(this.daoAddr1);
+        const redemptionEndTime = parseInt(fundStartTime) + parseInt(redemptInterval);
+        const redemptionStartTime = parseInt(redemptionEndTime) - parseInt(redemptPeriod);
+        const GPAddr = await dao.getAddressConfiguration(sha3("GP_ADDRESS"));
+
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(redemptionStartTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(redemptionStartTime) + 1])
+            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        }
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        const isRedempt = await vintageFundingPoolAdapterContract.ifInRedemptionPeriod(this.daoAddr1, blocktimestamp);
+        console.log(`
+        fundStartTime ${fundStartTime}
+        fundEndTime ${fundEndTime}
+        redemptionStartTime ${redemptionStartTime}
+        redemptionEndTime ${redemptionEndTime}
+        blocktimestamp ${blocktimestamp}
+        isRedempt ${isRedempt}
+        `);
+
+        await vintageFundingPoolAdapterContract.connect(this.investor1).withdraw(this.daoAddr1, hre.ethers.utils.parseEther("1000"));
+        bal1 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.investor1.address);
+        let USDTBal = await this.testtoken1.balanceOf(this.investor1.address);
+        let USDTBal2 = await this.testtoken1.balanceOf(GPAddr);
+        console.log(`
+        withdrawed...
+        bal1 ${hre.ethers.utils.formatEther(bal1)}
+        USDTBal ${hre.ethers.utils.formatEther(USDTBal)}
+        managementFee ${hre.ethers.utils.formatEther(USDTBal2)}
+        `);
+
+    });
+});
+
+describe("funding...", () => {
+    before("deploy contracts...", async () => {
+        let [owner,
+            user1, user2,
+            investor1, investor2,
+            gp1, gp2,
+            project_team1, project_team2,
+            genesis_raiser1, genesis_raiser2,
+            funding_proposer1,
+            funding_proposer1_whitelist, funding_proposer2_whitelist,
+            participant_membership_whitelist1, participant_membership_whitelist2,
+            priority_deposit_membership_whitelist1, priority_deposit_membership_whitelist2,
+            pollster_membership_whitelist1, pollster_membership_whitelist2,
+            managementFeeAccount
+        ] = await hre.ethers.getSigners();
+        this.owner = owner;
+        this.user1 = user1;
+        this.user2 = user2;
+        this.investor1 = investor1;
+        this.investor2 = investor2;
+        this.gp1 = gp1;
+        this.gp2 = gp2;
+        this.project_team1 = project_team1;
+        this.project_team2 = project_team2;
+        this.genesis_raiser1 = genesis_raiser1;
+        this.genesis_raiser2 = genesis_raiser2;
+        this.funding_proposer1 = funding_proposer1;
+        this.funding_proposer1_whitelist = funding_proposer1_whitelist;
+        this.funding_proposer2_whitelist = funding_proposer2_whitelist;
+        this.participant_membership_whitelist1 = participant_membership_whitelist1;
+        this.participant_membership_whitelist2 = participant_membership_whitelist2;
+        this.priority_deposit_membership_whitelist1 = priority_deposit_membership_whitelist1;
+        this.priority_deposit_membership_whitelist2 = priority_deposit_membership_whitelist2;
+        this.pollster_membership_whitelist1 = pollster_membership_whitelist1;
+        this.pollster_membership_whitelist2 = pollster_membership_whitelist2;
+        this.managementFeeAccount = managementFeeAccount;
+
+        const _daoName1 = "my_vintage_dao1";
+        const _daoName2 = "my_vintage_dao2";
+        const _daoName3 = "my_vintage_dao3";
+        const _daoName4 = "my_vintage_dao4";
+        const _daoName5 = "my_vintage_dao5";
+        const _daoName6 = "my_vintage_dao6";
+        const _daoName7 = "my_vintage_dao7";
+        const _daoName8 = "my_vintage_dao8";
+        const _daoName9 = "my_vintage_dao9";
+        const _daoName10 = "my_vintage_dao10";
+
+        const { dao, factories, adapters, extensions, testContracts } = await deployDefaultDao({
+            owner: this.owner,
+            daoMode: 0,//  Vintage = 0, Flex = 1,   Collective = 2,
+            daoName: "init dao"
+        });
+
+        this.daoFactory = factories.daoFactory.instance;
+        this.flexFundingPoolFactory = factories.flexFundingPoolFactory.instance;
+        this.vintageFundingPoolFactory = factories.vintageFundingPoolFactory.instance;
+
+        this.adapters = adapters;
+        this.extensions = extensions;
+        this.dao = dao;
+        this.testContracts = testContracts;
+
+        this.flexFundingPoolExtension = extensions.flexFundingPoolExt.functions;
+
+        this.vintageRaiserManagementContract = adapters.vintageRaiserManagementContract.instance;
+        this.vintageFundRaiseAdapterContract = adapters.vintageFundRaiseAdapter.instance;
+        this.vintageFundingPoolAdapterContract = adapters.vintageFundingPoolAdapterContract.instance;
+        this.vintageVotingAdapterContract = adapters.vintageVotingContract.instance;
+        this.vintageFundingAdapterContract = adapters.vintageFundingAdapterContract.instance;
+        this.vintageVesting = adapters.vintageVesting.instance;
+        this.vintageAllocationAdapterContract = adapters.vintageAllocationAdapterContract.instance;
+        this.vintageEscrowFundAdapterContract = adapters.vintageEscrowFundAdapterContract.instance;
+
+        this.testtoken1 = testContracts.testToken1.instance;
+        this.testtoken2 = testContracts.testRiceToken.instance;
+        this.flexVesting = adapters.flexVesting.instance;
+        this.flexERC721 = adapters.flexERC721.instance;
+        this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
+        this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
+        this.flexVotingContract = adapters.flexVotingContract.instance;
+        this.flexFundingAdapterContract = adapters.flexFundingAdapterContract.instance;
+        this.bentoBoxV1 = adapters.bentoBoxV1.instance;
+        this.managing = this.adapters.managing.instance;
+        this.flexPollingVotingContract = adapters.flexPollingVotingContract.instance;
+        this.summonDao = this.adapters.summonVintageDao.instance;
+        this.summonVintageDao = this.adapters.summonVintageDao.instance;
+
+        const daoFactoriesAddress = [
+            this.daoFactory.address,
+            this.vintageFundingPoolFactory.address
+        ];
+
+        const _daoName = _daoName1;
+
+        const creator = this.owner.address;
+
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed',//fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 10
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892',//FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8',//vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa',//vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 138
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3',// vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            }
+        ];
+
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
+                flags: 75
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                flags: 26
+            }
+
         ];
 
 
@@ -1617,7 +2088,7 @@ describe("funding...", () => {
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
             0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
             0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
-            60, // uint256 support;  
+            60, // uint256 support;
             66, // uint256 quorum;
             60 * 10,// uint256 votingPeriod;
             60 * 10  // uint256 proposalExecutePeriod;
@@ -1628,7 +2099,7 @@ describe("funding...", () => {
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
             1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
             1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
-            2, // uint256 support;  
+            2, // uint256 support;
             2, // uint256 quorum;
             60 * 10,// uint256 votingPeriod;
             60 * 10  // uint256 proposalExecutePeriod;
@@ -1639,7 +2110,7 @@ describe("funding...", () => {
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
             0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
             0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
-            60, // uint256 support;  
+            60, // uint256 support;
             66, // uint256 quorum;
             60 * 10,// uint256 votingPeriod;
             60 * 10  // uint256 proposalExecutePeriod;
@@ -1650,7 +2121,7 @@ describe("funding...", () => {
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
             0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
             0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
-            60, // uint256 support;  
+            60, // uint256 support;
             66, // uint256 quorum;
             60 * 10,// uint256 votingPeriod;
             60 * 10  // uint256 proposalExecutePeriod;
@@ -1661,7 +2132,7 @@ describe("funding...", () => {
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
             0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
             0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
-            60, // uint256 support;  
+            60, // uint256 support;
             66, // uint256 quorum;
             60 * 10,// uint256 votingPeriod;
             60 * 10  // uint256 proposalExecutePeriod;
@@ -2095,7 +2566,7 @@ describe("funding...", () => {
         recipient of vest ${vestId1}: ${vestInfo1.recipient}
         claimable balance of vest ${vestId1}: ${hre.ethers.utils.formatEther(claimableBal1)}
         total ${parseFloat(hre.ethers.utils.formatEther(vestInfo1.cliffShares.toString())) + parseFloat(hre.ethers.utils.formatEther(vestInfo1.stepShares.toString())) * parseFloat(vestInfo1.steps)}
-      
+
         vest2 cliff shares ${hre.ethers.utils.formatEther(vestInfo2.cliffShares.toString())}
         step shares ${hre.ethers.utils.formatEther(vestInfo2.stepShares.toString())}
         steps ${vestInfo2.steps}
@@ -2130,4 +2601,64 @@ describe("funding...", () => {
         `);
 
     });
+
+    it("clear fund...", async () => {
+        const vintageFundingPoolAdapterContract = this.vintageFundingPoolAdapterContract;
+
+        let allFund = await vintageFundingPoolAdapterContract.poolBalance(this.daoAddr1);
+        let bal = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.owner.address);
+        let bal1 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.investor1.address);
+
+        const fundEndTime = await vintageFundingPoolAdapterContract.getFundEndTime(this.daoAddr1);
+        const fundReturnDuration = await vintageFundingPoolAdapterContract.getFundReturnDuration(this.daoAddr1);
+
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        if (parseInt(fundEndTime + fundReturnDuration) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundEndTime + fundReturnDuration) + 1])
+            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        }
+        let escrowFundContractBal = await this.testtoken1.balanceOf(this.vintageEscrowFundAdapterContract.address);
+
+        console.log(`
+        allFund ${hre.ethers.utils.formatEther(allFund)}
+        bal ${hre.ethers.utils.formatEther(bal)}
+        bal1 ${hre.ethers.utils.formatEther(bal1)}
+        clear fund...
+        `);
+        await vintageFundingPoolAdapterContract.clearFund(this.daoAddr1);
+
+        console.log(`
+        clear fund finished...
+        `)
+
+        bal = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.owner.address);
+        bal1 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.investor1.address);
+        allFund = await vintageFundingPoolAdapterContract.poolBalance(this.daoAddr1);
+        escrowFundContractBal = await this.testtoken1.balanceOf(this.vintageEscrowFundAdapterContract.address);
+        let escrowBal1 = await this.vintageEscrowFundAdapterContract.getEscrowAmount(this.daoAddr1, this.testtoken1.address, this.owner.address);
+        let escrowBal2 = await this.vintageEscrowFundAdapterContract.getEscrowAmount(this.daoAddr1, this.testtoken1.address, this.investor1.address);
+        console.log(`
+        allFund ${hre.ethers.utils.formatEther(allFund)}
+        bal ${hre.ethers.utils.formatEther(bal)}
+        bal1 ${hre.ethers.utils.formatEther(bal1)}
+        escrowFundContractBal ${hre.ethers.utils.formatEther(escrowFundContractBal)}
+        escrowBal1 ${hre.ethers.utils.formatEther(escrowBal1)}
+        escrowBal2 ${hre.ethers.utils.formatEther(escrowBal2)}
+        withdraw...
+        `);
+
+        await this.vintageEscrowFundAdapterContract.withDraw(this.daoAddr1, this.testtoken1.address);
+        await this.vintageEscrowFundAdapterContract.connect(this.investor1).withDraw(this.daoAddr1, this.testtoken1.address);
+        await expectRevert(this.vintageEscrowFundAdapterContract.connect(this.investor2).withDraw(this.daoAddr1, this.testtoken1.address), "revert");
+        escrowFundContractBal = await this.testtoken1.balanceOf(this.vintageEscrowFundAdapterContract.address);
+        escrowBal1 = await this.vintageEscrowFundAdapterContract.getEscrowAmount(this.daoAddr1, this.testtoken1.address, this.owner.address);
+        escrowBal2 = await this.vintageEscrowFundAdapterContract.getEscrowAmount(this.daoAddr1, this.testtoken1.address, this.investor1.address);
+        console.log(`
+        escrowFundContractBal ${hre.ethers.utils.formatEther(escrowFundContractBal)}
+        escrowBal1 ${hre.ethers.utils.formatEther(escrowBal1)}
+        escrowBal2 ${hre.ethers.utils.formatEther(escrowBal2)}
+        `);
+    });
+
 });

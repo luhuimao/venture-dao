@@ -91,11 +91,11 @@ contract SummonVintageDao {
     ) external returns (bool) {
         require(address(this) == msg.sender);
         //create funding pool extension...
-        VintageFundingPoolFactory flexFundingPoolFac = VintageFundingPoolFactory(
+        VintageFundingPoolFactory vintageFundingPoolFac = VintageFundingPoolFactory(
                 vintageFundingPoolFacAddr
             );
-        flexFundingPoolFac.create(newDaoAddr);
-        address newVintageFundingPoolExtAddr = flexFundingPoolFac
+        vintageFundingPoolFac.create(newDaoAddr);
+        address newVintageFundingPoolExtAddr = vintageFundingPoolFac
             .getExtensionAddress(newDaoAddr);
         //add funding pool extension to dao...
         DaoRegistry newDao = DaoRegistry(newDaoAddr);
@@ -119,8 +119,31 @@ contract SummonVintageDao {
         daoFac.addAdapters(newDao, enalbeAdapters);
     }
 
-    // config raiser Membership
+    //configure adapters access to extensions
     function summonVintageDao4(
+        address daoFacAddr,
+        address vintageFundingPoolFacAddr,
+        DaoFactory.Adapter[] calldata adapters1,
+        address newDaoAddr
+    ) external returns (bool) {
+        DaoRegistry newDao = DaoRegistry(newDaoAddr);
+        require(address(this) == msg.sender);
+        DaoFactory daoFac = DaoFactory(daoFacAddr);
+        VintageFundingPoolFactory vintageFundingPoolFac = VintageFundingPoolFactory(
+                vintageFundingPoolFacAddr
+            );
+        address newVintageFundingPoolExtAddr = vintageFundingPoolFac
+            .getExtensionAddress(newDaoAddr);
+        //configure adapters access to extensions ...
+        daoFac.configureExtension(
+            newDao,
+            newVintageFundingPoolExtAddr, //vintageFundingPoolExtension
+            adapters1
+        );
+    }
+
+    // config raiser Membership
+    function summonVintageDao5(
         bool vintageDaoStewardMembershipEnable,
         uint256[3] memory uint256Params,
         address vintageDaoStewardMembershipTokenAddress,
@@ -193,7 +216,7 @@ contract SummonVintageDao {
         }
     }
 
-    function summonVintageDao5(
+    function summonVintageDao6(
         address newDaoAddr,
         uint256[8] calldata votingInfo
     ) external returns (bool) {
@@ -224,7 +247,7 @@ contract SummonVintageDao {
         );
     }
 
-    function summonVintageDao6(
+    function summonVintageDao7(
         address newDaoAddr,
         address[] calldata genesisRaisers
     ) external returns (bool) {
@@ -248,32 +271,14 @@ contract SummonVintageDao {
         bytes summonVintageDao4Payload;
         bytes summonVintageDao5Payload;
         bytes summonVintageDao6Payload;
+        bytes summonVintageDao7Payload;
         bool success;
         bytes ret;
         address newDaoAddr;
-        VintageCall[5] calls;
+        VintageCall[6] calls;
     }
 
-    function multiVintageCall(VintageCall[5] memory calls) public {
-        // console.log("caller:", msg.sender);
-        for (uint256 i = 0; i < calls.length; i++) {
-            (bool success, bytes memory ret) = calls[i].target.call(
-                calls[i].callData
-            );
-            require(
-                success,
-                string(
-                    abi.encodePacked(
-                        "low-level call of summonVintageDao",
-                        Strings.toString(i + 2),
-                        " failed"
-                    )
-                )
-            );
-        }
-    }
-
-    function multiVintageCall(VintageCall[2] memory calls) public {
+    function multiVintageCall(VintageCall[6] memory calls) public {
         // console.log("caller:", msg.sender);
         for (uint256 i = 0; i < calls.length; i++) {
             (bool success, bytes memory ret) = calls[i].target.call(
@@ -332,21 +337,29 @@ contract SummonVintageDao {
             vars.newDaoAddr
         );
 
-        uint256[3] memory uint256SummonVintageDao4Params = [
+        vars.summonVintageDao4Payload = abi.encodeWithSignature(
+            "summonVintageDao4(address,address,(bytes32,address,uint128)[],address)",
+            params.daoFactoriesAddress[0],
+            params.daoFactoriesAddress[1],
+            params.adapters1,
+            vars.newDaoAddr
+        );
+
+        uint256[3] memory uint256SummonVintageDao5Params = [
             params.raiserMembership.varifyType,
             params.raiserMembership.minAmount,
             params.raiserMembership.tokenId
         ];
-        vars.summonVintageDao4Payload = abi.encodeWithSignature(
-            "summonVintageDao4(bool,uint256[3],address,address[],address)",
+        vars.summonVintageDao5Payload = abi.encodeWithSignature(
+            "summonVintageDao5(bool,uint256[3],address,address[],address)",
             params.raiserMembership.enable,
-            uint256SummonVintageDao4Params,
+            uint256SummonVintageDao5Params,
             params.raiserMembership.tokenAddress,
             params.raiserMembership.whiteList,
             vars.newDaoAddr
         );
 
-        uint256[8] memory uint256SummonVintageDao5Params = [
+        uint256[8] memory uint256SummonVintageDao6Params = [
             params.votingInfo.eligibilityType,
             params.votingInfo.votingWeightedType,
             params.votingInfo.supportType,
@@ -356,14 +369,14 @@ contract SummonVintageDao {
             params.votingInfo.votingPeriod,
             params.votingInfo.executingPeriod
         ];
-        vars.summonVintageDao5Payload = abi.encodeWithSignature(
-            "summonVintageDao5(address,uint256[8])",
+        vars.summonVintageDao6Payload = abi.encodeWithSignature(
+            "summonVintageDao6(address,uint256[8])",
             vars.newDaoAddr,
-            uint256SummonVintageDao5Params
+            uint256SummonVintageDao6Params
         );
 
-        vars.summonVintageDao6Payload = abi.encodeWithSignature(
-            "summonVintageDao6(address,address[])",
+        vars.summonVintageDao7Payload = abi.encodeWithSignature(
+            "summonVintageDao7(address,address[])",
             vars.newDaoAddr,
             params.genesisRaisers
         );
@@ -387,6 +400,10 @@ contract SummonVintageDao {
         vars.calls[4] = VintageCall(
             address(this),
             vars.summonVintageDao6Payload
+        );
+        vars.calls[5] = VintageCall(
+            address(this),
+            vars.summonVintageDao7Payload
         );
 
         multiVintageCall(vars.calls);

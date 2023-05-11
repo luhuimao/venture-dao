@@ -1192,7 +1192,16 @@ const processFundingProposal = async (daoAddr, proposalId) => {
 const deploy = async () => {
     const [account1, account2, account3, account4, account5] = await hre.ethers.getSigners();
     const bal = hre.ethers.utils.formatEther((await account1.getBalance()).toString());
+    const bal2 = hre.ethers.utils.formatEther((await account2.getBalance()).toString());
+    const bal3 = hre.ethers.utils.formatEther((await account3.getBalance()).toString());
+    const bal4 = hre.ethers.utils.formatEther((await account4.getBalance()).toString());
+    const bal5 = hre.ethers.utils.formatEther((await account5.getBalance()).toString());
     console.log("ETH balance: ", bal);
+    console.log("ETH balance: ", bal2);
+    console.log("ETH balance: ", bal3);
+    console.log("ETH balance: ", bal4);
+    console.log("ETH balance: ", bal5);
+
     // const DistributeFundContractV2 = await hre.ethers.getContractFactory("DistributeFundContractV2");
     // const distributeFundContractV2 = await DistributeFundContractV2.deploy();
     // await distributeFundContractV2.deployed();
@@ -1204,7 +1213,7 @@ const deploy = async () => {
     // console.log("daoRegistry deployed address:", daoRegistry.address);
 
     // const DaoFactory = await hre.ethers.getContractFactory("DaoFactory");
-    // const daoFactory = await DaoFactory.deploy("0x658d94BBaD60EA8A82D160a00eB2E7F486aC2A39");
+    // const daoFactory = await DaoFactory.deploy("0xb45CA57c50B7B0Af9b5004AC4303350388E65170");
     // await daoFactory.deployed();
     // console.log("daoFactory deployed address:", daoFactory.address);
 
@@ -1235,8 +1244,8 @@ const deploy = async () => {
     // console.log("flexFundingAdapterContract deployed address:", flexFundingAdapterContract.address);
 
     // const FlexFundingPoolAdapterContract = await hre.ethers.getContractFactory("FlexFundingPoolAdapterContract");
-    // const flexFundingPoolAdapterContract = await FlexFundingPoolAdapterContract.connect(account5).deploy();
-    // await flexFundingPoolAdapterContract.connect(account5).deployed();
+    // const flexFundingPoolAdapterContract = await FlexFundingPoolAdapterContract.deploy();
+    // await flexFundingPoolAdapterContract.deployed();
     // console.log("flexFundingPoolAdapterContract deployed address:", flexFundingPoolAdapterContract.address);
 
     // const FlexPollingVotingContract = await hre.ethers.getContractFactory("FlexPollingVotingContract");
@@ -1268,10 +1277,10 @@ const deploy = async () => {
     // console.log("flexAllocationAdapterContract deployed address:", flexAllocationAdapterContract.address);
 
 
-    const SummonDao = await hre.ethers.getContractFactory("SummonDao");
-    const summonDao = await SummonDao.connect(account5).deploy();
-    await summonDao.connect(account5).deployed();
-    console.log("summonDao deployed address:", summonDao.address);
+    // const SummonDao = await hre.ethers.getContractFactory("SummonDao");
+    // const summonDao = await SummonDao.deploy();
+    // await summonDao.deployed();
+    // console.log("summonDao deployed address:", summonDao.address);
 
 
 
@@ -1286,20 +1295,75 @@ const deploy = async () => {
     // console.log("testToken2 deployed address:", testToken2.address);
 
     // const BentoBoxV1 = await hre.ethers.getContractFactory("BentoBoxV1");
-    // const bentoBoxV1 = await BentoBoxV1.connect(account5).deploy();
-    // await bentoBoxV1.connect(account5).deployed();
+    // const bentoBoxV1 = await BentoBoxV1.deploy();
+    // await bentoBoxV1.deployed();
     // console.log("bentoBoxV1 deployed address:", bentoBoxV1.address);
 
-    
-    // const FlexFundingPoolFactory = await hre.ethers.getContractFactory("FlexFundingPoolFactory");
-    // const flexFundingPoolFactory = await FlexFundingPoolFactory.deploy("0x4eb0572B36c56de82C1695Bf7d98E51a4DF0d7eE");
-    // await flexFundingPoolFactory.deployed();
-    // console.log("flexFundingPoolFactory deployed address:", flexFundingPoolFactory.address);
+
+    const FlexFundingPoolFactory = await hre.ethers.getContractFactory("FlexFundingPoolFactory");
+    const flexFundingPoolFactory = await FlexFundingPoolFactory.deploy("0x874320C07A247cD6Ca314C03f1e90e7959E9339b");
+    await flexFundingPoolFactory.deployed();
+    console.log("flexFundingPoolFactory deployed address:", flexFundingPoolFactory.address);
 
     // const FlexFundingPoolExtension = await hre.ethers.getContractFactory("FlexFundingPoolExtension");
     // const flexFundingPoolExtension = await FlexFundingPoolExtension.deploy();
     // await flexFundingPoolExtension.deployed();
     // console.log("flexFundingPoolExtension deployed address:", flexFundingPoolExtension.address);
+
+    // const VintageFundRaiseAdapterContract = await hre.ethers.getContractFactory("VintageFundRaiseAdapterContract");
+    // const vintageFundRaiseAdapterContract = await VintageFundRaiseAdapterContract.deploy();
+    // await vintageFundRaiseAdapterContract.deployed();
+    // console.log("vintageFundRaiseAdapterContract deployed address:", vintageFundRaiseAdapterContract.address);
+
+    // const VintageVotingContract = await hre.ethers.getContractFactory("VintageVotingContract");
+    // const vintageVotingContract = await VintageVotingContract.deploy();
+    // await vintageVotingContract.deployed();
+    // console.log("vintageVotingContract deployed address:", vintageVotingContract.address);
+
+
+    // const VintageFundingPoolAdapterContract = await hre.ethers.getContractFactory("VintageFundingPoolAdapterContract");
+    // const vintageFundingPoolAdapterContract = await VintageFundingPoolAdapterContract.deploy();
+    // await vintageFundingPoolAdapterContract.deployed();
+    // console.log("vintageFundingPoolAdapterContract deployed address:", vintageFundingPoolAdapterContract.address);
+
+
+    // const VintageRaiserManagementContract = await hre.ethers.getContractFactory("VintageRaiserManagementContract");
+    // const vintageRaiserManagementContract = await VintageRaiserManagementContract.deploy();
+    // await vintageRaiserManagementContract.deployed();
+    // console.log("vintageRaiserManagementContract deployed address:", vintageRaiserManagementContract.address);
+
+    // const VintageFundingAdapterContract = await hre.ethers.getContractFactory("VintageFundingAdapterContract");
+    // const vintageFundingAdapterContract = await VintageFundingAdapterContract.deploy();
+    // await vintageFundingAdapterContract.deployed();
+    // console.log("vintageFundingAdapterContract deployed address:", vintageFundingAdapterContract.address);
+
+    // const VintageAllocationAdapterContract = await hre.ethers.getContractFactory("VintageAllocationAdapterContract");
+    // const vintageAllocationAdapterContract = await VintageAllocationAdapterContract.deploy();
+    // await vintageAllocationAdapterContract.deployed();
+    // console.log("vintageAllocationAdapterContract deployed address:", vintageAllocationAdapterContract.address);
+
+    // const VintageVesting = await hre.ethers.getContractFactory("VintageVesting");
+    // const vintageVesting = await VintageVesting.deploy();
+    // await vintageVesting.deployed();
+    // console.log("vintageVesting deployed address:", vintageVesting.address);
+
+
+    // const VintageFundingPoolFactory = await hre.ethers.getContractFactory("VintageFundingPoolFactory");
+    // const vintageFundingPoolFactory = await VintageFundingPoolFactory.deploy("0x6B93AAD680B156D68F90aC62e61058728f071716");
+    // await vintageFundingPoolFactory.deployed();
+    // console.log("vintageFundingPoolFactory deployed address:", vintageFundingPoolFactory.address);
+
+    // const VintageFundingPoolExtension = await hre.ethers.getContractFactory("VintageFundingPoolExtension");
+    // const vintageFundingPoolExtension = await VintageFundingPoolExtension.deploy();
+    // await vintageFundingPoolExtension.deployed();
+    // console.log("vintageFundingPoolExtension deployed address:", vintageFundingPoolExtension.address);
+
+    // const SummonVintageDao = await hre.ethers.getContractFactory("SummonVintageDao");
+    // const summonVintageDao = await SummonVintageDao.deploy();
+    // await summonVintageDao.deployed();
+    // console.log("summonVintageDao deployed address:", summonVintageDao.address);
+
+
 }
 
 

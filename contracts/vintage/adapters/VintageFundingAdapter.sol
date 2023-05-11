@@ -192,7 +192,7 @@ contract VintageFundingAdapterContract is
             vars.fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
                 DaoHelper.FundRaiseState.DONE &&
                 block.timestamp >
-                vars.fundingPoolAdapt.getFundRaiseWindowCloseTime(dao) &&
+                vars.fundingPoolAdapt.getFundStartTime(dao) &&
                 block.timestamp < vars.fundingPoolAdapt.getFundEndTime(dao),
             "Funding::submitProposal::only can submit proposal in investing period"
         );

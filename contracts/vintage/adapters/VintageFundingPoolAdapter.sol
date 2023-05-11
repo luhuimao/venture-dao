@@ -11,6 +11,7 @@ import "./VintageFundRaise.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
+import "./VintageEscrowFund.sol";
 
 /**
 MIT License
@@ -56,6 +57,15 @@ contract VintageFundingPoolAdapterContract is
         require(msg.sender == DaoHelper.daoFactoryAddress(dao));
         _;
     }
+
+    event Deposit(address daoAddress, uint256 amount, address account);
+    event WithDraw(address daoAddress, uint256 amount, address account);
+
+    event RedeptionFeeCharged(
+        uint256 timestamp,
+        address account,
+        uint256 redemptionFee
+    );
 
     /**
      * @notice Updates the DAO registry with the new configurations if valid.
@@ -120,18 +130,18 @@ contract VintageFundingPoolAdapterContract is
             //distribute redemption fee to GP
             redemptionFee =
                 (dao.getConfiguration(DaoHelper.REDEMPTION_FEE) * amount) /
-                1000;
+                1e18;
             if (redemptionFee > 0) {
                 fundingpool.distributeFunds(
                     address(dao.getAddressConfiguration(DaoHelper.GP_ADDRESS)),
                     tokenAddr,
                     redemptionFee
                 );
-                // emit RedeptionFeeCharged(
-                //     block.timestamp,
-                //     recipientAddr,
-                //     redemptionFee
-                // );
+                emit RedeptionFeeCharged(
+                    block.timestamp,
+                    msg.sender,
+                    redemptionFee
+                );
             }
         }
 
@@ -147,6 +157,60 @@ contract VintageFundingPoolAdapterContract is
                 address(dao)
             );
             _removeFundParticipant(dao, msg.sender, fundRounds);
+        }
+
+        emit WithDraw(address(dao), amount - redemptionFee, msg.sender);
+    }
+
+    function clearFund(DaoRegistry dao) external reimbursable(dao) {
+        require(
+            daoFundRaisingStates[address(dao)] ==
+                DaoHelper.FundRaiseState.FAILED ||
+                (daoFundRaisingStates[address(dao)] ==
+                    DaoHelper.FundRaiseState.DONE &&
+                    block.timestamp >
+                    dao.getConfiguration(DaoHelper.FUND_END_TIME) +
+                        dao.getConfiguration(DaoHelper.RETURN_DURATION)),
+            "FundingPoolAdapter::clearFund::Cant clearFund at this time"
+        );
+        FundingPoolExtension fundingpool = FundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
+        );
+
+        address tokenAddr = fundingpool.getFundRaisingTokenAddress();
+        address[] memory allInvestors = fundingpool.getInvestors();
+        if (allInvestors.length > 0) {
+            for (uint8 i = 0; i < allInvestors.length; i++) {
+                uint256 bal = balanceOf(dao, allInvestors[i]);
+                if (bal > 0) {
+                    VintageEscrowFundAdapterContract escrowFundAdapter = VintageEscrowFundAdapterContract(
+                            dao.getAdapterAddress(
+                                DaoHelper.VINTAGE_ESCROW_FUND_ADAPTER
+                            )
+                        );
+                    //1. escrow Fund From Funding Pool
+                    escrowFundAdapter.escrowFundFromFundingPool(
+                        dao,
+                        tokenAddr,
+                        allInvestors[i],
+                        bal
+                    );
+                    //2. send fund to escrow fund contract
+                    fundingpool.distributeFunds(
+                        dao.getAdapterAddress(
+                            DaoHelper.VINTAGE_ESCROW_FUND_ADAPTER
+                        ),
+                        tokenAddr,
+                        bal
+                    );
+                    //3. subtract from funding pool
+                    fundingpool.subtractFromBalance(
+                        allInvestors[i],
+                        tokenAddr,
+                        bal
+                    );
+                }
+            }
         }
     }
 
@@ -221,6 +285,8 @@ contract VintageFundingPoolAdapterContract is
         );
         fundingpool.addToBalance(msg.sender, amount);
         _addFundParticipant(dao, msg.sender, fundRounds);
+
+        emit Deposit(address(dao), amount, msg.sender);
     }
 
     function processFundRaise(DaoRegistry dao) public returns (bool) {

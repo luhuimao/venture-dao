@@ -46,7 +46,7 @@ contract VintageVotingContract is
         uint128 nbYes;
         uint128 nbNo;
         uint256 startingTime;
-        uint256 blockNumber;
+        uint256 stopTime;
         uint256 voters;
         mapping(address => uint256) votes;
     }
@@ -57,15 +57,29 @@ contract VintageVotingContract is
         uint256 votestartingTime,
         uint256 voteblockNumber
     );
+    // event SubmitVote(
+    //     address daoAddr,
+    //     bytes32 proposalId,
+    //     uint256 blocktime,
+    //     address voter,
+    //     uint256 voteValue,
+    //     uint128 votingWeight,
+    //     uint128 nbYes,
+    //     uint128 nbNo
+    // );
+
     event SubmitVote(
         address daoAddr,
         bytes32 proposalId,
-        uint256 blocktime,
+        uint256 votingTime,
+        uint256 voteStartTime,
+        uint256 voteStopTime,
         address voter,
         uint256 voteValue,
-        uint128 votingWeight,
-        uint128 nbYes,
-        uint128 nbNo
+        uint256 nbYes,
+        uint256 nbNo,
+        uint256 currentQuorum,
+        uint256 currentSupport
     );
     event UpdateVoteWeight(
         bytes32 proposalId,
@@ -125,7 +139,9 @@ contract VintageVotingContract is
     ) external override onlyAdapter(dao) {
         Voting storage vote = votes[address(dao)][proposalId];
         vote.startingTime = projectVotingTimestamp;
-        vote.blockNumber = block.number;
+        vote.stopTime =
+            block.timestamp +
+            dao.getConfiguration(DaoHelper.VOTING_PERIOD);
         emit StartNewVotingForProposal(
             address(dao),
             proposalId,
@@ -189,12 +205,7 @@ contract VintageVotingContract is
             "Voting::submitVote::this proposalId has not start voting"
         );
         // slither-disable-next-line timestamp
-        require(
-            block.timestamp <
-                vote.startingTime +
-                    dao.getConfiguration(DaoHelper.VOTING_PERIOD),
-            "voting ended"
-        );
+        require(block.timestamp < vote.stopTime, "voting ended");
 
         require(vote.votes[msg.sender] == 0, "member has already voted");
         // FundingPoolExtension fundingpool = FundingPoolExtension(
@@ -213,15 +224,25 @@ contract VintageVotingContract is
         } else if (voteValue == 2) {
             vote.nbNo = vote.nbNo + votingWeight;
         }
+
+        uint256 currentQuorum = (vote.nbYes + vote.nbNo) == 0
+            ? 0
+            : (vote.nbYes * 100) / (vote.nbYes + vote.nbNo);
+        uint256 currentSupport = (((vote.nbYes + vote.nbNo) * 100) /
+            DaoHelper.getActiveMemberNb(dao));
+
         emit SubmitVote(
             address(dao),
             proposalId,
             block.timestamp,
+            vote.startingTime,
+            vote.stopTime,
             msg.sender,
             voteValue,
-            votingWeight,
             vote.nbYes,
-            vote.nbNo
+            vote.nbNo,
+            currentQuorum,
+            currentSupport
         );
     }
 
