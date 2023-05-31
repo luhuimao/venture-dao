@@ -33,341 +33,6 @@ contract SummonDao {
 
     constructor() {}
 
-    // struct Adapter {
-    //     bytes32 id;
-    //     address addr;
-    //     uint128 flags;
-    // }
-
-    // struct SummonVintageDaoLocalVars {
-    //     DaoFactory daoFac;
-    //     FundingPoolFactory fundingPoolFac;
-    //     address newDaoAddr;
-    //     address newFundingPoolExtAddr;
-    //     DaoRegistry newDao;
-    //     GPDaoFactory gpDaoFac;
-    //     address newGpDaoExtAddr;
-    // }
-    // struct VintageDaoVotingInfo {
-    //     uint256 votingPeriod;
-    //     uint8 votingPower;
-    //     uint256 superMajority;
-    //     uint256 quorum;
-    //     uint256 proposalExecutePeriod;
-    // }
-    // struct VintageMembershipInfo {
-    //     bool enable;
-    //     uint8 validateType;
-    //     uint256 minHolding;
-    //     address tokenAddress;
-    //     uint256 tokenId;
-    //     address[] whiteLists;
-    // }
-    // struct VintageParticipantCapInfo {
-    //     bool enable;
-    //     uint256 maxParticipants;
-    // }
-    // struct VintageDaoParams {
-    //     address[] daoFactoriesAddress;
-    //     string name;
-    //     address creator;
-    //     DaoFactory.Adapter[] enalbeAdapters;
-    //     DaoFactory.Adapter[] adapters1;
-    //     DaoFactory.Adapter[] adapters2;
-    //     VintageDaoVotingInfo votingInfo;
-    //     VintageMembershipInfo membershipInfo;
-    //     VintageParticipantCapInfo participantCapInfo;
-    //     address[] raisers;
-    // }
-
-    // function summonVintageDao(VintageDaoParams calldata params)
-    //     external
-    //     returns (bool)
-    // {
-    //     require(
-    //         params.votingInfo.votingPeriod > 0 &&
-    //             params.votingInfo.superMajority > 0 &&
-    //             params.votingInfo.quorum > 0 &&
-    //             params.votingInfo.proposalExecutePeriod > 0,
-    //         "invalid params"
-    //     );
-    //     // if (params.membershipInfo.enable) {
-    //     //     require(params.membershipInfo);
-    //     // }
-    //     SummonVintageDaoLocalVars memory vars;
-    //     //create dao
-    //     vars.daoFac = DaoFactory(params.daoFactoriesAddress[0]);
-    //     vars.daoFac.createDao(params.name, msg.sender);
-    //     vars.newDaoAddr = vars.daoFac.getDaoAddress(params.name);
-    //     require(
-    //         vars.newDaoAddr != address(0x0),
-    //         "SummmonDao::summonVintageDao::create dao failed"
-    //     );
-    //     //create funding pool extension...
-    //     vars.fundingPoolFac = FundingPoolFactory(params.daoFactoriesAddress[1]);
-    //     vars.fundingPoolFac.create(vars.newDaoAddr);
-    //     vars.newFundingPoolExtAddr = vars.fundingPoolFac.getExtensionAddress(
-    //         vars.newDaoAddr
-    //     );
-    //     require(
-    //         vars.newFundingPoolExtAddr != address(0x0),
-    //         "SummmonDao::summonVintageDao::create funding pool extension failed"
-    //     );
-    //     //add funding pool extension to dao...
-    //     vars.newDao = DaoRegistry(vars.newDaoAddr);
-    //     vars.newDao.addExtension(
-    //         DaoHelper.FUNDINGPOOL_EXT, // sha3("funding-pool-ext"),
-    //         IExtension(vars.newFundingPoolExtAddr),
-    //         msg.sender
-    //     );
-    //     //create gp dao extension...
-    //     vars.gpDaoFac = GPDaoFactory(params.daoFactoriesAddress[2]);
-    //     vars.gpDaoFac.create(vars.newDaoAddr);
-    //     vars.newGpDaoExtAddr = vars.gpDaoFac.getExtensionAddress(
-    //         vars.newDaoAddr
-    //     );
-    //     require(
-    //         vars.newGpDaoExtAddr != address(0x0),
-    //         "SummmonDao::summonVintageDao::create gp dao extension failed"
-    //     );
-    //     //add gp dao extension to dao...
-    //     vars.newDao.addExtension(
-    //         DaoHelper.GPDAO_EXT, // sha3("gp-dao-ext"),
-    //         IExtension(vars.newGpDaoExtAddr),
-    //         msg.sender
-    //     );
-    //     //add adapters to dao...
-    //     vars.daoFac.addAdapters(vars.newDao, params.enalbeAdapters);
-    //     //configure adapters access to extensions ...
-    //     vars.daoFac.configureExtension(
-    //         vars.newDao,
-    //         vars.newFundingPoolExtAddr, //FundingPoolExtension
-    //         params.adapters1
-    //     );
-    //     //configure extensions access to extensions ...
-    //     vars.daoFac.configureExtension(
-    //         vars.newDao,
-    //         vars.newFundingPoolExtAddr, //FundingPoolExtension
-    //         params.adapters2
-    //     );
-    //     //config dao setting...
-    //     setVintageDaoConfiguration(vars.newDao, params);
-    //     registerRaiser(vars.newDao, params);
-    //     emit VintageDaoCreated(
-    //         params.daoFactoriesAddress[0],
-    //         vars.newDaoAddr,
-    //         params.name,
-    //         msg.sender
-    //     );
-    //     return true;
-    // }
-
-    // function summonVintageDao1(VintageDaoParams calldata params)
-    //     external
-    //     returns (bool)
-    // {
-    //     require(
-    //         params.votingInfo.votingPeriod > 0 &&
-    //             params.votingInfo.superMajority > 0 &&
-    //             params.votingInfo.quorum > 0 &&
-    //             params.votingInfo.proposalExecutePeriod > 0,
-    //         "invalid params"
-    //     );
-    //     // if (params.membershipInfo.enable) {
-    //     //     require(params.membershipInfo);
-    //     // }
-    //     SummonVintageDaoLocalVars memory vars;
-    //     //create dao
-    //     vars.daoFac = DaoFactory(params.daoFactoriesAddress[0]);
-    //     vars.daoFac.createDao(params.name, msg.sender);
-    //     vars.newDaoAddr = vars.daoFac.getDaoAddress(params.name);
-    //     require(
-    //         vars.newDaoAddr != address(0x0),
-    //         "SummmonDao::summonVintageDao::create dao failed"
-    //     );
-    //     emit VintageDaoCreated(
-    //         params.daoFactoriesAddress[0],
-    //         vars.newDaoAddr,
-    //         params.name,
-    //         msg.sender
-    //     );
-    //     return true;
-    // }
-
-    // function summonVintageDao2(
-    //     VintageDaoParams calldata params,
-    //     address newDaoAddr
-    // ) external returns (bool) {
-    //     //create funding pool extension...
-    //     FundingPoolFactory fundingPoolFac = FundingPoolFactory(
-    //         params.daoFactoriesAddress[1]
-    //     );
-    //     fundingPoolFac.create(newDaoAddr);
-    //     address newFundingPoolExtAddr = fundingPoolFac.getExtensionAddress(
-    //         newDaoAddr
-    //     );
-    //     require(
-    //         newFundingPoolExtAddr != address(0x0),
-    //         "SummmonDao::summonVintageDao::create funding pool extension failed"
-    //     );
-    //     //add funding pool extension to dao...
-    //     DaoRegistry newDao = DaoRegistry(newDaoAddr);
-    //     newDao.addExtension(
-    //         DaoHelper.FUNDINGPOOL_EXT, // sha3("funding-pool-ext"),
-    //         IExtension(newFundingPoolExtAddr),
-    //         msg.sender
-    //     );
-    // }
-
-    // function summonVintageDao3(
-    //     VintageDaoParams calldata params,
-    //     address newDaoAddr
-    // ) external returns (bool) {
-    //     //create gp dao extension...
-    //     GPDaoFactory gpDaoFac = GPDaoFactory(params.daoFactoriesAddress[2]);
-    //     gpDaoFac.create(newDaoAddr);
-    //     address newGpDaoExtAddr = gpDaoFac.getExtensionAddress(newDaoAddr);
-    //     require(
-    //         newGpDaoExtAddr != address(0x0),
-    //         "SummmonDao::summonVintageDao::create gp dao extension failed"
-    //     );
-    //     //add gp dao extension to dao...
-    //     DaoRegistry newDao = DaoRegistry(newDaoAddr);
-    //     newDao.addExtension(
-    //         DaoHelper.GPDAO_EXT, // sha3("gp-dao-ext"),
-    //         IExtension(newGpDaoExtAddr),
-    //         msg.sender
-    //     );
-    // }
-
-    // function summonVintageDao4(
-    //     VintageDaoParams calldata params,
-    //     address newDaoAddr
-    // ) external returns (bool) {
-    //     // //add adapters to dao...
-    //     DaoFactory daoFac = DaoFactory(params.daoFactoriesAddress[0]);
-    //     DaoRegistry newDao = DaoRegistry(newDaoAddr);
-
-    //     daoFac.addAdapters(newDao, params.enalbeAdapters);
-    //     // //configure adapters access to extensions ...
-    //     FundingPoolFactory fundingPoolFac = FundingPoolFactory(
-    //         params.daoFactoriesAddress[1]
-    //     );
-    //     address newFundingPoolExtAddr = fundingPoolFac.getExtensionAddress(
-    //         newDaoAddr
-    //     );
-    //     daoFac.configureExtension(
-    //         newDao,
-    //         newFundingPoolExtAddr, //FundingPoolExtension
-    //         params.adapters1
-    //     );
-    // }
-
-    // function summonVintageDao5(
-    //     VintageDaoParams calldata params,
-    //     address newDaoAddr
-    // ) external returns (bool) {
-    //     //config dao setting...
-    //     DaoRegistry newDao = DaoRegistry(newDaoAddr);
-    //     setVintageDaoConfiguration(newDao, params);
-    // }
-
-    // function summonVintageDao6(
-    //     VintageDaoParams calldata params,
-    //     address newDaoAddr
-    // ) external returns (bool) {
-    //     DaoRegistry newDao = DaoRegistry(newDaoAddr);
-    //     registerRaiser(newDao, params);
-    // }
-
-    // function setVintageDaoConfiguration(
-    //     DaoRegistry dao,
-    //     VintageDaoParams calldata params
-    // ) internal {
-    //     dao.setConfiguration(
-    //         DaoHelper.PROPOSAL_EXECUTE_DURATION,
-    //         params.votingInfo.proposalExecutePeriod
-    //     ); //config PROPOSAL_EXECUTE_DURATION
-
-    //     dao.setConfiguration(
-    //         DaoHelper.VOTING_PERIOD,
-    //         params.votingInfo.votingPeriod
-    //     ); //config VOTING_PERIOD
-
-    //     dao.setConfiguration(DaoHelper.QUORUM, params.votingInfo.quorum); //config QUORUM
-
-    //     dao.setConfiguration(
-    //         DaoHelper.SUPER_MAJORITY,
-    //         params.votingInfo.superMajority
-    //     ); //config SUPER_MAJORITY
-
-    //     if (params.participantCapInfo.enable) {
-    //         dao.setConfiguration(DaoHelper.MAX_PARTICIPANTS_ENABLE, 1); //config MAX_PARTICIPANTS_ENABLE
-    //         dao.setConfiguration(
-    //             DaoHelper.MAX_PARTICIPANTS,
-    //             params.participantCapInfo.maxParticipants
-    //         ); //config MAX_PARTICIPANTS
-    //     }
-
-    //     if (params.membershipInfo.enable) {
-    //         dao.setConfiguration(DaoHelper.VINTAGE_RAISER_MEMBERSHIP_ENABLE, 1);
-    //         dao.setConfiguration(
-    //             DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TYPE,
-    //             uint256(params.membershipInfo.validateType)
-    //         );
-    //         // 0- ERC2O
-    //         // 1- ERC721
-    //         // 2- ERC1155
-    //         // 3- Deposit
-    //         // 4- Whitelist
-    //         if (
-    //             params.membershipInfo.validateType == 0 ||
-    //             params.membershipInfo.validateType == 1 ||
-    //             params.membershipInfo.validateType == 2
-    //         ) {
-    //             dao.setAddressConfiguration(
-    //                 DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS,
-    //                 params.membershipInfo.tokenAddress
-    //             );
-    //         }
-    //         if (params.membershipInfo.validateType == 2) {
-    //             dao.setConfiguration(
-    //                 DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKENID,
-    //                 params.membershipInfo.tokenId
-    //             );
-    //         }
-    //         if (
-    //             params.membershipInfo.validateType == 0 ||
-    //             params.membershipInfo.validateType == 1 ||
-    //             params.membershipInfo.validateType == 2 ||
-    //             params.membershipInfo.validateType == 3
-    //         ) {
-    //             dao.setConfiguration(
-    //                 DaoHelper.VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING,
-    //                 params.membershipInfo.minHolding
-    //             );
-    //         }
-
-    //         if (params.membershipInfo.validateType == 4) {
-    //             GPDaoExtension gpDaoExt = GPDaoExtension(
-    //                 dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
-    //             );
-    //             gpDaoExt.addWhiteList(params.membershipInfo.whiteLists);
-    //         }
-    //     }
-    // }
-
-    // function registerRaiser(DaoRegistry dao, VintageDaoParams calldata params)
-    //     internal
-    // {
-    //     if (params.raisers.length > 0) {
-    //         for (uint8 i = 0; i < params.raisers.length; i++) {
-    //             GPDaoExtension(dao.getExtensionAddress(DaoHelper.GPDAO_EXT))
-    //                 .registerGeneralPartner(params.raisers[i]);
-    //         }
-    //     }
-    // }
-
     struct flexDaoParticipantCapInfo {
         bool enable;
         uint256 maxParticipantsAmount;
@@ -401,11 +66,15 @@ contract SummonDao {
     }
 
     struct flexDaoVotingInfo {
+        uint256 eligibilityType; //0. erc20 1.erc721 2.erc1155 3.allocation
+        address tokenAddress;
+        uint256 tokenID;
         uint256 votingPeriod;
-        uint8 votingPower;
+        uint8 votingPower; //0. quantity 1. log2 2. 1 voter 1 vote
         uint256 superMajority;
         uint256 quorum;
-        // uint256 proposalExecutePeriod;
+        uint256 supportType; // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+        uint256 quorumType; // 0. - (YES + NO) / Total > X%  1. - YES + NO > X
     }
 
     struct flexDaoPollsterMembershipInfo {
@@ -421,7 +90,11 @@ contract SummonDao {
         uint8 votingPower;
         uint256 superMajority;
         uint256 quorum;
-        // uint256 proposalExecutePeriod;
+        uint256 eligibilityType; //0. erc20 1.erc721 2.erc1155 3.allocation
+        address tokenAddress;
+        uint256 tokenID;
+        uint256 supportType; // 0. YES - NO > X
+        uint256 quorumType; // 0. YES + NO > X
     }
 
     struct flexDaoProposerMembershipInfo {
@@ -538,13 +211,21 @@ contract SummonDao {
     }
 
     //set dao configaration
+    // _uint256VoteArgs[0] votingPeriod
+    // _uint256VoteArgs[1] superMajority
+    // _uint256VoteArgs[2] eligibilityType
+    // _uint256VoteArgs[3] quorum
+    // _uint256VoteArgs[4] supportType
+    // _uint256VoteArgs[5] quorumType
     function summonFlexDao5(
         uint256 flexDaoManagementfee,
         address managementFeeAddress,
         uint256 flexDaoFundriaseStyle,
-        uint256 votingPeriod,
-        uint256 superMajority,
-        address newDaoAddr
+        address newDaoAddr,
+        uint8 votingPower,
+        uint256 tokenID,
+        address tokenAddress,
+        uint256[6] calldata _uint256VoteArgs
     ) external returns (bool) {
         DaoRegistry newDao = DaoRegistry(newDaoAddr);
         require(address(this) == msg.sender);
@@ -565,10 +246,58 @@ contract SummonDao {
         );
 
         //4config VOTING_PERIOD
-        newDao.setConfiguration(DaoHelper.VOTING_PERIOD, votingPeriod);
+        newDao.setConfiguration(DaoHelper.VOTING_PERIOD, _uint256VoteArgs[0]);
 
         //5config SUPER_MAJORITY
-        newDao.setConfiguration(DaoHelper.SUPER_MAJORITY, superMajority);
+        newDao.setConfiguration(DaoHelper.SUPER_MAJORITY, _uint256VoteArgs[1]);
+
+        //config voting info
+        // 6.config PROPOSAL_EXECUTE_DURATION
+        newDao.setConfiguration(
+            DaoHelper.FLEX_VOTING_ELIGIBILITY_TYPE,
+            _uint256VoteArgs[2]
+        );
+
+        // 7..config FLEX_VOTING_WEIGHTED_TYPE
+        newDao.setConfiguration(
+            DaoHelper.FLEX_VOTING_WEIGHTED_TYPE,
+            votingPower
+        );
+
+        if (_uint256VoteArgs[2] == 2) {
+            // 8..config FLEX_VOTING_ELIGIBILITY_TOKEN_ID
+            newDao.setConfiguration(
+                DaoHelper.FLEX_VOTING_ELIGIBILITY_TOKEN_ID,
+                tokenID
+            );
+        }
+
+        if (
+            _uint256VoteArgs[2] == 0 ||
+            _uint256VoteArgs[2] == 1 ||
+            _uint256VoteArgs[2] == 2
+        ) {
+            // 9.config FLEX_VOTING_ELIGIBILITY_TOKEN_ADDRESS
+            newDao.setAddressConfiguration(
+                DaoHelper.FLEX_VOTING_ELIGIBILITY_TOKEN_ADDRESS,
+                tokenAddress
+            );
+        }
+
+        //10.config QUORUM
+        newDao.setConfiguration(DaoHelper.QUORUM, _uint256VoteArgs[3]);
+
+        //11.config FLEX_VOTING_SUPPORT_TYPE
+        newDao.setConfiguration(
+            DaoHelper.FLEX_VOTING_SUPPORT_TYPE,
+            _uint256VoteArgs[4]
+        );
+
+        //12.config FLEX_VOTING_QUORUM_TYPE
+        newDao.setConfiguration(
+            DaoHelper.FLEX_VOTING_QUORUM_TYPE,
+            _uint256VoteArgs[5]
+        );
     }
 
     //registerGenesisStewards
@@ -585,10 +314,11 @@ contract SummonDao {
     // config polling && PARTICIPANTS CAP
     function summonFlexDao7(
         bool[2] memory booleanParams,
-        uint256[7] memory uint256Params,
+        uint256[10] memory uint256Params,
         address flexDaoPollsterMembershipTokenAddress,
         address[] calldata flexDaoPollsterMembershipWhiteList,
-        address newDaoAddr
+        address newDaoAddr,
+        address flexDaoPollingtokenAddress
     ) external returns (bool) {
         //  booleanParams[0] fundingPollEnable,
         //  booleanParams[1] participantEnable,
@@ -596,9 +326,13 @@ contract SummonDao {
         //  uint256Params[1] flexDaoPollingVotingPeriod
         //  uint256Params[2] flexDaoPollingVotingPower
         //  uint256Params[3] flexDaoPollingSuperMajority
-        //  uint256Params[4] flexDaoPollsterMembershipVarifyType
-        //  uint256Params[5] flexDaoPollsterMembershipMinHolding
-        //  uint256Params[6] flexDaoPollsterMembershipTokenId
+        //  uint256Params[4] flexDaoPollingquorum
+        //  uint256Params[5] flexDaoPollingeligibilityType
+        //  uint256Params[6] flexDaoPollingtokenID
+        //  uint256Params[7] flexDaoPollsterMembershipVarifyType
+        //  uint256Params[8] flexDaoPollsterMembershipMinHolding
+        //  uint256Params[9] flexDaoPollsterMembershipTokenId
+
         DaoRegistry dao = DaoRegistry(newDaoAddr);
         require(address(this) == msg.sender);
 
@@ -609,14 +343,18 @@ contract SummonDao {
                 dao,
                 uint256Params[1],
                 uint256Params[2],
-                uint256Params[3]
+                uint256Params[3],
+                uint256Params[4],
+                uint256Params[5],
+                uint256Params[6],
+                flexDaoPollingtokenAddress
             );
             configFlexDaoPollsterMembership(
                 dao,
-                uint256Params[4],
-                uint256Params[5],
+                uint256Params[7],
+                uint256Params[8],
                 flexDaoPollsterMembershipTokenAddress,
-                uint256Params[6],
+                uint256Params[9],
                 flexDaoPollsterMembershipWhiteList
             );
         }
@@ -798,25 +536,43 @@ contract SummonDao {
         );
 
         //config voting info
-        //4config PROPOSAL_EXECUTE_DURATION
-        // dao.setConfiguration(
-        //     DaoHelper.PROPOSAL_EXECUTE_DURATION,
-        //     params._flexDaoVotingInfo.proposalExecutePeriod
-        // );
+        // 4config PROPOSAL_EXECUTE_DURATION
+        dao.setConfiguration(
+            DaoHelper.FLEX_VOTING_ELIGIBILITY_TYPE,
+            params._flexDaoVotingInfo.eligibilityType
+        );
 
-        //5config VOTING_PERIOD
+        // 5.config FLEX_VOTING_WEIGHTED_TYPE
+        dao.setConfiguration(
+            DaoHelper.FLEX_VOTING_WEIGHTED_TYPE,
+            params._flexDaoVotingInfo.votingPower
+        );
+
+        // 6.config FLEX_VOTING_ELIGIBILITY_TOKEN_ID
+        dao.setConfiguration(
+            DaoHelper.FLEX_VOTING_ELIGIBILITY_TOKEN_ID,
+            params._flexDaoVotingInfo.tokenID
+        );
+
+        // 7.config FLEX_VOTING_ELIGIBILITY_TOKEN_ADDRESS
+        dao.setAddressConfiguration(
+            DaoHelper.FLEX_VOTING_ELIGIBILITY_TOKEN_ADDRESS,
+            params._flexDaoVotingInfo.tokenAddress
+        );
+
+        //8.config VOTING_PERIOD
         dao.setConfiguration(
             DaoHelper.VOTING_PERIOD,
             params._flexDaoVotingInfo.votingPeriod
         );
 
-        //6config QUORUM
+        //9.config QUORUM
         dao.setConfiguration(
             DaoHelper.QUORUM,
             params._flexDaoVotingInfo.quorum
         );
 
-        //7config SUPER_MAJORITY
+        //10.config SUPER_MAJORITY
         dao.setConfiguration(
             DaoHelper.SUPER_MAJORITY,
             params._flexDaoVotingInfo.superMajority
@@ -883,28 +639,46 @@ contract SummonDao {
         DaoRegistry dao,
         uint256 flexDaoPollingVotingPeriod,
         uint256 flexDaoPollingVotingPower,
-        uint256 flexDaoPollingSuperMajority
+        uint256 flexDaoPollingSuperMajority,
+        uint256 flexDaoPollingQuorum,
+        uint256 flexDaoPollingEligibilityType, // 0. ERC20 1. ERC721, 2. ERC1155 3.allocation
+        uint256 tokenId,
+        address tokenAddress
     ) internal {
         dao.setConfiguration(
             DaoHelper.FLEX_POLLING_VOTING_PERIOD,
             flexDaoPollingVotingPeriod
         );
         dao.setConfiguration(
-            DaoHelper.FLEX_POLLING_VOTING_POWER,
+            DaoHelper.FLEX_POLL_VOTING_WEIGHTED_TYPE,
             flexDaoPollingVotingPower
         );
         dao.setConfiguration(
             DaoHelper.FLEX_POLLING_SUPER_MAJORITY,
             flexDaoPollingSuperMajority
         );
-        // dao.setConfiguration(
-        //     DaoHelper.FLEX_POLLING_QUORUM,
-        //     params._flexDaoPollingInfo.quorum
-        // );
-        // dao.setConfiguration(
-        //     DaoHelper.FLEX_POLLING_PROPOSAL_EXECUTIONPEERIOD,
-        //     params._flexDaoPollingInfo.proposalExecutePeriod
-        // );
+        dao.setConfiguration(
+            DaoHelper.FLEX_POLLING_QUORUM,
+            flexDaoPollingQuorum
+        );
+        dao.setConfiguration(
+            DaoHelper.FLEX_POLL_VOTING_ELIGIBILITY_TYPE,
+            flexDaoPollingEligibilityType
+        );
+        if (flexDaoPollingEligibilityType == 2)
+            dao.setConfiguration(
+                DaoHelper.FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ID,
+                tokenId
+            );
+        if (
+            flexDaoPollingEligibilityType == 0 ||
+            flexDaoPollingEligibilityType == 1 ||
+            flexDaoPollingEligibilityType == 2
+        )
+            dao.setAddressConfiguration(
+                DaoHelper.FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ADDRESS,
+                tokenAddress
+            );
     }
 
     function registerFlexDaoPollsterMembershipWhiteList(
@@ -1188,14 +962,30 @@ contract SummonDao {
             vars.newDaoAddr
         );
 
+        // _uint256VoteArgs[0] votingPeriod
+        // _uint256VoteArgs[1] superMajority
+        // _uint256VoteArgs[2] eligibilityType
+        // _uint256VoteArgs[3] quorum
+        // _uint256VoteArgs[4] supportType
+        // _uint256VoteArgs[5] quorumType
+        uint256[6] memory uint256VoteParams = [
+            params._flexDaoVotingInfo.votingPeriod,
+            params._flexDaoVotingInfo.superMajority,
+            params._flexDaoVotingInfo.eligibilityType,
+            params._flexDaoVotingInfo.quorum,
+            params._flexDaoVotingInfo.supportType,
+            params._flexDaoVotingInfo.quorumType
+        ];
         vars.summonFlexDao5Payload = abi.encodeWithSignature(
-            "summonFlexDao5(uint256,address,uint256,uint256,uint256,address)",
+            "summonFlexDao5(uint256,address,uint256,address,uint8,uint256,address,uint256[6])",
             params._flexDaoInfo.flexDaoManagementfee,
             params._flexDaoInfo.managementFeeAddress,
             params._flexDaoInfo.flexDaoFundriaseStyle,
-            params._flexDaoVotingInfo.votingPeriod,
-            params._flexDaoVotingInfo.superMajority,
-            vars.newDaoAddr
+            vars.newDaoAddr,
+            params._flexDaoVotingInfo.votingPower,
+            params._flexDaoVotingInfo.tokenID,
+            params._flexDaoVotingInfo.tokenAddress,
+            uint256VoteParams
         );
 
         vars.summonFlexDao6Payload = abi.encodeWithSignature(
@@ -1204,11 +994,14 @@ contract SummonDao {
             vars.newDaoAddr
         );
 
-        uint256[7] memory uint256Params = [
+        uint256[10] memory uint256Params = [
             params._flexDaoParticipantCapInfo.maxParticipantsAmount,
             params._flexDaoPollingInfo.votingPeriod,
             params._flexDaoPollingInfo.votingPower,
             params._flexDaoPollingInfo.superMajority,
+            params._flexDaoPollingInfo.quorum,
+            params._flexDaoPollingInfo.eligibilityType,
+            params._flexDaoPollingInfo.tokenID,
             params._flexDaoPollsterMembershipInfo.varifyType,
             params._flexDaoPollsterMembershipInfo.minHolding,
             params._flexDaoPollsterMembershipInfo.tokenId
@@ -1219,12 +1012,13 @@ contract SummonDao {
         ];
 
         vars.summonFlexDao7Payload = abi.encodeWithSignature(
-            "summonFlexDao7(bool[2],uint256[7],address,address[],address)",
+            "summonFlexDao7(bool[2],uint256[10],address,address[],address,address)",
             booleanParams,
             uint256Params,
             params._flexDaoPollsterMembershipInfo.tokenAddress,
             params._flexDaoPollsterMembershipInfo.whiteList,
-            vars.newDaoAddr
+            vars.newDaoAddr,
+            params._flexDaoPollingInfo.tokenAddress
         );
 
         uint256[6] memory uint256SummonFlexDao8Params = [
@@ -1290,365 +1084,6 @@ contract SummonDao {
 
         multiCall(vars.calls);
     }
-
-    // struct VintageParticipantCapInfo {
-    //     bool enable;
-    //     uint256 cap;
-    // }
-
-    // struct VintageBackerMembership {
-    //     bool enable;
-    //     uint8 varifyType;
-    //     uint256 minAmount;
-    //     address tokenAddress;
-    //     uint256 tokenId;
-    //     address[] whiteList;
-    // }
-
-    // struct VintageRaiserMembership {
-    //     bool enable;
-    //     uint8 varifyType;
-    //     uint256 minAmount;
-    //     address tokenAddress;
-    //     uint256 tokenId;
-    //     address[] whiteList;
-    // }
-
-    // struct VintageVotingInfo {
-    //     uint256 eligibilityType;
-    //     uint256 votingWeightedType;
-    //     uint256 supportType;
-    //     uint256 quorumType;
-    //     uint256 support;
-    //     uint256 quorum;
-    //     uint256 votingPeriod;
-    //     uint256 executingPeriod;
-    // }
-
-    // struct VintageDaoParams {
-    //     string daoName;
-    //     address creator;
-    //     address[] daoFactoriesAddress;
-    //     DaoFactory.Adapter[] enalbeAdapters;
-    //     DaoFactory.Adapter[] adapters1;
-    //     VintageParticipantCapInfo participantCap;
-    //     VintageBackerMembership backerMembership;
-    //     VintageRaiserMembership raiserMembership;
-    //     VintageVotingInfo votingInfo;
-    //     address[] genesisRaisers;
-    // }
-
-    // //create dao
-    // function summonVintageDao1(
-    //     address daoFacAddr,
-    //     string calldata daoName,
-    //     address creator
-    // ) external returns (bool) {
-    //     require(address(this) == msg.sender);
-    //     DaoFactory daoFac = DaoFactory(daoFacAddr);
-    //     daoFac.createDao(daoName, creator);
-    //     address newDaoAddr = daoFac.getDaoAddress(daoName);
-    //     require(
-    //         newDaoAddr != address(0x0),
-    //         "SummmonDao::summonVintageDao::create dao failed"
-    //     );
-    //     emit VintageDaoCreated(daoFacAddr, newDaoAddr, daoName, creator);
-    // }
-
-    // //create new extension and register to dao
-    // function summonVintageDao2(
-    //     address vintageFundingPoolFacAddr,
-    //     address newDaoAddr,
-    //     address creator
-    // ) external returns (bool) {
-    //     require(address(this) == msg.sender);
-    //     //create funding pool extension...
-    //     VintageFundingPoolFactory flexFundingPoolFac = VintageFundingPoolFactory(
-    //             vintageFundingPoolFacAddr
-    //         );
-    //     flexFundingPoolFac.create(newDaoAddr);
-    //     address newVintageFundingPoolExtAddr = flexFundingPoolFac
-    //         .getExtensionAddress(newDaoAddr);
-    //     //add funding pool extension to dao...
-    //     DaoRegistry newDao = DaoRegistry(newDaoAddr);
-    //     newDao.addExtension(
-    //         DaoHelper.VINTAGE_FUNDING_POOL_EXT, // sha3("vintage-funding-pool-ext"),
-    //         IExtension(newVintageFundingPoolExtAddr),
-    //         creator
-    //     );
-    // }
-
-    // //register adapters to dao
-    // function summonVintageDao3(
-    //     address daoFacAddr,
-    //     DaoFactory.Adapter[] calldata enalbeAdapters,
-    //     address newDaoAddr
-    // ) external returns (bool) {
-    //     DaoRegistry newDao = DaoRegistry(newDaoAddr);
-    //     require(address(this) == msg.sender);
-    //     DaoFactory daoFac = DaoFactory(daoFacAddr);
-    //     //add adapters to dao...
-    //     daoFac.addAdapters(newDao, enalbeAdapters);
-    // }
-
-    // // config raiser Membership
-    // function summonVintageDao4(
-    //     bool vintageDaoStewardMembershipEnable,
-    //     uint256[3] memory uint256Params,
-    //     address vintageDaoStewardMembershipTokenAddress,
-    //     address[] calldata vintageDaoRaiserMembershipWhitelist,
-    //     address newDaoAddr
-    // ) external returns (bool) {
-    //     // uint256Params[0] vintageDaoStewardMembershipVarifyType
-    //     // uint256Params[1] vintageDaoStewardMembershipMinHolding
-    //     // uint256Params[2] vintageDaoStewardMembershipInfoTokenId
-    //     DaoRegistry dao = DaoRegistry(newDaoAddr);
-    //     require(address(this) == msg.sender);
-
-    //     //config raiser Membership
-    //     if (vintageDaoStewardMembershipEnable) {
-    //         dao.setConfiguration(DaoHelper.VINTAGE_RAISER_MEMBERSHIP_ENABLE, 1);
-    //         dao.setConfiguration(
-    //             DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TYPE,
-    //             uint256Params[0]
-    //         );
-    //         //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS 4 DEPOSIT
-    //         if (
-    //             uint256Params[0] == 0 ||
-    //             uint256Params[0] == 1 ||
-    //             uint256Params[0] == 2
-    //         ) {
-    //             dao.setConfiguration(
-    //                 DaoHelper.VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING,
-    //                 uint256Params[1]
-    //             );
-    //             dao.setAddressConfiguration(
-    //                 DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS,
-    //                 vintageDaoStewardMembershipTokenAddress
-    //             );
-    //         }
-
-    //         if (uint256Params[0] == 2) {
-    //             dao.setConfiguration(
-    //                 DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKENID,
-    //                 uint256Params[2]
-    //             );
-    //         }
-
-    //         if (uint256Params[0] == 4) {
-    //             dao.setConfiguration(
-    //                 DaoHelper.VINTAGE_RAISER_MEMBERSHIP_MIN_DEPOSIT,
-    //                 uint256Params[1]
-    //             );
-    //         }
-
-    //         if (
-    //             uint256Params[0] == 3 &&
-    //             vintageDaoRaiserMembershipWhitelist.length > 0
-    //         ) {
-    //             VintageRaiserManagementContract raiserManagementAdapt = VintageRaiserManagementContract(
-    //                     dao.getAdapterAddress(
-    //                         DaoHelper.VINTAGE_RAISER_MANAGEMENT
-    //                     )
-    //                 );
-    //             for (
-    //                 uint8 i = 0;
-    //                 i < vintageDaoRaiserMembershipWhitelist.length;
-    //                 i++
-    //             ) {
-    //                 raiserManagementAdapt.registerRaiserWhiteList(
-    //                     dao,
-    //                     vintageDaoRaiserMembershipWhitelist[i]
-    //                 );
-    //             }
-    //         }
-    //     }
-    // }
-
-    // function summonVintageDao5(
-    //     address newDaoAddr,
-    //     uint256[8] calldata votingInfo
-    // ) external returns (bool) {
-    //     DaoRegistry newDao = DaoRegistry(newDaoAddr);
-
-    //     newDao.setConfiguration(
-    //         DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TYPE,
-    //         votingInfo[0]
-    //     );
-    //     newDao.setConfiguration(
-    //         DaoHelper.VINTAGE_VOTING_WEIGHTED_TYPE,
-    //         votingInfo[1]
-    //     );
-    //     newDao.setConfiguration(
-    //         DaoHelper.VINTAGE_VOTING_SUPPORT_TYPE,
-    //         votingInfo[2]
-    //     );
-    //     newDao.setConfiguration(
-    //         DaoHelper.VINTAGE_VOTING_QUORUM_TYPE,
-    //         votingInfo[3]
-    //     );
-    //     newDao.setConfiguration(DaoHelper.QUORUM, votingInfo[4]);
-    //     newDao.setConfiguration(DaoHelper.SUPER_MAJORITY, votingInfo[5]);
-    //     newDao.setConfiguration(DaoHelper.VOTING_PERIOD, votingInfo[6]);
-    //     newDao.setConfiguration(
-    //         DaoHelper.VINTAGE_EXECUTION_PERIOD,
-    //         votingInfo[7]
-    //     );
-    // }
-
-    // function summonVintageDao6(
-    //     address newDaoAddr,
-    //     address[] calldata genesisRaisers
-    // ) external returns (bool) {
-    //     if (genesisRaisers.length > 0) {
-    //         DaoRegistry newDao = DaoRegistry(newDaoAddr);
-    //         for (uint8 i = 0; i < genesisRaisers.length; i++) {
-    //             newDao.potentialNewMember(genesisRaisers[i]);
-    //         }
-    //     }
-    // }
-
-    // struct VintageCall {
-    //     address target;
-    //     bytes callData;
-    // }
-
-    // struct VintageDaoCallLocalVars {
-    //     bytes summonVintageDao1Payload;
-    //     bytes summonVintageDao2Payload;
-    //     bytes summonVintageDao3Payload;
-    //     bytes summonVintageDao4Payload;
-    //     bytes summonVintageDao5Payload;
-    //     bytes summonVintageDao6Payload;
-    //     bool success;
-    //     bytes ret;
-    //     address newDaoAddr;
-    //     VintageCall[5] calls;
-    // }
-
-    // function multiVintageCall(VintageCall[5] memory calls) public {
-    //     // console.log("caller:", msg.sender);
-    //     for (uint256 i = 0; i < calls.length; i++) {
-    //         (bool success, bytes memory ret) = calls[i].target.call(
-    //             calls[i].callData
-    //         );
-    //         require(
-    //             success,
-    //             string(
-    //                 abi.encodePacked(
-    //                     "low-level call of summonVintageDao",
-    //                     Strings.toString(i + 2),
-    //                     " failed"
-    //                 )
-    //             )
-    //         );
-    //     }
-    // }
-
-    // function summonVintageDao(VintageDaoParams calldata params) external {
-    //     VintageDaoCallLocalVars memory vars;
-    //     vars.summonVintageDao1Payload = abi.encodeWithSignature(
-    //         "summonVintageDao1(address,string,address)",
-    //         params.daoFactoriesAddress[0],
-    //         params.daoName,
-    //         params.creator
-    //     );
-
-    //     (vars.success, vars.ret) = address(this).call(
-    //         vars.summonVintageDao1Payload
-    //     );
-    //     require(
-    //         vars.success,
-    //         "low-level call of function summonVintageDao1 failed"
-    //     );
-
-    //     bytes memory getDaoAddressPayload = abi.encodeWithSignature(
-    //         "getDaoAddress(string)",
-    //         params.daoName
-    //     );
-
-    //     (vars.success, vars.ret) = address(params.daoFactoriesAddress[0]).call(
-    //         getDaoAddressPayload
-    //     );
-    //     vars.newDaoAddr = bytesToAddress(vars.ret);
-    //     require(vars.success && vars.newDaoAddr != address(0x0));
-    //     vars.summonVintageDao2Payload = abi.encodeWithSignature(
-    //         "summonVintageDao2(address,address,address)",
-    //         params.daoFactoriesAddress[1],
-    //         vars.newDaoAddr,
-    //         params.creator
-    //     );
-    //     vars.summonVintageDao3Payload = abi.encodeWithSignature(
-    //         "summonVintageDao3(address,(bytes32,address,uint128)[],address)",
-    //         params.daoFactoriesAddress[0],
-    //         params.enalbeAdapters,
-    //         vars.newDaoAddr
-    //     );
-
-    //     uint256[3] memory uint256SummonVintageDao4Params = [
-    //         params.raiserMembership.varifyType,
-    //         params.raiserMembership.minAmount,
-    //         params.raiserMembership.tokenId
-    //     ];
-    //     vars.summonVintageDao4Payload = abi.encodeWithSignature(
-    //         "summonVintageDao4(bool,uint256[3],address,address[],address)",
-    //         params.raiserMembership.enable,
-    //         uint256SummonVintageDao4Params,
-    //         params.raiserMembership.tokenAddress,
-    //         params.raiserMembership.whiteList,
-    //         vars.newDaoAddr
-    //     );
-
-    //     uint256[8] memory uint256SummonVintageDao5Params = [
-    //         params.votingInfo.eligibilityType,
-    //         params.votingInfo.votingWeightedType,
-    //         params.votingInfo.supportType,
-    //         params.votingInfo.quorumType,
-    //         params.votingInfo.quorum,
-    //         params.votingInfo.support,
-    //         params.votingInfo.votingPeriod,
-    //         params.votingInfo.executingPeriod
-    //     ];
-    //     vars.summonVintageDao5Payload = abi.encodeWithSignature(
-    //         "summonVintageDao5(address,uint256[8])",
-    //         vars.newDaoAddr,
-    //         uint256SummonVintageDao5Params
-    //     );
-
-    //     vars.summonVintageDao6Payload = abi.encodeWithSignature(
-    //         "summonVintageDao6(address,address[])",
-    //         vars.newDaoAddr,
-    //         params.genesisRaisers
-    //     );
-
-    //     vars.calls[0] = VintageCall(
-    //         address(this),
-    //         vars.summonVintageDao2Payload
-    //     );
-    //     vars.calls[1] = VintageCall(
-    //         address(this),
-    //         vars.summonVintageDao3Payload
-    //     );
-    //     vars.calls[2] = VintageCall(
-    //         address(this),
-    //         vars.summonVintageDao4Payload
-    //     );
-    //     vars.calls[3] = VintageCall(
-    //         address(this),
-    //         vars.summonVintageDao5Payload
-    //     );
-    //     vars.calls[4] = VintageCall(
-    //         address(this),
-    //         vars.summonVintageDao6Payload
-    //     );
-
-    //     multiVintageCall(vars.calls);
-
-    //     //remove summondaoContract && DaoFacConctract from dao member list
-    //     DaoRegistry newDao = DaoRegistry(vars.newDaoAddr);
-    //     newDao.removeMember(newDao.daoFactory());
-    //     newDao.removeMember(address(this));
-    // }
 
     function bytesToAddress(
         bytes memory bys
