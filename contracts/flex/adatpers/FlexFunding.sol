@@ -294,7 +294,7 @@ contract FlexFundingAdapterContract is
                 "FlexFunding::processProposal::adapter not found"
             );
 
-            vars.voteResult = vars.flexVoting.voteResult(dao, proposalId);
+            (vars.voteResult, , ) = vars.flexVoting.voteResult(dao, proposalId);
             if (vars.voteResult == IFlexVoting.VotingState.PASS) {
                 proposal.state = ProposalStatus.IN_FUND_RAISE_PROGRESS;
                 vars.flexFundingPoolExt.registerPotentialNewFundingProposal(
@@ -334,14 +334,15 @@ contract FlexFundingAdapterContract is
                     vars.proposerReward
             ) {
                 proposal.fundingInfo.finalRaisedAmount = vars.poolBalance;
-                // calculate && update return token amount
-                proposal.fundingInfo.returnTokenAmount =
-                    ((vars.poolBalance -
-                        vars.protocolFee -
-                        vars.managementFee -
-                        vars.proposerReward) / proposal.fundingInfo.price) *
-                    RETRUN_TOKEN_AMOUNT_PRECISION;
+
                 if (proposal.fundingInfo.escrow) {
+                    // calculate && update return token amount
+                    proposal.fundingInfo.returnTokenAmount =
+                        ((vars.poolBalance -
+                            vars.protocolFee -
+                            vars.managementFee -
+                            vars.proposerReward) / proposal.fundingInfo.price) *
+                        RETRUN_TOKEN_AMOUNT_PRECISION;
                     vars.returnTokenAmount = proposal
                         .fundingInfo
                         .returnTokenAmount;

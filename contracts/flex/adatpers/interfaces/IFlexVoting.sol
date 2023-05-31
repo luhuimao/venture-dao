@@ -62,7 +62,7 @@ interface IFlexVoting {
     function voteResult(
         DaoRegistry dao,
         bytes32 proposalId
-    ) external returns (VotingState state);
+    ) external returns (VotingState state, uint256 nbYes, uint256 nbNo);
 
     // function fundingVoteResult(
     //     DaoRegistry dao,

@@ -140,18 +140,21 @@ contract FlexPollingVotingContract is
         address memberAddr = dao.getAddressIfDelegated(msg.sender);
 
         require(vote.votes[memberAddr] == 0, "member has already voted");
-
+        uint128 votingWeight = GovernanceHelper.getFlexPollVotingWeight(
+            dao,
+            msg.sender
+        );
         vote.votes[memberAddr] = voteValue;
 
         if (voteValue == 1) {
-            vote.nbYes += 1;
+            vote.nbYes += votingWeight;
         } else if (voteValue == 2) {
-            vote.nbNo += 1;
+            vote.nbNo += votingWeight;
         }
-        uint256 currentQuorum = 0;
-        uint256 currentSupport = dao.getConfiguration(
-            DaoHelper.FLEX_POLLING_SUPER_MAJORITY
-        );
+        uint256 currentQuorum = vote.nbYes + vote.nbNo;
+        uint256 currentSupport = vote.nbNo > vote.nbYes
+            ? 0
+            : vote.nbYes - vote.nbNo;
         emit SubmitVote(
             address(dao),
             proposalId,
@@ -170,28 +173,34 @@ contract FlexPollingVotingContract is
     function voteResult(
         DaoRegistry dao,
         bytes32 proposalId
-    ) external view override returns (VotingState state) {
+    )
+        external
+        view
+        override
+        returns (VotingState state, uint256 nbYes, uint256 nbNo)
+    {
         Voting storage vote = votes[address(dao)][proposalId];
 
         if (vote.startingTime == 0) {
-            return VotingState.NOT_STARTED;
+            return (VotingState.NOT_STARTED, 0, 0);
         }
 
         if (
             // slither-disable-next-line timestamp
             block.timestamp < vote.stopTime
         ) {
-            return VotingState.IN_PROGRESS;
+            return (VotingState.IN_PROGRESS, 0, 0);
         }
 
-        if (
-            vote.nbYes - vote.nbNo >
-            dao.getConfiguration(DaoHelper.FLEX_POLLING_SUPER_MAJORITY)
-        ) {
-            return VotingState.PASS;
-        } else {
-            return VotingState.NOT_PASS;
-        }
+        uint256 votes = vote.nbYes + vote.nbNo;
+        if (votes <= dao.getConfiguration(DaoHelper.FLEX_POLLING_QUORUM))
+            return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
+
+        uint256 nbYN = vote.nbYes >= vote.nbNo ? vote.nbYes - vote.nbNo : 0;
+        if (nbYN <= dao.getConfiguration(DaoHelper.FLEX_POLLING_SUPER_MAJORITY))
+            return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
+
+        return (VotingState.PASS, vote.nbYes, vote.nbNo);
     }
 
     /**
@@ -236,5 +245,12 @@ contract FlexPollingVotingContract is
         } else {
             return true;
         }
+    }
+
+     function getVotingWeight(
+        DaoRegistry dao,
+        address account
+    ) public view returns (uint128) {
+        return GovernanceHelper.getFlexPollVotingWeight(dao, account);
     }
 }

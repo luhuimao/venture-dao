@@ -167,6 +167,9 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         uint256 vestingStepDuration;
         uint256 vestingSteps;
         address proposerAddr;
+        uint256 bal;
+        uint256 shares;
+        uint256 totalFund;
     }
 
     function noEscrow(
@@ -196,49 +199,62 @@ contract FlexAllocationAdapterContract is AdapterGuard {
             .fundingpool
             .getInvestorsByProposalId(proposalId);
         vars.totalReward = 0;
-
+        vars.totalFund = vars.fundingpool.balanceOf(
+            proposalId,
+            DaoHelper.TOTAL
+        );
         if (allInvestors.length > 0) {
             for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
-                vars.fundingRewards = getFundingRewards(
-                    dao,
+                vars.bal = vars.fundingpool.balanceOf(
                     proposalId,
-                    allInvestors[vars.i],
-                    vars.tokenAmount
+                    allInvestors[vars.i]
                 );
-                //bug fixed: fillter fundingRewards > 0 ;20220614
-                if (vars.fundingRewards > 0) {
+                if (vars.bal > 0) {
+                    vars.shares = ((vars.bal * 1e18) / vars.totalFund);
                     vestingInfos[address(dao)][proposalId][
                         allInvestors[vars.i]
-                    ] = VestingInfo(vars.fundingRewards, false);
-                    vars.totalReward += vars.fundingRewards;
+                    ] = VestingInfo(vars.shares, false);
                 }
+                // vars.fundingRewards = getFundingRewards(
+                //     dao,
+                //     proposalId,
+                //     allInvestors[vars.i],
+                //     vars.tokenAmount
+                // );
+                // //bug fixed: fillter fundingRewards > 0 ;20220614
+                // if (vars.fundingRewards > 0) {
+                //     vestingInfos[address(dao)][proposalId][
+                //         allInvestors[vars.i]
+                //     ] = VestingInfo(vars.fundingRewards, false);
+                //     vars.totalReward += vars.fundingRewards;
+                // }
             }
         }
 
-        vars.proposerBonus = getProposerBonus(
-            dao,
-            proposalId,
-            vars.tokenAmount
-        );
-        (vars.proposerAddr, , , , , , , ) = flexFunding.Proposals(
-            address(dao),
-            proposalId
-        );
+        // vars.proposerBonus = getProposerBonus(
+        //     dao,
+        //     proposalId,
+        //     vars.tokenAmount
+        // );
+        // (vars.proposerAddr, , , , , , , ) = flexFunding.Proposals(
+        //     address(dao),
+        //     proposalId
+        // );
 
-        if (vars.proposerBonus > 0) {
-            vestingInfos[address(dao)][proposalId][
-                vars.proposerAddr
-            ] = VestingInfo(
-                vestingInfos[address(dao)][proposalId][vars.proposerAddr]
-                    .tokenAmount + vars.proposerBonus,
-                false
-            );
-            vars.totalReward += vars.proposerBonus;
-        }
-        require(
-            vars.totalReward <= vars.tokenAmount,
-            "AllocationAdapter::noEscrow::allocate token amount exceeds return token amount"
-        );
+        // if (vars.proposerBonus > 0) {
+        //     vestingInfos[address(dao)][proposalId][
+        //         vars.proposerAddr
+        //     ] = VestingInfo(
+        //         vestingInfos[address(dao)][proposalId][vars.proposerAddr]
+        //             .tokenAmount + vars.proposerBonus,
+        //         false
+        //     );
+        //     vars.totalReward += vars.proposerBonus;
+        // }
+        // require(
+        //     vars.totalReward <= vars.tokenAmount,
+        //     "AllocationAdapter::noEscrow::allocate token amount exceeds return token amount"
+        // );
     }
 
     // uint256Args[0]: tokenAmount

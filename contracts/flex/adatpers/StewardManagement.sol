@@ -121,7 +121,7 @@ contract StewardManagementContract is
         DaoRegistry dao,
         address applicant
     ) external onlyMember(dao) reimbursable(dao) returns (bytes32 proposalId) {
-        require(dao.isMember(applicant), "applicant isnt strward");
+        require(dao.isMember(applicant), "applicant isnt steward");
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -248,9 +248,9 @@ contract StewardManagementContract is
         require(address(flexVotingContract) != address(0), "adapter not found");
 
         IFlexVoting.VotingState voteResult;
-        uint128 nbYes;
-        uint128 nbNo;
-        voteResult = flexVotingContract.voteResult(dao, proposalId);
+        // uint128 nbYes;
+        // uint128 nbNo;
+        (voteResult, , ) = flexVotingContract.voteResult(dao, proposalId);
 
         dao.processProposal(proposalId);
 

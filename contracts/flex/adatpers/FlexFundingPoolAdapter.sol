@@ -114,15 +114,24 @@ contract FlexFundingPoolAdapterContract is
             dao,
             proposalId
         );
-        if (
+        require(
             fundRaiseEndTime > block.timestamp ||
-            ((fundRaiseEndTime < block.timestamp) &&
-                flexFunding.getProposalState(dao, proposalId) ==
-                IFlexFunding.ProposalStatus.FAILED)
-        ) {
-            address token = flexFunding.getTokenByProposalId(dao, proposalId);
-            flexFundingPool.withdraw(proposalId, msg.sender, token, amount);
-        }
+                ((fundRaiseEndTime < block.timestamp) &&
+                    flexFunding.getProposalState(dao, proposalId) ==
+                    IFlexFunding.ProposalStatus.FAILED),
+            "FlexFundingPool::Withdraw::cant withdraw now"
+        );
+        address token = flexFunding.getTokenByProposalId(dao, proposalId);
+        flexFundingPool.withdraw(proposalId, msg.sender, token, amount);
+        // if (
+        //     fundRaiseEndTime > block.timestamp ||
+        //     ((fundRaiseEndTime < block.timestamp) &&
+        //         flexFunding.getProposalState(dao, proposalId) ==
+        //         IFlexFunding.ProposalStatus.FAILED)
+        // ) {
+        //     address token = flexFunding.getTokenByProposalId(dao, proposalId);
+        //     flexFundingPool.withdraw(proposalId, msg.sender, token, amount);
+        // }
         emit WithDraw(address(dao), proposalId, amount, msg.sender);
     }
 

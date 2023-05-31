@@ -146,15 +146,21 @@ contract FlexVotingContract is
         address memberAddr = dao.getAddressIfDelegated(msg.sender);
 
         require(vote.votes[memberAddr] == 0, "member has already voted");
-
+        uint128 votingWeight = GovernanceHelper.getFlexVotingWeight(
+            dao,
+            msg.sender
+        );
         vote.votes[memberAddr] = voteValue;
 
         if (voteValue == 1) {
-            vote.nbYes += 1;
+            vote.nbYes += votingWeight;
         } else if (voteValue == 2) {
-            vote.nbNo += 1;
+            vote.nbNo += votingWeight;
         }
-        uint256 currentQuorum = (vote.nbYes * 100) / (vote.nbYes + vote.nbNo);
+
+        uint256 currentQuorum = (vote.nbYes + vote.nbNo) == 0
+            ? 0
+            : (vote.nbYes * 100) / (vote.nbYes + vote.nbNo);
         uint256 currentSupport = (((vote.nbYes + vote.nbNo) * 100) /
             DaoHelper.getActiveMemberNb(dao));
         emit SubmitVote(
@@ -187,38 +193,71 @@ contract FlexVotingContract is
     function voteResult(
         DaoRegistry dao,
         bytes32 proposalId
-    ) external view override returns (VotingState state) {
+    )
+        external
+        view
+        override
+        returns (VotingState state, uint256 nbYes, uint256 nbNo)
+    {
         Voting storage vote = votes[address(dao)][proposalId];
 
         if (vote.startingTime == 0) {
-            return VotingState.NOT_STARTED;
+            return (VotingState.NOT_STARTED, 0, 0);
         }
 
         if (
             // slither-disable-next-line timestamp
             block.timestamp < vote.stopTime
         ) {
-            return VotingState.IN_PROGRESS;
+            return (VotingState.IN_PROGRESS, 0, 0);
         }
-        // stewards amount * quorum
-        uint256 minVotes = ((DaoHelper.getActiveMemberNb(dao)) *
-            dao.getConfiguration(DaoHelper.QUORUM)) / 100;
+        // 0. - YES / (YES + NO) > X%
+        // 1. - YES - NO > X
+        uint256 supportType = dao.getConfiguration(
+            DaoHelper.FLEX_VOTING_SUPPORT_TYPE
+        );
+        // 0. - (YES + NO) / Total > X%
+        // 1. - YES + NO > X
+        uint256 quorumType = dao.getConfiguration(
+            DaoHelper.FLEX_VOTING_QUORUM_TYPE
+        );
+        uint128 allWeight = getAllStewardWeight(dao);
 
-        unchecked {
+        if (quorumType == 0) {
+            uint256 minVotes = (allWeight *
+                dao.getConfiguration(DaoHelper.QUORUM)) / 100;
+
+            unchecked {
+                uint256 votes = vote.nbYes + vote.nbNo;
+                if (votes <= minVotes)
+                    return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
+            }
+        }
+        if (quorumType == 1) {
             uint256 votes = vote.nbYes + vote.nbNo;
-            if (votes < minVotes) return VotingState.NOT_PASS;
+            if (votes <= dao.getConfiguration(DaoHelper.QUORUM))
+                return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
         }
 
-        // example: 7 yes, 2 no, supermajority = 66
-        // ((7+2) * 66) / 100 = 5.94; 7 yes will pass
-        uint256 minYes = ((vote.nbYes + vote.nbNo) *
-            dao.getConfiguration(DaoHelper.SUPER_MAJORITY)) / 100;
-        // not one vote or voting power is zero should return tie .20220908
-        if (minYes == 0 && vote.nbYes == 0) {
-            return VotingState.TIE;
+        // supermajority check
+        if (supportType == 0) {
+            uint256 votes = vote.nbYes + vote.nbNo;
+            uint256 minYes = (votes *
+                dao.getConfiguration(DaoHelper.SUPER_MAJORITY)) / 100;
+            if (minYes == 0 && vote.nbYes == 0) {
+                return (VotingState.TIE, vote.nbYes, vote.nbNo);
+            }
+
+            if (vote.nbYes <= minYes)
+                return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
         }
-        if (vote.nbYes >= minYes) return VotingState.PASS;
-        else return VotingState.NOT_PASS;
+        if (supportType == 1) {
+            uint256 nbYN = vote.nbYes >= vote.nbNo ? vote.nbYes - vote.nbNo : 0;
+            if (nbYN <= dao.getConfiguration(DaoHelper.SUPER_MAJORITY))
+                return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
+        }
+
+        return (VotingState.PASS, vote.nbYes, vote.nbNo);
     }
 
     function checkIfVoted(
@@ -232,5 +271,19 @@ contract FlexVotingContract is
         } else {
             return true;
         }
+    }
+
+    function getAllStewardWeight(
+        DaoRegistry dao
+    ) public view returns (uint128) {
+        uint128 allWeight = GovernanceHelper.getAllStewardVotingWeight(dao);
+        return allWeight;
+    }
+
+    function getVotingWeight(
+        DaoRegistry dao,
+        address account
+    ) public view returns (uint128) {
+        return GovernanceHelper.getFlexVotingWeight(dao, account);
     }
 }
