@@ -1,14 +1,14 @@
 pragma solidity ^0.8.0;
 
 // SPDX-License-Identifier: MIT
-
 import "../../core/DaoRegistry.sol";
 import "../extensions/fundingpool/VintageFundingPool.sol";
-// import "../extensions/gpdao/GPDao.sol";
 import "../../helpers/DaoHelper.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "./VintageFundRaise.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
 import "./VintageEscrowFund.sol";
@@ -48,15 +48,10 @@ contract VintageFundingPoolAdapterContract is
     // DaoHelper.FundRaiseState public fundRaisingState;
     mapping(address => DaoHelper.FundRaiseState) public daoFundRaisingStates;
     uint256 public protocolFee = (3 * 1e18) / 1000; // 0.3%
+    mapping(address => EnumerableSet.AddressSet) investorMembershipWhiteList;
 
     mapping(address => mapping(uint256 => EnumerableSet.AddressSet)) fundParticipants;
     event OwnerChanged(address oldOwner, address newOwner);
-
-    /// @dev Prevents calling a function from anyone except the address returned by owner
-    modifier onlyDaoFactoryOwner(DaoRegistry dao) {
-        require(msg.sender == DaoHelper.daoFactoryAddress(dao));
-        _;
-    }
 
     event Deposit(address daoAddress, uint256 amount, address account);
     event WithDraw(address daoAddress, uint256 amount, address account);
@@ -66,6 +61,57 @@ contract VintageFundingPoolAdapterContract is
         address account,
         uint256 redemptionFee
     );
+
+    event ClearFund(address dao, uint256 amount, address executor);
+
+    /// @dev Prevents calling a function from anyone except the address returned by owner
+    modifier onlyDaoFactoryOwner(DaoRegistry dao) {
+        require(msg.sender == DaoHelper.daoFactoryAddress(dao));
+        _;
+    }
+    modifier investorMembershipCheck(DaoRegistry dao, address account) {
+        if (
+            dao.getConfiguration(
+                DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_ENABLE
+            ) == 1
+        ) {
+            uint256 itype = dao.getConfiguration(
+                DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_TYPE
+            ); //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
+            address token = dao.getAddressConfiguration(
+                DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS
+            );
+            uint256 minHolding = dao.getConfiguration(
+                DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_MIN_HOLDING
+            );
+            uint256 tokenId = dao.getConfiguration(
+                DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_TOKENID
+            );
+            if (itype == 0) {
+                require(
+                    IERC20(token).balanceOf(account) >= minHolding,
+                    "Vintage Deposit::dont meet min erc20 token holding requirment"
+                );
+            } else if (itype == 1) {
+                require(
+                    IERC721(token).balanceOf(account) >= minHolding,
+                    "Vintage Deposit:dont meet min erc721 token holding requirment"
+                );
+            } else if (itype == 2) {
+                require(
+                    IERC1155(token).balanceOf(account, tokenId) >=
+                        minHolding,
+                    "Vintage Deposit:dont meet min erc1155 token holding requirment"
+                );
+            } else if (itype == 3) {
+                require(
+                    ifInvestorMembershipWhiteList(dao, account),
+                    "Vintage Deposit:: not in whitelist"
+                );
+            } else {}
+        }
+        _;
+    }
 
     /**
      * @notice Updates the DAO registry with the new configurations if valid.
@@ -83,6 +129,15 @@ contract VintageFundingPoolAdapterContract is
     ) external reentrancyGuard(dao) onlyDaoFactoryOwner(dao) {
         require(feeProtocol < 1e18 && feeProtocol > 0);
         protocolFee = feeProtocol;
+    }
+
+    function registerInvestorWhiteList(
+        DaoRegistry dao,
+        address account
+    ) external onlyMember(dao) {
+        if (!investorMembershipWhiteList[address(dao)].contains(account)) {
+            investorMembershipWhiteList[address(dao)].add(account);
+        }
     }
 
     /**
@@ -180,6 +235,7 @@ contract VintageFundingPoolAdapterContract is
         address tokenAddr = fundingpool.getFundRaisingTokenAddress();
         address[] memory allInvestors = fundingpool.getInvestors();
         if (allInvestors.length > 0) {
+            uint256 escrwoAmount = 0;
             for (uint8 i = 0; i < allInvestors.length; i++) {
                 uint256 bal = balanceOf(dao, allInvestors[i]);
                 if (bal > 0) {
@@ -209,8 +265,10 @@ contract VintageFundingPoolAdapterContract is
                         tokenAddr,
                         bal
                     );
+                    escrwoAmount += bal;
                 }
             }
+            emit ClearFund(address(dao), escrwoAmount, msg.sender);
         }
     }
 
@@ -224,7 +282,7 @@ contract VintageFundingPoolAdapterContract is
     function deposit(
         DaoRegistry dao,
         uint256 amount
-    ) external reimbursable(dao) {
+    ) external reimbursable(dao) investorMembershipCheck(dao, msg.sender) {
         require(
             amount > 0,
             "FundingPoolAdapter::Deposit:: invalid deposit amount"
@@ -507,5 +565,18 @@ contract VintageFundingPoolAdapterContract is
             i += 1;
         }
         return false;
+    }
+
+    function getInvestorMembershipWhiteList(
+        DaoRegistry dao
+    ) public view returns (address[] memory) {
+        return investorMembershipWhiteList[address(dao)].values();
+    }
+
+    function ifInvestorMembershipWhiteList(
+        DaoRegistry dao,
+        address account
+    ) public view returns (bool) {
+        return investorMembershipWhiteList[address(dao)].contains(account);
     }
 }

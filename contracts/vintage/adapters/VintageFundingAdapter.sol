@@ -191,8 +191,7 @@ contract VintageFundingAdapterContract is
         require(
             vars.fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
                 DaoHelper.FundRaiseState.DONE &&
-                block.timestamp >
-                vars.fundingPoolAdapt.getFundStartTime(dao) &&
+                block.timestamp > vars.fundingPoolAdapt.getFundStartTime(dao) &&
                 block.timestamp < vars.fundingPoolAdapt.getFundEndTime(dao),
             "Funding::submitProposal::only can submit proposal in investing period"
         );
@@ -221,6 +220,10 @@ contract VintageFundingAdapterContract is
                     params.vestInfo.vetingEndTime &&
                     params.vestInfo.vestingInterval > 0,
                 "Funding::submitProposal::vesting time invalid"
+            );
+            require(
+                params.returnTokenInfo.price > 0,
+                "Funding::submitProposal::price must > 0"
             );
             vars.returnTokenAmount =
                 (vars.fundingAmount * DaoHelper.TOKEN_AMOUNT_PRECISION) /
@@ -292,9 +295,21 @@ contract VintageFundingAdapterContract is
         uint256 returnTokenAmount,
         address proposer
     ) internal {
+        VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
+            );
+        uint256 totalFund = (params.fundingInfo.fundingAmount *
+            PERCENTAGE_PRECISION) /
+            (PERCENTAGE_PRECISION -
+                (fundingPoolAdapt.protocolFee() +
+                    dao.getConfiguration(DaoHelper.MANAGEMENT_FEE) +
+                    dao.getConfiguration(
+                        DaoHelper.VINTAGE_PROPOSER_TOKEN_REWARD_RADIO
+                    )));
         proposals[address(dao)][proposalId] = ProposalInfo(
             params.fundingInfo.fundingToken,
             params.fundingInfo.fundingAmount,
+            totalFund,
             params.returnTokenInfo.price,
             params.fundingInfo.receiver,
             proposer,
@@ -379,16 +394,16 @@ contract VintageFundingAdapterContract is
         //Removes the proposalId at the beginning of the queue
         proposalQueue.popFront();
 
-        // didn't meet the requested fund requirement(requesting fund + management fee + protocol fee)
-        if (
-            vars.fundingpoolExt.totalSupply() <
-            proposal.fundingAmount +
-                ((proposal.fundingAmount *
-                    dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) /
-                    PERCENTAGE_PRECISION) +
-                ((proposal.fundingAmount *
-                    vars.fundingPoolAdapt.protocolFee()) / PERCENTAGE_PRECISION)
-        ) {
+        // didn't meet the requested fund requirement(requesting fund + management fee + protocol fee + proposer reward)
+        // vars.totalFund =
+        //     (proposal.fundingAmount * PERCENTAGE_PRECISION) /
+        //     (PERCENTAGE_PRECISION -
+        //         (vars.fundingPoolAdapt.protocolFee() +
+        //             dao.getConfiguration(DaoHelper.MANAGEMENT_FEE) +
+        //             dao.getConfiguration(
+        //                 DaoHelper.VINTAGE_PROPOSER_TOKEN_REWARD_RADIO
+        //             )));
+        if (vars.fundingpoolExt.totalSupply() < proposal.totalAmount) {
             proposal.status = IVintageFunding.ProposalState.FAILED;
             emit StartVote(
                 address(dao),
@@ -399,6 +414,7 @@ contract VintageFundingAdapterContract is
             );
             return false;
         }
+        // proposal.totalAmount = vars.totalFund;
         if (proposal.proposalReturnTokenInfo.escrow) {
             //lock project token
             vars.rel = _lockProjectTeamToken(
@@ -409,8 +425,6 @@ contract VintageFundingAdapterContract is
             );
             // lock project token failed
             if (!vars.rel) {
-                console.log(2222);
-
                 proposal.status = IVintageFunding.ProposalState.FAILED;
                 emit StartVote(
                     address(dao),
@@ -522,28 +536,22 @@ contract VintageFundingAdapterContract is
             );
             //insufficient funds failed the distribution
             vars.managementFee =
-                (proposal.fundingAmount *
+                (proposal.totalAmount *
                     dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) /
                 PERCENTAGE_PRECISION;
 
             vars.protocolFee =
-                (proposal.fundingAmount * vars.fundingPoolAdapt.protocolFee()) /
+                (proposal.totalAmount * vars.fundingPoolAdapt.protocolFee()) /
                 PERCENTAGE_PRECISION;
 
             vars.proposerFundReward =
-                (proposal.fundingAmount *
+                (proposal.totalAmount *
                     dao.getConfiguration(
                         DaoHelper.VINTAGE_PROPOSER_FUND_REWARD_RADIO
                     )) /
                 PERCENTAGE_PRECISION;
 
-            if (
-                vars.fundingpool.totalSupply() <
-                proposal.fundingAmount +
-                    vars.managementFee +
-                    vars.protocolFee +
-                    vars.proposerFundReward
-            ) {
+            if (vars.fundingpool.totalSupply() < proposal.totalAmount) {
                 proposal.status = IVintageFunding.ProposalState.FAILED;
             } else {
                 //process1. distribute fund to project team address

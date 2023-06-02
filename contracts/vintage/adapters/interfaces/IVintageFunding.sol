@@ -56,6 +56,7 @@ interface IVintageFunding {
     struct ProposalInfo {
         address fundingToken; // The token in which the project team to trade off.
         uint256 fundingAmount; // The amount project team requested.
+        uint256 totalAmount;
         uint256 price;
         address recipientAddr; // The receiver address that will receive the funds.
         address proposer;
@@ -134,6 +135,7 @@ interface IVintageFunding {
         uint256 _propsalStopVotingTimestamp;
         bool rel;
         IVintageVoting votingContract;
+        uint256 totalFund;
     }
 
     struct ProcessProposalLocalVars {

@@ -81,6 +81,22 @@ library DaoHelper {
     /* ********************************
     VINTAGE SETTING 
     *********************************/
+    //investor membership
+    bytes32 internal constant VINTAGE_INVESTOR_MEMBERSHIP_ENABLE =
+        keccak256("VINTAGE_INVESTOR_MEMBERSHIP_ENABLE");
+
+    bytes32 internal constant VINTAGE_INVESTOR_MEMBERSHIP_TYPE =
+        keccak256("VINTAGE_INVESTOR_MEMBERSHIP_TYPE");
+
+    bytes32 internal constant VINTAGE_INVESTOR_MEMBERSHIP_MIN_HOLDING =
+        keccak256("VINTAGE_INVESTOR_MEMBERSHIP_MIN_HOLDING");
+
+    bytes32 internal constant VINTAGE_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS =
+        keccak256("VINTAGE_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS");
+
+    bytes32 internal constant VINTAGE_INVESTOR_MEMBERSHIP_TOKENID =
+        keccak256("VINTAGE_INVESTOR_MEMBERSHIP_TOKENID");
+
     //Vintage dao raiser mambership
     bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_ENABLE =
         keccak256("VINTAGE_RAISER_MEMBERSHIP_ENABLE");
@@ -97,6 +113,10 @@ library DaoHelper {
 
     bytes32 internal constant VINTAGE_VOTING_ELIGIBILITY_TYPE =
         keccak256("VINTAGE_VOTING_ELIGIBILITY_TYPE");
+    bytes32 internal constant VINTAGE_VOTING_ELIGIBILITY_TOKEN_ADDRESS =
+        keccak256("VINTAGE_VOTING_ELIGIBILITY_TOKEN_ADDRESS");
+    bytes32 internal constant VINTAGE_VOTING_ELIGIBILITY_TOKEN_ID =
+        keccak256("VINTAGE_VOTING_ELIGIBILITY_TOKEN_ID");
     bytes32 internal constant VINTAGE_VOTING_WEIGHTED_TYPE =
         keccak256("VINTAGE_VOTING_WEIGHTED_TYPE");
     bytes32 internal constant VINTAGE_VOTING_SUPPORT_TYPE =
@@ -119,6 +139,36 @@ library DaoHelper {
     FLEX SETTING 
     *********************************/
     // flex setting
+    bytes32 internal constant FLEX_VOTING_ELIGIBILITY_TYPE =
+        keccak256("FLEX_VOTING_ELIGIBILITY_TYPE");
+
+    bytes32 internal constant FLEX_VOTING_ELIGIBILITY_TOKEN_ID =
+        keccak256("FLEX_VOTING_ELIGIBILITY_TOKEN_ID");
+
+    bytes32 internal constant FLEX_VOTING_ELIGIBILITY_TOKEN_ADDRESS =
+        keccak256("FLEX_VOTING_ELIGIBILITY_TOKEN_ADDRESS");
+
+    bytes32 internal constant FLEX_VOTING_WEIGHTED_TYPE =
+        keccak256("FLEX_VOTING_WEIGHTED_TYPE");
+
+    bytes32 internal constant FLEX_POLL_VOTING_ELIGIBILITY_TYPE =
+        keccak256("FLEX_POLL_VOTING_ELIGIBILITY_TYPE");
+
+    bytes32 internal constant FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ID =
+        keccak256("FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ID");
+
+    bytes32 internal constant FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ADDRESS =
+        keccak256("FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ADDRESS");
+
+    bytes32 internal constant FLEX_POLL_VOTING_WEIGHTED_TYPE =
+        keccak256("FLEX_POLL_VOTING_WEIGHTED_TYPE");
+
+    bytes32 internal constant FLEX_VOTING_SUPPORT_TYPE =
+        keccak256("FLEX_VOTING_SUPPORT_TYPE");
+
+    bytes32 internal constant FLEX_VOTING_QUORUM_TYPE =
+        keccak256("FLEX_VOTING_QUORUM_TYPE");
+
     bytes32 internal constant FLEX_FUNDRAISE_STYLE =
         keccak256("FLEX_FUNDRAISE_STYLE");
     // ---- flex dao priority deposit membersip

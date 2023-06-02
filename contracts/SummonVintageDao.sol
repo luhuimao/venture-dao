@@ -10,6 +10,7 @@ import "./helpers/DaoHelper.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./vintage/extensions/fundingpool/VintageFundingPoolFactory.sol";
 import "./vintage/adapters/VintageRaiserManagement.sol";
+import "./vintage/adapters/VintageFundingPoolAdapter.sol";
 import "hardhat/console.sol";
 
 contract SummonVintageDao {
@@ -44,6 +45,8 @@ contract SummonVintageDao {
 
     struct VintageVotingInfo {
         uint256 eligibilityType;
+        address tokenAddress;
+        uint256 tokenID;
         uint256 votingWeightedType;
         uint256 supportType;
         uint256 quorumType;
@@ -216,9 +219,11 @@ contract SummonVintageDao {
         }
     }
 
+    //config voting params
     function summonVintageDao6(
         address newDaoAddr,
-        uint256[8] calldata votingInfo
+        address tokenAddress,
+        uint256[9] calldata votingInfo
     ) external returns (bool) {
         DaoRegistry newDao = DaoRegistry(newDaoAddr);
 
@@ -226,27 +231,36 @@ contract SummonVintageDao {
             DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TYPE,
             votingInfo[0]
         );
+        newDao.setAddressConfiguration(
+            DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TOKEN_ADDRESS,
+            tokenAddress
+        );
         newDao.setConfiguration(
-            DaoHelper.VINTAGE_VOTING_WEIGHTED_TYPE,
+            DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TOKEN_ID,
             votingInfo[1]
         );
         newDao.setConfiguration(
-            DaoHelper.VINTAGE_VOTING_SUPPORT_TYPE,
+            DaoHelper.VINTAGE_VOTING_WEIGHTED_TYPE,
             votingInfo[2]
         );
         newDao.setConfiguration(
-            DaoHelper.VINTAGE_VOTING_QUORUM_TYPE,
+            DaoHelper.VINTAGE_VOTING_SUPPORT_TYPE,
             votingInfo[3]
         );
-        newDao.setConfiguration(DaoHelper.QUORUM, votingInfo[4]);
-        newDao.setConfiguration(DaoHelper.SUPER_MAJORITY, votingInfo[5]);
-        newDao.setConfiguration(DaoHelper.VOTING_PERIOD, votingInfo[6]);
+        newDao.setConfiguration(
+            DaoHelper.VINTAGE_VOTING_QUORUM_TYPE,
+            votingInfo[4]
+        );
+        newDao.setConfiguration(DaoHelper.QUORUM, votingInfo[5]);
+        newDao.setConfiguration(DaoHelper.SUPER_MAJORITY, votingInfo[6]);
+        newDao.setConfiguration(DaoHelper.VOTING_PERIOD, votingInfo[7]);
         newDao.setConfiguration(
             DaoHelper.PROPOSAL_EXECUTE_DURATION,
-            votingInfo[7]
+            votingInfo[8]
         );
     }
 
+    //config genesis raiser
     function summonVintageDao7(
         address newDaoAddr,
         address[] calldata genesisRaisers
@@ -255,6 +269,70 @@ contract SummonVintageDao {
             DaoRegistry newDao = DaoRegistry(newDaoAddr);
             for (uint8 i = 0; i < genesisRaisers.length; i++) {
                 newDao.potentialNewMember(genesisRaisers[i]);
+            }
+        }
+    }
+
+    //config investor membership
+    function summonVintageDao8(
+        bool enable,
+        address newDaoAddr,
+        uint8 varifyType,
+        uint256 minHolding,
+        uint256 tokenId,
+        address tokenAddress,
+        address[] calldata vintageDaoInvestorMembershipWhitelist
+    ) external returns (bool) {
+        DaoRegistry dao = DaoRegistry(newDaoAddr);
+        require(address(this) == msg.sender);
+
+        if (enable) {
+            dao.setConfiguration(
+                DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_ENABLE,
+                1
+            );
+            dao.setConfiguration(
+                DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_TYPE,
+                varifyType
+            );
+            //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
+            if (varifyType == 0 || varifyType == 1 || varifyType == 2) {
+                dao.setConfiguration(
+                    DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_MIN_HOLDING,
+                    minHolding
+                );
+                dao.setAddressConfiguration(
+                    DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS,
+                    tokenAddress
+                );
+            }
+
+            if (varifyType == 2) {
+                dao.setConfiguration(
+                    DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_TOKENID,
+                    tokenId
+                );
+            }
+
+            if (
+                varifyType == 3 &&
+                vintageDaoInvestorMembershipWhitelist.length > 0
+            ) {
+                VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
+                        dao.getAdapterAddress(
+                            DaoHelper.VINTAGE_FUNDING_POOL_ADAPT
+                        )
+                    );
+                for (
+                    uint8 i = 0;
+                    i < vintageDaoInvestorMembershipWhitelist.length;
+                    i++
+                ) {
+                    fundingPoolAdapt.registerInvestorWhiteList(
+                        dao,
+                        vintageDaoInvestorMembershipWhitelist[i]
+                    );
+                }
             }
         }
     }
@@ -272,14 +350,14 @@ contract SummonVintageDao {
         bytes summonVintageDao5Payload;
         bytes summonVintageDao6Payload;
         bytes summonVintageDao7Payload;
+        bytes summonVintageDao8Payload;
         bool success;
         bytes ret;
         address newDaoAddr;
-        VintageCall[6] calls;
+        VintageCall[7] calls;
     }
 
-    function multiVintageCall(VintageCall[6] memory calls) public {
-        // console.log("caller:", msg.sender);
+    function multiVintageCall(VintageCall[7] memory calls) public {
         for (uint256 i = 0; i < calls.length; i++) {
             (bool success, bytes memory ret) = calls[i].target.call(
                 calls[i].callData
@@ -359,8 +437,9 @@ contract SummonVintageDao {
             vars.newDaoAddr
         );
 
-        uint256[8] memory uint256SummonVintageDao6Params = [
+        uint256[9] memory uint256SummonVintageDao6Params = [
             params.votingInfo.eligibilityType,
+            params.votingInfo.tokenID,
             params.votingInfo.votingWeightedType,
             params.votingInfo.supportType,
             params.votingInfo.quorumType,
@@ -370,8 +449,9 @@ contract SummonVintageDao {
             params.votingInfo.executingPeriod
         ];
         vars.summonVintageDao6Payload = abi.encodeWithSignature(
-            "summonVintageDao6(address,uint256[8])",
+            "summonVintageDao6(address,address,uint256[9])",
             vars.newDaoAddr,
+            params.votingInfo.tokenAddress,
             uint256SummonVintageDao6Params
         );
 
@@ -379,6 +459,17 @@ contract SummonVintageDao {
             "summonVintageDao7(address,address[])",
             vars.newDaoAddr,
             params.genesisRaisers
+        );
+
+        vars.summonVintageDao8Payload = abi.encodeWithSignature(
+            "summonVintageDao8(bool,address,uint8,uint256,uint256,address,address[])",
+            params.backerMembership.enable,
+            vars.newDaoAddr,
+            params.backerMembership.varifyType,
+            params.backerMembership.minAmount,
+            params.backerMembership.tokenId,
+            params.backerMembership.tokenAddress,
+            params.backerMembership.whiteList
         );
 
         vars.calls[0] = VintageCall(
@@ -404,6 +495,10 @@ contract SummonVintageDao {
         vars.calls[5] = VintageCall(
             address(this),
             vars.summonVintageDao7Payload
+        );
+        vars.calls[6] = VintageCall(
+            address(this),
+            vars.summonVintageDao8Payload
         );
 
         multiVintageCall(vars.calls);

@@ -100,7 +100,7 @@ contract VintageVesting is IFuroVesting, Multicall, BoringOwnable {
             recipientAddr
         );
 
-        (, , , , , , vars.vestInfo, vars.returnTokenInfo, ) = vars
+        (, , , , , , , vars.vestInfo, vars.returnTokenInfo, ) = vars
             .vintageFundingAdapt
             .proposals(address(dao), proposalId);
         // if (

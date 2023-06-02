@@ -331,10 +331,10 @@ contract VintageFundRaiseAdapterContract is
             DaoHelper.RETURN_DURATION,
             proposalInfo.timesInfo.returnDuration
         );
-        //12 proposerRewardRatio
+        // //12 proposerRewardRatio
         // dao.setConfiguration(
         //     DaoHelper.REWARD_FOR_PROPOSER,
-        //     proposalInfo.feeInfo.proposerRewardRatio
+        //     proposalInfo.proposerReward.fundFromInverstor
         // );
         //13 managementFeeRatio
         dao.setConfiguration(
