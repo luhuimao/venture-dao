@@ -99,8 +99,7 @@ contract VintageFundingPoolAdapterContract is
                 );
             } else if (itype == 2) {
                 require(
-                    IERC1155(token).balanceOf(account, tokenId) >=
-                        minHolding,
+                    IERC1155(token).balanceOf(account, tokenId) >= minHolding,
                     "Vintage Deposit:dont meet min erc1155 token holding requirment"
                 );
             } else if (itype == 3) {
@@ -336,6 +335,14 @@ contract VintageFundingPoolAdapterContract is
             !fundParticipants[address(dao)][fundRounds].contains(msg.sender)
         ) revert("exceed max participants amount");
         address token = fundingpool.getFundRaisingTokenAddress();
+        require(
+            IERC20(token).balanceOf(msg.sender) >= amount,
+            "Deposit::not enough fund"
+        );
+        require(
+            IERC20(token).allowance(msg.sender, address(this)) >= amount,
+            "Deposit::not enough allowance"
+        );
         IERC20(token).transferFrom(msg.sender, address(this), amount);
         IERC20(token).approve(
             dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT),
