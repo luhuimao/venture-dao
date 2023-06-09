@@ -10,7 +10,7 @@ import "../extensions/gpdao/GPDao.sol";
 import "../adapters/interfaces/IGPVoting.sol";
 import "../helpers/DaoHelper.sol";
 import "./modifiers/Reimbursable.sol";
-import "./voting/GPVoting.sol";
+// import "./voting/GPVoting.sol";
 import "./FundRaise.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
@@ -66,11 +66,10 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         uint32 superMajority
     ) external onlyAdapter(dao) {}
 
-    function setProtocolFee(DaoRegistry dao, uint256 feeProtocol)
-        external
-        reentrancyGuard(dao)
-        onlyDaoFactoryOwner(dao)
-    {
+    function setProtocolFee(
+        DaoRegistry dao,
+        uint256 feeProtocol
+    ) external reentrancyGuard(dao) onlyDaoFactoryOwner(dao) {
         require(feeProtocol < 100 && feeProtocol > 0);
         protocolFee = feeProtocol;
     }
@@ -82,10 +81,10 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
      * @param dao The DAO address.
      * @param amount The amount to withdraw.
      */
-    function withdraw(DaoRegistry dao, uint256 amount)
-        external
-        reimbursable(dao)
-    {
+    function withdraw(
+        DaoRegistry dao,
+        uint256 amount
+    ) external reimbursable(dao) {
         processFundRaise(dao);
         require(
             daoFundRaisingStates[address(dao)] ==
@@ -157,10 +156,10 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
      * @param dao The DAO address.
      * @param amount The amount user depoist to foundingpool.
      */
-    function deposit(DaoRegistry dao, uint256 amount)
-        external
-        reimbursable(dao)
-    {
+    function deposit(
+        DaoRegistry dao,
+        uint256 amount
+    ) external reimbursable(dao) {
         require(
             amount > 0,
             "FundingPoolAdapter::Deposit:: invalid deposit amount"
@@ -273,11 +272,10 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         fundParticipants[address(dao)][fundRound].remove(account);
     }
 
-    function balanceOf(DaoRegistry dao, address investorAddr)
-        public
-        view
-        returns (uint256)
-    {
+    function balanceOf(
+        DaoRegistry dao,
+        address investorAddr
+    ) public view returns (uint256) {
         FundingPoolExtension fundingpool = FundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
         );
@@ -298,57 +296,45 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         return fundingpool.balanceOf(address(DaoHelper.GP_POOL));
     }
 
-    function getFundRaisingMaxAmount(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getFundRaisingMaxAmount(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.FUND_RAISING_MAX);
     }
 
-    function getMinInvestmentForLP(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getMinInvestmentForLP(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return
             dao.getConfiguration(
                 DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP
             );
     }
 
-    function getMaxInvestmentForLP(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getMaxInvestmentForLP(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return
             dao.getConfiguration(
                 DaoHelper.FUND_RAISING_MAX_INVESTMENT_AMOUNT_OF_LP
             );
     }
 
-    function getFundRaisingTarget(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getFundRaisingTarget(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.FUND_RAISING_TARGET);
     }
 
-    function getFundRaiseWindowOpenTime(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getFundRaiseWindowOpenTime(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN);
     }
 
-    function getFundRaiseWindowCloseTime(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getFundRaiseWindowCloseTime(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END);
     }
 
@@ -360,19 +346,15 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         return dao.getConfiguration(DaoHelper.FUND_END_TIME);
     }
 
-    function getFundReturnDuration(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getFundReturnDuration(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.RETURN_DURATION);
     }
 
-    function latestRedempteTime(DaoRegistry dao)
-        public
-        view
-        returns (uint256, uint256)
-    {
+    function latestRedempteTime(
+        DaoRegistry dao
+    ) public view returns (uint256, uint256) {
         uint256 fundStartTime = dao.getConfiguration(DaoHelper.FUND_START_TIME);
         uint256 fundEndTime = dao.getConfiguration(DaoHelper.FUND_END_TIME);
         uint256 redemptionPeriod = dao.getConfiguration(
@@ -403,11 +385,9 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         return (redemptionStartTime, redemptionEndTime);
     }
 
-    function getRedemptDuration(DaoRegistry dao)
-        external
-        view
-        returns (uint256)
-    {
+    function getRedemptDuration(
+        DaoRegistry dao
+    ) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION_DURATION);
     }
 
@@ -415,11 +395,10 @@ contract FundingPoolAdapterContract is AdapterGuard, MemberGuard, Reimbursable {
         return dao.getConfiguration(DaoHelper.FUND_RAISING_REDEMPTION_PERIOD);
     }
 
-    function ifInRedemptionPeriod(DaoRegistry dao, uint256 timeStamp)
-        public
-        view
-        returns (bool)
-    {
+    function ifInRedemptionPeriod(
+        DaoRegistry dao,
+        uint256 timeStamp
+    ) public view returns (bool) {
         uint256 fundStartTime = dao.getConfiguration(DaoHelper.FUND_START_TIME);
         uint256 fundEndTime = dao.getConfiguration(DaoHelper.FUND_END_TIME);
         uint256 redemptionPeriod = dao.getConfiguration(

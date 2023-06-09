@@ -9,7 +9,7 @@ import "./modifiers/Reimbursable.sol";
 import "./interfaces/IGPVoting.sol";
 import "./AllocationAdapterV2.sol";
 import "./interfaces/IFunding.sol";
-import "./voting/GPVoting.sol";
+// import "./voting/GPVoting.sol";
 import "../helpers/DaoHelper.sol";
 import "./FundingPoolAdapter.sol";
 import "../extensions/fundingpool/FundingPool.sol";

@@ -6,7 +6,7 @@ import "../../core/DaoRegistry.sol";
 import "../../guards/AdapterGuard.sol";
 import "../../guards/RaiserGuard.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
-import "./interfaces/IFundRaise.sol";
+import "./interfaces/IVintageFundRaise.sol";
 import "./interfaces/IVintageVoting.sol";
 import "./VintageVoting.sol";
 import "../../helpers/FairShareHelper.sol";
@@ -43,7 +43,7 @@ SOFTWARE.
  */
 
 contract VintageFundRaiseAdapterContract is
-    IFundRaise,
+    IVintageFundRaise,
     AdapterGuard,
     RaiserGuard,
     Reimbursable

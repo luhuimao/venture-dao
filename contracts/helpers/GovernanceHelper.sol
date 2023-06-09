@@ -9,6 +9,7 @@ import "../extensions/fundingpool/FundingPool.sol";
 import "../extensions/gpdao/GPDao.sol";
 import "../extensions/token/erc20/ERC20TokenExtension.sol";
 import "../vintage/extensions/fundingpool/VintageFundingPool.sol";
+import "../vintage/adapters/VintageFundingAdapter.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import "hardhat/console.sol";
@@ -240,12 +241,26 @@ library GovernanceHelper {
                 return 1;
             } else if (etype == 4) {
                 //DEPOSIT
-                VintageFundingPoolExtension vintageFundingPoolExt = VintageFundingPoolExtension(
-                        dao.getExtensionAddress(
-                            DaoHelper.VINTAGE_FUNDING_POOL_EXT
+                VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
+                        dao.getAdapterAddress(
+                            DaoHelper.VINTAGE_FUNDING_POOL_ADAPT
                         )
                     );
-                bal = vintageFundingPoolExt.balanceOf(account) / 10 ** 18;
+                if (
+                    fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
+                    DaoHelper.FundRaiseState.DONE ||
+                    fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
+                    DaoHelper.FundRaiseState.IN_PROGRESS
+                ) {
+                    // VintageFundingPoolExtension vintageFundingPoolExt = VintageFundingPoolExtension(
+                    //         dao.getExtensionAddress(
+                    //             DaoHelper.VINTAGE_FUNDING_POOL_EXT
+                    //         )
+                    //     );
+                    bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;
+                } else {
+                    return 1;
+                }
             } else {
                 return 0;
             }
@@ -281,12 +296,32 @@ library GovernanceHelper {
                 return 1;
             } else if (etype == 4) {
                 //DEPOSIT
-                VintageFundingPoolExtension vintageFundingPoolExt = VintageFundingPoolExtension(
-                        dao.getExtensionAddress(
-                            DaoHelper.VINTAGE_FUNDING_POOL_EXT
+                VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
+                        dao.getAdapterAddress(
+                            DaoHelper.VINTAGE_FUNDING_POOL_ADAPT
                         )
                     );
-                bal = vintageFundingPoolExt.balanceOf(account) / 10 ** 18;
+                // VintageFundingPoolExtension vintageFundingPoolExt = VintageFundingPoolExtension(
+                //         dao.getExtensionAddress(
+                //             DaoHelper.VINTAGE_FUNDING_POOL_EXT
+                //         )
+                //     );
+
+                if (
+                    fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
+                    DaoHelper.FundRaiseState.DONE ||
+                    fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
+                    DaoHelper.FundRaiseState.IN_PROGRESS
+                ) {
+                    // VintageFundingPoolExtension vintageFundingPoolExt = VintageFundingPoolExtension(
+                    //         dao.getExtensionAddress(
+                    //             DaoHelper.VINTAGE_FUNDING_POOL_EXT
+                    //         )
+                    //     );
+                    bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;
+                } else {
+                    return 1;
+                }
             } else {
                 return 0;
             }
@@ -439,6 +474,4 @@ library GovernanceHelper {
             return 0;
         }
     }
-
-    
 }

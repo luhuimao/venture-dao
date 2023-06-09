@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import "../core/DaoRegistry.sol";
 import "../extensions/gpdao/GPDao.sol";
 import "../adapters/interfaces/IGPVoting.sol";
-import "./voting/GPVoting.sol";
+// import "./voting/GPVoting.sol";
 // import "../adapters/modifiers/Reimbursable.sol";
 // import "../guards/AdapterGuard.sol";
 import "../helpers/DaoHelper.sol";

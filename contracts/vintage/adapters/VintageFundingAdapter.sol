@@ -148,13 +148,13 @@ contract VintageFundingAdapterContract is
             erc20.balanceOf(address(this)) >= lockedTokenAmount,
             "VintageFunding::unLockProjectTeamToken::Insufficient Fund"
         );
-        IVintageVoting votingContract = IVintageVoting(
-            dao.votingAdapter(proposalId)
-        );
-        (IVintageVoting.VotingState voteResult, , ) = votingContract.voteResult(
-            dao,
-            proposalId
-        );
+        // IVintageVoting votingContract = IVintageVoting(
+        //     dao.votingAdapter(proposalId)
+        // );
+        // (IVintageVoting.VotingState voteResult, , ) = votingContract.voteResult(
+        //     dao,
+        //     proposalId
+        // );
         require(
             proposal.status == IVintageFunding.ProposalState.FAILED,
             "VintageFunding::unLockProjectTeamToken::not satisfied"
@@ -631,11 +631,11 @@ contract VintageFundingAdapterContract is
         VintageFundingPoolExtension fundingpoolExt = VintageFundingPoolExtension(
                 dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
             );
-        address fundRaiseTokenAddr = fundingpoolExt
-            .getFundRaisingTokenAddress();
+        // address fundRaiseTokenAddr = fundingpoolExt
+        //     .getFundRaisingTokenAddress();
         fundingpoolExt.distributeFunds(
             recipientAddr,
-            fundRaiseTokenAddr,
+            fundingpoolExt.getFundRaisingTokenAddress(),
             fundingAmount
         );
     }
@@ -647,12 +647,12 @@ contract VintageFundingAdapterContract is
         VintageFundingPoolExtension fundingpoolExt = VintageFundingPoolExtension(
                 dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
             );
-        address fundRaiseTokenAddr = fundingpoolExt
-            .getFundRaisingTokenAddress();
+        // address fundRaiseTokenAddr = fundingpoolExt
+        //     .getFundRaisingTokenAddress();
 
         fundingpoolExt.distributeFunds(
             dao.getAddressConfiguration(DaoHelper.GP_ADDRESS),
-            fundRaiseTokenAddr,
+            fundingpoolExt.getFundRaisingTokenAddress(),
             managementFee
         );
     }
@@ -665,11 +665,11 @@ contract VintageFundingAdapterContract is
                 dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
             );
 
-        address fundRaiseTokenAddr = fundingpoolExt
-            .getFundRaisingTokenAddress();
+        // address fundRaiseTokenAddr = fundingpoolExt
+        //     .getFundRaisingTokenAddress();
         fundingpoolExt.distributeFunds(
             protocolAddress,
-            fundRaiseTokenAddr,
+            fundingpoolExt.getFundRaisingTokenAddress(),
             protocolFee
         );
     }
@@ -683,12 +683,12 @@ contract VintageFundingAdapterContract is
                 dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
             );
 
-        address fundRaiseTokenAddr = fundingpoolExt
-            .getFundRaisingTokenAddress();
+        // address fundRaiseTokenAddr = fundingpoolExt
+        //     .getFundRaisingTokenAddress();
 
         fundingpoolExt.distributeFunds(
             proposer,
-            fundRaiseTokenAddr,
+            fundingpoolExt.getFundRaisingTokenAddress(),
             proposerFundReward
         );
     }
@@ -706,11 +706,11 @@ contract VintageFundingAdapterContract is
         VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
                 dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
             );
-        address fundRaiseTokenAddr = fundingpoolExt
-            .getFundRaisingTokenAddress();
+        // address fundRaiseTokenAddr = fundingpoolExt
+        //     .getFundRaisingTokenAddress();
 
         fundingpoolExt.subtractAllFromBalance(
-            fundRaiseTokenAddr,
+            fundingpoolExt.getFundRaisingTokenAddress(),
             fundingAmount + protocolFee + managementFee + proposerFundReward
         );
     }
