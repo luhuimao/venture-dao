@@ -59,8 +59,8 @@ contract VintageFundingAdapterContract is
     mapping(address => bytes32) public ongoingProposal;
     // vote types for proposal
     // mapping(bytes32 => DaoHelper.VoteType) public proposalVoteTypes;
-
-    DoubleEndedQueue.Bytes32Deque public proposalQueue;
+    mapping(address => DoubleEndedQueue.Bytes32Deque) public proposalQueue;
+    // DoubleEndedQueue.Bytes32Deque public proposalQueue;
 
     string constant PROPOSALID_PREFIX = "Funding#";
     uint256 public proposalIds = 1;
@@ -79,19 +79,6 @@ contract VintageFundingAdapterContract is
         address _protocolAddress
     ) external reentrancyGuard(dao) onlyDaoFactoryOwner(dao) {
         protocolAddress = _protocolAddress;
-    }
-
-    // /**
-    //  * @notice Configures the DAO with the Voting and Gracing periods.
-    //  */
-    function configureDao(DaoRegistry dao) external onlyAdapter(dao) {
-        // dao.setConfiguration(DaoHelper.PROPOSAL_DURATION, proposalDuration);
-        // dao.setConfiguration(DaoHelper.PROPOSAL_INTERVAL, proposalInterval);
-        // dao.setConfiguration(
-        //     DaoHelper.PROPOSAL_EXECUTE_DURATION,
-        //     proposalExecuteDurantion
-        // );
-        // emit ConfigureDao(votingPeriod, gracePeriod);
     }
 
     /**
@@ -148,13 +135,7 @@ contract VintageFundingAdapterContract is
             erc20.balanceOf(address(this)) >= lockedTokenAmount,
             "VintageFunding::unLockProjectTeamToken::Insufficient Fund"
         );
-        // IVintageVoting votingContract = IVintageVoting(
-        //     dao.votingAdapter(proposalId)
-        // );
-        // (IVintageVoting.VotingState voteResult, , ) = votingContract.voteResult(
-        //     dao,
-        //     proposalId
-        // );
+
         require(
             proposal.status == IVintageFunding.ProposalState.FAILED,
             "VintageFunding::unLockProjectTeamToken::not satisfied"
@@ -273,7 +254,7 @@ contract VintageFundingAdapterContract is
         );
 
         //Inserts proposal at the end of the queue.
-        proposalQueue.pushBack(vars.proposalId);
+        proposalQueue[address(dao)].pushBack(vars.proposalId);
 
         proposalIds += 1;
         emit ProposalCreated(
@@ -344,13 +325,13 @@ contract VintageFundingAdapterContract is
         bytes32 proposalId
     ) external reimbursable(dao) onlyRaiser(dao) returns (bool) {
         //  queue is empty
-        if (proposalQueue.length() <= 0) {
+        if (proposalQueue[address(dao)].length() <= 0) {
             return false;
         }
 
         //proposalId must get from begining of the queue
         require(
-            proposalId == proposalQueue.front(),
+            proposalId == proposalQueue[address(dao)].front(),
             "Funding::startVotingProcess::Invalid ProposalId"
         );
         StartVotingLocalVars memory vars;
@@ -392,17 +373,8 @@ contract VintageFundingAdapterContract is
             return false;
 
         //Removes the proposalId at the beginning of the queue
-        proposalQueue.popFront();
+        proposalQueue[address(dao)].popFront();
 
-        // didn't meet the requested fund requirement(requesting fund + management fee + protocol fee + proposer reward)
-        // vars.totalFund =
-        //     (proposal.fundingAmount * PERCENTAGE_PRECISION) /
-        //     (PERCENTAGE_PRECISION -
-        //         (vars.fundingPoolAdapt.protocolFee() +
-        //             dao.getConfiguration(DaoHelper.MANAGEMENT_FEE) +
-        //             dao.getConfiguration(
-        //                 DaoHelper.VINTAGE_PROPOSER_TOKEN_REWARD_RADIO
-        //             )));
         if (vars.fundingpoolExt.totalSupply() < proposal.totalAmount) {
             proposal.status = IVintageFunding.ProposalState.FAILED;
             emit StartVote(
@@ -741,4 +713,14 @@ contract VintageFundingAdapterContract is
     /**
      * Public read-only functions
      */
+
+    function getFrontProposalId(
+        DaoRegistry dao
+    ) external view returns (bytes32) {
+        return proposalQueue[address(dao)].front();
+    }
+
+    function getQueueLength(DaoRegistry dao) external view returns (uint256) {
+        return proposalQueue[address(dao)].length();
+    }
 }
