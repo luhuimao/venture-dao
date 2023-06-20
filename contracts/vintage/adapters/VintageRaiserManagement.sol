@@ -46,7 +46,11 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
     event ProposalProcessed(
         address daoAddr,
         bytes32 proposalId,
-        ProposalState state
+        ProposalState state,
+        uint256 voteResult,
+        uint128 allVotingWeight,
+        uint128 nbYes,
+        uint128 nbNo
     );
 
     // proposals per dao
@@ -339,8 +343,17 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         } else {
             revert("proposal has not been voted on yet");
         }
+        uint128 allGPsWeight = GovernanceHelper.getAllRaiserVotingWeight(dao);
 
-        emit ProposalProcessed(address(dao), proposalId, proposal.state);
+        emit ProposalProcessed(
+            address(dao),
+            proposalId,
+            proposal.state,
+            uint256(voteResult),
+            allGPsWeight,
+            nbYes,
+            nbNo
+        );
     }
 
     function quit(DaoRegistry dao) external onlyMember(dao) {

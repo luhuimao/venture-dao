@@ -263,7 +263,17 @@ contract VintageFundRaiseAdapterContract is
         } else {
             revert("FundRaise::processProposal::voting not finalized");
         }
-        emit proposalExecuted(address(dao), proposalId, proposalDetails.state);
+        uint128 allGPsWeight = GovernanceHelper.getAllRaiserVotingWeight(dao);
+
+        emit proposalExecuted(
+            address(dao),
+            proposalId,
+            proposalDetails.state,
+            allGPsWeight,
+            vars.nbYes,
+            vars.nbNo,
+            uint256(vars.voteResult)
+        );
     }
 
     function setFundRaiseConfiguration(
