@@ -366,13 +366,17 @@ contract VintageFundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         uint256 amount
     ) external hasExtensionAccess(AclFlag.DISTRIBUTE_FUNDS) {
         require(amount > 0, "FundingPool::distributeFunds::amount must > 0");
-        require(
-            IERC20(tokenAddr).balanceOf(address(this)) >= amount,
-            "FundingPool::distributeFunds::insufficient fund"
-        );
-        IERC20(tokenAddr).safeTransfer(recipientAddr, amount);
+        uint256 exactAmount = amount;
+        // require(
+        //     IERC20(tokenAddr).balanceOf(address(this)) >= amount,
+        //     "FundingPool::distributeFunds::insufficient fund"
+        // );
+        if (amount > IERC20(tokenAddr).balanceOf(address(this))) {
+            exactAmount = IERC20(tokenAddr).balanceOf(address(this));
+        }
+        IERC20(tokenAddr).safeTransfer(recipientAddr, exactAmount);
 
-        emit DistributeFund(recipientAddr, tokenAddr, amount);
+        emit DistributeFund(recipientAddr, tokenAddr, exactAmount);
     }
 
     function updateTotalGPsBalance(

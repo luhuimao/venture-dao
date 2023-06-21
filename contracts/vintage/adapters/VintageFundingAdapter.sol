@@ -325,10 +325,7 @@ contract VintageFundingAdapterContract is
         bytes32 proposalId
     ) external reimbursable(dao) onlyRaiser(dao) returns (bool) {
         //  queue is empty
-        if (proposalQueue[address(dao)].length() <= 0) {
-            return false;
-        }
-
+        require(getQueueLength(dao) > 0, "Funding::Queue length must > 0");
         //proposalId must get from begining of the queue
         require(
             proposalId == proposalQueue[address(dao)].front(),
@@ -347,9 +344,6 @@ contract VintageFundingAdapterContract is
             );
         }
 
-        vars.fundingpoolExt = VintageFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
-        );
         vars.fundingPoolAdapt = VintageFundingPoolAdapterContract(
             dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
         );
@@ -364,18 +358,22 @@ contract VintageFundingAdapterContract is
                 vars._propsalStopVotingTimestamp +
                     dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION)
             ),
-            "Funding::startVotingProcess::cant start vote now"
+            "Funding::startVotingProcess::meet redempte period"
         );
 
         ProposalInfo storage proposal = proposals[address(dao)][proposalId];
 
-        if (proposal.status != IVintageFunding.ProposalState.IN_QUEUE)
-            return false;
-
+        // if (proposal.status != IVintageFunding.ProposalState.IN_QUEUE)
+        //     return false;
+        require(
+            proposal.status == IVintageFunding.ProposalState.IN_QUEUE,
+            "Funding::startVotingProcess::proposal state not satisfied"
+        );
         //Removes the proposalId at the beginning of the queue
         proposalQueue[address(dao)].popFront();
 
-        if (vars.fundingpoolExt.totalSupply() < proposal.totalAmount) {
+        //fund inefficient
+        if (vars.fundingPoolAdapt.poolBalance(dao) < proposal.totalAmount) {
             proposal.status = IVintageFunding.ProposalState.FAILED;
             emit StartVote(
                 address(dao),
@@ -386,7 +384,7 @@ contract VintageFundingAdapterContract is
             );
             return false;
         }
-        // proposal.totalAmount = vars.totalFund;
+
         if (proposal.proposalReturnTokenInfo.escrow) {
             //lock project token
             vars.rel = _lockProjectTeamToken(
@@ -714,13 +712,15 @@ contract VintageFundingAdapterContract is
      * Public read-only functions
      */
 
-    function getFrontProposalId(
-        DaoRegistry dao
-    ) external view returns (bytes32) {
-        return proposalQueue[address(dao)].front();
+    function getFrontProposalId(DaoRegistry dao) public view returns (bytes32) {
+        if (!proposalQueue[address(dao)].empty())
+            return proposalQueue[address(dao)].front();
+        else return 0x0;
     }
 
-    function getQueueLength(DaoRegistry dao) external view returns (uint256) {
-        return proposalQueue[address(dao)].length();
+    function getQueueLength(DaoRegistry dao) public view returns (uint256) {
+        if (!proposalQueue[address(dao)].empty())
+            return proposalQueue[address(dao)].length();
+        else return 0;
     }
 }

@@ -40,9 +40,13 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
     ) external reimbursable(dao) {
         uint256 amount = escrowFunds[address(dao)][token][msg.sender].amount;
         require(amount > 0, "no fund to withdraw");
-        IERC20(token).safeTransfer(msg.sender, amount);
+        uint256 exactAmount = amount;
+        if (IERC20(token).balanceOf(address(this)) < amount) {
+            exactAmount = IERC20(token).balanceOf(address(this));
+        }
+        IERC20(token).safeTransfer(msg.sender, exactAmount);
         escrowFunds[address(dao)][token][msg.sender].amount = 0;
-        emit WithDraw(address(dao), token, msg.sender, amount);
+        emit WithDraw(address(dao), token, msg.sender, exactAmount);
     }
 
     function escrowFundFromFundingPool(

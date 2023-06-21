@@ -147,7 +147,11 @@ interface IVintageFundRaise {
     event proposalExecuted(
         address daoAddr,
         bytes32 proposalId,
-        ProposalState state
+        ProposalState state,
+        uint128 allVotingWeight,
+        uint128 nbYes,
+        uint128 nbNo,
+        uint256 voteResult
     );
 
     /*

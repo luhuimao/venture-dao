@@ -152,7 +152,13 @@ contract VintageFundingPoolAdapterContract is
     ) external reimbursable(dao) {
         processFundRaise(dao);
         require(
-            daoFundRaisingStates[address(dao)] ==
+            (daoFundRaisingStates[address(dao)] ==
+                DaoHelper.FundRaiseState.IN_PROGRESS &&
+                block.timestamp <
+                dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) &&
+                block.timestamp >
+                dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN)) ||
+                daoFundRaisingStates[address(dao)] ==
                 DaoHelper.FundRaiseState.FAILED ||
                 (daoFundRaisingStates[address(dao)] ==
                     DaoHelper.FundRaiseState.DONE &&
@@ -218,8 +224,11 @@ contract VintageFundingPoolAdapterContract is
 
     function clearFund(DaoRegistry dao) external reimbursable(dao) {
         require(
-            daoFundRaisingStates[address(dao)] ==
-                DaoHelper.FundRaiseState.FAILED ||
+            (daoFundRaisingStates[address(dao)] ==
+                DaoHelper.FundRaiseState.FAILED &&
+                block.timestamp >
+                dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) +
+                    dao.getConfiguration(DaoHelper.RETURN_DURATION)) ||
                 (daoFundRaisingStates[address(dao)] ==
                     DaoHelper.FundRaiseState.DONE &&
                     block.timestamp >
@@ -360,7 +369,7 @@ contract VintageFundingPoolAdapterContract is
         );
         uint256 fundRaiseEndTime = dao.getConfiguration(
             DaoHelper.FUND_RAISING_WINDOW_END
-        );
+        );  
         if (
             block.timestamp > fundRaiseEndTime &&
             daoFundRaisingStates[address(dao)] ==
