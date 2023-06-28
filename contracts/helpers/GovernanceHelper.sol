@@ -10,6 +10,8 @@ import "../extensions/gpdao/GPDao.sol";
 import "../extensions/token/erc20/ERC20TokenExtension.sol";
 import "../vintage/extensions/fundingpool/VintageFundingPool.sol";
 import "../vintage/adapters/VintageFundingAdapter.sol";
+import "../vintage/adapters/VintageFundRaise.sol";
+import "../vintage/adapters/VintageVoting.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import "hardhat/console.sol";
@@ -49,67 +51,67 @@ library GovernanceHelper {
      * @param proposalId The proposal id to retrieve the governance token address if configured.
      * @param snapshot The snapshot id to check the balance of the governance token for that member configured.
      */
-    function getVotingWeight(
-        DaoRegistry dao,
-        address voterAddr,
-        bytes32 proposalId,
-        uint256 snapshot
-    ) internal view returns (uint256) {
-        (address adapterAddress, ) = dao.proposals(proposalId);
+    // function getVotingWeight(
+    //     DaoRegistry dao,
+    //     address voterAddr,
+    //     bytes32 proposalId,
+    //     uint256 snapshot
+    // ) internal view returns (uint256) {
+    //     (address adapterAddress, ) = dao.proposals(proposalId);
 
-        // 1st - if there is any governance token configuration
-        // for the adapter address, then read the voting weight based on that token.
-        address governanceToken = dao.getAddressConfiguration(
-            keccak256(abi.encodePacked(ROLE_PREFIX, adapterAddress))
-        );
-        if (DaoHelper.isNotZeroAddress(governanceToken)) {
-            return getVotingWeight(dao, governanceToken, voterAddr, snapshot);
-        }
+    //     // 1st - if there is any governance token configuration
+    //     // for the adapter address, then read the voting weight based on that token.
+    //     address governanceToken = dao.getAddressConfiguration(
+    //         keccak256(abi.encodePacked(ROLE_PREFIX, adapterAddress))
+    //     );
+    //     if (DaoHelper.isNotZeroAddress(governanceToken)) {
+    //         return getVotingWeight(dao, governanceToken, voterAddr, snapshot);
+    //     }
 
-        // 2nd - if there is no governance token configured for the adapter,
-        // then check if exists a default governance token.
-        // If so, then read the voting weight based on that token.
-        governanceToken = dao.getAddressConfiguration(DEFAULT_GOV_TOKEN_CFG);
-        if (DaoHelper.isNotZeroAddress(governanceToken)) {
-            return getVotingWeight(dao, governanceToken, voterAddr, snapshot);
-        }
+    //     // 2nd - if there is no governance token configured for the adapter,
+    //     // then check if exists a default governance token.
+    //     // If so, then read the voting weight based on that token.
+    //     governanceToken = dao.getAddressConfiguration(DEFAULT_GOV_TOKEN_CFG);
+    //     if (DaoHelper.isNotZeroAddress(governanceToken)) {
+    //         return getVotingWeight(dao, governanceToken, voterAddr, snapshot);
+    //     }
 
-        // 3rd - if none of the previous options are available, assume the
-        // governance token is UNITS, then read the voting weight based on that token.
-        return
-            BankExtension(dao.getExtensionAddress(DaoHelper.BANK))
-                .getPriorAmount(voterAddr, DaoHelper.UNITS, snapshot);
-    }
+    //     // 3rd - if none of the previous options are available, assume the
+    //     // governance token is UNITS, then read the voting weight based on that token.
+    //     return
+    //         BankExtension(dao.getExtensionAddress(DaoHelper.BANK))
+    //             .getPriorAmount(voterAddr, DaoHelper.UNITS, snapshot);
+    // }
 
-    function getVotingWeight(
-        DaoRegistry dao,
-        address governanceToken,
-        address voterAddr,
-        uint256 snapshot
-    ) internal view returns (uint256) {
-        BankExtension bank = BankExtension(
-            dao.getExtensionAddress(DaoHelper.BANK)
-        );
-        if (bank.isInternalToken(governanceToken)) {
-            return bank.getPriorAmount(voterAddr, governanceToken, snapshot);
-        }
+    // function getVotingWeight(
+    //     DaoRegistry dao,
+    //     address governanceToken,
+    //     address voterAddr,
+    //     uint256 snapshot
+    // ) internal view returns (uint256) {
+    //     BankExtension bank = BankExtension(
+    //         dao.getExtensionAddress(DaoHelper.BANK)
+    //     );
+    //     if (bank.isInternalToken(governanceToken)) {
+    //         return bank.getPriorAmount(voterAddr, governanceToken, snapshot);
+    //     }
 
-        // The external token must implement the getPriorAmount function,
-        // otherwise this call will fail and revert the voting process.
-        // The actual revert does not show a clear reason, so we catch the error
-        // and revert with a better error message.
-        // slither-disable-next-line unused-return
-        try
-            ERC20Extension(governanceToken).getPriorAmount(voterAddr, snapshot)
-        returns (
-            // slither-disable-next-line uninitialized-local,variable-scope
-            uint256 votingWeight
-        ) {
-            return votingWeight;
-        } catch {
-            revert("getPriorAmount not implemented");
-        }
-    }
+    //     // The external token must implement the getPriorAmount function,
+    //     // otherwise this call will fail and revert the voting process.
+    //     // The actual revert does not show a clear reason, so we catch the error
+    //     // and revert with a better error message.
+    //     // slither-disable-next-line unused-return
+    //     try
+    //         ERC20Extension(governanceToken).getPriorAmount(voterAddr, snapshot)
+    //     returns (
+    //         // slither-disable-next-line uninitialized-local,variable-scope
+    //         uint256 votingWeight
+    //     ) {
+    //         return votingWeight;
+    //     } catch {
+    //         revert("getPriorAmount not implemented");
+    //     }
+    // }
 
     function getAllGPVotingWeight(
         DaoRegistry dao,
@@ -165,35 +167,60 @@ library GovernanceHelper {
         return weight;
     }
 
-    function getRaiserDepositVotingWeight(
+    // function getRaiserDepositVotingWeight(
+    //     DaoRegistry dao,
+    //     address voterAddr
+    // ) internal view returns (uint128) {
+    //     VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
+    //         dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
+    //     );
+    //     uint256 balanceInEther = fundingpool.balanceOf(voterAddr) / 10 ** 18;
+    //     //need to fix 2022.6.14
+    //     if (balanceInEther <= 0) {
+    //         return 0;
+    //     }
+    //     if (balanceInEther >= 9223372036854775807) {
+    //         return 50;
+    //     }
+
+    //     uint128 weight = ABDKMath64x64.toUInt(
+    //         ABDKMath64x64.log_2(ABDKMath64x64.fromUInt(balanceInEther))
+    //     );
+    //     return weight;
+    // }
+
+    // function getAllRaiserVotingWeight(
+    //     DaoRegistry dao
+    // ) internal view returns (uint128) {
+    //     address[] memory allRaisers = dao.getAllSteward();
+    //     uint128 allRaiserweight;
+    //     for (uint8 i = 0; i < allRaisers.length; i++) {
+    //         allRaiserweight += getVintageVotingWeight(dao, allRaisers[i]);
+    //     }
+    //     return allRaiserweight;
+    // }
+
+    function getVintageAllRaiserVotingWeightByProposalId(
         DaoRegistry dao,
-        address voterAddr
-    ) internal view returns (uint128) {
-        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
-        );
-        uint256 balanceInEther = fundingpool.balanceOf(voterAddr) / 10 ** 18;
-        //need to fix 2022.6.14
-        if (balanceInEther <= 0) {
-            return 0;
-        }
-        if (balanceInEther >= 9223372036854775807) {
-            return 50;
-        }
-
-        uint128 weight = ABDKMath64x64.toUInt(
-            ABDKMath64x64.log_2(ABDKMath64x64.fromUInt(balanceInEther))
-        );
-        return weight;
-    }
-
-    function getAllRaiserVotingWeight(
-        DaoRegistry dao
+        bytes32 proposalId
     ) internal view returns (uint128) {
         address[] memory allRaisers = dao.getAllSteward();
         uint128 allRaiserweight;
+        VintageVotingContract vintageVotingAdapt = VintageVotingContract(
+            dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
+        );
         for (uint8 i = 0; i < allRaisers.length; i++) {
-            allRaiserweight += getVintageVotingWeight(dao, allRaisers[i]);
+            if (
+                vintageVotingAdapt.checkIfVoted(dao, proposalId, allRaisers[i])
+            ) {
+                allRaiserweight += vintageVotingAdapt.voteWeights(
+                    address(dao),
+                    proposalId,
+                    allRaisers[i]
+                );
+            } else {
+                allRaiserweight += getVintageVotingWeight(dao, allRaisers[i]);
+            }
         }
         return allRaiserweight;
     }
@@ -213,6 +240,12 @@ library GovernanceHelper {
         DaoRegistry dao,
         address account
     ) internal view returns (uint128) {
+        VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
+            );
+        VintageFundRaiseAdapterContract newFundAdapt = VintageFundRaiseAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
+            );
         uint256 etype = dao.getConfiguration(
             DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TYPE
         ); // 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
@@ -241,22 +274,12 @@ library GovernanceHelper {
                 return 1;
             } else if (etype == 4) {
                 //DEPOSIT
-                VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
-                        dao.getAdapterAddress(
-                            DaoHelper.VINTAGE_FUNDING_POOL_ADAPT
-                        )
-                    );
+
                 if (
                     fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
-                    DaoHelper.FundRaiseState.DONE ||
-                    fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
-                    DaoHelper.FundRaiseState.IN_PROGRESS
+                    DaoHelper.FundRaiseState.DONE &&
+                    newFundAdapt.createdFundCounter(address(dao)) >= 1
                 ) {
-                    // VintageFundingPoolExtension vintageFundingPoolExt = VintageFundingPoolExtension(
-                    //         dao.getExtensionAddress(
-                    //             DaoHelper.VINTAGE_FUNDING_POOL_EXT
-                    //         )
-                    //     );
                     bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;
                 } else {
                     return 1;
@@ -296,28 +319,11 @@ library GovernanceHelper {
                 return 1;
             } else if (etype == 4) {
                 //DEPOSIT
-                VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
-                        dao.getAdapterAddress(
-                            DaoHelper.VINTAGE_FUNDING_POOL_ADAPT
-                        )
-                    );
-                // VintageFundingPoolExtension vintageFundingPoolExt = VintageFundingPoolExtension(
-                //         dao.getExtensionAddress(
-                //             DaoHelper.VINTAGE_FUNDING_POOL_EXT
-                //         )
-                //     );
-
                 if (
                     fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
-                    DaoHelper.FundRaiseState.DONE ||
-                    fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
-                    DaoHelper.FundRaiseState.IN_PROGRESS
+                    DaoHelper.FundRaiseState.DONE &&
+                    newFundAdapt.createdFundCounter(address(dao)) >= 1
                 ) {
-                    // VintageFundingPoolExtension vintageFundingPoolExt = VintageFundingPoolExtension(
-                    //         dao.getExtensionAddress(
-                    //             DaoHelper.VINTAGE_FUNDING_POOL_EXT
-                    //         )
-                    //     );
                     bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;
                 } else {
                     return 1;

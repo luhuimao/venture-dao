@@ -58,9 +58,7 @@ contract VintageFundingAdapterContract is
     // Keeps track of the latest ongoing distribution proposal per DAO to ensure only 1 proposal can be processed at a time.
     mapping(address => bytes32) public ongoingProposal;
     // vote types for proposal
-    // mapping(bytes32 => DaoHelper.VoteType) public proposalVoteTypes;
     mapping(address => DoubleEndedQueue.Bytes32Deque) public proposalQueue;
-    // DoubleEndedQueue.Bytes32Deque public proposalQueue;
 
     string constant PROPOSALID_PREFIX = "Funding#";
     uint256 public proposalIds = 1;
@@ -490,7 +488,8 @@ contract VintageFundingAdapterContract is
             "Funding::processProposal::adapter not found"
         );
 
-        vars.allVotingWeight = GovernanceHelper.getAllRaiserVotingWeight(dao);
+        vars.allVotingWeight = GovernanceHelper
+            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
         (vars.voteResult, vars.nbYes, vars.nbNo) = vars
             .votingContract
             .voteResult(dao, proposalId);
@@ -498,9 +497,9 @@ contract VintageFundingAdapterContract is
         if (vars.voteResult == IVintageVoting.VotingState.PASS) {
             proposal.status = IVintageFunding.ProposalState.IN_EXECUTE_PROGRESS;
             ongoingProposal[address(dao)] = proposalId;
-            vars.fundRaiseTokenAddr = vars
-                .fundingpool
-                .getFundRaisingTokenAddress();
+            // vars.fundRaiseTokenAddr = vars
+            //     .fundingpool
+            //     .getFundRaisingTokenAddress();
             vars.fundingPoolAdapt = VintageFundingPoolAdapterContract(
                 dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
             );

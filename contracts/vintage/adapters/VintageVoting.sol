@@ -290,7 +290,11 @@ contract VintageVotingContract is
         );
         // 0. - (YES + NO) / Total > X%
         // 1. - YES + NO > X
-        uint128 allRaisersWeight = getAllRaiserWeight(dao);
+
+        // uint128 allRaisersWeight = getAllRaiserWeight(dao);
+
+        uint128 allRaisersWeight = GovernanceHelper
+            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
         // rule out any failed quorums
         if (vintageQuorumType == 0) {
             uint256 minVotes = (allRaisersWeight *
@@ -342,7 +346,8 @@ contract VintageVotingContract is
     }
 
     function getAllRaiserWeight(DaoRegistry dao) public view returns (uint128) {
-        uint128 allGPsWeight = GovernanceHelper.getAllRaiserVotingWeight(dao);
+        uint128 allGPsWeight = GovernanceHelper
+            .getVintageAllRaiserVotingWeightByProposalId(dao, 0x0);
         return allGPsWeight;
     }
 

@@ -50,7 +50,11 @@ contract StewardManagementContract is
     event ProposalProcessed(
         address daoAddr,
         bytes32 proposalId,
-        ProposalState state
+        ProposalState state,
+        uint128 allVotingWeight,
+        uint256 nbYes,
+        uint256 nbNo,
+        uint256 voteResult
     );
 
     // proposals per dao
@@ -248,9 +252,12 @@ contract StewardManagementContract is
         require(address(flexVotingContract) != address(0), "adapter not found");
 
         IFlexVoting.VotingState voteResult;
-        // uint128 nbYes;
-        // uint128 nbNo;
-        (voteResult, , ) = flexVotingContract.voteResult(dao, proposalId);
+        uint256 nbYes;
+        uint256 nbNo;
+        (voteResult, nbYes, nbNo) = flexVotingContract.voteResult(
+            dao,
+            proposalId
+        );
 
         dao.processProposal(proposalId);
 
@@ -275,8 +282,16 @@ contract StewardManagementContract is
         } else {
             revert("proposal has not been voted on yet");
         }
-
-        emit ProposalProcessed(address(dao), proposalId, proposal.state);
+        uint128 allWeight = GovernanceHelper.getAllStewardVotingWeight(dao);
+        emit ProposalProcessed(
+            address(dao),
+            proposalId,
+            proposal.state,
+            allWeight,
+            nbYes,
+            nbNo,
+            uint256(voteResult)
+        );
     }
 
     function quit(DaoRegistry dao) external onlyMember(dao) {
