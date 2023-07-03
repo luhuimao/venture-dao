@@ -192,10 +192,10 @@ contract VintageAllocationAdapterContract is AdapterGuard {
             vars.tokenAmount
         );
 
-        // approve from Allocation adapter contract to streaming payment contract
+        // approve from Allocation adapter contract to vesting contract
         vars.oldAllowance = IERC20(tokenAddress).allowance(
             address(this),
-            dao.getAdapterAddress(DaoHelper.VINTAGE_VESTING_ADAPTER)
+            dao.getAdapterAddress(DaoHelper.BEN_TO_BOX)
         );
         vars.newAllowance = vars.oldAllowance + vars.tokenAmount;
         IERC20(tokenAddress).approve(

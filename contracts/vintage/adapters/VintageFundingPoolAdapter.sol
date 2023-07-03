@@ -213,10 +213,10 @@ contract VintageFundingPoolAdapterContract is
             VintageFundRaiseAdapterContract fundRaiseContract = VintageFundRaiseAdapterContract(
                     dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
                 );
-            uint256 fundRounds = fundRaiseContract.createdFundCounter(
+            uint256 fundRoundCounter = fundRaiseContract.createdFundCounter(
                 address(dao)
             );
-            _removeFundParticipant(dao, msg.sender, fundRounds);
+            _removeFundParticipant(dao, msg.sender, fundRoundCounter);
         }
 
         emit WithDraw(address(dao), amount - redemptionFee, msg.sender);
@@ -242,6 +242,13 @@ contract VintageFundingPoolAdapterContract is
 
         address tokenAddr = fundingpool.getFundRaisingTokenAddress();
         address[] memory allInvestors = fundingpool.getInvestors();
+
+        VintageFundRaiseAdapterContract fundRaiseContract = VintageFundRaiseAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
+            );
+        uint256 fundRoundCounter = fundRaiseContract.createdFundCounter(
+            address(dao)
+        );
         if (allInvestors.length > 0) {
             uint256 escrwoAmount = 0;
             for (uint8 i = 0; i < allInvestors.length; i++) {
@@ -255,6 +262,7 @@ contract VintageFundingPoolAdapterContract is
                     //1. escrow Fund From Funding Pool
                     escrowFundAdapter.escrowFundFromFundingPool(
                         dao,
+                        fundRoundCounter,
                         tokenAddr,
                         allInvestors[i],
                         bal
@@ -369,7 +377,7 @@ contract VintageFundingPoolAdapterContract is
         );
         uint256 fundRaiseEndTime = dao.getConfiguration(
             DaoHelper.FUND_RAISING_WINDOW_END
-        );  
+        );
         if (
             block.timestamp > fundRaiseEndTime &&
             daoFundRaisingStates[address(dao)] ==

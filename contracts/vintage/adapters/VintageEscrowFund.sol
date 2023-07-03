@@ -11,24 +11,25 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
     using SafeERC20 for IERC20;
 
-    //dao => token => account => amount
-    mapping(address => mapping(address => mapping(address => Checkpoint)))
+    //dao => fund round => account => amount
+    mapping(address => mapping(uint256 => mapping(address => Checkpoint)))
         public escrowFunds;
-
-    // struct EscorwAmount {
-    //     address token;
-    //     uint256 amount;
-    // }
-
     struct Checkpoint {
         // A checkpoint for marking number of votes from a given block
-        uint96 fromBlock;
+        address token;
         uint128 amount;
     }
 
-    event WithDraw(address dao, address token, address account, uint256 amount);
+    event WithDraw(
+        address dao,
+        uint256 fundRound,
+        address token,
+        address account,
+        uint256 amount
+    );
     event EscrowFund(
         address dao,
+        uint256 fundRound,
         address token,
         address account,
         uint256 amount
@@ -36,21 +37,30 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
 
     function withDraw(
         DaoRegistry dao,
-        address token
+        uint256 fundRound
     ) external reimbursable(dao) {
-        uint256 amount = escrowFunds[address(dao)][token][msg.sender].amount;
-        require(amount > 0, "no fund to withdraw");
-        uint256 exactAmount = amount;
-        if (IERC20(token).balanceOf(address(this)) < amount) {
-            exactAmount = IERC20(token).balanceOf(address(this));
+        Checkpoint storage ck = escrowFunds[address(dao)][fundRound][
+            msg.sender
+        ];
+        require(ck.amount > 0, "no fund to withdraw");
+        uint256 exactAmount = ck.amount;
+        if (IERC20(ck.token).balanceOf(address(this)) < ck.amount) {
+            exactAmount = IERC20(ck.token).balanceOf(address(this));
         }
-        IERC20(token).safeTransfer(msg.sender, exactAmount);
-        escrowFunds[address(dao)][token][msg.sender].amount = 0;
-        emit WithDraw(address(dao), token, msg.sender, exactAmount);
+        IERC20(ck.token).safeTransfer(msg.sender, exactAmount);
+        ck.amount = 0;
+        emit WithDraw(
+            address(dao),
+            fundRound,
+            ck.token,
+            msg.sender,
+            exactAmount
+        );
     }
 
     function escrowFundFromFundingPool(
         DaoRegistry dao,
+        uint256 fundRound,
         address token,
         address account,
         uint256 amount
@@ -60,16 +70,18 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
                 dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT),
             "access deny"
         );
-        escrowFunds[address(dao)][token][account].amount += uint128(amount);
-        emit EscrowFund(address(dao), token, account, amount);
+        escrowFunds[address(dao)][fundRound][account].amount += uint128(amount);
+        escrowFunds[address(dao)][fundRound][account].token = token;
+
+        emit EscrowFund(address(dao), fundRound, token, account, amount);
     }
 
     function getEscrowAmount(
         DaoRegistry dao,
-        address token,
+        uint256 fundRound,
         address account
-    ) public view returns (uint256) {
-        uint256 escrowFund = escrowFunds[address(dao)][token][account].amount;
-        return escrowFund;
+    ) public view returns (address, uint256) {
+        Checkpoint storage ck = escrowFunds[address(dao)][fundRound][account];
+        return (ck.token, ck.amount);
     }
 }

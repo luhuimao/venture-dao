@@ -322,6 +322,9 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
 
         dao.processProposal(proposalId);
 
+        uint128 allGPsWeight = GovernanceHelper
+            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
+
         if (voteResult == IVintageVoting.VotingState.PASS) {
             proposal.state = ProposalState.Executing;
             address applicant = proposal.account;
@@ -343,10 +346,6 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         } else {
             revert("proposal has not been voted on yet");
         }
-        // uint128 allGPsWeight = GovernanceHelper.getAllRaiserVotingWeight(dao);
-
-        uint128 allGPsWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
 
         emit ProposalProcessed(
             address(dao),
