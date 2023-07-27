@@ -12,6 +12,7 @@ import "../vintage/extensions/fundingpool/VintageFundingPool.sol";
 import "../vintage/adapters/VintageFundingAdapter.sol";
 import "../vintage/adapters/VintageFundRaise.sol";
 import "../vintage/adapters/VintageVoting.sol";
+import "../flex/adatpers/FlexVoting.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import "hardhat/console.sol";
@@ -236,6 +237,29 @@ library GovernanceHelper {
         return allStewardweight;
     }
 
+    function getAllStewardVotingWeightByProposalId(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) internal view returns (uint128) {
+        address[] memory steards = DaoHelper.getAllActiveMember(dao);
+        uint128 allStewardweight;
+        FlexVotingContract flexVoting = FlexVotingContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
+        );
+        for (uint8 i = 0; i < steards.length; i++) {
+            if (flexVoting.checkIfVoted(dao, proposalId, steards[i])) {
+                allStewardweight += flexVoting.voteWeights(
+                    address(dao),
+                    proposalId,
+                    steards[i]
+                );
+            } else {
+                allStewardweight += getFlexVotingWeight(dao, steards[i]);
+            }
+        }
+        return allStewardweight;
+    }
+
     function getVintageVotingWeight(
         DaoRegistry dao,
         address account
@@ -278,6 +302,8 @@ library GovernanceHelper {
                 if (
                     fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
                     DaoHelper.FundRaiseState.DONE &&
+                    block.timestamp <
+                    dao.getConfiguration(DaoHelper.FUND_END_TIME) &&
                     newFundAdapt.createdFundCounter(address(dao)) >= 1
                 ) {
                     bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;
@@ -322,6 +348,8 @@ library GovernanceHelper {
                 if (
                     fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
                     DaoHelper.FundRaiseState.DONE &&
+                    block.timestamp <
+                    dao.getConfiguration(DaoHelper.FUND_END_TIME) &&
                     newFundAdapt.createdFundCounter(address(dao)) >= 1
                 ) {
                     bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;

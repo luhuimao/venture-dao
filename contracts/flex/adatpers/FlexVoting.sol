@@ -68,7 +68,8 @@ contract FlexVotingContract is
 
     bytes32 constant VotingPeriod = keccak256("voting.votingPeriod");
     bytes32 constant GracePeriod = keccak256("voting.gracePeriod");
-
+    mapping(address => mapping(bytes32 => mapping(address => uint128)))
+        public voteWeights;
     mapping(address => mapping(bytes32 => Voting)) public votes;
 
     string public constant ADAPTER_NAME = "FlexVotingContract";
@@ -150,6 +151,7 @@ contract FlexVotingContract is
             dao,
             msg.sender
         );
+        voteWeights[address(dao)][proposalId][msg.sender] = votingWeight;
         vote.votes[memberAddr] = voteValue;
 
         if (voteValue == 1) {
@@ -277,6 +279,15 @@ contract FlexVotingContract is
         DaoRegistry dao
     ) public view returns (uint128) {
         uint128 allWeight = GovernanceHelper.getAllStewardVotingWeight(dao);
+        return allWeight;
+    }
+
+    function getAllStewardWeightByProposalId(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) public view returns (uint128) {
+        uint128 allWeight = GovernanceHelper
+            .getAllStewardVotingWeightByProposalId(dao, proposalId);
         return allWeight;
     }
 

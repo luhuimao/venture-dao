@@ -258,6 +258,8 @@ contract StewardManagementContract is
             dao,
             proposalId
         );
+        uint128 allWeight = GovernanceHelper
+            .getAllStewardVotingWeightByProposalId(dao, proposalId);
 
         dao.processProposal(proposalId);
 
@@ -282,7 +284,8 @@ contract StewardManagementContract is
         } else {
             revert("proposal has not been voted on yet");
         }
-        uint128 allWeight = GovernanceHelper.getAllStewardVotingWeight(dao);
+
+        // uint128 allWeight = GovernanceHelper.getAllStewardVotingWeight(dao);
         emit ProposalProcessed(
             address(dao),
             proposalId,
