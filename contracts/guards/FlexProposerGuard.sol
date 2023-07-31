@@ -35,63 +35,77 @@ SOFTWARE.
  */
 abstract contract FlexProposerGuard {
     modifier onlyProposer(DaoRegistry dao) {
-        //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
-        if (
-            dao.getConfiguration(DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE) ==
-            0
-        ) {
-            require(
-                IERC20(
-                    dao.getAddressConfiguration(
-                        DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
-                    )
-                ).balanceOf(msg.sender) >=
-                    dao.getConfiguration(DaoHelper.FLEX_PROPOSER_MIN_HOLDING),
-                "dont meet min erc20 token holding requirment"
-            );
-        }
-        if (
-            dao.getConfiguration(DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE) ==
-            1
-        ) {
-            require(
-                IERC721(
-                    dao.getAddressConfiguration(
-                        DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
-                    )
-                ).balanceOf(msg.sender) >=
-                    dao.getConfiguration(DaoHelper.FLEX_PROPOSER_MIN_HOLDING),
-                "dont meet min erc721 token holding requirment"
-            );
-        }
-        if (
-            dao.getConfiguration(DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE) ==
-            2
-        ) {
-            require(
-                IERC1155(
-                    dao.getAddressConfiguration(
-                        DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
-                    )
-                ).balanceOf(
-                        msg.sender,
-                        dao.getConfiguration(DaoHelper.FLEX_PROPOSER_TOKENID)
-                    ) >=
-                    dao.getConfiguration(DaoHelper.FLEX_PROPOSER_MIN_HOLDING),
-                "dont meet min erc1155 token holding requirment"
-            );
-        }
-        if (
-            dao.getConfiguration(DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE) ==
-            3
-        ) {
-            FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
-                dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
-            );
-            require(
-                flexFunding.isProposerWhiteList(dao, msg.sender),
-                "not in whitelist"
-            );
+        if (dao.getConfiguration(DaoHelper.FLEX_PROPOSER_ENABLE) == 1) {
+            //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
+            if (
+                dao.getConfiguration(
+                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+                ) == 0
+            ) {
+                require(
+                    IERC20(
+                        dao.getAddressConfiguration(
+                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+                        )
+                    ).balanceOf(msg.sender) >=
+                        dao.getConfiguration(
+                            DaoHelper.FLEX_PROPOSER_MIN_HOLDING
+                        ),
+                    "dont meet min erc20 token holding requirment"
+                );
+            }
+            if (
+                dao.getConfiguration(
+                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+                ) == 1
+            ) {
+                require(
+                    IERC721(
+                        dao.getAddressConfiguration(
+                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+                        )
+                    ).balanceOf(msg.sender) >=
+                        dao.getConfiguration(
+                            DaoHelper.FLEX_PROPOSER_MIN_HOLDING
+                        ),
+                    "dont meet min erc721 token holding requirment"
+                );
+            }
+            if (
+                dao.getConfiguration(
+                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+                ) == 2
+            ) {
+                require(
+                    IERC1155(
+                        dao.getAddressConfiguration(
+                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+                        )
+                    ).balanceOf(
+                            msg.sender,
+                            dao.getConfiguration(
+                                DaoHelper.FLEX_PROPOSER_TOKENID
+                            )
+                        ) >=
+                        dao.getConfiguration(
+                            DaoHelper.FLEX_PROPOSER_MIN_HOLDING
+                        ),
+                    "dont meet min erc1155 token holding requirment"
+                );
+            }
+            if (
+                dao.getConfiguration(
+                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+                ) == 3
+            ) {
+                FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
+                        dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
+                    );
+                require(
+                    flexFunding.isProposerWhiteList(dao, msg.sender),
+                    "not in whitelist"
+                );
+            }
         }
         _;
     }

@@ -98,7 +98,8 @@ contract SummonDao {
     }
 
     struct flexDaoProposerMembershipInfo {
-        uint8 varifyType;
+        bool proposerMembershipEnable;
+        uint8 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
         uint256 minHolding;
         address tokenAddress;
         uint256 tokenId;
@@ -369,6 +370,7 @@ contract SummonDao {
     // config Steward Membership
     function summonFlexDao8(
         bool flexDaoStewardMembershipEnable,
+        bool flexDaoProposerMembershipEnable,
         uint256[6] memory uint256Params,
         address flexDaoStewardMembershipTokenAddress,
         address[] calldata flexDaoStewardMembershipWhitelist,
@@ -433,16 +435,18 @@ contract SummonDao {
                 }
             }
         }
-
-        //4 config proposer membership
-        configFlexDaoProposerMembership(
-            dao,
-            uint256Params[3],
-            uint256Params[5],
-            flexDaoProposerMembershipTokenAddress,
-            uint256Params[4],
-            flexDaoProposerMembershipWhiteList
-        );
+        if (flexDaoProposerMembershipEnable) {
+            dao.setConfiguration(DaoHelper.FLEX_PROPOSER_ENABLE, 1);
+            //4 config proposer membership
+            configFlexDaoProposerMembership(
+                dao,
+                uint256Params[3],
+                uint256Params[5],
+                flexDaoProposerMembershipTokenAddress,
+                uint256Params[4],
+                flexDaoProposerMembershipWhiteList
+            );
+        }
     }
 
     //config participant membership
@@ -512,6 +516,7 @@ contract SummonDao {
 
         //remove summondaoContract && DaoFacConctract from dao member list
         dao.removeMember(dao.daoFactory());
+        // dao.finalizeDao();
         dao.removeMember(address(this));
     }
 
@@ -1030,8 +1035,9 @@ contract SummonDao {
             params._flexDaoProposerMembershipInfo.minHolding
         ];
         vars.summonFlexDao8Payload = abi.encodeWithSignature(
-            "summonFlexDao8(bool,uint256[6],address,address[],address,address[],address)",
+            "summonFlexDao8(bool,bool,uint256[6],address,address[],address,address[],address)",
             params._flexDaoStewardMembershipInfo.enable,
+            params._flexDaoProposerMembershipInfo.proposerMembershipEnable,
             uint256SummonFlexDao8Params,
             params._flexDaoStewardMembershipInfo.tokenAddress,
             params._flexDaoStewardMembershipInfo.whiteList,

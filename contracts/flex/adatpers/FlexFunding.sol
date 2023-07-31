@@ -41,10 +41,16 @@ contract FlexFundingAdapterContract is
     address public protocolAddress =
         address(0x9ac9c636404C8d46D9eb966d7179983Ba5a3941A);
 
-    error invalidParam();
+    // error invalidParam();
+    // error InvalidReturnFundParams();
+    // error InvalidVestingParams();
+    // error EscrowTokenFailed();
+    error InvalidBackerPriorityDepositParams();
+    error InvalidBackerIdentificationParams();
+    error InvalidFundingInfoParams();
     error InvalidReturnFundParams();
     error InvalidVestingParams();
-    error EscrowTokenFailed();
+    error InvalidTokenRewardAmount();
 
     modifier onlyDaoFactoryOwner(DaoRegistry dao) {
         require(msg.sender == DaoHelper.daoFactoryAddress(dao));
@@ -76,8 +82,7 @@ contract FlexFundingAdapterContract is
         uint256 _protocolFee
     ) external reentrancyGuard(dao) onlyDaoFactoryOwner(dao) {
         require(
-            _protocolFee < 100 * RETRUN_TOKEN_AMOUNT_PRECISION &&
-                _protocolFee > 0
+            _protocolFee < RETRUN_TOKEN_AMOUNT_PRECISION && _protocolFee > 0
         );
         protocolFee = _protocolFee;
     }
@@ -111,7 +116,7 @@ contract FlexFundingAdapterContract is
                 params.fundingInfo.minFundingAmount) ||
             params.proposerRewardInfo.cashRewardAmount >
             RETRUN_TOKEN_AMOUNT_PRECISION
-        ) revert("invalid Params");
+        ) revert InvalidFundingInfoParams();
         if (
             params.fundRaiseInfo.backerIdentification == true &&
             params.fundRaiseInfo.bakckerIdentificationInfo.bType !=
@@ -123,7 +128,7 @@ contract FlexFundingAdapterContract is
                     .bakckerIdentificationInfo
                     .bMinHoldingAmount <=
                 0)
-        ) revert("invalid backer identification params");
+        ) revert InvalidBackerIdentificationParams();
 
         if (
             params.fundRaiseInfo.priorityDeposit == true &&
@@ -138,7 +143,7 @@ contract FlexFundingAdapterContract is
                     params.fundRaiseInfo.priorityDepositInfo.pPeriods >
                 params.fundRaiseInfo.fundRaiseEndTime -
                     params.fundRaiseInfo.fundRaiseStartTime)
-        ) revert("invalid backer priority Deposit params");
+        ) revert InvalidBackerPriorityDepositParams();
 
         SubmitProposalLocalVars memory vars;
 
@@ -146,12 +151,12 @@ contract FlexFundingAdapterContract is
             dao.getAdapterAddress(DaoHelper.FLEX_POLLING_VOTING_ADAPT)
         );
 
-        vars.submittedBy = vars.flexVotingContract.getSenderAddress(
-            dao,
-            address(this),
-            bytes(""),
-            msg.sender
-        );
+        // vars.submittedBy = vars.flexVotingContract.getSenderAddress(
+        //     dao,
+        //     address(this),
+        //     bytes(""),
+        //     msg.sender
+        // );
 
         vars.proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked("Funding#", Strings.toString(proposalIds))
@@ -163,7 +168,7 @@ contract FlexFundingAdapterContract is
                 // params.fundingInfo.returnTokenAmount <= 0 ||
                 params.fundingInfo.approverAddr == address(0x0) ||
                 params.fundingInfo.minReturnAmount <= 0
-            ) revert("Invalid Return Fund Params");
+            ) revert InvalidReturnFundParams();
             if (
                 params.vestInfo.vestingCliffLockAmount >
                 RETRUN_TOKEN_AMOUNT_PRECISION ||
@@ -171,11 +176,11 @@ contract FlexFundingAdapterContract is
                 params.vestInfo.vestingStartTime ||
                 params.vestInfo.vestingEndTime <
                 params.vestInfo.vestingCliffEndTime
-            ) revert("Invalid Vesting Params");
+            ) revert InvalidVestingParams();
             if (
                 params.proposerRewardInfo.tokenRewardAmount >
                 RETRUN_TOKEN_AMOUNT_PRECISION
-            ) revert("Invalid Token Reward Amount");
+            ) revert InvalidTokenRewardAmount();
         }
 
         dao.submitProposal(vars.proposalId);
@@ -243,7 +248,7 @@ contract FlexFundingAdapterContract is
         // Sponsors the guild kick proposal.
         dao.sponsorProposal(
             vars.proposalId,
-            vars.submittedBy,
+            msg.sender,
             dao.getAdapterAddress(DaoHelper.FLEX_POLLING_VOTING_ADAPT)
         );
         proposalIds += 1;
