@@ -61,7 +61,12 @@ contract VintageFundingPoolAdapterContract is
         address account,
         uint256 redemptionFee
     );
-
+    event ProcessFundRaise(
+        address dao,
+        uint256 fundRound,
+        uint256 fundRaiseState,
+        uint256 fundRaisedAmount
+    );
     event ClearFund(address dao, uint256 amount, address executor);
 
     /// @dev Prevents calling a function from anyone except the address returned by owner
@@ -391,6 +396,16 @@ contract VintageFundingPoolAdapterContract is
                 daoFundRaisingStates[address(dao)] = DaoHelper
                     .FundRaiseState
                     .FAILED;
+
+            VintageFundRaiseAdapterContract fundRaiseContract = VintageFundRaiseAdapterContract(
+                    dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
+                );
+            emit ProcessFundRaise(
+                address(dao),
+                fundRaiseContract.createdFundCounter(address(dao)),
+                uint256(daoFundRaisingStates[address(dao)]),
+                poolBalance(dao)
+            );
         }
     }
 
@@ -602,5 +617,12 @@ contract VintageFundingPoolAdapterContract is
         address account
     ) public view returns (bool) {
         return investorMembershipWhiteList[address(dao)].contains(account);
+    }
+
+    function getFundInvestors(
+        DaoRegistry dao,
+        uint256 fundRound
+    ) external view returns (address[] memory) {
+        return fundParticipants[address(dao)][fundRound].values();
     }
 }

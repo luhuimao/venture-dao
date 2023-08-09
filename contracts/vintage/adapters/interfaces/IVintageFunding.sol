@@ -8,6 +8,7 @@ import "../VintageFundingPoolAdapter.sol";
 import "../VintageVoting.sol";
 import "./IVintageVoting.sol";
 import "../../extensions/fundingpool/VintageFundingPool.sol";
+import "../../libraries/fundingLibrary.sol";
 
 /**
 MIT License
@@ -37,7 +38,7 @@ interface IVintageFunding {
     function submitProposal(
         DaoRegistry dao,
         FundingProposalParams calldata params
-    ) external returns (bytes32 proposalId);
+    ) external;
 
     function processProposal(
         DaoRegistry dao,
@@ -53,34 +54,40 @@ interface IVintageFunding {
         FAILED
     }
     // State of the Funding proposal
-    struct ProposalInfo {
-        address fundingToken; // The token in which the project team to trade off.
-        uint256 fundingAmount; // The amount project team requested.
-        uint256 totalAmount;
-        uint256 price;
-        address recipientAddr; // The receiver address that will receive the funds.
-        address proposer;
-        ProposalState status; // The distribution status.
-        VestInfo vestInfo;
-        ProposalReturnTokenInfo proposalReturnTokenInfo;
-        ProposalTimeInfo proposalTimeInfo;
-    }
+    // struct ProposalInfo {
+    //     address fundingToken; // The token in which the project team to trade off.
+    //     uint256 fundingAmount; // The amount project team requested.
+    //     uint256 totalAmount;
+    //     uint256 price;
+    //     address recipientAddr; // The receiver address that will receive the funds.
+    //     address proposer;
+    //     ProposalState status; // The distribution status.
+    //     VestInfo vestInfo;
+    //     ProposalReturnTokenInfo proposalReturnTokenInfo;
+    //     ProposalTimeInfo proposalTimeInfo;
+    // }
 
-    struct ProposalReturnTokenInfo {
-        bool escrow;
-        address returnToken;
-        uint256 returnTokenAmount; //project token amount for trading off
-        address approveOwnerAddr; // owner address when approve
-    }
+    // struct ProposalReturnTokenInfo {
+    //     bool escrow;
+    //     address returnToken;
+    //     uint256 returnTokenAmount; //project token amount for trading off
+    //     address approveOwnerAddr; // owner address when approve
+    //     bool nftEnable;
+    //     string name;
+    //     string symbol;
+    //     string description;
+    // }
 
-    struct ProposalTimeInfo {
-        uint256 inQueueTimestamp;
-        uint256 proposalStartVotingTimestamp; //project start voting timestamp
-        uint256 proposalStopVotingTimestamp;
-        uint256 proposalExecuteTimestamp;
-    }
+    // struct ProposalTimeInfo {
+    //     uint256 inQueueTimestamp;
+    //     uint256 proposalStartVotingTimestamp; //project start voting timestamp
+    //     uint256 proposalStopVotingTimestamp;
+    //     uint256 proposalExecuteTimestamp;
+    // }
 
     struct VestInfo {
+        string name;
+        string description;
         uint256 vestingStartTime;
         uint256 vetingEndTime;
         uint256 vestingCliffEndTime;
@@ -99,11 +106,6 @@ interface IVintageFunding {
         uint256 proposalStartVotingTimestamp;
         uint256 proposalEndVotingTimestamp;
         uint256 proposalExecuteTimestamp;
-        // uint256 vestingStartTime;
-        // uint256 vetingEndTime;
-        // uint256 vestingCliffEndTime;
-        // uint256 vestingCliffLockAmount;
-        // uint256 vestingInterval;
         uint256 fundingAmount;
         uint256 returnTokenAmount;
     }
@@ -114,6 +116,8 @@ interface IVintageFunding {
         uint256 price;
         uint256 returnTokenAmount;
         address approver;
+        bool nftEnable;
+        address vestingNft;
     }
 
     struct FundingInfo {
@@ -135,7 +139,7 @@ interface IVintageFunding {
         uint256 _propsalStopVotingTimestamp;
         bool rel;
         IVintageVoting votingContract;
-        uint256 totalFund;
+        // uint256 totalFund;
     }
 
     struct ProcessProposalLocalVars {
@@ -147,42 +151,42 @@ interface IVintageFunding {
         uint128 nbYes;
         uint128 nbNo;
         uint128 allVotingWeight;
-        address fundRaiseTokenAddr;
+        // address fundRaiseTokenAddr;
         uint256 protocolFee;
         uint256 managementFee;
         uint256 proposerFundReward;
-        uint256 proposerTokenReward;
+        // uint256 proposerTokenReward;
     }
 
     event ProposalCreated(
         address daoAddr,
-        bytes32 proposalId,
-        uint256 vestingStartTime,
-        uint256 vetingEndTime,
-        uint256 vestingCliffEndTime,
-        uint256 vestingCliffLockAmount,
-        uint256 vestingInterval,
-        uint256 proposalInQueueTimestamp
+        bytes32 proposalId
+        // uint256 vestingStartTime,
+        // uint256 vetingEndTime,
+        // uint256 vestingCliffEndTime,
+        // uint256 vestingCliffLockAmount,
+        // uint256 vestingInterval,
+        // uint256 proposalInQueueTimestamp
     );
 
     event StartVote(
         address daoAddr,
-        bytes32 proposalID,
-        uint256 startVoteTime,
-        uint256 stopVoteTime,
-        ProposalState state
+        bytes32 proposalID
+        // uint256 startVoteTime,
+        // uint256 stopVoteTime,
+        // FundingLibrary.ProposalState state
     );
 
     event ProposalExecuted(
         address daoAddr,
         bytes32 proposalID,
-        uint256 state,
+        // uint256 state,
         uint128 allVotingWeight,
         uint128 nbYes,
-        uint128 nbNo,
-        uint256 distributeState
+        uint128 nbNo
+        // uint256 distributeState
     );
-    error InvalidStepSetting();
+    // error InvalidStepSetting();
 
     // function distribute(DaoRegistry dao, uint256 toIndex) external;
 }
