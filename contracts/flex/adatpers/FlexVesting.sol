@@ -2,79 +2,26 @@
 
 pragma solidity ^0.8.0;
 
-import "../../adapters/vesting/contracts/interfaces/IFuroVesting.sol";
-import "./FlexAllocation.sol";
-import "./FlexFunding.sol";
-import "./interfaces/IFlexFunding.sol";
+import "./interfaces/IFlexVesting.sol";
 import "hardhat/console.sol";
 
-// Use the FuroStreamVesting to create Vesting and do not create vesting directly.
-
-contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
-    // IBentoBoxMinimal public immutable bentoBox;
-
-    address public tokenURIFetcher;
-
+contract FlexVesting is IFlexVesting {
     mapping(uint256 => Vest) public vests;
+    mapping(address => mapping(uint256 => uint256)) public tokenIdToVestId; //erc721 address => tokenId => vestId
 
     uint256 public vestIds;
 
     uint256 public constant PERCENTAGE_PRECISION = 1e18;
 
-    // custom errors
-    error InvalidStart();
-    error NotOwner();
-    error NotVestReceiver();
-    error InvalidStepSetting();
-
-    // constructor(IBentoBoxMinimal _bentoBox) {
     constructor() {
-        // bentoBox = _bentoBox;
         vestIds = 1;
-        // _bentoBox.registerProtocol();
-    }
-
-    function setTokenURIFetcher(address _fetcher) external onlyOwner {
-        tokenURIFetcher = _fetcher;
-    }
-
-    struct CreateVestLocalVars {
-        uint256 returnTokenAmount;
-        uint256 depositedShares;
-        uint256 vestId;
-        uint128 stepShares;
-        uint128 cliffShares;
-        uint128 stepPercentage;
-        FlexAllocationAdapterContract allocAdapter;
-        FlexFundingAdapterContract flexFundingAdapt;
-        uint256 duration;
-        uint256 ratePerSecond;
-        uint256 depositAmount;
-        address tokenAddress;
-        uint256 vestingStartTime;
-        uint256 vestingCliffDuration;
-        uint256 vestingStepDuration;
-        uint256 vestingSteps;
-        address allocAdaptAddr;
-        IFlexFunding.VestInfo vestInfo;
-        IFlexFunding.ProposalFundingInfo fundingInfo;
     }
 
     function createVesting(
         DaoRegistry dao,
         address recipientAddr,
         bytes32 proposalId
-    )
-        external
-        payable
-        override
-        returns (
-            uint256 depositedShares,
-            uint256 vestId,
-            uint128 stepShares,
-            uint128 cliffShares
-        )
-    {
+    ) external payable override {
         CreateVestLocalVars memory vars;
         vars.allocAdaptAddr = dao.getAdapterAddress(
             DaoHelper.FLEX_ALLOCATION_ADAPT
@@ -104,13 +51,13 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
         if (
             vars.vestInfo.vestingCliffLockAmount >
             vars.fundingInfo.returnTokenAmount
-        ) revert("Invalid Vesting Amount Setting");
+        ) revert InvalidVestingAmountSetting();
         if (
             vars.vestInfo.vestingStartTime == 0 ||
             vars.vestInfo.vestingCliffEndTime == 0 ||
             vars.vestInfo.vestingEndTime == 0 ||
             vars.vestInfo.vestingInterval == 0
-        ) revert("Invalid Vesting Time Setting");
+        ) revert InvalidVestingTimeSetting();
 
         vars.depositedShares = _depositToken(
             dao,
@@ -155,23 +102,48 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
 
         vars.vestId = vestIds++;
 
-        vests[vars.vestId] = Vest({
-            proposalId: proposalId,
-            owner: msg.sender,
-            recipient: recipientAddr,
-            token: vars.fundingInfo.returnTokenAddr,
-            start: uint32(vars.vestInfo.vestingStartTime),
-            end: uint32(vars.vestInfo.vestingEndTime),
-            cliffDuration: uint32(
-                vars.vestInfo.vestingCliffEndTime -
-                    vars.vestInfo.vestingStartTime
+        if (vars.vestInfo.nftEnable) {
+            vars.newTokenId = FlexVestingERC721(vars.vestInfo.erc721).safeMint(
+                recipientAddr
+            );
+
+            tokenIdToVestId[vars.vestInfo.erc721][vars.vestId] = vars
+                .newTokenId;
+        }
+
+        vests[vars.vestId] = Vest(
+            proposalId,
+            0,
+            vars.depositAmount,
+            StepInfo(
+                uint32(vars.vestingSteps),
+                vars.cliffShares,
+                vars.stepShares
             ),
-            stepDuration: uint32(vars.vestInfo.vestingInterval),
-            steps: uint32(vars.vestingSteps),
-            cliffShares: vars.cliffShares,
-            stepShares: vars.stepShares,
-            claimed: 0
-        });
+            TimeInfo(
+                uint32(vars.vestInfo.vestingStartTime),
+                uint32(vars.vestInfo.vestingEndTime),
+                uint32(
+                    vars.vestInfo.vestingCliffEndTime -
+                        vars.vestInfo.vestingStartTime
+                ),
+                uint32(vars.vestInfo.vestingInterval)
+            ),
+            VestNFTInfo(
+                vars.vestInfo.nftEnable == true
+                    ? vars.vestInfo.erc721
+                    : address(0x0),
+                vars.newTokenId
+            ),
+            VestInfo(
+                vars.vestInfo.vestName,
+                vars.vestInfo.vestDescription,
+                msg.sender,
+                recipientAddr,
+                vars.fundingInfo.returnTokenAddr
+            )
+        );
+
         vars.allocAdapter.vestCreated(dao, proposalId, recipientAddr);
 
         emit CreateVesting(
@@ -196,8 +168,16 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
         uint256 vestId // bytes calldata taskData, // bool toBentoBox
     ) external override {
         Vest storage vest = vests[vestId];
-        address recipient = vest.recipient;
-        if (recipient != msg.sender) revert NotVestReceiver();
+        address recipient = vest.vestInfo.recipient;
+        if (vest.nftInfo.nftToken != address(0x0)) {
+            if (
+                FlexVestingERC721(vest.nftInfo.nftToken).ownerOf(
+                    vest.nftInfo.tokenId
+                ) != msg.sender
+            ) revert NotVestReceiver();
+        } else {
+            if (recipient != msg.sender) revert NotVestReceiver();
+        }
         uint256 canClaim = _balanceOf(vest) - vest.claimed;
 
         if (canClaim == 0) return;
@@ -206,16 +186,13 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
 
         _transferToken(
             dao,
-            address(vest.token),
+            address(vest.vestInfo.token),
             address(this),
             recipient,
             canClaim,
             false
         );
-
-        // if (taskData.length != 0) ITasker(recipient).onTaskReceived(taskData);
-
-        emit Withdraw(vestId, vest.token, canClaim, false);
+        emit Withdraw(vestId, vest.vestInfo.token, canClaim, false);
     }
 
     function vestBalance(
@@ -228,7 +205,8 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
     function _balanceOf(
         Vest memory vest
     ) internal view returns (uint256 claimable) {
-        uint256 timeAfterCliff = vest.start + vest.cliffDuration;
+        uint256 timeAfterCliff = vest.timeInfo.start +
+            vest.timeInfo.cliffDuration;
 
         if (block.timestamp < timeAfterCliff) {
             return claimable;
@@ -236,22 +214,27 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
 
         uint256 passedSinceCliff = block.timestamp - timeAfterCliff;
         uint256 stepPassed = Math.min(
-            vest.steps,
-            passedSinceCliff / vest.stepDuration
+            vest.stepInfo.steps,
+            passedSinceCliff / vest.timeInfo.stepDuration
         );
         if (
-            vest.start + vest.cliffDuration + vest.steps * vest.stepDuration >
-            vest.end &&
-            block.timestamp > vest.end
-        ) stepPassed = vest.steps;
+            vest.timeInfo.start +
+                vest.timeInfo.cliffDuration +
+                vest.stepInfo.steps *
+                vest.timeInfo.stepDuration >
+            vest.timeInfo.end &&
+            block.timestamp > vest.timeInfo.end
+        ) stepPassed = vest.stepInfo.steps;
 
-        claimable = vest.cliffShares + (vest.stepShares * stepPassed);
+        claimable =
+            vest.stepInfo.cliffShares +
+            (vest.stepInfo.stepShares * stepPassed);
     }
 
     function updateOwner(uint256 vestId, address newOwner) external override {
         Vest storage vest = vests[vestId];
-        if (vest.owner != msg.sender) revert NotOwner();
-        vest.owner = newOwner;
+        if (vest.vestInfo.owner != msg.sender) revert NotOwner();
+        vest.vestInfo.owner = newOwner;
         emit LogUpdateOwner(vestId, newOwner);
     }
 
@@ -292,5 +275,32 @@ contract FlexVesting is IFuroVesting, Multicall, BoringOwnable {
         } else {
             bentoBox.withdraw(token, from, to, 0, shares);
         }
+    }
+
+    function getVestIdByTokenId(
+        address token,
+        uint256 tokenId
+    ) public view returns (uint256) {
+        return tokenIdToVestId[token][tokenId];
+    }
+
+    function getRemainingPercentage(
+        address token,
+        uint256 tokenId
+    ) external view returns (uint256, uint256, uint256) {
+        uint256 percentOfRemaining_Total = 0;
+        uint256 remaining = 0;
+        uint256 total = 0;
+        uint256 vestId = getVestIdByTokenId(token, tokenId);
+        if (vestId > 0) {
+            remaining =
+                (vests[vestId].total - vests[vestId].claimed) /
+                PERCENTAGE_PRECISION;
+            total = vests[vestId].total / PERCENTAGE_PRECISION;
+            percentOfRemaining_Total =
+                ((vests[vestId].total - vests[vestId].claimed) * 100) /
+                vests[vestId].total;
+        }
+        return (percentOfRemaining_Total, remaining, total);
     }
 }

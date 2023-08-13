@@ -6,8 +6,14 @@ import "../../../helpers/DaoHelper.sol";
 import "./IFlexVoting.sol";
 import "../../extensions/FlexFundingPool.sol";
 import "../FlexFundingPoolAdapter.sol";
-import "../FlexAllocation.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+import "../../../guards/MemberGuard.sol";
+import "../FlexAllocation.sol";
+import "../FlexPollingVoting.sol";
+import "../../../utils/TypeConver.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 interface IFlexFunding {
     function submitProposal(
@@ -112,6 +118,7 @@ interface IFlexFunding {
         uint256 stopVoteTime;
         ProposalStatus state;
     }
+
     struct FundingInfo {
         address tokenAddress;
         uint256 minFundingAmount;
@@ -145,6 +152,10 @@ interface IFlexFunding {
         uint256 vestingEndTime;
         uint256 vestingInterval;
         uint256 vestingCliffLockAmount; // percentage
+        bool nftEnable;
+        address erc721;
+        string vestName;
+        string vestDescription;
     }
     struct FundRaiseInfo {
         FundRaiseType fundRaiseType;
@@ -194,4 +205,11 @@ interface IFlexFunding {
     );
 
     error FundRaiseEndTimeNotUP();
+    error InvalidBackerPriorityDepositParams();
+    error InvalidBackerIdentificationParams();
+    error InvalidFundingInfoParams();
+    error InvalidReturnFundParams();
+    error InvalidVestingParams();
+    error InvalidTokenRewardAmount();
+    error NotInExecuteState();
 }

@@ -1,19 +1,10 @@
 pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
-
+import "hardhat/console.sol";
+import "./interfaces/IFlexFunding.sol";
 import "../../guards/AdapterGuard.sol";
-import "../../guards/MemberGuard.sol";
 import "../../guards/FlexProposerGuard.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
-import "./interfaces/IFlexFunding.sol";
-import "./interfaces/IFlexVoting.sol";
-import "./FlexAllocation.sol";
-import "./FlexPollingVoting.sol";
-import "./interfaces/IFlexVoting.sol";
-import "../../utils/TypeConver.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "hardhat/console.sol";
 
 contract FlexFundingAdapterContract is
     IFlexFunding,
@@ -41,34 +32,23 @@ contract FlexFundingAdapterContract is
     address public protocolAddress =
         address(0x9ac9c636404C8d46D9eb966d7179983Ba5a3941A);
 
-    // error invalidParam();
-    // error InvalidReturnFundParams();
-    // error InvalidVestingParams();
-    // error EscrowTokenFailed();
-    error InvalidBackerPriorityDepositParams();
-    error InvalidBackerIdentificationParams();
-    error InvalidFundingInfoParams();
-    error InvalidReturnFundParams();
-    error InvalidVestingParams();
-    error InvalidTokenRewardAmount();
-
     modifier onlyDaoFactoryOwner(DaoRegistry dao) {
         require(msg.sender == DaoHelper.daoFactoryAddress(dao));
         _;
     }
 
-    /**
-     * @notice Configures the DAO with the Voting and Gracing periods.
-     * @param dao The gp Allocation Bonus Radio.
-     * @param flexFundingType The rice Stake Allocation Radio.
-     */
-    function configureDao(
-        DaoRegistry dao,
-        FundingType flexFundingType
-    ) external onlyAdapter(dao) {
-        // fundingType = flexFundingType;
-        // emit ConfigureDao(gpAllocationBonusRadio, riceStakeAllocationRadio);
-    }
+    // /**
+    //  * @notice Configures the DAO with the Voting and Gracing periods.
+    //  * @param dao The gp Allocation Bonus Radio.
+    //  * @param flexFundingType The rice Stake Allocation Radio.
+    //  */
+    // function configureDao(
+    //     DaoRegistry dao,
+    //     FundingType flexFundingType
+    // ) external onlyAdapter(dao) {
+    //     fundingType = flexFundingType;
+    //     emit ConfigureDao(gpAllocationBonusRadio, riceStakeAllocationRadio);
+    // }
 
     function setProtocolAddress(
         DaoRegistry dao,
@@ -96,9 +76,9 @@ contract FlexFundingAdapterContract is
         }
     }
 
-    modifier proposalParamsCheck(ProposalParams calldata params) {
-        _;
-    }
+    // modifier proposalParamsCheck(ProposalParams calldata params) {
+    //     _;
+    // }
 
     function submitProposal(
         DaoRegistry dao,
@@ -150,13 +130,6 @@ contract FlexFundingAdapterContract is
         vars.flexVotingContract = IFlexVoting(
             dao.getAdapterAddress(DaoHelper.FLEX_POLLING_VOTING_ADAPT)
         );
-
-        // vars.submittedBy = vars.flexVotingContract.getSenderAddress(
-        //     dao,
-        //     address(this),
-        //     bytes(""),
-        //     msg.sender
-        // );
 
         vars.proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked("Funding#", Strings.toString(proposalIds))
@@ -211,7 +184,11 @@ contract FlexFundingAdapterContract is
                 params.vestInfo.vestingCliffEndTime,
                 params.vestInfo.vestingEndTime,
                 params.vestInfo.vestingInterval,
-                params.vestInfo.vestingCliffLockAmount
+                params.vestInfo.vestingCliffLockAmount,
+                params.vestInfo.nftEnable,
+                params.vestInfo.erc721,
+                params.vestInfo.vestName,
+                params.vestInfo.vestDescription
             ),
             FundRaiseInfo(
                 params.fundRaiseInfo.fundRaiseType,
@@ -270,11 +247,7 @@ contract FlexFundingAdapterContract is
     ) external override reimbursable(dao) returns (bool) {
         ProcessProposalLocalVars memory vars;
         ProposalInfo storage proposal = Proposals[address(dao)][proposalId];
-        FundingType _fundingType = dao.getConfiguration(
-            DaoHelper.FLEX_FUNDING_TYPE
-        ) == 0
-            ? FundingType.DIRECT
-            : FundingType.POLL;
+
         vars.fundRaiseEndTime = proposal.fundRaiseInfo.fundRaiseEndTime;
         vars.minFundingAmount = proposal.fundingInfo.minFundingAmount;
         vars.flexFundingPoolAdapt = FlexFundingPoolAdapterContract(
@@ -314,7 +287,7 @@ contract FlexFundingAdapterContract is
                 .getTotalFundByProposalId(dao, proposalId);
             vars.propodalFundingToken = getTokenByProposalId(dao, proposalId);
             if (vars.fundRaiseEndTime > block.timestamp)
-                revert("Fund Raise End Time Not UP");
+                revert FundRaiseEndTimeNotUP();
             dao.processProposal(proposalId);
             vars.protocolFee =
                 (vars.poolBalance * protocolFee) /
@@ -461,7 +434,7 @@ contract FlexFundingAdapterContract is
                 return false;
             }
         } else {
-            revert("can't process ");
+            revert NotInExecuteState();
         }
         emit ProposalExecuted(address(dao), proposalId, proposal.state);
         return true;
@@ -551,12 +524,12 @@ contract FlexFundingAdapterContract is
         return maxFundingAmount;
     }
 
-    function getMinFundingAmount(
-        DaoRegistry dao,
-        bytes32 proposalId
-    ) external view returns (uint256) {
-        return Proposals[address(dao)][proposalId].fundingInfo.minFundingAmount;
-    }
+    // function getMinFundingAmount(
+    //     DaoRegistry dao,
+    //     bytes32 proposalId
+    // ) external view returns (uint256) {
+    //     return Proposals[address(dao)][proposalId].fundingInfo.minFundingAmount;
+    // }
 
     function getProposalState(
         DaoRegistry dao,
