@@ -296,26 +296,28 @@ contract VintageVotingContract is
         uint128 allRaisersWeight = GovernanceHelper
             .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
         // rule out any failed quorums
+        uint256 allVotes = vote.nbYes + vote.nbNo;
+
         if (vintageQuorumType == 0) {
             uint256 minVotes = (allRaisersWeight *
                 dao.getConfiguration(DaoHelper.QUORUM)) / 100;
 
             unchecked {
-                uint256 votes = vote.nbYes + vote.nbNo;
-                if (votes <= minVotes)
+                // uint256 allVotes = vote.nbYes + vote.nbNo;
+                if (allVotes <= minVotes)
                     return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
             }
         }
         if (vintageQuorumType == 1) {
-            uint256 votes = vote.nbYes + vote.nbNo;
-            if (votes <= dao.getConfiguration(DaoHelper.QUORUM))
+            // uint256 votes = vote.nbYes + vote.nbNo;
+            if (allVotes <= dao.getConfiguration(DaoHelper.QUORUM))
                 return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
         }
 
         // supermajority check
         if (vintageSupportType == 0) {
-            uint256 votes = vote.nbYes + vote.nbNo;
-            uint256 minYes = (votes *
+            // uint256 votes = vote.nbYes + vote.nbNo;
+            uint256 minYes = (allVotes *
                 dao.getConfiguration(DaoHelper.SUPER_MAJORITY)) / 100;
             if (minYes == 0 && vote.nbYes == 0) {
                 return (VotingState.TIE, vote.nbYes, vote.nbNo);
@@ -346,8 +348,18 @@ contract VintageVotingContract is
     }
 
     function getAllRaiserWeight(DaoRegistry dao) public view returns (uint128) {
+        uint128 allGPsWeight = GovernanceHelper.getAllVintageRaiserVotingWeight(
+            dao
+        );
+        return allGPsWeight;
+    }
+
+    function getAllRaiserWeightByProposalId(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) public view returns (uint128) {
         uint128 allGPsWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, 0x0);
+            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
         return allGPsWeight;
     }
 

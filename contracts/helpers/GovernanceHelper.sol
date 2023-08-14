@@ -226,6 +226,17 @@ library GovernanceHelper {
         return allRaiserweight;
     }
 
+     function getAllVintageRaiserVotingWeight(
+        DaoRegistry dao
+    ) internal view returns (uint128) {
+        address[] memory allRaisers = dao.getAllSteward();
+        uint128 allStewardweight;
+        for (uint8 i = 0; i < allRaisers.length; i++) {
+            allStewardweight += getVintageVotingWeight(dao, allRaisers[i]);
+        }
+        return allStewardweight;
+    }
+
     function getAllStewardVotingWeight(
         DaoRegistry dao
     ) internal view returns (uint128) {
