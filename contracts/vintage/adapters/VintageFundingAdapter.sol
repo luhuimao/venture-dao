@@ -64,7 +64,7 @@ contract VintageFundingAdapterContract is
     // vote types for proposal
     mapping(address => DoubleEndedQueue.Bytes32Deque) public proposalQueue;
 
-    uint256 public proposalIds = 1;
+    // uint256 public proposalIds = 1;
     // uint256 public constant PERCENTAGE_PRECISION = 1e18;
     // string constant PROPOSALID_PREFIX = "Funding#";
 
@@ -239,11 +239,12 @@ contract VintageFundingAdapterContract is
         //     params.fundingInfo.receiver != address(0x0),
         //     "Funding::submitProposal::invalid receiver address"
         // );
-
+        dao.increaseFundingId();
         vars.proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
+                bytes8(uint64(uint160(address(dao)))),
                 FundingLibrary.PROPOSALID_PREFIX,
-                Strings.toString(proposalIds)
+                Strings.toString(dao.getCurrentFundingProposalId())
             )
         );
         // Create proposal.
@@ -293,7 +294,7 @@ contract VintageFundingAdapterContract is
         //Inserts proposal at the end of the queue.
         proposalQueue[address(dao)].pushBack(vars.proposalId);
 
-        proposalIds += 1;
+        // proposalIds += 1;
         emit ProposalCreated(
             address(dao),
             vars.proposalId

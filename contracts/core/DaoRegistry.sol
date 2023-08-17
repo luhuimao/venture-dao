@@ -8,6 +8,7 @@ import "../extensions/IExtension.sol";
 import "../helpers/DaoHelper.sol";
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
 /**
 MIT License
@@ -36,6 +37,7 @@ SOFTWARE.
 contract DaoRegistry is MemberGuard, AdapterGuard {
     bool public initialized = false; // internally tracks deployment under eip-1167 proxy pattern
     using EnumerableSet for EnumerableSet.AddressSet;
+    using Counters for Counters.Counter;
 
     enum DaoState {
         CREATION,
@@ -87,7 +89,11 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         REMOVE_EXTENSION,
         NEW_MEMBER,
         REMOVE_MEMBER,
-        SET_VOTE_TYPE
+        SET_VOTE_TYPE,
+        INCREASE_FUNDING_ID,
+        INCREASE_NEW_FUND_ID,
+        INCREASE_GOVENOR_IN_ID,
+        INCREASE_GOVENOR_OUT_ID
     }
     enum VoteType {
         SIMPLE_MAJORITY,
@@ -165,9 +171,13 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     mapping(address => uint32) numCheckpoints;
 
     DaoState public state;
-
     address public daoFactory;
     address public daoCreator;
+    Counters.Counter private _fundingProposalIds;
+    Counters.Counter private _newFundProposalIds;
+    Counters.Counter private _govenorInIds;
+    Counters.Counter private _govenorOutIds;
+
     /// @notice The map that keeps track of all proposasls submitted to the DAO
     mapping(bytes32 => Proposal) public proposals;
     /// @notice The map that tracks the voting adapter address per proposalId
@@ -479,6 +489,35 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         delete extensions[extensionId];
         emit ExtensionRemoved(extensionId);
     }
+
+    function increaseFundingId()
+        external
+        hasAccess(this, AclFlag.INCREASE_FUNDING_ID)
+    {
+        _fundingProposalIds.increment();
+    }
+
+    function increaseNewFundId()
+        external
+        hasAccess(this, AclFlag.INCREASE_NEW_FUND_ID)
+    {
+        _newFundProposalIds.increment();
+    }
+
+    function increaseGovenorInId()
+        external
+        hasAccess(this, AclFlag.INCREASE_GOVENOR_IN_ID)
+    {
+        _govenorInIds.increment();
+    }
+
+       function increaseGovenorOutId()
+        external
+        hasAccess(this, AclFlag.INCREASE_GOVENOR_IN_ID)
+    {
+        _govenorOutIds.increment();
+    }
+
 
     /**
      * @notice Looks up if there is an extension of a given address
@@ -832,6 +871,20 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
 
     function getAllSteward() external view returns (address[] memory) {
         return stewards.values();
+    }
+
+    function getCurrentFundingProposalId() external view returns (uint256) {
+        return _fundingProposalIds.current();
+    }
+
+    function getCurrentGovenorInProposalId() external view returns (uint256) {
+        return _govenorInIds.current();
+    }
+    function getCurrentGovenorOutProposalId() external view returns (uint256) {
+        return _govenorOutIds.current();
+    }
+    function getCurrentNewFundProposalId() external view returns (uint256) {
+        return _newFundProposalIds.current();
     }
 
     /**

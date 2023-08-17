@@ -58,8 +58,8 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         public proposals;
     mapping(address => EnumerableSet.AddressSet) raiserWhiteList;
 
-    uint256 public raiserInProposalIds = 1;
-    uint256 public raiserdOutProposalIds = 1;
+    // uint256 public raiserInProposalIds = 1;
+    // uint256 public raiserdOutProposalIds = 1;
 
     modifier onlyRaiser(DaoRegistry dao, address account) {
         if (
@@ -142,10 +142,12 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
             DaoHelper.isNotReservedAddress(applicant),
             "applicant is reserved address"
         );
+        dao.increaseGovenorInId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
+                bytes8(uint64(uint160(address(dao)))),
                 "Governor-In#",
-                Strings.toString(raiserInProposalIds)
+                Strings.toString(dao.getCurrentGovenorInProposalId())
             )
         );
 
@@ -162,7 +164,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         );
 
         _sponsorProposal(dao, proposalId, startVoteTime, bytes(""));
-        raiserInProposalIds += 1;
+        // raiserInProposalIds += 1;
 
         emit ProposalCreated(
             address(dao),
@@ -179,11 +181,12 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         address applicant
     ) external onlyMember(dao) reimbursable(dao) returns (bytes32 proposalId) {
         require(dao.isMember(applicant), "applicant isnt raiser");
-
+        dao.increaseGovenorOutId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
+                bytes8(uint64(uint160(address(dao)))),
                 "Governor-Out#",
-                Strings.toString(raiserdOutProposalIds)
+                Strings.toString(dao.getCurrentGovenorOutProposalId())
             )
         );
 
@@ -200,7 +203,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         );
 
         _sponsorProposal(dao, proposalId, startVoteTime, bytes(""));
-        raiserdOutProposalIds += 1;
+        // raiserdOutProposalIds += 1;
 
         emit ProposalCreated(
             address(dao),

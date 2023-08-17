@@ -62,8 +62,8 @@ contract StewardManagementContract is
         public proposals;
     mapping(address => EnumerableSet.AddressSet) stewardWhiteList;
 
-    uint256 public stewardInProposalIds = 1;
-    uint256 public stewardOutProposalIds = 1;
+    // uint256 public stewardInProposalIds = 1;
+    // uint256 public stewardOutProposalIds = 1;
 
     function registerStewardWhiteList(
         DaoRegistry dao,
@@ -82,17 +82,19 @@ contract StewardManagementContract is
         reimbursable(dao)
         onlyMember(dao)
         onlySteward(dao, applicant)
-        returns (bytes32 proposalId)
+        returns (bytes32)
     {
         require(!dao.isMember(applicant), "applicant is strward already");
         require(
             DaoHelper.isNotReservedAddress(applicant),
             "applicant is reserved address"
         );
+        dao.increaseGovenorInId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
+                bytes8(uint64(uint160(address(dao)))),
                 "Governor-In#",
-                Strings.toString(stewardInProposalIds)
+                Strings.toString(dao.getCurrentGovenorInProposalId())
             )
         );
 
@@ -109,7 +111,7 @@ contract StewardManagementContract is
         );
 
         _sponsorProposal(dao, proposalId, startVoteTime, bytes(""));
-        stewardInProposalIds += 1;
+        // stewardInProposalIds += 1;
 
         emit ProposalCreated(
             address(dao),
@@ -119,18 +121,20 @@ contract StewardManagementContract is
             stopVoteTime,
             ProposalType.STEWARD_IN
         );
+        return proposalId;
     }
 
     function submitSteWardOutProposal(
         DaoRegistry dao,
         address applicant
-    ) external onlyMember(dao) reimbursable(dao) returns (bytes32 proposalId) {
+    ) external onlyMember(dao) reimbursable(dao) returns (bytes32) {
         require(dao.isMember(applicant), "applicant isnt steward");
-
+        dao.increaseGovenorOutId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
+                bytes8(uint64(uint160(address(dao)))),
                 "Governor-Out#",
-                Strings.toString(stewardOutProposalIds)
+                Strings.toString(dao.getCurrentGovenorOutProposalId())
             )
         );
 
@@ -147,7 +151,7 @@ contract StewardManagementContract is
         );
 
         _sponsorProposal(dao, proposalId, startVoteTime, bytes(""));
-        stewardOutProposalIds += 1;
+        // stewardOutProposalIds += 1;
 
         emit ProposalCreated(
             address(dao),
@@ -157,6 +161,7 @@ contract StewardManagementContract is
             stopVoteTime,
             ProposalType.STEWARD_OUT
         );
+        return proposalId;
     }
 
     /**

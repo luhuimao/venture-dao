@@ -144,7 +144,9 @@ contract VintageVesting is IVesting {
                 msg.sender,
                 recipientAddr,
                 vars.returnTokenInfo.returnToken,
-                vars.returnTokenInfo.erc721
+                vars.returnTokenInfo.nftEnable == true
+                    ? vars.returnTokenInfo.erc721
+                    : address(0x0)
             ],
             [
                 vars.vestingSteps,

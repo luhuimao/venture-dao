@@ -53,7 +53,7 @@ contract VintageFundRaiseAdapterContract is
      */
     // Keeps track of all the Proposals executed per DAO.
     mapping(address => mapping(bytes32 => ProposalDetails)) public Proposals;
-    uint256 public proposalIds = 1;
+    // uint256 public proposalIds = 1;
     mapping(address => uint256) public createdFundCounter;
     mapping(address => bytes32) public lastProposalIds;
 
@@ -148,9 +148,13 @@ contract VintageFundRaiseAdapterContract is
             bytes(""),
             msg.sender
         );
-
+        params.dao.increaseNewFundId();
         vars.proposalId = TypeConver.bytesToBytes32(
-            abi.encodePacked("Fundraise#", Strings.toString(proposalIds))
+            abi.encodePacked(
+                bytes8(uint64(uint160(address(params.dao)))),
+                "Fundraise#",
+                Strings.toString(params.dao.getCurrentNewFundProposalId())
+            )
         );
 
         params.dao.submitProposal(vars.proposalId);
@@ -200,7 +204,7 @@ contract VintageFundRaiseAdapterContract is
             vars.submittedBy,
             address(vars.votingContract)
         );
-        proposalIds += 1;
+        // proposalIds += 1;
 
         lastProposalIds[address(params.dao)] = vars.proposalId;
         emit ProposalCreated(address(params.dao), vars.proposalId);
