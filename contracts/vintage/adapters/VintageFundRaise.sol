@@ -152,7 +152,7 @@ contract VintageFundRaiseAdapterContract is
         vars.proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
                 bytes8(uint64(uint160(address(params.dao)))),
-                "Fundraise#",
+                "NewFund#",
                 Strings.toString(params.dao.getCurrentNewFundProposalId())
             )
         );
