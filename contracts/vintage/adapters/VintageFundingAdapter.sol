@@ -9,6 +9,8 @@ import "../../adapters/modifiers/Reimbursable.sol";
 import "./VintageAllocationAdapter.sol";
 import "./interfaces/IVintageFunding.sol";
 import "./VintageVoting.sol";
+import "./VintageDistributeAdapter.sol";
+import "./VintageFundingReturnTokenAdapter.sol";
 import "../../helpers/DaoHelper.sol";
 import "../../helpers/GovernanceHelper.sol";
 import "../../utils/TypeConver.sol";
@@ -64,10 +66,6 @@ contract VintageFundingAdapterContract is
     // vote types for proposal
     mapping(address => DoubleEndedQueue.Bytes32Deque) public proposalQueue;
 
-    // uint256 public proposalIds = 1;
-    // uint256 public constant PERCENTAGE_PRECISION = 1e18;
-    // string constant PROPOSALID_PREFIX = "Funding#";
-
     address public protocolAddress =
         address(0x9ac9c636404C8d46D9eb966d7179983Ba5a3941A);
 
@@ -93,32 +91,46 @@ contract VintageFundingAdapterContract is
         DaoRegistry dao,
         address approver,
         address returnToken,
-        uint256 lockAmount
+        uint256 lockAmount,
+        bytes32 proposalId
     ) internal returns (bool) {
-        IERC20 erc20 = IERC20(returnToken);
+        // IERC20 erc20 = IERC20(returnToken);
 
-        if (
-            erc20.balanceOf(approver) < lockAmount ||
-            erc20.allowance(approver, address(this)) < lockAmount
-        ) {
-            return false;
-        }
+        // if (
+        //     erc20.balanceOf(approver) < lockAmount ||
+        //     erc20.allowance(approver, address(this)) < lockAmount
+        // ) {
+        //     return false;
+        // }
 
         //20220916 fix potential bugs
         // uint256 oldAllowance = erc20.allowance(
         //     address(this),
         //     dao.getAdapterAddress(DaoHelper.VINTAGE_ALLOCATION_ADAPTER)
         // );
-        uint256 newAllowance = erc20.allowance(
-            address(this),
-            dao.getAdapterAddress(DaoHelper.VINTAGE_ALLOCATION_ADAPTER)
-        ) + lockAmount;
-        //approve to AllocationAdapter contract
-        erc20.approve(
-            dao.getAdapterAddress(DaoHelper.VINTAGE_ALLOCATION_ADAPTER),
-            newAllowance
+        // uint256 newAllowance = erc20.allowance(
+        //     address(this),
+        //     dao.getAdapterAddress(DaoHelper.VINTAGE_ALLOCATION_ADAPTER)
+        // ) + lockAmount;
+        // //approve to AllocationAdapter contract
+        // erc20.approve(
+        //     dao.getAdapterAddress(DaoHelper.VINTAGE_ALLOCATION_ADAPTER),
+        //     newAllowance
+        // );
+        // erc20.transferFrom(approver, address(this), lockAmount);
+
+        VintageFundingReturnTokenAdapterContract returnTokenAdapt = VintageFundingReturnTokenAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER
+                )
+            );
+        returnTokenAdapt.escrowFundingReturnToken(
+            lockAmount,
+            dao,
+            approver,
+            returnToken,
+            proposalId
         );
-        erc20.transferFrom(approver, address(this), lockAmount);
         return true;
     }
 
@@ -126,37 +138,43 @@ contract VintageFundingAdapterContract is
         DaoRegistry dao,
         bytes32 proposalId
     ) external reimbursable(dao) {
-        uint256 lockedTokenAmount = projectTeamLockedTokens[address(dao)][
-            proposalId
-        ][msg.sender];
-        require(
-            lockedTokenAmount > 0,
-            "VintageFunding::unLockProjectTeamToken::no fund to unlock"
-        );
+        // uint256 lockedTokenAmount = projectTeamLockedTokens[address(dao)][
+        //     proposalId
+        // ][msg.sender];
+        // require(
+        //     lockedTokenAmount > 0,
+        //     "VintageFunding::unLockProjectTeamToken::no fund to unlock"
+        // );
 
         FundingLibrary.ProposalInfo storage proposal = proposals[address(dao)][
             proposalId
         ];
-        // FundingLibrary.ProposalInfo storage proposal = proposals[address(dao)][
-        //     proposalId
-        // ];
 
-        IERC20 erc20 = IERC20(proposal.proposalReturnTokenInfo.returnToken);
-        require(
-            erc20.balanceOf(address(this)) >= lockedTokenAmount,
-            "VintageFunding::unLockProjectTeamToken::Insufficient Fund"
-        );
+        // IERC20 erc20 = IERC20(proposal.proposalReturnTokenInfo.returnToken);
+        // require(
+        //     erc20.balanceOf(address(this)) >= lockedTokenAmount,
+        //     "VintageFunding::unLockProjectTeamToken::Insufficient Fund"
+        // );
 
         // require(
-        //     proposal.status == IVintageFunding.ProposalState.FAILED,
+        //     proposal.status == FundingLibrary.ProposalState.FAILED,
         //     "VintageFunding::unLockProjectTeamToken::not satisfied"
         // );
-        require(
-            proposal.status == FundingLibrary.ProposalState.FAILED,
-            "VintageFunding::unLockProjectTeamToken::not satisfied"
+        // projectTeamLockedTokens[address(dao)][proposalId][msg.sender] = 0;
+        // erc20.transfer(msg.sender, lockedTokenAmount);
+
+        VintageFundingReturnTokenAdapterContract returnTokenAdapt = VintageFundingReturnTokenAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER
+                )
+            );
+        returnTokenAdapt.withdrawFundingReturnToken(
+            dao,
+            proposalId,
+            proposal.proposalReturnTokenInfo.returnToken,
+            msg.sender,
+            proposal.status
         );
-        projectTeamLockedTokens[address(dao)][proposalId][msg.sender] = 0;
-        erc20.transfer(msg.sender, lockedTokenAmount);
     }
 
     /**
@@ -173,72 +191,6 @@ contract VintageFundingAdapterContract is
         FundingProposalParams calldata params
     ) external override onlyRaiser(dao) reimbursable(dao) {
         SubmitProposalLocalVars memory vars;
-
-        // vars.fundingPoolAdapt = VintageFundingPoolAdapterContract(
-        //     dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
-        // );
-        // vars.fundingPoolAdapt.processFundRaise(dao);
-        // require(
-        //     vars.fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
-        //         DaoHelper.FundRaiseState.DONE &&
-        //         block.timestamp > vars.fundingPoolAdapt.getFundStartTime(dao) &&
-        //         block.timestamp < vars.fundingPoolAdapt.getFundEndTime(dao),
-        //     "Funding::submitProposal::only can submit proposal in investing period"
-        // );
-
-        // vars.votingContract = IVintageVoting(
-        //     dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
-        // );
-
-        // vars.submittedBy = vars.votingContract.getSenderAddress(
-        //     dao,
-        //     address(this),
-        //     bytes(""),
-        //     msg.sender
-        // );
-
-        // vars.fundingAmount = params.fundingInfo.fundingAmount;
-
-        // if (params.returnTokenInfo.escrow) {
-        //     require(
-        //         params.vestInfo.vestingStartTime > 0 &&
-        //             params.vestInfo.vetingEndTime >=
-        //             params.vestInfo.vestingStartTime &&
-        //             params.vestInfo.vestingCliffEndTime >=
-        //             params.vestInfo.vestingStartTime &&
-        //             params.vestInfo.vestingCliffEndTime <=
-        //             params.vestInfo.vetingEndTime &&
-        //             params.vestInfo.vestingInterval > 0,
-        //         "Funding::submitProposal::vesting time invalid"
-        //     );
-        //     require(
-        //         params.returnTokenInfo.price > 0,
-        //         "Funding::submitProposal::price must > 0"
-        //     );
-        //     vars.returnTokenAmount =
-        //         (params.fundingInfo.fundingAmount * PERCENTAGE_PRECISION) /
-        //         params.returnTokenInfo.price;
-
-        //     require(
-        //         params.vestInfo.vestingCliffLockAmount <= PERCENTAGE_PRECISION,
-        //         "invalid vesting cliff amount"
-        //     );
-
-        //     require(
-        //         vars.returnTokenAmount > 0,
-        //         "Funding::submitProposal::invalid return token token Amount"
-        //     );
-        // }
-
-        // require(
-        //     params.fundingInfo.fundingAmount > 0,
-        //     "Funding::submitProposal::invalid funding token Amount"
-        // );
-
-        // require(
-        //     params.fundingInfo.receiver != address(0x0),
-        //     "Funding::submitProposal::invalid receiver address"
-        // );
         dao.increaseFundingId();
         vars.proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -251,8 +203,6 @@ contract VintageFundingAdapterContract is
         dao.submitProposal(vars.proposalId);
 
         // Saves the state of the proposal.
-        // createProposal(dao, vars.proposalId, params, msg.sender);
-
         proposals[address(dao)][vars.proposalId] = proposals[address(dao)][
             vars.proposalId
         ].createNewFundingProposal(
@@ -294,116 +244,8 @@ contract VintageFundingAdapterContract is
         //Inserts proposal at the end of the queue.
         proposalQueue[address(dao)].pushBack(vars.proposalId);
 
-        // proposalIds += 1;
-        emit ProposalCreated(
-            address(dao),
-            vars.proposalId
-            // params.vestInfo.vestingStartTime,
-            // params.vestInfo.vetingEndTime,
-            // params.vestInfo.vestingCliffEndTime,
-            // params.vestInfo.vestingCliffLockAmount,
-            // params.vestInfo.vestingInterval,
-            // block.timestamp
-        );
+        emit ProposalCreated(address(dao), vars.proposalId);
     }
-
-    // function createProposal(
-    //     DaoRegistry dao,
-    //     bytes32 proposalId,
-    //     FundingProposalParams calldata params,
-    //     address proposer
-    // ) internal {
-    // VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
-    //         dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
-    //     );
-    // uint256 totalFund = (params.fundingInfo.fundingAmount *
-    //     PERCENTAGE_PRECISION) /
-    //     (PERCENTAGE_PRECISION -
-    //         (fundingPoolAdapt.protocolFee() +
-    //             dao.getConfiguration(DaoHelper.MANAGEMENT_FEE) +
-    //             dao.getConfiguration(
-    //                 DaoHelper.VINTAGE_PROPOSER_TOKEN_REWARD_RADIO
-    //             )));
-    // proposals[address(dao)][proposalId] = ProposalInfo(
-    //     params.fundingInfo.fundingToken,
-    //     params.fundingInfo.fundingAmount,
-    //     totalFund,
-    //     params.returnTokenInfo.price,
-    //     params.fundingInfo.receiver,
-    //     proposer,
-    //     IVintageFunding.ProposalState.IN_QUEUE,
-    //     IVintageFunding.VestInfo(
-    //         params.vestInfo.vestingStartTime,
-    //         params.vestInfo.vetingEndTime,
-    //         params.vestInfo.vestingCliffEndTime,
-    //         params.vestInfo.vestingCliffLockAmount,
-    //         params.vestInfo.vestingInterval
-    //     ),
-    //     ProposalReturnTokenInfo(
-    //         params.returnTokenInfo.escrow,
-    //         params.returnTokenInfo.returnToken,
-    //         returnTokenAmount,
-    //         params.returnTokenInfo.approver
-    //         // params.returnTokenInfo.nftEnable,
-    //         // params.returnTokenInfo.name,
-    //         // params.returnTokenInfo.symbol,
-    //         // params.returnTokenInfo.description
-    //     ),
-    //     ProposalTimeInfo(block.timestamp, 0, 0, 0)
-    // );
-    // uint256[11] memory uint256Args = [
-    //     params.fundingInfo.fundingAmount,
-    //     params.returnTokenInfo.price,
-    //     block.timestamp,
-    //     0,
-    //     0,
-    //     0,
-    //     params.vestInfo.vestingStartTime,
-    //     params.vestInfo.vestingCliffEndTime,
-    //     params.vestInfo.vetingEndTime,
-    //     params.vestInfo.vestingCliffLockAmount,
-    //     params.vestInfo.vestingInterval
-    // ];
-    // address[6] memory addreessArgs = [
-    //     params.fundingInfo.fundingToken,
-    //     params.returnTokenInfo.approver,
-    //     params.returnTokenInfo.returnToken,
-    //     proposer,
-    //     params.fundingInfo.receiver,
-    //     params.returnTokenInfo.vestingNft
-    // ];
-
-    //     proposals[address(dao)][proposalId] = proposals[address(dao)][
-    //         proposalId
-    //     ].createNewFundingProposal(
-    //             dao,
-    //             [
-    //                 params.fundingInfo.fundingAmount,
-    //                 params.returnTokenInfo.price,
-    //                 block.timestamp,
-    //                 0,
-    //                 0,
-    //                 0,
-    //                 params.vestInfo.vestingStartTime,
-    //                 params.vestInfo.vestingCliffEndTime,
-    //                 params.vestInfo.vetingEndTime,
-    //                 params.vestInfo.vestingCliffLockAmount,
-    //                 params.vestInfo.vestingInterval
-    //             ],
-    //             [
-    //                 params.fundingInfo.fundingToken,
-    //                 params.returnTokenInfo.approver,
-    //                 params.returnTokenInfo.returnToken,
-    //                 proposer,
-    //                 params.fundingInfo.receiver,
-    //                 params.returnTokenInfo.vestingNft
-    //             ],
-    //             params.returnTokenInfo.escrow,
-    //             params.returnTokenInfo.nftEnable,
-    //             params.vestInfo.name,
-    //             params.vestInfo.description
-    //         );
-    // }
 
     /**
      * @notice Start voting process when period for project team to approval is end.
@@ -476,7 +318,8 @@ contract VintageFundingAdapterContract is
                     dao,
                     proposal.proposalReturnTokenInfo.approveOwnerAddr,
                     proposal.proposalReturnTokenInfo.returnToken,
-                    proposal.proposalReturnTokenInfo.returnTokenAmount
+                    proposal.proposalReturnTokenInfo.returnTokenAmount,
+                    proposalId
                 );
                 // lock project token failed
                 if (!vars.rel) {
@@ -505,8 +348,6 @@ contract VintageFundingAdapterContract is
                     proposal.status = FundingLibrary
                         .ProposalState
                         .IN_VOTING_PROGRESS;
-
-                    // setInVotingProcess(dao, vars.votingContract, proposalId);
                 }
             } else {
                 // Starts the voting process for the proposal. setting voting start time
@@ -527,45 +368,11 @@ contract VintageFundingAdapterContract is
                 proposal.status = FundingLibrary
                     .ProposalState
                     .IN_VOTING_PROGRESS;
-
-                // setInVotingProcess(dao, vars.votingContract, proposalId);
             }
         }
 
-        emit StartVote(
-            address(dao),
-            proposalId
-            // block.timestamp,
-            // vars._propsalStopVotingTimestamp,
-            // proposal.status
-        );
+        emit StartVote(address(dao), proposalId);
     }
-
-    // function setInVotingProcess(
-    //     DaoRegistry dao,
-    //     IVintageVoting votingContract,
-    //     bytes32 proposalId
-    // ) internal {
-    //     // Starts the voting process for the proposal. setting voting start time
-    //     votingContract.startNewVotingForProposal(
-    //         dao,
-    //         proposalId,
-    //         block.timestamp,
-    //         bytes("")
-    //     );
-    //     FundingLibrary.ProposalInfo storage proposal = proposals[address(dao)][
-    //         proposalId
-    //     ];
-    //     proposal.proposalTimeInfo.proposalStartVotingTimestamp = block
-    //         .timestamp;
-    //     proposal.proposalTimeInfo.proposalStopVotingTimestamp =
-    //         block.timestamp +
-    //         dao.getConfiguration(DaoHelper.VOTING_PERIOD);
-
-    //     ongoingProposal[address(dao)] = proposalId;
-
-    //     proposal.status = FundingLibrary.ProposalState.IN_VOTING_PROGRESS;
-    // }
 
     /**
      * @notice Process the distribution proposal, calculates the fair amount of funds to distribute to the project team.
@@ -591,7 +398,6 @@ contract VintageFundingAdapterContract is
                 "Funding::processProposal::invalid prposalId"
             );
         }
-        // ProposalInfo storage proposal = proposals[address(dao)][proposalId];
         FundingLibrary.ProposalInfo storage proposal = proposals[address(dao)][
             proposalId
         ];
@@ -601,11 +407,7 @@ contract VintageFundingAdapterContract is
                 proposal.proposalTimeInfo.proposalStopVotingTimestamp,
             "Funding::processProposal::proposal in voting period"
         );
-        // require(
-        //     proposal.status !=
-        //         IVintageFunding.ProposalState.IN_EXECUTE_PROGRESS,
-        //     "Funding::processProposal::proposal already in execute progress"
-        // );
+
         require(
             proposal.status != FundingLibrary.ProposalState.IN_EXECUTE_PROGRESS,
             "Funding::processProposal::proposal already in execute progress"
@@ -631,7 +433,6 @@ contract VintageFundingAdapterContract is
             .voteResult(dao, proposalId);
 
         if (vars.voteResult == IVintageVoting.VotingState.PASS) {
-            // proposal.status = IVintageFunding.ProposalState.IN_EXECUTE_PROGRESS;
             proposal.status = FundingLibrary.ProposalState.IN_EXECUTE_PROGRESS;
 
             ongoingProposal[address(dao)] = proposalId;
@@ -657,7 +458,6 @@ contract VintageFundingAdapterContract is
 
             if (vars.fundingpool.totalSupply() < proposal.totalAmount) {
                 //insufficient funds failed the distribution
-                // proposal.status = IVintageFunding.ProposalState.FAILED;
                 proposal.status = FundingLibrary.ProposalState.FAILED;
             } else {
                 VintageFundingPoolExtension fundingpoolExt = VintageFundingPoolExtension(
@@ -665,36 +465,59 @@ contract VintageFundingAdapterContract is
                             DaoHelper.VINTAGE_FUNDING_POOL_EXT
                         )
                     );
-                //process1. distribute fund to project team address
-                distributeFundToProductTeam(
-                    fundingpoolExt,
-                    proposal.recipientAddr,
-                    proposal.fundingAmount
+
+                VintageDistributeAdatperContract distributeCont = VintageDistributeAdatperContract(
+                        dao.getAdapterAddress(
+                            DaoHelper.VINTAGE_DISTRIBUTE_ADAPTER
+                        )
+                    );
+
+                distributeCont.distributeFundByFunding(
+                    dao,
+                    [
+                        proposal.recipientAddr,
+                        protocolAddress,
+                        proposal.proposer
+                    ],
+                    [
+                        proposal.fundingAmount,
+                        vars.managementFee,
+                        vars.protocolFee,
+                        vars.proposerFundReward
+                    ]
                 );
 
-                if (vars.managementFee > 0) {
-                    //process2. distribute management fee to GP
-                    distributeManagementFeeToGP(
-                        dao,
-                        fundingpoolExt,
-                        vars.managementFee
-                    );
-                }
+                //process1. distribute fund to project team address
+                // distributeFundToProductTeam(
+                //     fundingpoolExt,
+                //     proposal.recipientAddr,
+                //     proposal.fundingAmount
+                // );
+
+                // if (vars.managementFee > 0) {
+                //     //process2. distribute management fee to GP
+                //     distributeManagementFeeToGP(
+                //         dao,
+                //         fundingpoolExt,
+                //         vars.managementFee
+                //     );
+                // }
 
                 //process3. distribute protocol fee to DaoSquare
-                distributeProtocolFeeToDaoSquare(
-                    fundingpoolExt,
-                    vars.protocolFee
-                );
+                // distributeProtocolFeeToDaoSquare(
+                //     fundingpoolExt,
+                //     vars.protocolFee
+                // );
 
-                if (vars.proposerFundReward > 0) {
-                    //process4. distribute proposer fund reward to proposer
-                    distributeProposerFundRewardToProposer(
-                        fundingpoolExt,
-                        proposal.proposer,
-                        vars.proposerFundReward
-                    );
-                }
+                // if (vars.proposerFundReward > 0) {
+                //     //process4. distribute proposer fund reward to proposer
+                //     distributeProposerFundRewardToProposer(
+                //         fundingpoolExt,
+                //         proposal.proposer,
+                //         vars.proposerFundReward
+                //     );
+                // }
+
                 if (proposal.proposalReturnTokenInfo.escrow) {
                     //process5. snap vest info for all eligible investor
                     snapShotVestingInfo(dao, proposalId);
@@ -706,14 +529,20 @@ contract VintageFundingAdapterContract is
                 }
 
                 //process7. substract from funding pool
-                subFromFundPool(
-                    fundingpoolExt,
+                // subFromFundPool(
+                //     fundingpoolExt,
+                //     proposal.fundingAmount,
+                //     vars.protocolFee,
+                //     vars.managementFee,
+                //     vars.proposerFundReward
+                // );
+                distributeCont.subFromFundPool(
+                    dao,
                     proposal.fundingAmount,
                     vars.protocolFee,
                     vars.managementFee,
                     vars.proposerFundReward
                 );
-
                 //process8. set proposal state
                 // proposal.status = IVintageFunding.ProposalState.DONE;
                 proposal.status = FundingLibrary.ProposalState.DONE;
@@ -722,7 +551,6 @@ contract VintageFundingAdapterContract is
             vars.voteResult == IVintageVoting.VotingState.NOT_PASS ||
             vars.voteResult == IVintageVoting.VotingState.TIE
         ) {
-            // proposal.status = IVintageFunding.ProposalState.FAILED;
             proposal.status = FundingLibrary.ProposalState.DONE;
         } else {
             revert("Funding::processProposal::voting not finalized");
@@ -733,116 +561,18 @@ contract VintageFundingAdapterContract is
         emit ProposalExecuted(
             address(dao),
             proposalId,
-            // uint256(vars.voteResult),
             vars.allVotingWeight,
             vars.nbYes,
             vars.nbNo
-            // uint256(proposal.status)
         );
 
         return true;
-    }
-
-    function distributeFundToProductTeam(
-        VintageFundingPoolExtension fundingpoolExt,
-        address recipientAddr,
-        uint256 fundingAmount
-    ) internal {
-        // VintageFundingPoolExtension fundingpoolExt = VintageFundingPoolExtension(
-        //         dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
-        //     );
-        // address fundRaiseTokenAddr = fundingpoolExt
-        //     .getFundRaisingTokenAddress();
-        fundingpoolExt.distributeFunds(
-            recipientAddr,
-            fundingpoolExt.getFundRaisingTokenAddress(),
-            fundingAmount
-        );
-    }
-
-    function distributeManagementFeeToGP(
-        DaoRegistry dao,
-        VintageFundingPoolExtension fundingpoolExt,
-        uint256 managementFee
-    ) internal {
-        // VintageFundingPoolExtension fundingpoolExt = VintageFundingPoolExtension(
-        //         dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
-        //     );
-        // address fundRaiseTokenAddr = fundingpoolExt
-        //     .getFundRaisingTokenAddress();
-
-        fundingpoolExt.distributeFunds(
-            dao.getAddressConfiguration(DaoHelper.GP_ADDRESS),
-            fundingpoolExt.getFundRaisingTokenAddress(),
-            managementFee
-        );
-    }
-
-    function distributeProtocolFeeToDaoSquare(
-        VintageFundingPoolExtension fundingpoolExt,
-        uint256 protocolFee
-    ) internal {
-        // VintageFundingPoolExtension fundingpoolExt = VintageFundingPoolExtension(
-        //         dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
-        //     );
-
-        // address fundRaiseTokenAddr = fundingpoolExt
-        //     .getFundRaisingTokenAddress();
-        fundingpoolExt.distributeFunds(
-            protocolAddress,
-            fundingpoolExt.getFundRaisingTokenAddress(),
-            protocolFee
-        );
-    }
-
-    function distributeProposerFundRewardToProposer(
-        VintageFundingPoolExtension fundingpoolExt,
-        address proposer,
-        uint256 proposerFundReward
-    ) internal {
-        // VintageFundingPoolExtension fundingpoolExt = VintageFundingPoolExtension(
-        //         dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
-        //     );
-
-        // address fundRaiseTokenAddr = fundingpoolExt
-        //     .getFundRaisingTokenAddress();
-
-        fundingpoolExt.distributeFunds(
-            proposer,
-            fundingpoolExt.getFundRaisingTokenAddress(),
-            proposerFundReward
-        );
-    }
-
-    function subFromFundPool(
-        VintageFundingPoolExtension fundingpoolExt,
-        uint256 fundingAmount,
-        uint256 protocolFee,
-        uint256 managementFee,
-        uint256 proposerFundReward
-    ) internal {
-        // VintageFundingPoolExtension fundingpoolExt = VintageFundingPoolExtension(
-        //         dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
-        //     );
-        // VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
-        //         dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
-        //     );
-        // address fundRaiseTokenAddr = fundingpoolExt
-        //     .getFundRaisingTokenAddress();
-
-        fundingpoolExt.subtractAllFromBalance(
-            fundingpoolExt.getFundRaisingTokenAddress(),
-            fundingAmount + protocolFee + managementFee + proposerFundReward
-        );
     }
 
     function snapShotVestingInfo(DaoRegistry dao, bytes32 proposalId) internal {
         VintageAllocationAdapterContract allocAda = VintageAllocationAdapterContract(
                 dao.getAdapterAddress(DaoHelper.VINTAGE_ALLOCATION_ADAPTER)
             );
-        // IVintageFunding.ProposalInfo storage proposal = proposals[address(dao)][
-        //     proposalId
-        // ];
         FundingLibrary.ProposalInfo storage proposal = proposals[address(dao)][
             proposalId
         ];

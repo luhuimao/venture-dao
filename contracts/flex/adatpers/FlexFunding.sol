@@ -1,16 +1,17 @@
 pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 import "./interfaces/IFlexFunding.sol";
 import "../../guards/AdapterGuard.sol";
-import "../../guards/FlexProposerGuard.sol";
+import "../../guards/MemberGuard.sol";
+// import "../../guards/FlexProposerGuard.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
+import "./FlexFundingReturnTokenAdapter.sol";
 
 contract FlexFundingAdapterContract is
     IFlexFunding,
     AdapterGuard,
     MemberGuard,
-    FlexProposerGuard,
     Reimbursable
 {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -22,8 +23,8 @@ contract FlexFundingAdapterContract is
     mapping(address => mapping(bytes32 => ProposalInfo)) public Proposals;
 
     // Keeps track of all the locked token amount per DAO.
-    mapping(address => mapping(bytes32 => mapping(address => uint256)))
-        public escrowedTokens;
+    // mapping(address => mapping(bytes32 => mapping(address => uint256)))
+    //     public escrowedTokens;
     mapping(address => EnumerableSet.AddressSet) proposerWhiteList;
     // uint256 public proposalIds = 1;
     uint256 public constant RETRUN_TOKEN_AMOUNT_PRECISION = 1e18;
@@ -33,6 +34,79 @@ contract FlexFundingAdapterContract is
 
     modifier onlyDaoFactoryOwner(DaoRegistry dao) {
         require(msg.sender == DaoHelper.daoFactoryAddress(dao), "Access Deny");
+        _;
+    }
+
+    modifier onlyProposer(DaoRegistry dao) {
+        if (dao.getConfiguration(DaoHelper.FLEX_PROPOSER_ENABLE) == 1) {
+            //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
+            if (
+                dao.getConfiguration(
+                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+                ) == 0
+            ) {
+                require(
+                    IERC20(
+                        dao.getAddressConfiguration(
+                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+                        )
+                    ).balanceOf(msg.sender) >=
+                        dao.getConfiguration(
+                            DaoHelper.FLEX_PROPOSER_MIN_HOLDING
+                        ),
+                    "dont meet min erc20 token holding requirment"
+                );
+            }
+            if (
+                dao.getConfiguration(
+                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+                ) == 1
+            ) {
+                require(
+                    IERC721(
+                        dao.getAddressConfiguration(
+                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+                        )
+                    ).balanceOf(msg.sender) >=
+                        dao.getConfiguration(
+                            DaoHelper.FLEX_PROPOSER_MIN_HOLDING
+                        ),
+                    "dont meet min erc721 token holding requirment"
+                );
+            }
+            if (
+                dao.getConfiguration(
+                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+                ) == 2
+            ) {
+                require(
+                    IERC1155(
+                        dao.getAddressConfiguration(
+                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+                        )
+                    ).balanceOf(
+                            msg.sender,
+                            dao.getConfiguration(
+                                DaoHelper.FLEX_PROPOSER_TOKENID
+                            )
+                        ) >=
+                        dao.getConfiguration(
+                            DaoHelper.FLEX_PROPOSER_MIN_HOLDING
+                        ),
+                    "dont meet min erc1155 token holding requirment"
+                );
+            }
+            if (
+                dao.getConfiguration(
+                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+                ) == 3
+            ) {
+                require(
+                    isProposerWhiteList(dao, msg.sender),
+                    "not in whitelist"
+                );
+            }
+        }
         _;
     }
 
@@ -314,7 +388,8 @@ contract FlexFundingAdapterContract is
                             dao,
                             proposal.fundingInfo.approverAddr,
                             proposal.fundingInfo.returnTokenAddr,
-                            vars.returnTokenAmount
+                            vars.returnTokenAmount,
+                            proposalId
                         )
                     ) {
                         proposal.state = ProposalStatus.FAILED;
@@ -324,21 +399,22 @@ contract FlexFundingAdapterContract is
                             proposal.state
                         );
                         return false;
-                    } else {
-                        escrowedTokens[address(dao)][proposalId][
-                            proposal.fundingInfo.approverAddr
-                        ] = vars.returnTokenAmount;
                     }
+                    // else {
+                    //     escrowedTokens[address(dao)][proposalId][
+                    //         proposal.fundingInfo.approverAddr
+                    //     ] = vars.returnTokenAmount;
+                    // }
                     vars.flexAllocAdapt = FlexAllocationAdapterContract(
                         dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
                     );
                     // vars.returnToken = proposal.fundingInfo.returnTokenAddr;
                     // vars.proposer = proposal.proposer;
 
-                    IERC20(proposal.fundingInfo.returnTokenAddr).approve(
-                        dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT),
-                        vars.returnTokenAmount
-                    );
+                    // IERC20(proposal.fundingInfo.returnTokenAddr).approve(
+                    //     dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT),
+                    //     vars.returnTokenAmount
+                    // );
                     vars.flexAllocAdapt.allocateProjectToken(
                         dao,
                         proposal.fundingInfo.returnTokenAddr,
@@ -429,57 +505,37 @@ contract FlexFundingAdapterContract is
         DaoRegistry dao,
         bytes32 proposalId
     ) external reimbursable(dao) {
-        uint256 escrowedTokenAmount = escrowedTokens[address(dao)][proposalId][
-            msg.sender
-        ];
-        require(
-            escrowedTokenAmount > 0,
-            "Flex Funding::retrunTokenToApprover::no fund to return"
-        );
+        // uint256 escrowedTokenAmount = escrowedTokens[address(dao)][proposalId][
+        //     msg.sender
+        // ];
+        // require(
+        //     escrowedTokenAmount > 0,
+        //     "Flex Funding::retrunTokenToApprover::no fund to return"
+        // );
         ProposalInfo storage proposal = Proposals[address(dao)][proposalId];
-        IERC20 erc20 = IERC20(proposal.fundingInfo.returnTokenAddr);
-        require(
-            erc20.balanceOf(address(this)) >= escrowedTokenAmount,
-            "Flex Funding::retrunTokenToApprover::Insufficient Funds"
-        );
+        // IERC20 erc20 = IERC20(proposal.fundingInfo.returnTokenAddr);
+        // require(
+        //     erc20.balanceOf(address(this)) >= escrowedTokenAmount,
+        //     "Flex Funding::retrunTokenToApprover::Insufficient Funds"
+        // );
 
-        require(
-            proposal.state == ProposalStatus.FAILED,
-            "Flex Funding::retrunTokenToApprover::cant return"
+        // require(
+        //     proposal.state == ProposalStatus.FAILED,
+        //     "Flex Funding::retrunTokenToApprover::cant return"
+        // );
+        // escrowedTokens[address(dao)][proposalId][msg.sender] = 0;
+        // erc20.transfer(msg.sender, escrowedTokenAmount);
+        FlexFundingReturnTokenAdapterContract flexFundingReturnTokenAdapt = FlexFundingReturnTokenAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_RETURN_TOKEN_ADAPT)
+            );
+        flexFundingReturnTokenAdapt.withdrawFundingReturnToken(
+            dao,
+            proposalId,
+            proposal.fundingInfo.returnTokenAddr,
+            msg.sender,
+            proposal.state
         );
-        escrowedTokens[address(dao)][proposalId][msg.sender] = 0;
-        erc20.transfer(msg.sender, escrowedTokenAmount);
     }
-
-    // function getTokenByProposalId(
-    //     DaoRegistry dao,
-    //     bytes32 proposalId
-    // ) public view returns (address) {
-    //     return Proposals[address(dao)][proposalId].fundingInfo.tokenAddress;
-    // }
-
-    // function getFundRaiseTimes(
-    //     DaoRegistry dao,
-    //     bytes32 proposalId
-    // )
-    //     external
-    //     view
-    //     returns (uint256 fundRaiseStartTime, uint256 fundRaiseEndTime)
-    // {
-    //     fundRaiseStartTime = Proposals[address(dao)][proposalId]
-    //         .fundRaiseInfo
-    //         .fundRaiseStartTime;
-    //     fundRaiseEndTime = Proposals[address(dao)][proposalId]
-    //         .fundRaiseInfo
-    //         .fundRaiseEndTime;
-    // }
-
-    // function getFundRaiseType(
-    //     DaoRegistry dao,
-    //     bytes32 proposalId
-    // ) external view returns (FundRaiseType) {
-    //     return Proposals[address(dao)][proposalId].fundRaiseInfo.fundRaiseType;
-    // }
 
     function getMaxFundingAmount(
         DaoRegistry dao,
@@ -509,46 +565,16 @@ contract FlexFundingAdapterContract is
         return maxFundingAmount;
     }
 
-    // function getMinFundingAmount(
-    //     DaoRegistry dao,
-    //     bytes32 proposalId
-    // ) external view returns (uint256) {
-    //     return Proposals[address(dao)][proposalId].fundingInfo.minFundingAmount;
-    // }
-
-    // function getProposalState(
-    //     DaoRegistry dao,
-    //     bytes32 proposalId
-    // ) external view returns (ProposalStatus) {
-    //     return Proposals[address(dao)][proposalId].state;
-    // }
-
-    // function getDepositAmountLimit(
-    //     DaoRegistry dao,
-    //     bytes32 proposalId
-    // )
-    //     external
-    //     view
-    //     returns (uint256 minDepositAmount, uint256 maxDepositAmount)
-    // {
-    //     minDepositAmount = Proposals[address(dao)][proposalId]
-    //         .fundRaiseInfo
-    //         .minDepositAmount;
-    //     maxDepositAmount = Proposals[address(dao)][proposalId]
-    //         .fundRaiseInfo
-    //         .maxDepositAmount;
-    // }
-
     function isProposerWhiteList(
         DaoRegistry dao,
         address account
-    ) external view returns (bool) {
+    ) public view returns (bool) {
         return proposerWhiteList[address(dao)].contains(account);
     }
 
     function getProposerWhitelist(
         DaoRegistry dao
-    ) external view returns (address[] memory) {
+    ) public view returns (address[] memory) {
         return proposerWhiteList[address(dao)].values();
     }
 
@@ -560,28 +586,40 @@ contract FlexFundingAdapterContract is
         DaoRegistry dao,
         address approver,
         address returnToken,
-        uint256 escorwAmount
+        uint256 escrowAmount,
+        bytes32 proposalId
     ) internal returns (bool) {
-        IERC20 erc20 = IERC20(returnToken);
-        if (
-            erc20.balanceOf(approver) < escorwAmount ||
-            erc20.allowance(approver, address(this)) < escorwAmount
-        ) {
-            return false;
-        }
+        // IERC20 erc20 = IERC20(returnToken);
+        // if (
+        //     erc20.balanceOf(approver) < escorwAmount ||
+        //     erc20.allowance(approver, address(this)) < escorwAmount
+        // ) {
+        //     return false;
+        // }
 
-        //20220916 fix potential bugs
-        uint256 oldAllowance = erc20.allowance(
-            address(this),
-            dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
-        );
-        uint256 newAllowance = oldAllowance + escorwAmount;
-        //approve to AllocationAdapter contract
-        erc20.approve(
-            dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT),
-            newAllowance
-        );
-        erc20.transferFrom(approver, address(this), escorwAmount);
-        return true;
+        // //20220916 fix potential bugs
+        // uint256 oldAllowance = erc20.allowance(
+        //     address(this),
+        //     dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
+        // );
+        // uint256 newAllowance = oldAllowance + escorwAmount;
+        // //approve to AllocationAdapter contract
+        // erc20.approve(
+        //     dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT),
+        //     newAllowance
+        // );
+        // erc20.transferFrom(approver, address(this), escorwAmount);
+        // return true;
+        FlexFundingReturnTokenAdapterContract flexFundingReturnTokenAdapt = FlexFundingReturnTokenAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_RETURN_TOKEN_ADAPT)
+            );
+        return
+            flexFundingReturnTokenAdapt.escrowFundingReturnToken(
+                escrowAmount,
+                dao,
+                approver,
+                returnToken,
+                proposalId
+            );
     }
 }

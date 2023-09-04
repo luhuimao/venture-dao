@@ -5,14 +5,16 @@ pragma solidity ^0.8.0;
 import "../helpers/DaoHelper.sol";
 import "../core/DaoRegistry.sol";
 import "../extensions/bank/Bank.sol";
-import "../extensions/fundingpool/FundingPool.sol";
-import "../extensions/gpdao/GPDao.sol";
+// import "../extensions/fundingpool/FundingPool.sol";
+// import "../extensions/gpdao/GPDao.sol";
 import "../extensions/token/erc20/ERC20TokenExtension.sol";
 import "../vintage/extensions/fundingpool/VintageFundingPool.sol";
 import "../vintage/adapters/VintageFundingAdapter.sol";
 import "../vintage/adapters/VintageFundRaise.sol";
 import "../vintage/adapters/VintageVoting.sol";
+import "../vintage/adapters/VintageRaiserAllocation.sol";
 import "../flex/adatpers/FlexVoting.sol";
+import "../flex/adatpers/FlexStewardAllocation.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import "hardhat/console.sol";
@@ -114,59 +116,59 @@ library GovernanceHelper {
     //     }
     // }
 
-    function getAllGPVotingWeight(
-        DaoRegistry dao,
-        address token
-    ) internal view returns (uint128) {
-        address[] memory gps = GPDaoExtension(
-            dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
-        ).getAllGPs();
+    // function getAllGPVotingWeight(
+    //     DaoRegistry dao,
+    //     address token
+    // ) internal view returns (uint128) {
+    //     address[] memory gps = GPDaoExtension(
+    //         dao.getExtensionAddress(DaoHelper.GPDAO_EXT)
+    //     ).getAllGPs();
 
-        uint128 allGPweight;
-        for (uint8 i = 0; i < gps.length; i++) {
-            allGPweight += getGPVotingWeight(dao, gps[i], token);
-        }
-        return allGPweight;
-    }
+    //     uint128 allGPweight;
+    //     for (uint8 i = 0; i < gps.length; i++) {
+    //         allGPweight += getGPVotingWeight(dao, gps[i], token);
+    //     }
+    //     return allGPweight;
+    // }
 
-    function getGPVotingWeight(
-        DaoRegistry dao,
-        address voterAddr,
-        address token
-    ) internal view returns (uint128) {
-        FundingPoolExtension fundingpool = FundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        );
-        uint256 balanceInEther = fundingpool.balanceOf(voterAddr) / 10 ** 18;
-        //need to fix 2022.6.14
-        if (balanceInEther <= 0) {
-            return 0;
-        }
-        if (balanceInEther >= 9223372036854775807) {
-            return 50;
-        }
+    // function getGPVotingWeight(
+    //     DaoRegistry dao,
+    //     address voterAddr,
+    //     address token
+    // ) internal view returns (uint128) {
+    //     FundingPoolExtension fundingpool = FundingPoolExtension(
+    //         dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
+    //     );
+    //     uint256 balanceInEther = fundingpool.balanceOf(voterAddr) / 10 ** 18;
+    //     //need to fix 2022.6.14
+    //     if (balanceInEther <= 0) {
+    //         return 0;
+    //     }
+    //     if (balanceInEther >= 9223372036854775807) {
+    //         return 50;
+    //     }
 
-        uint128 weight;
-        // if (fundingpool.isTokenAllowed(token)) {
-        if (
-            fundingpool.votingWeightRadix() == 1 ||
-            fundingpool.votingWeightRadix() <= 0
-        ) {
-            // weight =
-            //     fundingpool.balanceOf(voterAddr, token) *
-            //     fundingpool.votingWeightMultiplier() +
-            //     fundingpool.votingWeightAddend();
-        } else {
-            weight =
-                ABDKMath64x64.toUInt(
-                    ABDKMath64x64.log_2(ABDKMath64x64.fromUInt(balanceInEther))
-                ) *
-                fundingpool.votingWeightMultiplier() +
-                fundingpool.votingWeightAddend();
-        }
-        // }
-        return weight;
-    }
+    //     uint128 weight;
+    //     // if (fundingpool.isTokenAllowed(token)) {
+    //     if (
+    //         fundingpool.votingWeightRadix() == 1 ||
+    //         fundingpool.votingWeightRadix() <= 0
+    //     ) {
+    //         // weight =
+    //         //     fundingpool.balanceOf(voterAddr, token) *
+    //         //     fundingpool.votingWeightMultiplier() +
+    //         //     fundingpool.votingWeightAddend();
+    //     } else {
+    //         weight =
+    //             ABDKMath64x64.toUInt(
+    //                 ABDKMath64x64.log_2(ABDKMath64x64.fromUInt(balanceInEther))
+    //             ) *
+    //             fundingpool.votingWeightMultiplier() +
+    //             fundingpool.votingWeightAddend();
+    //     }
+    //     // }
+    //     return weight;
+    // }
 
     // function getRaiserDepositVotingWeight(
     //     DaoRegistry dao,
@@ -226,7 +228,7 @@ library GovernanceHelper {
         return allRaiserweight;
     }
 
-     function getAllVintageRaiserVotingWeight(
+    function getAllVintageRaiserVotingWeight(
         DaoRegistry dao
     ) internal view returns (uint128) {
         address[] memory allRaisers = dao.getAllSteward();
@@ -281,6 +283,11 @@ library GovernanceHelper {
         VintageFundRaiseAdapterContract newFundAdapt = VintageFundRaiseAdapterContract(
                 dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
             );
+        VintageRaiserAllocationAdapter vintageRaiserAllocAdapt = VintageRaiserAllocationAdapter(
+                dao.getAdapterAddress(
+                    DaoHelper.VINTAGE_RAISER_ALLOCATION_ADAPTER
+                )
+            );
         uint256 etype = dao.getConfiguration(
             DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TYPE
         ); // 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
@@ -306,7 +313,11 @@ library GovernanceHelper {
                 bal = IERC1155(tokenAddress).balanceOf(account, tokenId);
             } else if (etype == 3) {
                 //allocation
-                return 1;
+                bal = vintageRaiserAllocAdapt.getAllocation(
+                    address(dao),
+                    account
+                );
+                // return 1;
             } else if (etype == 4) {
                 //DEPOSIT
 
@@ -353,7 +364,11 @@ library GovernanceHelper {
                 bal = IERC1155(tokenAddress).balanceOf(account, tokenId);
             } else if (etype == 3) {
                 //allocation
-                return 1;
+                bal = vintageRaiserAllocAdapt.getAllocation(
+                    address(dao),
+                    account
+                );
+                // return 1;
             } else if (etype == 4) {
                 //DEPOSIT
                 if (
@@ -386,6 +401,10 @@ library GovernanceHelper {
         uint256 votingWeightedType = dao.getConfiguration(
             DaoHelper.FLEX_VOTING_WEIGHTED_TYPE
         ); // 0. quantity 1. log2 2. 1 voter 1 vote
+
+        FlexStewardAllocationAdapter flexStewardAllocAdapt = FlexStewardAllocationAdapter(
+                dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_ALLOCATION_ADAPT)
+            );
         if (votingWeightedType == 1) {
             uint256 tokenId = dao.getConfiguration(
                 DaoHelper.FLEX_VOTING_ELIGIBILITY_TOKEN_ID
@@ -405,7 +424,11 @@ library GovernanceHelper {
                 bal = IERC1155(tokenAddress).balanceOf(account, tokenId);
             } else if (etype == 3) {
                 //allocation
-                return 1;
+                bal = flexStewardAllocAdapt.getAllocation(
+                    address(dao),
+                    account
+                );
+                // return 1;
             } else {
                 return 0;
             }
@@ -438,7 +461,11 @@ library GovernanceHelper {
                 bal = IERC1155(tokenAddress).balanceOf(account, tokenId);
             } else if (etype == 3) {
                 //allocation
-                return 1;
+                bal = flexStewardAllocAdapt.getAllocation(
+                    address(dao),
+                    account
+                );
+                // return 1;
             } else {
                 return 0;
             }
@@ -454,7 +481,7 @@ library GovernanceHelper {
     ) internal view returns (uint128) {
         uint256 etype = dao.getConfiguration(
             DaoHelper.FLEX_POLL_VOTING_ELIGIBILITY_TYPE
-        ); // 0. ERC20 1. ERC721, 2. ERC1155 3.allocation
+        ); // 0. ERC20 1. ERC721, 2. ERC1155
         uint256 votingWeightedType = dao.getConfiguration(
             DaoHelper.FLEX_POLL_VOTING_WEIGHTED_TYPE
         ); // 0. quantity 1. log2 2. 1 voter 1 vote
@@ -475,9 +502,6 @@ library GovernanceHelper {
             } else if (etype == 2) {
                 //ERC1155
                 bal = IERC1155(tokenAddress).balanceOf(account, tokenId);
-            } else if (etype == 3) {
-                //allocation
-                return 1;
             } else {
                 return 0;
             }
@@ -508,9 +532,6 @@ library GovernanceHelper {
             } else if (etype == 2) {
                 //ERC1155
                 bal = IERC1155(tokenAddress).balanceOf(account, tokenId);
-            } else if (etype == 3) {
-                //allocation
-                return 1;
             } else {
                 return 0;
             }

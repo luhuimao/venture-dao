@@ -1,14 +1,12 @@
 pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 
-import "../../../core/DaoRegistry.sol";
-import "../../../helpers/DaoHelper.sol";
+// import "../../../core/DaoRegistry.sol";
+// import "../../../helpers/DaoHelper.sol";
 import "./IFlexVoting.sol";
 import "../../extensions/FlexFundingPool.sol";
 import "../FlexFundingPoolAdapter.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-import "../../../guards/MemberGuard.sol";
+// import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../FlexAllocation.sol";
 import "../FlexPollingVoting.sol";
 import "../../../utils/TypeConver.sol";

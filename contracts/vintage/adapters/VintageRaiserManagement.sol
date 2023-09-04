@@ -6,6 +6,7 @@ import "../../helpers/DaoHelper.sol";
 import "../../utils/TypeConver.sol";
 import "./VintageVoting.sol";
 import "./VintageFundingPoolAdapter.sol";
+import "./VintageRaiserAllocation.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
@@ -29,6 +30,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
     struct ProposalDetails {
         bytes32 id;
         address account;
+        uint256 allocation;
         uint256 creationTime;
         uint256 stopVoteTime;
         ProposalState state;
@@ -129,13 +131,14 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
 
     function submitRaiserInProposal(
         DaoRegistry dao,
-        address applicant
+        address applicant,
+        uint256 allocation
     )
         external
         reimbursable(dao)
         onlyMember(dao)
         onlyRaiser(dao, applicant)
-        returns (bytes32 proposalId)
+        returns (bytes32)
     {
         require(!dao.isMember(applicant), "applicant is raiser already");
         require(
@@ -159,6 +162,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
             dao,
             proposalId,
             applicant,
+            allocation,
             startVoteTime,
             stopVoteTime
         );
@@ -174,12 +178,13 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
             stopVoteTime,
             ProposalType.RAISER_IN
         );
+        return proposalId;
     }
 
     function submitSteWardOutProposal(
         DaoRegistry dao,
         address applicant
-    ) external onlyMember(dao) reimbursable(dao) returns (bytes32 proposalId) {
+    ) external onlyMember(dao) reimbursable(dao) returns (bytes32) {
         require(dao.isMember(applicant), "applicant isnt raiser");
         dao.increaseGovenorOutId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
@@ -213,6 +218,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
             stopVoteTime,
             ProposalType.RAISER_OUT
         );
+        return proposalId;
     }
 
     /**
@@ -255,6 +261,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         DaoRegistry dao,
         bytes32 proposalId,
         address applicant,
+        uint256 allocation,
         uint256 startVoteTime,
         uint256 stopVoteTime
     ) internal {
@@ -263,6 +270,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         proposals[dao][proposalId] = ProposalDetails(
             proposalId,
             applicant,
+            allocation,
             startVoteTime,
             stopVoteTime,
             ProposalState.Voting,
@@ -284,6 +292,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         proposals[dao][proposalId] = ProposalDetails(
             proposalId,
             applicant,
+            0,
             startVoteTime,
             stopVoteTime,
             ProposalState.Voting,
@@ -334,6 +343,22 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
 
             if (proposal.pType == ProposalType.RAISER_IN) {
                 dao.potentialNewMember(applicant);
+                if (
+                    dao.getConfiguration(
+                        DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TYPE
+                    ) == 3
+                ) {
+                    VintageRaiserAllocationAdapter raiserAlloc = VintageRaiserAllocationAdapter(
+                            dao.getAdapterAddress(
+                                DaoHelper.VINTAGE_RAISER_ALLOCATION_ADAPTER
+                            )
+                        );
+                    raiserAlloc.setAllocation(
+                        dao,
+                        proposal.account,
+                        proposal.allocation
+                    );
+                }
             }
 
             if (proposal.pType == ProposalType.RAISER_OUT) {

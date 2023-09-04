@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 import "../extensions/bank/Bank.sol";
-import "../extensions/gpdao/GPDao.sol";
+// import "../extensions/gpdao/GPDao.sol";
 import "../flex/extensions/FlexFundingPool.sol";
 import "../core/DaoRegistry.sol";
 import "../core/DaoFactory.sol";
@@ -329,6 +329,13 @@ library DaoHelper {
 
     bytes32 internal constant VINTAGE_ESCROW_FUND_ADAPTER =
         keccak256("vintage-escrow-fund");
+    bytes32 internal constant VINTAGE_RAISER_ALLOCATION_ADAPTER =
+        keccak256("vintage-raiser-allocation");
+    bytes32 internal constant VINTAGE_DISTRIBUTE_ADAPTER =
+        keccak256("vintage-distribute-adapter");
+    bytes32 internal constant VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER =
+        keccak256("vintage-funding-return-token-adapter");
+
     /* 
     vintage Adapters **************************************************************************************************
      */
@@ -347,6 +354,10 @@ library DaoHelper {
     bytes32 internal constant FLEX_VOTING_ADAPT = keccak256("flex-voting");
     bytes32 internal constant FLEX_POLLING_VOTING_ADAPT =
         keccak256("flex-polling-voting");
+    bytes32 internal constant FLEX_STEWARD_ALLOCATION_ADAPT =
+        keccak256("flex-steward-allocation");
+    bytes32 internal constant FLEX_FUNDING_RETURN_TOKEN_ADAPT =
+        keccak256("flex-funding-return-token-adapter");
     //---------------------------------flex---------------------------------
 
     bytes32 internal constant FUND_RAISE = keccak256("fund-raise");
@@ -560,14 +571,14 @@ library DaoHelper {
         dao.removeMember(memberAddress);
     }
 
-    function ifGP(
-        address memberAddress,
-        DaoRegistry dao
-    ) internal view returns (bool) {
-        return
-            GPDaoExtension(dao.getExtensionAddress(DaoHelper.GPDAO_EXT))
-                .isGeneralPartner(memberAddress);
-    }
+    // function ifGP(
+    //     address memberAddress,
+    //     DaoRegistry dao
+    // ) internal view returns (bool) {
+    //     return
+    //         GPDaoExtension(dao.getExtensionAddress(DaoHelper.GPDAO_EXT))
+    //             .isGeneralPartner(memberAddress);
+    // }
 
     /**
      * A DAO is in creation mode is the state of the DAO is equals to CREATION and

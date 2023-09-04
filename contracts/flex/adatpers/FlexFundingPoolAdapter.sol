@@ -8,7 +8,7 @@ import "../extensions/FlexFundingPool.sol";
 import "../../guards/AdapterGuard.sol";
 import "../../guards/MemberGuard.sol";
 import "../../guards/FlexParticipantGuard.sol";
-import "../../adapters/interfaces/IVoting.sol";
+// import "../../adapters/interfaces/IVoting.sol";
 import "../../helpers/DaoHelper.sol";
 import "../../utils/TypeConver.sol";
 import "../../adapters/modifiers/Reimbursable.sol";

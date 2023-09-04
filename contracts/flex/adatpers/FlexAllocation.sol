@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import "../../helpers/DaoHelper.sol";
 import "hardhat/console.sol";
 import "../../guards/AdapterGuard.sol";
-import "../../extensions/gpdao/GPDao.sol";
+// import "../../extensions/gpdao/GPDao.sol";
 import "./FlexFundingPoolAdapter.sol";
 import "../extensions/FlexFundingPool.sol";
 import "./FlexFunding.sol";
@@ -289,13 +289,13 @@ contract FlexAllocationAdapterContract is AdapterGuard {
 
         require(
             IERC20(tokenAddress).allowance(
-                dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT),
+                dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_RETURN_TOKEN_ADAPT),
                 address(this)
             ) >= vars.tokenAmount,
             "AllocationAdapter::allocateProjectToken::insufficient allowance"
         );
         IERC20(tokenAddress).transferFrom(
-            dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT),
+            dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_RETURN_TOKEN_ADAPT),
             address(this),
             vars.tokenAmount
         );

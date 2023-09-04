@@ -98,7 +98,7 @@ contract VintageAllocationAdapterContract is AdapterGuard {
         VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
         );
-      
+
         uint256 tokenRewards = tokenAmount -
             ((tokenAmount *
                 dao.getConfiguration(
@@ -181,13 +181,17 @@ contract VintageAllocationAdapterContract is AdapterGuard {
 
         require(
             IERC20(tokenAddress).allowance(
-                dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_ADAPTER),
+                dao.getAdapterAddress(
+                    DaoHelper.VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER
+                ),
                 address(this)
             ) >= vars.tokenAmount,
             "AllocationAdapter::allocateProjectToken::insufficient allowance"
         );
         IERC20(tokenAddress).transferFrom(
-            dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_ADAPTER),
+            dao.getAdapterAddress(
+                DaoHelper.VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER
+            ),
             address(this),
             vars.tokenAmount
         );

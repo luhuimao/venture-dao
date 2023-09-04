@@ -174,7 +174,7 @@ contract VintageFundingPoolAdapterContract is
                     dao.getConfiguration(DaoHelper.FUND_END_TIME)),
             "FundingPoolAdapter::Withdraw::Cant withdraw at this time"
         );
-        FundingPoolExtension fundingpool = FundingPoolExtension(
+        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
         );
 
@@ -241,7 +241,7 @@ contract VintageFundingPoolAdapterContract is
                         dao.getConfiguration(DaoHelper.RETURN_DURATION)),
             "FundingPoolAdapter::clearFund::Cant clearFund at this time"
         );
-        FundingPoolExtension fundingpool = FundingPoolExtension(
+        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
         );
 
@@ -342,7 +342,7 @@ contract VintageFundingPoolAdapterContract is
             );
         }
 
-        FundingPoolExtension fundingpool = FundingPoolExtension(
+        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
         );
         // max participant check
@@ -441,21 +441,21 @@ contract VintageFundingPoolAdapterContract is
         DaoRegistry dao,
         address investorAddr
     ) public view returns (uint256) {
-        FundingPoolExtension fundingpool = FundingPoolExtension(
+        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
         );
         return fundingpool.balanceOf(investorAddr);
     }
 
     function poolBalance(DaoRegistry dao) public view returns (uint256) {
-        FundingPoolExtension fundingpool = FundingPoolExtension(
+        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
         );
         return fundingpool.balanceOf(address(DaoHelper.DAOSQUARE_TREASURY));
     }
 
     function raiserBalance(DaoRegistry dao) public view returns (uint256) {
-        FundingPoolExtension fundingpool = FundingPoolExtension(
+        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
         );
         return fundingpool.balanceOf(address(DaoHelper.GP_POOL));

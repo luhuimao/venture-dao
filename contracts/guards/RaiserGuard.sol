@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 
 import "../core/DaoRegistry.sol";
-import "../extensions/gpdao/GPDao.sol";
+// import "../extensions/gpdao/GPDao.sol";
 import "../helpers/DaoHelper.sol";
 
 /**

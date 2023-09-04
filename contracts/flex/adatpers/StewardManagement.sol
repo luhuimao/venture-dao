@@ -5,6 +5,7 @@ import "../../core/DaoRegistry.sol";
 import "../../helpers/DaoHelper.sol";
 import "../../utils/TypeConver.sol";
 import "./FlexVoting.sol";
+import "./FlexStewardAllocation.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "../../guards/FlexStewardGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -33,6 +34,7 @@ contract StewardManagementContract is
     struct ProposalDetails {
         bytes32 id;
         address account;
+        uint256 allocation;
         uint256 creationTime;
         uint256 stopVoteTime;
         ProposalState state;
@@ -76,7 +78,8 @@ contract StewardManagementContract is
 
     function submitSteWardInProposal(
         DaoRegistry dao,
-        address applicant
+        address applicant,
+        uint256 allocation
     )
         external
         reimbursable(dao)
@@ -106,6 +109,7 @@ contract StewardManagementContract is
             dao,
             proposalId,
             applicant,
+            allocation,
             startVoteTime,
             stopVoteTime
         );
@@ -199,6 +203,7 @@ contract StewardManagementContract is
         DaoRegistry dao,
         bytes32 proposalId,
         address applicant,
+        uint256 allocation,
         uint256 startVoteTime,
         uint256 stopVoteTime
     ) internal {
@@ -207,6 +212,7 @@ contract StewardManagementContract is
         proposals[dao][proposalId] = ProposalDetails(
             proposalId,
             applicant,
+            allocation,
             startVoteTime,
             stopVoteTime,
             ProposalState.Voting,
@@ -228,6 +234,7 @@ contract StewardManagementContract is
         proposals[dao][proposalId] = ProposalDetails(
             proposalId,
             applicant,
+            0,
             startVoteTime,
             stopVoteTime,
             ProposalState.Voting,
@@ -274,6 +281,22 @@ contract StewardManagementContract is
 
             if (proposal.pType == ProposalType.STEWARD_IN) {
                 dao.potentialNewMember(applicant);
+                if (
+                    dao.getConfiguration(
+                        DaoHelper.FLEX_VOTING_ELIGIBILITY_TYPE
+                    ) == 3
+                ) {
+                    FlexStewardAllocationAdapter stewardAlloc = FlexStewardAllocationAdapter(
+                            dao.getAdapterAddress(
+                                DaoHelper.FLEX_STEWARD_ALLOCATION_ADAPT
+                            )
+                        );
+                    stewardAlloc.setAllocation(
+                        dao,
+                        proposal.account,
+                        proposal.allocation
+                    );
+                }
             }
 
             if (proposal.pType == ProposalType.STEWARD_OUT) {

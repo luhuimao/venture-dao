@@ -8,7 +8,7 @@ import "../../guards/AdapterGuard.sol";
 import "./interfaces/IVintageVoting.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "../../helpers/GovernanceHelper.sol";
-import "../../extensions/fundingpool/FundingPool.sol";
+// import "../../extensions/fundingpool/FundingPool.sol";
 import "../../helpers/DaoHelper.sol";
 import "hardhat/console.sol";
 

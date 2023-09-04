@@ -11,6 +11,7 @@ import "./interfaces/IVintageVoting.sol";
 import "./VintageVoting.sol";
 import "../../helpers/FairShareHelper.sol";
 import "../../helpers/DaoHelper.sol";
+import "../../helpers/GovernanceHelper.sol";
 import "../extensions/fundingpool/VintageFundingPool.sol";
 import "../../utils/TypeConver.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -213,7 +214,7 @@ contract VintageFundRaiseAdapterContract is
     struct ProcessProposalLocalVars {
         bytes32 ongoingProposalId;
         VintageVotingContract votingContract;
-        FundingPoolExtension fundingpool;
+        VintageFundingPoolExtension fundingpool;
         VintageFundingPoolAdapterContract fundingPoolAdapt;
         IVintageVoting.VotingState voteResult;
         uint128 nbYes;

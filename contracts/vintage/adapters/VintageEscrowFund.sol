@@ -35,7 +35,7 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         uint256 amount
     );
 
-    function withDraw(
+    function withdraw(
         DaoRegistry dao,
         uint256 fundRound
     ) external reimbursable(dao) {
