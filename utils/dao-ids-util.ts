@@ -4,7 +4,7 @@
  * @Author: huhuimao
  * @Date: 2022-11-10 19:00:47
  * @LastEditors: huhuimao
- * @LastEditTime: 2023-04-21 11:28:39
+ * @LastEditTime: 2023-08-31 16:00:42
  */
 /**
  * @notice the ids defined in this file must match the ids added to DaoHelper.sol.
@@ -23,7 +23,12 @@ export const adaptersIdsMap: Record<string, string> = {
   VINTAGE_VESTING_ADAPTER: "vintage-vesting-adapter",
   VINTAGE_SUMMON_DAO: "vintage-summon-dao",
   VINTAGE_ESCROW_FUND_ADAPTER: "vintage-escrow-fund",
-  //flex
+  VINTAGE_VESTING_ERC721_ADAPTER: "vintage-vesting-erc721",
+  VINTAGE_RAISER_ALLOCATION: "vintage-raiser-allocation",
+  VINTAGE_DISTRIBUTE_ADAPTER: "vintage-distribute-adapter",
+  VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER: "vintage-funding-return-token-adapter",
+  /*******************flex**********************/
+  FLEX_VESTING_ERC721_ADAPTER: "flex-vesting-erc721",
   FLEX_STEWARD_MANAGEMENT: "flex-steward-management",
   FLEX_POLLING_VOTING: "flex-polling-voting",
   SUMMON_DAO: "summon-dao",
@@ -33,6 +38,9 @@ export const adaptersIdsMap: Record<string, string> = {
   FLEX_FUNDING_POOL_ADAPTER: "flex-funding-pool-adatper",
   FLEX_VOTING: "flex-voting",
   FLEX_FUNDING: "flex-funding",
+  FLEX_STEWARD_ALLOCATION_ADAPT: "flex-steward-allocation",
+  FLEX_FUNDING_RETURN_TOKEN_ADAPT: "flex-funding-return-token-adapter",
+  /*******************flex end******************/
   FUND_RAISE: "fund-raise",
   VESTING: "vesting",
   BEN_TO_BOX: "ben-to-box",

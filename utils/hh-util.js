@@ -140,13 +140,28 @@ const deployFunction = async (contractInterface, args, from) => {
     }
   } else {
     const adapterAddress = config.getContractAddressByName(contractInterface.contractName, hre.network.name);
+
     if (adapterAddress) {
       console.log(`reuse ${contractInterface.contractName} address: ${adapterAddress}`);
       instance = (await hre.ethers.getContractFactory(contractInterface.contractName)).connect(from).attach(adapterAddress);
     } else {
       if (args) {
-        instance = await (await contractInterface).connect(from).deploy(...args);
-        await instance.deployed();
+        if (contractInterface.contractName == "VintageFundingAdapterContract") {
+          console.log("VintageFundingAdapterContract args: ", args);
+
+          const VintageFundingAdapterContract = await hre.ethers.getContractFactory("VintageFundingAdapterContract", {
+            libraries: {
+              FundingLibrary: args[0],
+            }
+          });
+          instance = await VintageFundingAdapterContract.connect(from).deploy();
+          // instance = await (await contractInterface).connect(from).deploy();
+          await instance.deployed();
+        }
+        else {
+          instance = await (await contractInterface).connect(from).deploy(...args);
+          await instance.deployed();
+        }
       } else {
         instance = await (await contractInterface).connect(from).deploy();
         await instance.deployed();
@@ -176,7 +191,15 @@ const deployFunction = async (contractInterface, args, from) => {
 };
 
 const getContractFromHardhat = (c) => {
-  return hre.ethers.getContractFactory(c.substring(c.lastIndexOf("/") + 1))
+  if (c.substring(c.lastIndexOf("/") + 1) == "VintageFundingAdapterContract") {
+    return hre.ethers.getContractFactory("VintageFundingAdapterContract", {
+      libraries: {
+        FundingLibrary: "0xA8CAD0437ed7DaA74fee5C08651BDF1b9e8ada7e"
+      }
+    })
+  } else {
+    return hre.ethers.getContractFactory(c.substring(c.lastIndexOf("/") + 1))
+  }
 };
 
 const getHardhatContracts = (contracts) => {
@@ -284,6 +307,10 @@ const getDefaultOptions = async (options) => {
     feePercent: "110",
     gasFixed: "50000",
     gelato: "0x1000000000000000000000000000000000000000",
+    vintageVestingNFTName: "DAOSquare Vintage Funding Vesting",
+    vintageVestingNFTSymbol: "DVFV",
+    flexVestingNFTName: "DAOSquare Flex Funding Vesting",
+    flexVestingNFTSymbol: "DFFV",
   };
 };
 
@@ -355,7 +382,7 @@ const deployDefaultDao = async (options) => {
   const newOpts = await getDefaultOptions(options);
   const _contractConfigs = await getEnalbeContractConfigs(newOpts.daoMode);
   const enableHHContracts = getHardhatContracts(_contractConfigs);
-  console.log("enable HH Contracts: ", enableHHContracts);
+  // console.log("enable HH Contracts: ", enableHHContracts);
   const result = await deployDao({
     ...newOpts,
     // ...hhContracts,

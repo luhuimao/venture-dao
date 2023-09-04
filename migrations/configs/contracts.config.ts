@@ -37,6 +37,7 @@ export enum ContractType {
   Adapter = 3,
   Util = 4,
   Test = 5,
+  Library = 6,
 }
 
 /**
@@ -344,7 +345,7 @@ export const contracts: Array<ContractConfig> = [
     name: "FundingPoolFactory",
     alias: "fundingPoolExtFactory",
     path: "../../contracts/extensions/fundingpool/FundingPoolFactory",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Factory,
     acls: {
@@ -404,7 +405,7 @@ export const contracts: Array<ContractConfig> = [
     name: "GPDaoFactory",
     alias: "gpDaoExtFactory",
     path: "../../contracts/extensions/gpdao/GPDaoFactory",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Factory,
     acls: {
@@ -559,7 +560,7 @@ export const contracts: Array<ContractConfig> = [
     name: "FundingPoolExtension",
     alias: "fundingpoolExt",
     path: "../../contracts/extensions/fundingpool/FundingPoolExtension",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Extension,
     buildAclFlag: entryFundingPool,
@@ -587,7 +588,7 @@ export const contracts: Array<ContractConfig> = [
     name: "GPDaoExtension",
     alias: "gpDaoExt",
     path: "../../contracts/extensions/gpdao/GPDaoExtension",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Extension,
     buildAclFlag: entryGPDao,
@@ -705,6 +706,7 @@ export const contracts: Array<ContractConfig> = [
       extensions: {
         [extensionsIdsMap.VINTAGE_FUNDING_POOL_EXT]: [
           vintageFundingPoolExtensionAclFlagsMap.WITHDRAW,
+          vintageFundingPoolExtensionAclFlagsMap.DISTRIBUTE_FUNDS,
           vintageFundingPoolExtensionAclFlagsMap.SUB_FROM_BALANCE,
           vintageFundingPoolExtensionAclFlagsMap.ADD_TO_BALANCE,
           vintageFundingPoolExtensionAclFlagsMap.UPDATE_TOKEN,
@@ -735,7 +737,13 @@ export const contracts: Array<ContractConfig> = [
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
-      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_CONFIGURATION, daoAccessFlagsMap.REMOVE_MEMBER],
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.SET_CONFIGURATION,
+        daoAccessFlagsMap.NEW_MEMBER,
+        daoAccessFlagsMap.REMOVE_MEMBER,
+        daoAccessFlagsMap.INCREASE_GOVENOR_IN_ID,
+        daoAccessFlagsMap.INCREASE_GOVENOR_OUT_ID],
       extensions: {
       },
     },
@@ -749,7 +757,11 @@ export const contracts: Array<ContractConfig> = [
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
-      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_CONFIGURATION],
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.SET_CONFIGURATION,
+        daoAccessFlagsMap.INCREASE_NEW_FUND_ID
+      ],
       extensions: {
       },
     },
@@ -790,8 +802,13 @@ export const contracts: Array<ContractConfig> = [
     enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
+    deploymentArgs: ["vintageFundingLibraryAddress"],
     acls: {
-      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_VOTE_TYPE],
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.SET_VOTE_TYPE,
+        daoAccessFlagsMap.INCREASE_FUNDING_ID
+      ],
       extensions: {
         [extensionsIdsMap.VINTAGE_FUNDING_POOL_EXT]: [
           vintageFundingPoolExtensionAclFlagsMap.REGISTER_NEW_TOKEN,
@@ -799,8 +816,7 @@ export const contracts: Array<ContractConfig> = [
           vintageFundingPoolExtensionAclFlagsMap.SUB_FROM_BALANCE
         ],
       },
-    },
-    daoConfigs: [["daoAddress"]],
+    }
   },
   {
     id: adaptersIdsMap.VINTAGE_SUMMON_DAO,
@@ -830,6 +846,54 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
+  {
+    id: adaptersIdsMap.VINTAGE_DISTRIBUTE_ADAPTER,
+    name: "VintageDistributeAdatperContract",
+    alias: "vintageDistributeAdatperContract",
+    path: "../../contracts/adapters/VintageDistributeAdatperContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+        [extensionsIdsMap.VINTAGE_FUNDING_POOL_EXT]: [
+          vintageFundingPoolExtensionAclFlagsMap.WITHDRAW,
+          vintageFundingPoolExtensionAclFlagsMap.DISTRIBUTE_FUNDS,
+          vintageFundingPoolExtensionAclFlagsMap.SUB_FROM_BALANCE
+        ],
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.VINTAGE_RAISER_ALLOCATION,
+    name: "VintageRaiserAllocationAdapter",
+    alias: "vintageRaiserAllocationAdapter",
+    path: "../../contracts/adapters/VintageRaiserAllocationAdapter",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER,
+    name: "VintageFundingReturnTokenAdapterContract",
+    alias: "vintageFundingReturnTokenAdapterContract",
+    path: "../../contracts/adapters/VintageFundingReturnTokenAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  /***********************************vintage end********************************/
   // flex
   {
     id: adaptersIdsMap.FLEX_STEWARD_MANAGEMENT,
@@ -840,7 +904,13 @@ export const contracts: Array<ContractConfig> = [
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
-      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.NEW_MEMBER, daoAccessFlagsMap.REMOVE_MEMBER],
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.NEW_MEMBER,
+        daoAccessFlagsMap.REMOVE_MEMBER,
+        daoAccessFlagsMap.INCREASE_GOVENOR_IN_ID,
+        daoAccessFlagsMap.INCREASE_GOVENOR_OUT_ID
+      ],
       extensions: {
       },
     },
@@ -868,7 +938,7 @@ export const contracts: Array<ContractConfig> = [
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
-      dao: [],
+      dao: [daoAccessFlagsMap.REMOVE_MEMBER],
       extensions: {
       },
     },
@@ -958,7 +1028,7 @@ export const contracts: Array<ContractConfig> = [
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
-      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_VOTE_TYPE],
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_VOTE_TYPE, daoAccessFlagsMap.INCREASE_FUNDING_ID],
       extensions: {
         [extensionsIdsMap.FLEX_FUNDING_POOL_EXT]: [
           flexFundingPoolExtensionAclFlagsMap.REGISTER_NEW_TOKEN,
@@ -967,7 +1037,7 @@ export const contracts: Array<ContractConfig> = [
         ],
       },
     },
-    daoConfigs: [["daoAddress", "flexFundingType"]],
+    // daoConfigs: [["daoAddress", "flexFundingType"]],
   },
   {
     id: adaptersIdsMap.BEN_TO_BOX,
@@ -984,11 +1054,41 @@ export const contracts: Array<ContractConfig> = [
     },
   },
   {
+    id: adaptersIdsMap.FLEX_STEWARD_ALLOCATION_ADAPT,
+    name: "FlexStewardAllocationAdapter",
+    alias: "flexStewardAllocation",
+    path: "../../contracts/adapters/FlexStewardAllocationAdapter",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_FUNDING_RETURN_TOKEN_ADAPT,
+    name: "FlexFundingReturnTokenAdapterContract",
+    alias: "flexFundingReturnTokenAdapterContract",
+    path: "../../contracts/adapters/FlexFundingReturnTokenAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+
+  /*****************************************************flex end*******************************************************/
+  {
     id: adaptersIdsMap.VESTING,
     name: "FuroVesting",
     alias: "furoVesting",
     path: "../../contracts/adapters/FuroVesting",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -1002,7 +1102,7 @@ export const contracts: Array<ContractConfig> = [
     name: "FundRaiseAdapterContract",
     alias: "fundRaiseAdapter",
     path: "../../contracts/adapters/FundRaiseAdapterContract",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -1016,7 +1116,7 @@ export const contracts: Array<ContractConfig> = [
     name: "GPKickAdapterContract",
     alias: "gpKickAdapter",
     path: "../../contracts/adapters/GPKickAdapterContract",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -1033,7 +1133,7 @@ export const contracts: Array<ContractConfig> = [
     name: "GPDaoOnboardingAdapterContract",
     alias: "gpDaoOnboardingAdapter",
     path: "../../contracts/adapters/GPDaoOnboardingAdapterContract",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -1084,7 +1184,7 @@ export const contracts: Array<ContractConfig> = [
     name: "FundingPoolAdapterContract",
     alias: "fundingpoolAdapter",
     path: "../../contracts/adapters/FundingPoolAdapterContract",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -1129,7 +1229,7 @@ export const contracts: Array<ContractConfig> = [
     name: "GPDaoAdapterContract",
     alias: "gpdaoAdapter",
     path: "../../contracts/adapters/GPDaoAdapterContract",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -1199,7 +1299,7 @@ export const contracts: Array<ContractConfig> = [
     name: "DistributeFundContractV2",
     alias: "distributeFundAdapterv2",
     path: "../../contracts/adapters/DistributeFundContractV2",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -1267,7 +1367,7 @@ export const contracts: Array<ContractConfig> = [
     name: "ManagingContract",
     alias: "managing",
     path: "../../contracts/adapters/ManagingContract",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -1307,7 +1407,7 @@ export const contracts: Array<ContractConfig> = [
     name: "GPOnboardVotingContract",
     alias: "gpOnboardVotingAdapter",
     path: "../../contracts/adapters/GPOnboardVotingContract",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -1336,7 +1436,7 @@ export const contracts: Array<ContractConfig> = [
     name: "GPVotingContract",
     alias: "gpVotingAdapter",
     path: "../../contracts/adapters/voting/GPVotingContract",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -1364,7 +1464,7 @@ export const contracts: Array<ContractConfig> = [
     name: "AllocationAdapterContractV2",
     alias: "allocationv2",
     path: "../../contracts/adapters/AllocationAdapterContractV2",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -1766,6 +1866,53 @@ export const contracts: Array<ContractConfig> = [
       extensions: {},
     },
   },
+  {
+    id: adaptersIdsMap.VINTAGE_VESTING_ERC721_ADAPTER,
+    name: "VintageVestingERC721",
+    alias: "vintageVestingERC721",
+    path: "../../contracts/adapters/VintageVestingERC721",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Util,
+    deploymentArgs: ["vintageVestingNFTName", "vintageVestingNFTSymbol", "vintageVestingContractAddr"],
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_VESTING_ERC721_ADAPTER,
+    name: "FlexVestingERC721",
+    alias: "flexVestingERC721",
+    path: "../../contracts/adapters/FlexVestingERC721",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Util,
+    deploymentArgs: ["flexVestingNFTName", "flexVestingNFTSymbol", "flexVestingContractAddr"],
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+
+  /**
+   * Library
+   */
+
+  {
+    id: "vintagefundinglibrary",
+    name: "FundingLibrary",
+    path: "../../contracts/vintage/libraries/FundingLibrary",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Library,
+    acls: {
+      dao: [],
+      extensions: {},
+    },
+  }
 ];
 
 // export const getConfig = (name: string) => {

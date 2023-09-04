@@ -29,7 +29,7 @@ const { adaptersIdsMap, extensionsIdsMap } = require("./dao-ids-util");
 const { UNITS, LOOT, ZERO_ADDRESS,
     sha3, embedConfigs, waitTx } = require("./contract-util.js");
 const { ContractType } = require("../migrations/configs/contracts.config");
-const { utils } = require("ethers");
+const { utils, Contract } = require("ethers");
 const { web3 } = require("@openzeppelin/test-environment");
 const hre = require("hardhat");
 import * as config from '../.config';
@@ -64,8 +64,39 @@ const deployContract = ({ config, options }) => {
         return options.deployFunction(contract, args, options.owner);
     }
     let args;
+    if (config.name == "VintageFundingAdapterContract") {
+        // console.log("config.name: ", config.name);
+        // console.log("VintageFundingAdapterContract: ", (await contract));
+        // const contractFactory = await this.env.ethers.getContractFactory("Example", {
+        //   libraries: {
+        //     ExampleLib: "0x...",
+        //   },
+        // });
+    }
     return options.deployFunction(contract, args, options.owner);
 };
+
+const createLibraries = async ({ options }) => {
+    const libraries = {};
+    const libraryList = Object.values(options.contractConfigs).
+        filter((config) => config.type === ContractType.Library).
+        filter((config) => config.enabled);
+    log("deploying or reusing ", libraryList.length, " libraries...");
+    await libraryList.reduce(
+        (p, config) =>
+            p
+                .then(() => deployContract({ config, options }))
+                .then((library) => {
+                    libraries[library.configs.name] = library;
+                })
+                .catch((e) => {
+                    error(`Error while creating library ${config.name}.`, e);
+                    throw e;
+                }),
+        Promise.resolve()
+    )
+    return libraries;
+}
 
 /**
  * Deploys all the contracts defined with Factory type.
@@ -266,6 +297,7 @@ const createAdapters = async ({ options }) => {
  * If the contract is not found in the options object the deployment reverts with an error.
  */
 const createUtilContracts = async ({ options }) => {
+    console.log("createUtilContracts...");
     const utilContracts = {};
 
     await Object.values(options.contractConfigs)
@@ -604,10 +636,17 @@ const deployDao = async (options) => {
         unitTokenToMint: UNITS,
         lootTokenToMint: LOOT,
     };
+    const libraries = await createLibraries({ options });
+    console.log("libraries FundingLibrary address: ", libraries.FundingLibrary.instance.address);
+    options = {
+        ...options,
+        vintageFundingLibraryAddress: libraries.FundingLibrary.instance.address,
+    };
     const factories = await createFactories({ options });
     const extensions = await createExtensions({ dao, factories, options });
     const adapters = await createAdapters({
         dao,
+        libraries,
         daoFactory,
         extensions,
         options,
@@ -635,7 +674,12 @@ const deployDao = async (options) => {
         adapters[votingHelpers.offchainVoting.configs.alias] =
             votingHelpers.offchainVoting;
     }
+    options = {
+        ...options,
+        vintageVestingContractAddr: adapters["vintageVesting"].instance.address,
+        flexVestingContractAddr: adapters["flexVesting"].instance.address
 
+    }
     // deploy utility contracts
     const utilContracts = await createUtilContracts({ options });
 
@@ -780,7 +824,7 @@ const configureDao = async ({
                 withAccess.push(v);
                 return withAccess;
             }, adaptersWithAccess);
-        console.log("contractsWithAccess ", contractsWithAccess);
+        // console.log("contractsWithAccess ", contractsWithAccess);
         const tx = await daoFactory.instance.addAdapters(dao.address, contractsWithAccess);
         await tx.wait();
         log("configure adapters with access FINISHED!");
@@ -852,7 +896,7 @@ const configureDao = async ({
         }, []);
         if (withAccess.length > 0) {
             console.log("extension.address: ", extension.address);
-            console.log("withAccess: ", withAccess);
+            // console.log("withAccess: ", withAccess);
 
             const tx = await daoFactory.instance.configureExtension(
                 dao.address,
