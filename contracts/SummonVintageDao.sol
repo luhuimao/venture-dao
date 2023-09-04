@@ -2,15 +2,16 @@
 pragma solidity ^0.8.0;
 
 // import "./core/DaoFactory.sol";
-import "./extensions/fundingpool/FundingPoolFactory.sol";
-import "./extensions/gpdao/GPDaoFactory.sol";
-import "./extensions/gpdao/GPDao.sol";
+// import "./extensions/fundingpool/FundingPoolFactory.sol";
+// import "./extensions/gpdao/GPDaoFactory.sol";
+// import "./extensions/gpdao/GPDao.sol";
 import "./vintage/extensions/fundingpool/VintageFundingPoolFactory.sol";
 import "./helpers/DaoHelper.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./vintage/extensions/fundingpool/VintageFundingPoolFactory.sol";
 import "./vintage/adapters/VintageRaiserManagement.sol";
 import "./vintage/adapters/VintageFundingPoolAdapter.sol";
+import "./vintage/adapters/VintageRaiserAllocation.sol";
 import "hardhat/console.sol";
 
 contract SummonVintageDao {
@@ -67,6 +68,7 @@ contract SummonVintageDao {
         VintageRaiserMembership raiserMembership;
         VintageVotingInfo votingInfo;
         address[] genesisRaisers;
+        uint256[] allocations;
     }
 
     //create dao
@@ -263,14 +265,45 @@ contract SummonVintageDao {
     //config genesis raiser
     function summonVintageDao7(
         address newDaoAddr,
-        address[] calldata genesisRaisers
+        uint256 eligibilityType,
+        address[] calldata genesisRaisers,
+        uint256[] calldata allcationValues
     ) external returns (bool) {
+        DaoRegistry newDao = DaoRegistry(newDaoAddr);
+        VintageRaiserAllocationAdapter raiserAlloc = VintageRaiserAllocationAdapter(
+                newDao.getAdapterAddress(
+                    DaoHelper.VINTAGE_RAISER_ALLOCATION_ADAPTER
+                )
+            );
+        if (eligibilityType == 3)
+            setAllocation(
+                raiserAlloc,
+                newDao,
+                newDao.daoCreator(),
+                allcationValues[0]
+            );
         if (genesisRaisers.length > 0) {
-            DaoRegistry newDao = DaoRegistry(newDaoAddr);
             for (uint8 i = 0; i < genesisRaisers.length; i++) {
                 newDao.potentialNewMember(genesisRaisers[i]);
+                if (eligibilityType == 3)
+                    setAllocation(
+                        raiserAlloc,
+                        newDao,
+                        genesisRaisers[i],
+                        allcationValues[i + 1]
+                    );
             }
         }
+        return true;
+    }
+
+    function setAllocation(
+        VintageRaiserAllocationAdapter raiserAlloc,
+        DaoRegistry dao,
+        address account,
+        uint256 value
+    ) internal {
+        raiserAlloc.setAllocation(dao, account, value);
     }
 
     //config investor membership
@@ -456,9 +489,11 @@ contract SummonVintageDao {
         );
 
         vars.summonVintageDao7Payload = abi.encodeWithSignature(
-            "summonVintageDao7(address,address[])",
+            "summonVintageDao7(address,uint256,address[],uint256[])",
             vars.newDaoAddr,
-            params.genesisRaisers
+            params.votingInfo.eligibilityType,
+            params.genesisRaisers,
+            params.allocations
         );
 
         vars.summonVintageDao8Payload = abi.encodeWithSignature(
@@ -506,7 +541,13 @@ contract SummonVintageDao {
         //remove summondaoContract && DaoFacConctract from dao member list
         DaoRegistry newDao = DaoRegistry(vars.newDaoAddr);
         newDao.removeMember(newDao.daoFactory());
-        newDao.removeMember(address(this));
+        newDao.finalizeDao();
+        // newDao.removeMember(address(this));
+
+        VintageRaiserManagementContract raiserManagementAdapt = VintageRaiserManagementContract(
+                newDao.getAdapterAddress(DaoHelper.VINTAGE_RAISER_MANAGEMENT)
+            );
+        raiserManagementAdapt.quit(newDao);
     }
 
     function bytesToAddress(

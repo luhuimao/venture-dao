@@ -1,29 +1,18 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-// import "./core/DaoFactory.sol";
-import "./extensions/fundingpool/FundingPoolFactory.sol";
-import "./extensions/gpdao/GPDaoFactory.sol";
-import "./extensions/gpdao/GPDao.sol";
 import "./flex/extensions/FlexFundingPoolFactory.sol";
 import "./flex/adatpers/FlexFunding.sol";
 import "./flex/adatpers/FlexFundingPoolAdapter.sol";
 import "./flex/adatpers/FlexPollingVoting.sol";
 import "./flex/adatpers/StewardManagement.sol";
-import "./vintage/extensions/fundingpool/VintageFundingPoolFactory.sol";
-import "./vintage/adapters/VintageRaiserManagement.sol";
+import "./flex/adatpers/FlexStewardAllocation.sol";
 import "./helpers/DaoHelper.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 import "hardhat/console.sol";
 
 contract SummonDao {
-    event VintageDaoCreated(
-        address daoFactoryAddress,
-        address daoAddr,
-        string name,
-        address creator
-    );
     event FlexDaoCreated(
         address daoFactoryAddress,
         address daoAddr,
@@ -112,6 +101,7 @@ contract SummonDao {
         uint256 flexDaoManagementfee;
         address managementFeeAddress;
         address[] flexDaoGenesisStewards;
+        uint256[] allocations;
         uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
     }
 
@@ -148,6 +138,7 @@ contract SummonDao {
             "SummmonDao::summonFlexDao::create dao failed"
         );
         emit FlexDaoCreated(daoFacAddr, newDaoAddr, daoName, creator);
+        return true;
     }
 
     //create new extension and register to dao
@@ -173,6 +164,8 @@ contract SummonDao {
             IExtension(newFlexFundingPoolExtAddr),
             creator
         );
+
+        return true;
     }
 
     //register adapters to dao
@@ -186,6 +179,7 @@ contract SummonDao {
         DaoFactory daoFac = DaoFactory(daoFacAddr);
         //add adapters to dao...
         daoFac.addAdapters(newDao, enalbeAdapters);
+        return true;
     }
 
     //configure adapters access to extensions
@@ -209,6 +203,9 @@ contract SummonDao {
             newFlexFundingPoolExtAddr, //FlexFundingPoolExtension
             adapters1
         );
+        return true;
+
+        return true;
     }
 
     //set dao configaration
@@ -299,17 +296,27 @@ contract SummonDao {
             DaoHelper.FLEX_VOTING_QUORUM_TYPE,
             _uint256VoteArgs[5]
         );
+        return true;
     }
 
     //registerGenesisStewards
     function summonFlexDao6(
         address[] calldata flexDaoGenesisStewards,
-        address newDaoAddr
+        uint256[] calldata allocations,
+        address newDaoAddr,
+        uint256 eligibilityType
     ) external returns (bool) {
         DaoRegistry newDao = DaoRegistry(newDaoAddr);
         require(address(this) == msg.sender);
 
-        registerGenesisStewards(newDao, flexDaoGenesisStewards);
+        registerGenesisStewards(
+            newDao,
+            eligibilityType,
+            flexDaoGenesisStewards,
+            allocations
+        );
+
+        return true;
     }
 
     // config polling && PARTICIPANTS CAP
@@ -365,6 +372,8 @@ contract SummonDao {
             dao.setConfiguration(DaoHelper.MAX_PARTICIPANTS_ENABLE, 1);
             dao.setConfiguration(DaoHelper.MAX_PARTICIPANTS, uint256Params[0]);
         }
+
+        return true;
     }
 
     // config Steward Membership
@@ -447,6 +456,8 @@ contract SummonDao {
                 flexDaoProposerMembershipWhiteList
             );
         }
+
+        return true;
     }
 
     //config participant membership
@@ -485,6 +496,8 @@ contract SummonDao {
                 );
             }
         }
+
+        return true;
     }
 
     //config priority deposit membership
@@ -516,8 +529,13 @@ contract SummonDao {
 
         //remove summondaoContract && DaoFacConctract from dao member list
         dao.removeMember(dao.daoFactory());
-        // dao.finalizeDao();
-        dao.removeMember(address(this));
+        dao.finalizeDao();
+        // dao.removeMember(address(this));
+        StewardManagementContract stewardContract = StewardManagementContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_MANAGEMENT)
+        );
+        stewardContract.quit(dao);
+        return true;
     }
 
     function setFlexDaoConfiguration(
@@ -586,13 +604,42 @@ contract SummonDao {
 
     function registerGenesisStewards(
         DaoRegistry dao,
-        address[] calldata flexDaoGenesisStewards
+        uint256 eligibilityType,
+        address[] calldata flexDaoGenesisStewards,
+        uint256[] calldata allcationValues
     ) internal {
+        FlexStewardAllocationAdapter stewardAlloc = FlexStewardAllocationAdapter(
+                dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_ALLOCATION_ADAPT)
+            );
+
+        if (eligibilityType == 3)
+            setAllocation(
+                stewardAlloc,
+                dao,
+                dao.daoCreator(),
+                allcationValues[0]
+            );
         if (flexDaoGenesisStewards.length > 0) {
             for (uint8 i = 0; i < flexDaoGenesisStewards.length; i++) {
                 dao.potentialNewMember(flexDaoGenesisStewards[i]);
+                if (eligibilityType == 3)
+                    setAllocation(
+                        stewardAlloc,
+                        dao,
+                        flexDaoGenesisStewards[i],
+                        allcationValues[i + 1]
+                    );
             }
         }
+    }
+
+    function setAllocation(
+        FlexStewardAllocationAdapter stewardAlloc,
+        DaoRegistry dao,
+        address account,
+        uint256 value
+    ) internal {
+        stewardAlloc.setAllocation(dao, account, value);
     }
 
     function configFlexDaoPollsterMembership(
@@ -994,9 +1041,11 @@ contract SummonDao {
         );
 
         vars.summonFlexDao6Payload = abi.encodeWithSignature(
-            "summonFlexDao6(address[],address)",
+            "summonFlexDao6(address[],uint256[],address,uint256)",
             params._flexDaoInfo.flexDaoGenesisStewards,
-            vars.newDaoAddr
+            params._flexDaoInfo.allocations,
+            vars.newDaoAddr,
+            params._flexDaoVotingInfo.eligibilityType
         );
 
         uint256[10] memory uint256Params = [
