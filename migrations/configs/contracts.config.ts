@@ -893,6 +893,34 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
+  {
+    id: adaptersIdsMap.VINTAGE_FREE_IN_ESCORW_FUND_ADAPTER,
+    name: "VintageFreeInEscrowFundAdapterContract",
+    alias: "vintageFreeInEscrowFundAdapterContract",
+    path: "../../contracts/adapters/VintageFreeInEscrowFundAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.VINTAGE_FUNDING_POOL_ADAPTER_HELPER,
+    name: "VintageFundingPoolAdapterHelperContract",
+    alias: "vintageFundingPoolAdapterHelperContract",
+    path: "../../contracts/adapters/VintageFundingPoolAdapterHelperContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
   /***********************************vintage end********************************/
   // flex
   {
@@ -1081,7 +1109,34 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
-
+  {
+    id: adaptersIdsMap.FLEX_FREE_IN_ESCROW_FUND_ADAPTER,
+    name: "FlexFreeInEscrowFundAdapterContract",
+    alias: "flexFreeInEscrowFundAdapterContract",
+    path: "../../contracts/adapters/FlexFreeInEscrowFundAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_FUNDING_HELPER_ADAPTER,
+    name: "FlexFundingHelperAdapterContract",
+    alias: "flexFundingHelperAdapterContract",
+    path: "../../contracts/adapters/FlexFundingHelperAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
   /*****************************************************flex end*******************************************************/
   {
     id: adaptersIdsMap.VESTING,

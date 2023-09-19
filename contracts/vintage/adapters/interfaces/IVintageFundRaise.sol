@@ -46,21 +46,35 @@ interface IVintageFundRaise {
         uint256 returnDuration;
     }
 
+    struct PriorityDeposite {
+        bool enable;
+        uint8 vtype;
+        address token;
+        uint256 tokenId;
+        uint256 amount;
+    }
+
     struct FundRaiseRewardAndFeeInfo {
         uint256 managementFeeRatio;
         uint256 redepmtFeeRatio;
         uint256 protocolFeeRatio;
         address managementFeeAddress;
     }
-    struct ProposalDetails {
-        address acceptTokenAddr;
+
+    struct FundRaiseAmountInfo {
         uint256 fundRaiseTarget;
         uint256 fundRaiseMaxAmount;
         uint256 lpMinDepositAmount;
         uint256 lpMaxDepositAmount;
+    }
+    struct ProposalDetails {
+        address acceptTokenAddr;
+        FundRaiseAmountInfo amountInfo;
         FundRiaseTimeInfo timesInfo;
         FundRaiseRewardAndFeeInfo feeInfo;
         ProoserReward proposerReward;
+        PriorityDeposite priorityDeposite;
+        uint8 fundRaiseType;
         ProposalState state;
         uint256 creationTime;
         uint256 stopVoteTime;
@@ -97,6 +111,22 @@ interface IVintageFundRaise {
         ProposalFeeInfo proposalFeeInfo;
         ProposalAddressInfo proposalAddressInfo;
         ProoserReward proposerReward;
+        ProposalPriorityDepositInfo priorityDeposite;
+        // ParticipantCap participantCapInfo;
+    }
+
+    // struct ParticipantCap {
+    //     bool enable;
+    //     uint256 capacity;
+    // }
+
+    struct ProposalPriorityDepositInfo {
+        bool enable;
+        uint8 vtype;
+        address token;
+        uint256 tokenId;
+        uint256 amount;
+        address[] whitelist;
     }
     struct ProposalFundRaiseInfo {
         uint256 fundRaiseMinTarget;
@@ -183,5 +213,7 @@ interface IVintageFundRaise {
 
     function processProposal(DaoRegistry dao, bytes32 proposalId) external;
 
-    error InvalidParamsSetting();
+    error LAST_NEW_FUND_PROPOSAL_NOT_FINISH();
+    error INVALID_PARAM();
+    error VOTING_NOT_FINISH();
 }

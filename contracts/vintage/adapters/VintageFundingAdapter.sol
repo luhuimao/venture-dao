@@ -94,44 +94,19 @@ contract VintageFundingAdapterContract is
         uint256 lockAmount,
         bytes32 proposalId
     ) internal returns (bool) {
-        // IERC20 erc20 = IERC20(returnToken);
-
-        // if (
-        //     erc20.balanceOf(approver) < lockAmount ||
-        //     erc20.allowance(approver, address(this)) < lockAmount
-        // ) {
-        //     return false;
-        // }
-
-        //20220916 fix potential bugs
-        // uint256 oldAllowance = erc20.allowance(
-        //     address(this),
-        //     dao.getAdapterAddress(DaoHelper.VINTAGE_ALLOCATION_ADAPTER)
-        // );
-        // uint256 newAllowance = erc20.allowance(
-        //     address(this),
-        //     dao.getAdapterAddress(DaoHelper.VINTAGE_ALLOCATION_ADAPTER)
-        // ) + lockAmount;
-        // //approve to AllocationAdapter contract
-        // erc20.approve(
-        //     dao.getAdapterAddress(DaoHelper.VINTAGE_ALLOCATION_ADAPTER),
-        //     newAllowance
-        // );
-        // erc20.transferFrom(approver, address(this), lockAmount);
-
         VintageFundingReturnTokenAdapterContract returnTokenAdapt = VintageFundingReturnTokenAdapterContract(
                 dao.getAdapterAddress(
                     DaoHelper.VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER
                 )
             );
-        returnTokenAdapt.escrowFundingReturnToken(
-            lockAmount,
-            dao,
-            approver,
-            returnToken,
-            proposalId
-        );
-        return true;
+        return
+            returnTokenAdapt.escrowFundingReturnToken(
+                lockAmount,
+                dao,
+                approver,
+                returnToken,
+                proposalId
+            );
     }
 
     function unLockProjectTeamToken(

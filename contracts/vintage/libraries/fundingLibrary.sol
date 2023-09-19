@@ -92,8 +92,8 @@ library FundingLibrary {
         require(
             fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
                 DaoHelper.FundRaiseState.DONE &&
-                block.timestamp > fundingPoolAdapt.getFundStartTime(dao) &&
-                block.timestamp < fundingPoolAdapt.getFundEndTime(dao),
+                block.timestamp > DaoHelper.getVintageFundStartTime(dao) &&
+                block.timestamp < DaoHelper.getVintageFundEndTime(dao),
             "Funding::submitProposal::only can submit proposal in investing period"
         );
 

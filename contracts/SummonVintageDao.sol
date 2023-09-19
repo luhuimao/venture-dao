@@ -370,6 +370,20 @@ contract SummonVintageDao {
         }
     }
 
+    //config participant cap
+    function summonVintageDao9(
+        address newDaoAddr,
+        bool enable,
+        uint256 cap
+    ) external returns (bool) {
+        if (enable) {
+            DaoRegistry newDao = DaoRegistry(newDaoAddr);
+            newDao.setConfiguration(DaoHelper.MAX_PARTICIPANTS_ENABLE, 1);
+            newDao.setConfiguration(DaoHelper.MAX_PARTICIPANTS, cap);
+        }
+        return true;
+    }
+
     struct VintageCall {
         address target;
         bytes callData;
@@ -384,13 +398,14 @@ contract SummonVintageDao {
         bytes summonVintageDao6Payload;
         bytes summonVintageDao7Payload;
         bytes summonVintageDao8Payload;
+        bytes summonVintageDao9Payload;
         bool success;
         bytes ret;
         address newDaoAddr;
-        VintageCall[7] calls;
+        VintageCall[8] calls;
     }
 
-    function multiVintageCall(VintageCall[7] memory calls) public {
+    function multiVintageCall(VintageCall[8] memory calls) public {
         for (uint256 i = 0; i < calls.length; i++) {
             (bool success, bytes memory ret) = calls[i].target.call(
                 calls[i].callData
@@ -507,6 +522,13 @@ contract SummonVintageDao {
             params.backerMembership.whiteList
         );
 
+        vars.summonVintageDao9Payload = abi.encodeWithSignature(
+            "summonVintageDao9(address,bool,uint256)",
+            vars.newDaoAddr,
+            params.participantCap.enable,
+            params.participantCap.cap
+        );
+
         vars.calls[0] = VintageCall(
             address(this),
             vars.summonVintageDao2Payload
@@ -534,6 +556,10 @@ contract SummonVintageDao {
         vars.calls[6] = VintageCall(
             address(this),
             vars.summonVintageDao8Payload
+        );
+        vars.calls[7] = VintageCall(
+            address(this),
+            vars.summonVintageDao9Payload
         );
 
         multiVintageCall(vars.calls);

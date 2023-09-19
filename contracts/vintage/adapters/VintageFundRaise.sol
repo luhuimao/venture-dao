@@ -15,8 +15,11 @@ import "../../helpers/GovernanceHelper.sol";
 import "../extensions/fundingpool/VintageFundingPool.sol";
 import "../../utils/TypeConver.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
 
 /**
@@ -49,6 +52,8 @@ contract VintageFundRaiseAdapterContract is
     RaiserGuard,
     Reimbursable
 {
+    using EnumerableSet for EnumerableSet.AddressSet;
+
     /*
      * PUBLIC VARIABLES
      */
@@ -57,6 +62,7 @@ contract VintageFundRaiseAdapterContract is
     // uint256 public proposalIds = 1;
     mapping(address => uint256) public createdFundCounter;
     mapping(address => bytes32) public lastProposalIds;
+    mapping(address => mapping(bytes32 => EnumerableSet.AddressSet)) priorityDepositeWhiteList;
 
     /*
      * STRUCTURES
@@ -75,7 +81,7 @@ contract VintageFundRaiseAdapterContract is
                     lastProposalIds[address(params.dao)]
                 ].state ==
                 ProposalState.Executing)
-        ) revert("last fund raise proposal not closed");
+        ) revert LAST_NEW_FUND_PROPOSAL_NOT_FINISH();
         SubmitProposalLocalVars memory vars;
 
         vars.lastFundEndTime = params.dao.getConfiguration(
@@ -89,7 +95,7 @@ contract VintageFundRaiseAdapterContract is
         );
         require(
             vars.fundingPoolAdapt.poolBalance(params.dao) <= 0,
-            "FundRaise::submitProposal::pool balance must = 0"
+            "!clear fund"
         );
         require(
             vars.fundingPoolAdapt.daoFundRaisingStates(address(params.dao)) ==
@@ -104,7 +110,7 @@ contract VintageFundRaiseAdapterContract is
                     DaoHelper.FundRaiseState.DONE &&
                     block.timestamp >
                     vars.lastFundEndTime + vars.returnDuration),
-            "FundRaise::submitProposal::cant submit fund raise proposal now"
+            "not now"
         );
 
         vars.protocolFeeRatio = vars.fundingPoolAdapt.protocolFee();
@@ -136,7 +142,7 @@ contract VintageFundRaiseAdapterContract is
             params.proposerReward.projectTokenFromInvestor < 0 ||
             params.proposerReward.projectTokenFromInvestor >= 10 ** 18
         ) {
-            revert("Invalid Params");
+            revert INVALID_PARAM();
         }
 
         vars.votingContract = IVintageVoting(
@@ -163,10 +169,12 @@ contract VintageFundRaiseAdapterContract is
         // Saves the state of the proposal.
         Proposals[address(params.dao)][vars.proposalId] = ProposalDetails(
             params.proposalAddressInfo.fundRaiseTokenAddress,
-            params.proposalFundRaiseInfo.fundRaiseMinTarget,
-            params.proposalFundRaiseInfo.fundRaiseMaxCap,
-            params.proposalFundRaiseInfo.lpMinDepositAmount,
-            params.proposalFundRaiseInfo.lpMaxDepositAmount,
+            FundRaiseAmountInfo(
+                params.proposalFundRaiseInfo.fundRaiseMinTarget,
+                params.proposalFundRaiseInfo.fundRaiseMaxCap,
+                params.proposalFundRaiseInfo.lpMinDepositAmount,
+                params.proposalFundRaiseInfo.lpMaxDepositAmount
+            ),
             FundRiaseTimeInfo(
                 params.proposalTimeInfo.startTime,
                 params.proposalTimeInfo.endTime,
@@ -185,12 +193,32 @@ contract VintageFundRaiseAdapterContract is
                 params.proposerReward.fundFromInverstor,
                 params.proposerReward.projectTokenFromInvestor
             ),
+            PriorityDeposite(
+                params.priorityDeposite.enable,
+                params.priorityDeposite.vtype,
+                params.priorityDeposite.token,
+                params.priorityDeposite.tokenId,
+                params.priorityDeposite.amount
+            ),
+            params.proposalFundRaiseInfo.fundRaiseType,
             ProposalState.Voting,
             block.timestamp,
             block.timestamp +
                 params.dao.getConfiguration(DaoHelper.VOTING_PERIOD)
         );
 
+        if (
+            params.priorityDeposite.enable &&
+            params.priorityDeposite.vtype == 3 &&
+            params.priorityDeposite.whitelist.length > 0
+        ) {
+            // delete priorityDepositeWhiteList[address(params.dao)];
+            setPriorityDepositeWhiteList(
+                address(params.dao),
+                vars.proposalId,
+                params.priorityDeposite.whitelist
+            );
+        }
         // Starts the voting process for the gp kick proposal.
         vars.votingContract.startNewVotingForProposal(
             params.dao,
@@ -205,7 +233,6 @@ contract VintageFundRaiseAdapterContract is
             vars.submittedBy,
             address(vars.votingContract)
         );
-        // proposalIds += 1;
 
         lastProposalIds[address(params.dao)] = vars.proposalId;
         emit ProposalCreated(address(params.dao), vars.proposalId);
@@ -266,7 +293,7 @@ contract VintageFundRaiseAdapterContract is
         ) {
             proposalDetails.state = ProposalState.Failed;
         } else {
-            revert("FundRaise::processProposal::voting not finalized");
+            revert VOTING_NOT_FINISH();
         }
         // uint128 allGPsWeight = GovernanceHelper.getAllRaiserVotingWeight(dao);
 
@@ -288,108 +315,275 @@ contract VintageFundRaiseAdapterContract is
         DaoRegistry dao,
         ProposalDetails memory proposalInfo
     ) internal {
-        //1 fundRaiseTarget
-        VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
-                dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
+        setFundAmount(
+            dao,
+            [
+                proposalInfo.amountInfo.fundRaiseTarget,
+                proposalInfo.amountInfo.fundRaiseMaxAmount,
+                proposalInfo.amountInfo.lpMinDepositAmount,
+                proposalInfo.amountInfo.lpMaxDepositAmount
+            ]
+        );
+
+        setFundTimes(
+            dao,
+            [
+                proposalInfo.timesInfo.fundRaiseStartTime,
+                proposalInfo.timesInfo.fundRaiseEndTime,
+                proposalInfo.timesInfo.fundTerm,
+                proposalInfo.timesInfo.redemptPeriod,
+                proposalInfo.timesInfo.redemptDuration,
+                proposalInfo.timesInfo.returnDuration
+            ]
+        );
+
+        setAddresses(
+            dao,
+            [
+                proposalInfo.feeInfo.managementFeeAddress,
+                proposalInfo.acceptTokenAddr
+            ]
+        );
+
+        setFeeAndReward(
+            dao,
+            [
+                proposalInfo.feeInfo.managementFeeRatio,
+                proposalInfo.feeInfo.redepmtFeeRatio,
+                proposalInfo.proposerReward.fundFromInverstor,
+                proposalInfo.proposerReward.projectTokenFromInvestor
+            ]
+        );
+
+        //19 set fundRaiseType
+        dao.setConfiguration(
+            DaoHelper.VINTAGE_FUNDRAISE_STYLE,
+            proposalInfo.fundRaiseType
+        );
+
+        //20 set priority deposit
+        if (proposalInfo.priorityDeposite.enable) {
+            setPriorityDeposit(
+                dao,
+                proposalInfo.priorityDeposite.vtype,
+                proposalInfo.priorityDeposite.token,
+                proposalInfo.priorityDeposite.tokenId,
+                proposalInfo.priorityDeposite.amount
             );
-        //fundRaiseTarget
+        }
+
+        //20 set participant capacity
+        // setParticipantCap(
+        //     dao,
+        //     proposalInfo.participantCap.enable,
+        //     proposalInfo.participantCap.capacity
+        // );
+    }
+
+    function setFundAmount(
+        DaoRegistry dao,
+        uint256[4] memory uint256Args
+    ) internal {
+        //1 fundRaiseTarget
         dao.setConfiguration(
             DaoHelper.FUND_RAISING_TARGET,
-            proposalInfo.fundRaiseTarget
+            uint256Args[0] // proposalInfo.fundRaiseTarget
         );
         //2 fundRaiseMaxAmount
-        if (proposalInfo.fundRaiseMaxAmount > 0) {
-            dao.setConfiguration(
-                DaoHelper.FUND_RAISING_MAX,
-                proposalInfo.fundRaiseMaxAmount
-            );
-        } else {
-            dao.setConfiguration(DaoHelper.FUND_RAISING_MAX, 0);
-        }
+        dao.setConfiguration(
+            DaoHelper.FUND_RAISING_MAX,
+            uint256Args[1] //     proposalInfo.fundRaiseMaxAmount
+        );
 
         //3 lpMinDepositAmount
         dao.setConfiguration(
             DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP,
-            proposalInfo.lpMinDepositAmount
+            uint256Args[2] // proposalInfo.lpMinDepositAmount
         );
         //4 lpMaxDepositAmount
         dao.setConfiguration(
             DaoHelper.FUND_RAISING_MAX_INVESTMENT_AMOUNT_OF_LP,
-            proposalInfo.lpMaxDepositAmount
+            uint256Args[3] //  proposalInfo.lpMaxDepositAmount
         );
-        //5 fundRaiseStartTime
-        dao.setConfiguration(
-            DaoHelper.FUND_RAISING_WINDOW_BEGIN,
-            proposalInfo.timesInfo.fundRaiseStartTime
-        );
-        //6 fundRaiseEndTime
-        dao.setConfiguration(
-            DaoHelper.FUND_RAISING_WINDOW_END,
-            proposalInfo.timesInfo.fundRaiseEndTime
-        );
-        //7 fundStartTime
-        dao.setConfiguration(DaoHelper.FUND_START_TIME, block.timestamp);
-        //8 fundEndTime
-        dao.setConfiguration(
-            DaoHelper.FUND_END_TIME,
-            block.timestamp + proposalInfo.timesInfo.fundTerm
-        );
-        //9 redemptPeriod
-        dao.setConfiguration(
-            DaoHelper.FUND_RAISING_REDEMPTION_PERIOD,
-            proposalInfo.timesInfo.redemptPeriod
-        );
-        //10 redemptDuration
-        dao.setConfiguration(
-            DaoHelper.FUND_RAISING_REDEMPTION_DURATION,
-            proposalInfo.timesInfo.redemptDuration
-        );
-        //11 returnDuration
-        dao.setConfiguration(
-            DaoHelper.RETURN_DURATION,
-            proposalInfo.timesInfo.returnDuration
-        );
-        // //12 proposerRewardRatio
-        // dao.setConfiguration(
-        //     DaoHelper.REWARD_FOR_PROPOSER,
-        //     proposalInfo.proposerReward.fundFromInverstor
-        // );
-        //13 managementFeeRatio
+    }
+
+    function setFeeAndReward(
+        DaoRegistry dao,
+        uint256[4] memory uint256Args
+    ) internal {
+        //1 managementFeeRatio
         dao.setConfiguration(
             DaoHelper.MANAGEMENT_FEE,
-            proposalInfo.feeInfo.managementFeeRatio
+            uint256Args[0] //   proposalInfo.feeInfo.managementFeeRatio
         );
-        //14 redepmtFeeRatio
+        //2 redepmtFeeRatio
         dao.setConfiguration(
             DaoHelper.REDEMPTION_FEE,
-            proposalInfo.feeInfo.redepmtFeeRatio
+            uint256Args[1] //   proposalInfo.feeInfo.redepmtFeeRatio
         );
-        // //15 protocolFeeRatio
-        // dao.setConfiguration(
-        //     DaoHelper.PROTOCOL_FEE,
-        //     proposalInfo.feeInfo.protocolFeeRatio
-        // );
+
+        //3 proposer reward fund from investors
+        dao.setConfiguration(
+            DaoHelper.VINTAGE_PROPOSER_FUND_REWARD_RADIO,
+            uint256Args[2] //   proposalInfo.proposerReward.fundFromInverstor
+        );
+
+        //4 proposer reward project token from investors
+        dao.setConfiguration(
+            DaoHelper.VINTAGE_PROPOSER_TOKEN_REWARD_RADIO,
+            uint256Args[3] //  proposalInfo.proposerReward.projectTokenFromInvestor
+        );
+    }
+
+    function setAddresses(
+        DaoRegistry dao,
+        address[2] memory addressArgs
+    ) internal {
         //16 management fee address
         dao.setAddressConfiguration(
             DaoHelper.GP_ADDRESS,
-            proposalInfo.feeInfo.managementFeeAddress
+            addressArgs[0] //  proposalInfo.feeInfo.managementFeeAddress
         );
         //17 token address
         dao.setAddressConfiguration(
             DaoHelper.FUND_RAISING_CURRENCY_ADDRESS,
-            proposalInfo.acceptTokenAddr
+            addressArgs[1] //  proposalInfo.acceptTokenAddr
         );
+    }
 
-        //18 proposer reward fund from investors
+    function setFundTimes(
+        DaoRegistry dao,
+        uint256[6] memory uint256Args
+    ) internal {
+        //1 fundRaiseStartTime
         dao.setConfiguration(
-            DaoHelper.VINTAGE_PROPOSER_FUND_REWARD_RADIO,
-            proposalInfo.proposerReward.fundFromInverstor
+            DaoHelper.FUND_RAISING_WINDOW_BEGIN,
+            uint256Args[0] // proposalInfo.timesInfo.fundRaiseStartTime
         );
+        //2 fundRaiseEndTime
+        dao.setConfiguration(
+            DaoHelper.FUND_RAISING_WINDOW_END,
+            uint256Args[1] //  proposalInfo.timesInfo.fundRaiseEndTime
+        );
+        //3 fundStartTime
+        dao.setConfiguration(DaoHelper.FUND_START_TIME, block.timestamp);
+        //4 fundEndTime
+        dao.setConfiguration(
+            DaoHelper.FUND_END_TIME,
+            block.timestamp + uint256Args[2] //proposalInfo.timesInfo.fundTerm
+        );
+        //5 redemptPeriod
+        dao.setConfiguration(
+            DaoHelper.FUND_RAISING_REDEMPTION_PERIOD,
+            uint256Args[3] //  proposalInfo.timesInfo.redemptPeriod
+        );
+        //6 redemptDuration
+        dao.setConfiguration(
+            DaoHelper.FUND_RAISING_REDEMPTION_DURATION,
+            uint256Args[4] //   proposalInfo.timesInfo.redemptDuration
+        );
+        //7 returnDuration
+        dao.setConfiguration(
+            DaoHelper.RETURN_DURATION,
+            uint256Args[5] //    proposalInfo.timesInfo.returnDuration
+        );
+    }
 
-        //19 proposer reward project token from investors
+    // function setParticipantCap(
+    //     DaoRegistry dao,
+    //     bool enable,
+    //     uint256 capacity
+    // ) internal {
+    //     dao.setConfiguration(
+    //         DaoHelper.MAX_PARTICIPANTS_ENABLE,
+    //         enable == true ? 1 : 0
+    //     );
+    //     dao.setConfiguration(DaoHelper.MAX_PARTICIPANTS, capacity);
+    // }
+
+    function setPriorityDeposit(
+        DaoRegistry dao,
+        uint8 vtype,
+        address token,
+        uint256 tokenId,
+        uint256 amount
+    ) internal {
+        dao.setConfiguration(DaoHelper.VINTAGE_PRIORITY_DEPOSITE_ENABLE, 1);
+        dao.setConfiguration(DaoHelper.VINTAGE_PRIORITY_DEPOSITE_TYPE, vtype);
+
         dao.setConfiguration(
-            DaoHelper.VINTAGE_PROPOSER_TOKEN_REWARD_RADIO,
-            proposalInfo.proposerReward.projectTokenFromInvestor
+            DaoHelper.VINTAGE_PRIORITY_DEPOSITE_TOKENID,
+            tokenId
         );
+        dao.setConfiguration(
+            DaoHelper.VINTAGE_PRIORITY_DEPOSITE_AMOUNT,
+            amount
+        );
+        dao.setAddressConfiguration(
+            DaoHelper.VINTAGE_PRIORITY_DEPOSITE_TOKEN_ADDRESS,
+            token
+        );
+    }
+
+    function setPriorityDepositeWhiteList(
+        address dao,
+        bytes32 proposalId,
+        address[] calldata whitelist
+    ) internal {
+        for (uint8 i = 0; i < whitelist.length; i++) {
+            // if (!priorityDepositeWhiteList[dao].contains(whitelist[i])) {
+            priorityDepositeWhiteList[dao][proposalId].add(whitelist[i]);
+            // }
+        }
+    }
+
+    function getWhiteList(
+        address dao,
+        bytes32 proposalId
+    ) public view returns (address[] memory) {
+        return priorityDepositeWhiteList[dao][proposalId].values();
+    }
+
+    function isPriorityDepositer(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        address account
+    ) public view returns (bool) {
+        if (
+            dao.getConfiguration(DaoHelper.VINTAGE_PRIORITY_DEPOSITE_ENABLE) ==
+            1
+        ) {
+            uint256 vtype = dao.getConfiguration(
+                DaoHelper.VINTAGE_PRIORITY_DEPOSITE_TYPE
+            );
+            address token = dao.getAddressConfiguration(
+                DaoHelper.VINTAGE_PRIORITY_DEPOSITE_TOKEN_ADDRESS
+            );
+            uint256 tokenAmount = dao.getConfiguration(
+                DaoHelper.VINTAGE_PRIORITY_DEPOSITE_AMOUNT
+            );
+            uint256 tokenId = dao.getConfiguration(
+                DaoHelper.VINTAGE_PRIORITY_DEPOSITE_TOKENID
+            );
+            if (vtype == 0 && IERC20(token).balanceOf(account) >= tokenAmount)
+                return true;
+            else if (
+                vtype == 1 && IERC721(token).balanceOf(account) >= tokenAmount
+            ) return true;
+            else if (
+                vtype == 2 &&
+                IERC1155(token).balanceOf(account, tokenId) >= tokenAmount
+            ) return true;
+            else if (
+                vtype == 3 &&
+                priorityDepositeWhiteList[address(dao)][proposalId].contains(
+                    account
+                )
+            ) return true;
+            else {
+                return false;
+            }
+        }
+        return false;
     }
 }

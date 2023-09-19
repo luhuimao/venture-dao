@@ -131,6 +131,21 @@ library DaoHelper {
         keccak256("VINTAGE_PROPOSER_FUND_REWARD_RADIO");
     bytes32 internal constant VINTAGE_PROPOSER_TOKEN_REWARD_RADIO =
         keccak256("VINTAGE_PROPOSER_TOKEN_REWARD_RADIO");
+
+    bytes32 internal constant VINTAGE_FUNDRAISE_STYLE =
+        keccak256("VINTAGE_FUNDRAISE_STYLE");
+
+    bytes32 internal constant VINTAGE_PRIORITY_DEPOSITE_ENABLE =
+        keccak256("VINTAGE_PRIORITY_DEPOSITE_ENABLE");
+    bytes32 internal constant VINTAGE_PRIORITY_DEPOSITE_TYPE =
+        keccak256("VINTAGE_PRIORITY_DEPOSITE_TYPE");
+    bytes32 internal constant VINTAGE_PRIORITY_DEPOSITE_TOKEN_ADDRESS =
+        keccak256("VINTAGE_PRIORITY_DEPOSITE_TOKEN_ADDRESS");
+    bytes32 internal constant VINTAGE_PRIORITY_DEPOSITE_TOKENID =
+        keccak256("VINTAGE_PRIORITY_DEPOSITE_TOKENID");
+    bytes32 internal constant VINTAGE_PRIORITY_DEPOSITE_AMOUNT =
+        keccak256("VINTAGE_PRIORITY_DEPOSITE_AMOUNT");
+
     /* ********************************
     VINTAGE SETTING 
     *********************************/
@@ -335,7 +350,8 @@ library DaoHelper {
         keccak256("vintage-distribute-adapter");
     bytes32 internal constant VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER =
         keccak256("vintage-funding-return-token-adapter");
-
+    bytes32 internal constant VINTAGE_FREE_IN_ESCROW_FUND_ADAPTER =
+        keccak256("vintage-free-in-escrow-fund-adapter");
     /* 
     vintage Adapters **************************************************************************************************
      */
@@ -358,6 +374,10 @@ library DaoHelper {
         keccak256("flex-steward-allocation");
     bytes32 internal constant FLEX_FUNDING_RETURN_TOKEN_ADAPT =
         keccak256("flex-funding-return-token-adapter");
+    bytes32 internal constant FLEX_FREE_IN_ESCROW_FUND_ADAPTER =
+        keccak256("flex-free-in-escrow-fund-adapter");
+     bytes32 internal constant FLEX_FUNDING_HELPER_ADAPTER =
+        keccak256("flex-funding-helper-adapter");
     //---------------------------------flex---------------------------------
 
     bytes32 internal constant FUND_RAISE = keccak256("fund-raise");
@@ -640,5 +660,17 @@ library DaoHelper {
             if (dao.isMember(investors[i])) nb += 1;
         }
         return nb;
+    }
+
+    function getVintageFundStartTime(
+        DaoRegistry dao
+    ) internal view returns (uint256) {
+        return dao.getConfiguration(DaoHelper.FUND_START_TIME);
+    }
+
+    function getVintageFundEndTime(
+        DaoRegistry dao
+    ) internal view returns (uint256) {
+        return dao.getConfiguration(DaoHelper.FUND_END_TIME);
     }
 }
