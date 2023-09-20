@@ -227,7 +227,7 @@ contract FlexFundingPoolExtension is IExtension, MemberGuard, ERC165 {
             balanceOf(proposalId, DaoHelper.TOTAL) >= amount,
             "flex funding pool::withdraw::not enough funds"
         );
-        address[] memory tem = investors[proposalId].values();
+        // address[] memory tem = investors[proposalId].values();
 
         IERC20(tokenAddr).safeTransfer(toAddress, amount);
 

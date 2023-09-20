@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 import "./interfaces/IFlexFunding.sol";
 import "./FlexFunding.sol";
+import "./FlexFundingHelper.sol";
+import "./FlexFreeInEscrowFund.sol";
 import "../../core/DaoRegistry.sol";
 import "../extensions/FlexFundingPool.sol";
 import "../../guards/AdapterGuard.sol";
@@ -62,7 +64,9 @@ contract FlexFundingPoolAdapterContract is
     mapping(address => mapping(bytes32 => ParticipantMembershipInfo))
         public participantMemberShips;
     mapping(address => EnumerableSet.AddressSet) priorityDepositWhitelist;
-
+    mapping(address => mapping(bytes32 => EnumerableSet.AddressSet)) fundCommonParticipants;
+    mapping(address => mapping(bytes32 => uint256))
+        public freeINPriorityDeposits;
     struct ParticipantMembershipInfo {
         bool created;
         uint8 varifyType;
@@ -103,17 +107,10 @@ contract FlexFundingPoolAdapterContract is
             dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
         );
         uint256 balance = flexFundingPool.balanceOf(proposalId, msg.sender);
-        require(balance > 0 && amount <= balance, "nothing to withdraw");
+        require(balance > 0 && amount <= balance, "!amount");
         FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
-
-        // uint256 fundRaiseStartTime;
-        // uint256 fundRaiseEndTime;
-        // (fundRaiseStartTime, fundRaiseEndTime) = flexFunding.getFundRaiseTimes(
-        //     dao,
-        //     proposalId
-        // );
 
         (
             ,
@@ -129,9 +126,8 @@ contract FlexFundingPoolAdapterContract is
             fundRaiseInfo.fundRaiseEndTime > block.timestamp ||
                 ((fundRaiseInfo.fundRaiseEndTime < block.timestamp) &&
                     state == IFlexFunding.ProposalStatus.FAILED),
-            "FlexFundingPool::Withdraw::cant withdraw now"
+            "!withdraw"
         );
-        // address token = flexFunding.getTokenByProposalId(dao, proposalId);
         (
             ,
             IFlexFunding.ProposalFundingInfo memory fundingInfo,
@@ -148,15 +144,13 @@ contract FlexFundingPoolAdapterContract is
             fundingInfo.tokenAddress,
             amount
         );
-        // if (
-        //     fundRaiseEndTime > block.timestamp ||
-        //     ((fundRaiseEndTime < block.timestamp) &&
-        //         flexFunding.getProposalState(dao, proposalId) ==
-        //         IFlexFunding.ProposalStatus.FAILED)
-        // ) {
-        //     address token = flexFunding.getTokenByProposalId(dao, proposalId);
-        //     flexFundingPool.withdraw(proposalId, msg.sender, token, amount);
-        // }
+
+        if (flexFunding.isPriorityDepositer(dao, proposalId, msg.sender))
+            freeINPriorityDeposits[address(dao)][proposalId] -= amount;
+
+        if (balanceOf(dao, proposalId, msg.sender) <= 0)
+            _removeFundParticipant(dao, msg.sender, proposalId);
+
         emit WithDraw(address(dao), proposalId, amount, msg.sender);
     }
 
@@ -213,12 +207,14 @@ contract FlexFundingPoolAdapterContract is
     struct DepositLocalVars {
         FlexFundingAdapterContract flexFunding;
         FlexFundingPoolExtension flexFungdingPoolExt;
+        FlexFundingHelperAdapterContract flexFundingHelper;
+        IFlexFunding.FundRaiseType fundRaiseType;
         uint256 fundRaiseStartTime;
         uint256 fundRaiseEndTime;
-        IFlexFunding.FundRaiseType fundRaiseType;
         uint256 minDepositAmount;
         uint256 maxDepositAmount;
         address token;
+        address fundingToken;
         uint256 maxFundingAmount;
         uint256 investorsAmount;
     }
@@ -236,118 +232,260 @@ contract FlexFundingPoolAdapterContract is
         vars.flexFungdingPoolExt = FlexFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
         );
+        vars.flexFundingHelper = FlexFundingHelperAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_HELPER_ADAPTER)
+        );
         vars.investorsAmount = vars
             .flexFungdingPoolExt
             .getInvestorsByProposalId(proposalId)
             .length;
 
+        // if (
+        //     dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS_ENABLE) == 1 &&
+        //     dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) > 0 &&
+        //     (vars.investorsAmount >=
+        //         dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) ||
+        //         (vars.investorsAmount <
+        //             dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) &&
+        //             ((
+        //                 vars.investorsAmount >=
+        //                     DaoHelper.getStewardInvestorNB(dao, proposalId)
+        //                     ? vars.investorsAmount -
+        //                         DaoHelper.getStewardInvestorNB(dao, proposalId)
+        //                     : 0
+        //             ) >=
+        //                 (
+        //                     dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) >=
+        //                         DaoHelper.getActiveMemberNb(dao)
+        //                         ? dao.getConfiguration(
+        //                             DaoHelper.MAX_PARTICIPANTS
+        //                         ) - DaoHelper.getActiveMemberNb(dao)
+        //                         : 0
+        //                 )) &&
+        //             !dao.isMember(msg.sender))) &&
+        //     !vars.flexFungdingPoolExt.isInvestor(proposalId, msg.sender)
+        // ) revert MaxParticipantReach();
+
+        // participant cap only restrict for investor not governor
         if (
             dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS_ENABLE) == 1 &&
-            dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) > 0 &&
-            (vars.investorsAmount >=
-                dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) ||
-                (vars.investorsAmount <
-                    dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) &&
-                    ((
-                        vars.investorsAmount >=
-                            DaoHelper.getStewardInvestorNB(dao, proposalId)
-                            ? vars.investorsAmount -
-                                DaoHelper.getStewardInvestorNB(dao, proposalId)
-                            : 0
-                    ) >=
-                        (
-                            dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) >=
-                                DaoHelper.getActiveMemberNb(dao)
-                                ? dao.getConfiguration(
-                                    DaoHelper.MAX_PARTICIPANTS
-                                ) - DaoHelper.getActiveMemberNb(dao)
-                                : 0
-                        )) &&
-                    !dao.isMember(msg.sender))) &&
-            !vars.flexFungdingPoolExt.isInvestor(proposalId, msg.sender)
+            fundCommonParticipants[address(dao)][proposalId].length() >=
+            dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) &&
+            !fundCommonParticipants[address(dao)][proposalId].contains(
+                msg.sender
+            ) &&
+            !dao.isMember(msg.sender)
         ) revert MaxParticipantReach();
 
-        (
-            ,
-            IFlexFunding.ProposalFundingInfo memory fundingInfo,
-            ,
-            IFlexFunding.FundRaiseInfo memory fundRaiseInfo,
-            ,
-            ,
-            ,
-            IFlexFunding.ProposalStatus state
-        ) = vars.flexFunding.Proposals(address(dao), proposalId);
+        IFlexFunding.ProposalStatus state = vars
+            .flexFundingHelper
+            .getFundingState(dao, proposalId);
+
         if (state != IFlexFunding.ProposalStatus.IN_FUND_RAISE_PROGRESS)
             revert NotInFundRaise();
 
-        // (vars.fundRaiseStartTime, vars.fundRaiseEndTime) = vars
-        //     .flexFunding
-        //     .getFundRaiseTimes(dao, proposalId);
-
+        (vars.fundRaiseStartTime, vars.fundRaiseEndTime) = vars
+            .flexFundingHelper
+            .getFundRaiseTimes(dao, proposalId);
         if (
-            block.timestamp < fundRaiseInfo.fundRaiseStartTime ||
-            block.timestamp > fundRaiseInfo.fundRaiseEndTime
+            block.timestamp < vars.fundRaiseStartTime ||
+            block.timestamp > vars.fundRaiseEndTime
         ) revert NotInFundRaise();
 
-        require(amount > 0, "no token sent!");
+        require(amount > 0, "!amount");
 
-        // vars.fundRaiseType = vars.flexFunding.getFundRaiseType(dao, proposalId);
-        vars.fundRaiseType = fundRaiseInfo.fundRaiseType;
-        // (vars.minDepositAmount, vars.maxDepositAmount) = vars
-        //     .flexFunding
-        //     .getDepositAmountLimit(dao, proposalId);
-        vars.maxFundingAmount = vars.flexFunding.getMaxFundingAmount(
+        // vars.fundRaiseType = fundRaiseInfo.fundRaiseType;
+        vars.fundRaiseType = vars.flexFundingHelper.getfundRaiseType(
             dao,
             proposalId
         );
+        vars.maxFundingAmount = vars.flexFundingHelper.getMaxFundingAmount(
+            dao,
+            proposalId
+        );
+
+        (vars.minDepositAmount, vars.maxDepositAmount) = vars
+            .flexFundingHelper
+            .getDepositAmountLimit(dao, proposalId);
+        if (vars.minDepositAmount > 0 && amount < vars.minDepositAmount)
+            revert LessMinDepositAmount();
+
         if (
-            fundRaiseInfo.minDepositAmount > 0 &&
-            amount < fundRaiseInfo.minDepositAmount
-        ) revert LessMinDepositAmount();
-        if (
-            fundRaiseInfo.maxDepositAmount > 0 &&
-            vars.flexFungdingPoolExt.balanceOf(proposalId, msg.sender) +
-                amount >
-            fundRaiseInfo.maxDepositAmount
-        ) revert ExceedMaxFundingAmount();
+            vars.maxDepositAmount > 0 &&
+            balanceOf(dao, proposalId, msg.sender) + amount >
+            vars.maxDepositAmount
+        ) revert ExceedMaxDepositAmount();
+
         if (
             vars.fundRaiseType == IFlexFunding.FundRaiseType.FCSF &&
             vars.maxFundingAmount > 0
         ) {
             if (
-                vars.flexFungdingPoolExt.balanceOf(
-                    proposalId,
-                    DaoHelper.TOTAL
-                ) +
-                    amount >
+                balanceOf(dao, proposalId, DaoHelper.TOTAL) + amount >
                 vars.maxFundingAmount
             ) revert ExceedMaxFundingAmount();
         }
-
-        // vars.token = vars.flexFunding.getTokenByProposalId(dao, proposalId);
-
-        // (
-        //     ,
-        //     IFlexFunding.ProposalFundingInfo memory fundingInfo,
-        //     ,
-        //     ,
-        //     ,
-        //     ,
-        //     ,
-
-        // ) = vars.flexFunding.Proposals(address(dao), proposalId);
-        IERC20(fundingInfo.tokenAddress).transferFrom(
+        vars.fundingToken = vars.flexFundingHelper.getFundingToken(
+            dao,
+            proposalId
+        );
+        IERC20(vars.fundingToken).transferFrom(
             msg.sender,
             address(this),
             amount
         );
-        IERC20(fundingInfo.tokenAddress).safeTransfer(
+        IERC20(vars.fundingToken).safeTransfer(
             dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT),
             amount
         );
+        _addFundParticipant(dao, msg.sender, proposalId);
 
+        if (vars.flexFunding.isPriorityDepositer(dao, proposalId, msg.sender))
+            freeINPriorityDeposits[address(dao)][proposalId] += amount;
         vars.flexFungdingPoolExt.addToBalance(proposalId, msg.sender, amount);
         emit Deposit(address(dao), proposalId, amount, msg.sender);
+    }
+
+    function _addFundParticipant(
+        DaoRegistry dao,
+        address account,
+        bytes32 proposalId
+    ) internal {
+        if (
+            !fundCommonParticipants[address(dao)][proposalId].contains(
+                account
+            ) && !dao.isMember(account)
+        ) fundCommonParticipants[address(dao)][proposalId].add(account);
+    }
+
+    function _removeFundParticipant(
+        DaoRegistry dao,
+        address account,
+        bytes32 proposalId
+    ) internal {
+        if (!dao.isMember(account))
+            fundCommonParticipants[address(dao)][proposalId].remove(account);
+    }
+
+    struct EscrowFundLocalVars {
+        FlexFundingHelperAdapterContract flexFundingHelper;
+        FlexFundingPoolExtension fundingpool;
+        FlexFreeInEscrowFundAdapterContract freeInEscrowFundAdapter;
+        FlexFundingAdapterContract flexFunding;
+        uint256 maxFund;
+        uint256 poolFunds;
+        uint256 priorityFunds;
+        uint256 extraFund;
+        address tokenAddr;
+    }
+
+    function escorwExtraFreeInFund(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external {
+        require(
+            msg.sender == dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT),
+            "!access"
+        );
+        EscrowFundLocalVars memory vars;
+        vars.flexFundingHelper = FlexFundingHelperAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_HELPER_ADAPTER)
+        );
+        vars.flexFunding = FlexFundingAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
+        );
+        vars.maxFund = vars.flexFundingHelper.getMaxFundingAmount(
+            dao,
+            proposalId
+        );
+        vars.poolFunds = balanceOf(dao, proposalId, DaoHelper.TOTAL);
+        if (
+            vars.flexFundingHelper.getfundRaiseType(dao, proposalId) ==
+            IFlexFunding.FundRaiseType.FREE_IN &&
+            vars.poolFunds > vars.maxFund
+        ) {
+            vars.fundingpool = FlexFundingPoolExtension(
+                dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+            );
+            address[] memory allInvestors = vars
+                .fundingpool
+                .getInvestorsByProposalId(proposalId);
+            vars.extraFund = 0;
+            vars.tokenAddr = vars.flexFundingHelper.getFundingToken(
+                dao,
+                proposalId
+            );
+
+            vars.freeInEscrowFundAdapter = FlexFreeInEscrowFundAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.FLEX_FREE_IN_ESCROW_FUND_ADAPTER
+                )
+            );
+            vars.priorityFunds = freeINPriorityDeposits[address(dao)][
+                proposalId
+            ];
+            for (uint8 i = 0; i < allInvestors.length; i++) {
+                if (vars.priorityFunds >= vars.maxFund) {
+                    if (
+                        vars.flexFunding.isPriorityDepositer(
+                            dao,
+                            proposalId,
+                            allInvestors[i]
+                        )
+                    ) {
+                        vars.extraFund =
+                            balanceOf(dao, proposalId, allInvestors[i]) -
+                            (balanceOf(dao, proposalId, allInvestors[i]) *
+                                vars.maxFund) /
+                            vars.priorityFunds;
+                    } else
+                        vars.extraFund = balanceOf(
+                            dao,
+                            proposalId,
+                            allInvestors[i]
+                        );
+                } else {
+                    if (
+                        vars.flexFunding.isPriorityDepositer(
+                            dao,
+                            proposalId,
+                            allInvestors[i]
+                        )
+                    ) vars.extraFund = 0;
+                    else {
+                        vars.extraFund =
+                            balanceOf(dao, proposalId, allInvestors[i]) -
+                            (balanceOf(dao, proposalId, allInvestors[i]) *
+                                (vars.maxFund - vars.priorityFunds)) /
+                            (vars.poolFunds - vars.priorityFunds);
+                    }
+                }
+
+                if (vars.extraFund > 0) {
+                    console.log("extraFund ",vars.extraFund);
+                    //1. escrow Fund From Funding Pool
+                    vars.freeInEscrowFundAdapter.escrowFundFromFundingPool(
+                        dao,
+                        proposalId,
+                        vars.tokenAddr,
+                        allInvestors[i],
+                        vars.extraFund
+                    );
+                    //2. send fund to free in escrow fund contract
+                    vars.fundingpool.withdrawTo(
+                        proposalId,
+                        allInvestors[i],
+                        payable(
+                            dao.getAdapterAddress(
+                                DaoHelper.FLEX_FREE_IN_ESCROW_FUND_ADAPTER
+                            )
+                        ),
+                        vars.tokenAddr,
+                        vars.extraFund
+                    );
+                }
+            }
+        }
     }
 
     function balanceOf(

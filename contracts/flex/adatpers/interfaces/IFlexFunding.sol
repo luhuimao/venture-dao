@@ -100,21 +100,13 @@ interface IFlexFunding {
         uint256 redepmtFeeRatio;
         uint256 protocolFeeRatio;
     }
+
     struct ProposalParams {
         FundingInfo fundingInfo;
         VestInfo vestInfo;
         FundRaiseInfo fundRaiseInfo;
         ProposerRewardInfo proposerRewardInfo;
-    }
-    struct ProposalInfo {
-        address proposer;
-        ProposalFundingInfo fundingInfo;
-        VestInfo vestInfo;
-        FundRaiseInfo fundRaiseInfo;
-        ProposerRewardInfo proposerRewardInfo;
-        uint256 startVoteTime;
-        uint256 stopVoteTime;
-        ProposalStatus state;
+        address[] priorityDepositWhitelist;
     }
 
     struct FundingInfo {
@@ -130,6 +122,18 @@ interface IFlexFunding {
         address approverAddr;
         address recipientAddr;
     }
+
+    struct ProposalInfo {
+        address proposer;
+        ProposalFundingInfo fundingInfo;
+        VestInfo vestInfo;
+        FundRaiseInfo fundRaiseInfo;
+        ProposerRewardInfo proposerRewardInfo;
+        uint256 startVoteTime;
+        uint256 stopVoteTime;
+        ProposalStatus state;
+    }
+
     struct ProposalFundingInfo {
         address tokenAddress;
         uint256 minFundingAmount;
@@ -155,6 +159,7 @@ interface IFlexFunding {
         string vestName;
         string vestDescription;
     }
+
     struct FundRaiseInfo {
         FundRaiseType fundRaiseType;
         uint256 fundRaiseStartTime;
@@ -163,7 +168,6 @@ interface IFlexFunding {
         uint256 maxDepositAmount;
         bool backerIdentification;
         BackerIdentificationInfo bakckerIdentificationInfo;
-        bool priorityDeposit;
         PriorityDepositInfo priorityDepositInfo;
     }
     struct BackerIdentificationInfo {
@@ -174,13 +178,11 @@ interface IFlexFunding {
         uint256 bMinHoldingAmount;
     }
     struct PriorityDepositInfo {
-        uint256 pPeriod;
-        uint256 pPeriods;
+        bool enable;
         PriorityDepositType pType;
-        uint256 pChainId;
-        address pTokenAddr;
-        uint256 pTokenId;
-        uint256 pMinHolding;
+        address token;
+        uint256 tokenId;
+        uint256 amount;
     }
     struct ProposerRewardInfo {
         uint256 tokenRewardAmount; //percentage

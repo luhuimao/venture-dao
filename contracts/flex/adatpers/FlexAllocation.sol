@@ -289,7 +289,9 @@ contract FlexAllocationAdapterContract is AdapterGuard {
 
         require(
             IERC20(tokenAddress).allowance(
-                dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_RETURN_TOKEN_ADAPT),
+                dao.getAdapterAddress(
+                    DaoHelper.FLEX_FUNDING_RETURN_TOKEN_ADAPT
+                ),
                 address(this)
             ) >= vars.tokenAmount,
             "AllocationAdapter::allocateProjectToken::insufficient allowance"
