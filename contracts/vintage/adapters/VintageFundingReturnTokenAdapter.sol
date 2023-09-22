@@ -19,16 +19,7 @@ contract VintageFundingReturnTokenAdapterContract {
         address erc20,
         uint256 amount
     ) external returns (bool) {
-        // IERC20(erc20).approve(address(this), amount);
-        // erc20.delegatecall(
-        //     abi.encodeWithSignature(
-        //         "approve(address,uint256)",
-        //         address(this),
-        //         amount
-        //     )
-        // );
-        approvedInfos[dao][proposalId][msg.sender][erc20] += amount;
-
+        approvedInfos[dao][proposalId][msg.sender][erc20] = amount;
         return true;
     }
 
@@ -44,13 +35,6 @@ contract VintageFundingReturnTokenAdapterContract {
                 dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_ADAPTER),
             "!access"
         );
-        // require(
-        //     approvedInfos[address(dao)][proposalId][approver][erc20] >=
-        //         escrowAmount &&
-        //         IERC20(erc20).allowance(approver, address(this)) >=
-        //         escrowAmount,
-        //     "!approve"
-        // );
 
         if (
             approvedInfos[address(dao)][proposalId][approver][erc20] <

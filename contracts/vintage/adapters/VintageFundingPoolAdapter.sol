@@ -51,7 +51,6 @@ contract VintageFundingPoolAdapterContract is
     uint256 public protocolFee = (3 * 1e18) / 1000; // 0.3%
     mapping(address => EnumerableSet.AddressSet) investorMembershipWhiteList;
     mapping(address => mapping(uint256 => EnumerableSet.AddressSet)) fundParticipants;
-    mapping(address => mapping(uint256 => EnumerableSet.AddressSet)) fundCommonParticipants;
 
     mapping(address => mapping(bytes32 => uint256))
         public freeINPriorityDeposits; // dao=>new fund proposalid => amount
@@ -63,7 +62,7 @@ contract VintageFundingPoolAdapterContract is
     event WithDraw(address daoAddress, uint256 amount, address account);
 
     event RedeptionFeeCharged(
-        uint256 timestamp,
+        address dao,
         address account,
         uint256 redempAmount,
         uint256 redemptionFee
@@ -201,19 +200,18 @@ contract VintageFundingPoolAdapterContract is
             redemptionFee =
                 (dao.getConfiguration(DaoHelper.REDEMPTION_FEE) * amount) /
                 1e18;
-            if (redemptionFee > 0) {
-                fundingpool.distributeFunds(
-                    address(dao.getAddressConfiguration(DaoHelper.GP_ADDRESS)),
-                    tokenAddr,
-                    redemptionFee
-                );
-                emit RedeptionFeeCharged(
-                    block.timestamp,
-                    msg.sender,
-                    amount,
-                    redemptionFee
-                );
-            }
+
+            fundingpool.distributeFunds(
+                address(dao.getAddressConfiguration(DaoHelper.GP_ADDRESS)),
+                tokenAddr,
+                redemptionFee
+            );
+            emit RedeptionFeeCharged(
+                address(dao),
+                msg.sender,
+                amount,
+                redemptionFee
+            );
         }
 
         fundingpool.withdraw(msg.sender, amount - redemptionFee);
@@ -377,15 +375,14 @@ contract VintageFundingPoolAdapterContract is
         vars.fundRounds = vars.fundRaiseContract.createdFundCounter(
             address(dao)
         );
-        // participant cap only restrict for investor not governor
+        // participant cap
         if (
             dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS_ENABLE) == 1 &&
-            fundCommonParticipants[address(dao)][vars.fundRounds].length() >=
+            fundParticipants[address(dao)][vars.fundRounds].length() >=
             dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) &&
-            !fundCommonParticipants[address(dao)][vars.fundRounds].contains(
+            !fundParticipants[address(dao)][vars.fundRounds].contains(
                 msg.sender
-            ) &&
-            !dao.isMember(msg.sender)
+            )
         ) revert MAX_PATICIPANT_AMOUNT_REACH();
         address token = vars.fundingpool.getFundRaisingTokenAddress();
         require(IERC20(token).balanceOf(msg.sender) >= amount, "!fund");
@@ -570,12 +567,6 @@ contract VintageFundingPoolAdapterContract is
     ) internal {
         if (!fundParticipants[address(dao)][fundRound].contains(account))
             fundParticipants[address(dao)][fundRound].add(account);
-
-        if (
-            !fundCommonParticipants[address(dao)][fundRound].contains(
-                account
-            ) && !dao.isMember(account)
-        ) fundCommonParticipants[address(dao)][fundRound].add(account);
     }
 
     function _removeFundParticipant(
@@ -584,8 +575,6 @@ contract VintageFundingPoolAdapterContract is
         uint256 fundRound
     ) internal {
         fundParticipants[address(dao)][fundRound].remove(account);
-        if (!dao.isMember(account))
-            fundCommonParticipants[address(dao)][fundRound].remove(account);
     }
 
     function balanceOf(
@@ -777,10 +766,10 @@ contract VintageFundingPoolAdapterContract is
         return fundParticipants[address(dao)][fundRound].values();
     }
 
-    function getCommonInvestors(
-        DaoRegistry dao,
-        uint256 fundRound
-    ) external view returns (address[] memory) {
-        return fundCommonParticipants[address(dao)][fundRound].values();
-    }
+    // function getCommonInvestors(
+    //     DaoRegistry dao,
+    //     uint256 fundRound
+    // ) external view returns (address[] memory) {
+    //     return fundCommonParticipants[address(dao)][fundRound].values();
+    // }
 }
