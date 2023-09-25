@@ -201,11 +201,12 @@ contract VintageFundingPoolAdapterContract is
                 (dao.getConfiguration(DaoHelper.REDEMPTION_FEE) * amount) /
                 1e18;
 
-            fundingpool.distributeFunds(
-                address(dao.getAddressConfiguration(DaoHelper.GP_ADDRESS)),
-                tokenAddr,
-                redemptionFee
-            );
+            if (redemptionFee > 0)
+                fundingpool.distributeFunds(
+                    address(dao.getAddressConfiguration(DaoHelper.GP_ADDRESS)),
+                    tokenAddr,
+                    redemptionFee
+                );
             emit RedeptionFeeCharged(
                 address(dao),
                 msg.sender,
