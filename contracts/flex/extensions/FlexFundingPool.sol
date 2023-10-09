@@ -309,9 +309,10 @@ contract FlexFundingPoolExtension is IExtension, MemberGuard, ERC165 {
         uint256 newAmount = balanceOf(proposalId, member) - amount;
         uint256 newTotalAmount = balanceOf(proposalId, DaoHelper.TOTAL) -
             amount;
+
+        _createNewAmountCheckpoint(proposalId, member, newAmount);
         if (balanceOf(proposalId, member) <= 0)
             _removeInvestor(proposalId, member);
-        _createNewAmountCheckpoint(proposalId, member, newAmount);
         _createNewAmountCheckpoint(proposalId, DaoHelper.TOTAL, newTotalAmount);
     }
 
