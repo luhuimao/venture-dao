@@ -101,18 +101,18 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         FlexFundingPoolAdapterContract fundingpool = FlexFundingPoolAdapterContract(
                 dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_POOL_ADAPT)
             );
-        FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
-            dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
-        );
-        IFlexFunding.ProposerRewardInfo memory proposerRewardInfo;
-        (, , , , proposerRewardInfo, , , ) = flexFunding.Proposals(
-            address(dao),
-            proposalId
-        );
+        // FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
+        //     dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
+        // );
+        // IFlexFunding.ProposerRewardInfo memory proposerRewardInfo;
+        // (, , , , proposerRewardInfo, , , ) = flexFunding.Proposals(
+        //     address(dao),
+        //     proposalId
+        // );
 
-        uint256 fundingRewards = tokenAmount -
-            (tokenAmount * proposerRewardInfo.tokenRewardAmount) /
-            1e18;
+        // uint256 fundingRewards = tokenAmount -
+        //     (tokenAmount * proposerRewardInfo.tokenRewardAmount) /
+        //     1e18;
 
         uint256 totalFund = fundingpool.getTotalFundByProposalId(
             dao,
@@ -120,10 +120,10 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         );
         uint256 fund = fundingpool.balanceOf(dao, proposalId, investor);
 
-        if (totalFund <= 0 || fund <= 0 || fundingRewards <= 0) {
+        if (totalFund <= 0 || fund <= 0 || tokenAmount <= 0) {
             return 0;
         }
-        return (fund * fundingRewards) / totalFund;
+        return (fund * tokenAmount) / totalFund;
     }
 
     function getProposerBonus(
@@ -131,9 +131,6 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         bytes32 proposalId,
         uint256 tokenAmount
     ) public view returns (uint256) {
-        FlexFundingPoolAdapterContract fundingpool = FlexFundingPoolAdapterContract(
-                dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_POOL_ADAPT)
-            );
         FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
@@ -167,9 +164,11 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         uint256 vestingStepDuration;
         uint256 vestingSteps;
         address proposerAddr;
+        address managementFeeAddr;
         uint256 bal;
         uint256 shares;
         uint256 totalFund;
+        uint256 returnTokenManagementFee;
     }
 
     function noEscrow(
@@ -302,28 +301,46 @@ contract FlexAllocationAdapterContract is AdapterGuard {
             vars.tokenAmount
         );
 
-        // approve from Allocation adapter contract to vesting contract
-        vars.oldAllowance = IERC20(tokenAddress).allowance(
-            address(this),
-            dao.getAdapterAddress(DaoHelper.BEN_TO_BOX)
+        vars.returnTokenManagementFee =
+            (vars.tokenAmount *
+                dao.getConfiguration(
+                    DaoHelper.FLEX_RETURN_TOKEN_MANAGEMENT_FEE_AMOUNT
+                )) /
+            1e18;
+        vars.proposerBonus = getProposerBonus(
+            dao,
+            proposalId,
+            vars.tokenAmount
         );
-        vars.newAllowance = vars.oldAllowance + vars.tokenAmount;
-        IERC20(tokenAddress).approve(
-            dao.getAdapterAddress(DaoHelper.BEN_TO_BOX),
-            vars.newAllowance
-        );
+
+        if (vars.returnTokenManagementFee > 0) {
+            vars.managementFeeAddr = dao.getAddressConfiguration(
+                DaoHelper.FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS
+            );
+            vestingInfos[address(dao)][proposalId][
+                vars.managementFeeAddr
+            ] = VestingInfo(
+                vestingInfos[address(dao)][proposalId][vars.managementFeeAddr]
+                    .tokenAmount + vars.returnTokenManagementFee,
+                false
+            );
+            vars.totalReward += vars.returnTokenManagementFee;
+        }
+
         address[] memory allInvestors = vars
             .fundingpool
             .getInvestorsByProposalId(proposalId);
-        vars.totalReward = 0;
-        console.log("investor amount: ", allInvestors.length);
+        // vars.totalReward = 0;
+        // console.log("investor amount: ", allInvestors.length);
         if (allInvestors.length > 0) {
             for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
                 vars.fundingRewards = getFundingRewards(
                     dao,
                     proposalId,
                     allInvestors[vars.i],
-                    vars.tokenAmount
+                    vars.tokenAmount -
+                        vars.returnTokenManagementFee -
+                        vars.proposerBonus
                 );
                 //bug fixed: fillter fundingRewards > 0 ;20220614
                 if (vars.fundingRewards > 0) {
@@ -336,11 +353,6 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         }
 
         if (proposerAddr != address(0x0)) {
-            vars.proposerBonus = getProposerBonus(
-                dao,
-                proposalId,
-                vars.tokenAmount
-            );
             if (vars.proposerBonus > 0) {
                 vestingInfos[address(dao)][proposalId][
                     proposerAddr
@@ -352,10 +364,23 @@ contract FlexAllocationAdapterContract is AdapterGuard {
                 vars.totalReward += vars.proposerBonus;
             }
         }
+
         require(
             vars.totalReward <= vars.tokenAmount,
             "AllocationAdapter::allocateProjectToken::distribute token amount exceeds tranding off amount"
         );
+
+        // approve from Allocation adapter contract to vesting contract
+        vars.oldAllowance = IERC20(tokenAddress).allowance(
+            address(this),
+            dao.getAdapterAddress(DaoHelper.BEN_TO_BOX)
+        );
+        vars.newAllowance = vars.oldAllowance + vars.tokenAmount;
+        IERC20(tokenAddress).approve(
+            dao.getAdapterAddress(DaoHelper.BEN_TO_BOX),
+            vars.newAllowance
+        );
+
         emit AllocateToken(
             proposalId,
             address(dao),

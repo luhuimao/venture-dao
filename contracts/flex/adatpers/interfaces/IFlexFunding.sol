@@ -69,6 +69,7 @@ interface IFlexFunding {
         uint160 poolBalance;
         uint256 protocolFee;
         uint256 managementFee;
+        uint256 returnTokenManagementFee;
         uint256 proposerReward;
         address propodalFundingToken;
         address returnToken;

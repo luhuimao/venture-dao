@@ -36,13 +36,6 @@ contract FlexFundingReturnTokenAdapterContract {
             msg.sender == dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT),
             "!access"
         );
-        // require(
-        //     approvedInfos[address(dao)][proposalId][approver][erc20] >=
-        //         escrowAmount &&
-        //         IERC20(erc20).allowance(approver, address(this)) >=
-        //         escrowAmount,
-        //     "!approve"
-        // );
 
         if (
             IERC20(erc20).balanceOf(approver) < escrowAmount ||
@@ -69,6 +62,7 @@ contract FlexFundingReturnTokenAdapterContract {
             dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT),
             newAllowance
         );
+
         return true;
     }
 

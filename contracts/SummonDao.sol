@@ -99,10 +99,11 @@ contract SummonDao {
         string name;
         address creator;
         uint256 flexDaoManagementfee;
+        uint256 returnTokenManagementFee;
         address managementFeeAddress;
         address[] flexDaoGenesisStewards;
         uint256[] allocations;
-        uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+        // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
     }
 
     struct FlexDaoParams {
@@ -218,7 +219,7 @@ contract SummonDao {
     function summonFlexDao5(
         uint256 flexDaoManagementfee,
         address managementFeeAddress,
-        uint256 flexDaoFundriaseStyle,
+        uint256 flexDaoReturnTokenManagementFee,
         address newDaoAddr,
         uint8 votingPower,
         uint256 tokenID,
@@ -239,8 +240,8 @@ contract SummonDao {
         );
         //3config FLEX_FUNDRAISE_STYLE
         newDao.setConfiguration(
-            DaoHelper.FLEX_FUNDRAISE_STYLE,
-            flexDaoFundriaseStyle
+            DaoHelper.FLEX_RETURN_TOKEN_MANAGEMENT_FEE_AMOUNT,
+            flexDaoReturnTokenManagementFee
         );
 
         //4config VOTING_PERIOD
@@ -330,16 +331,16 @@ contract SummonDao {
     ) external returns (bool) {
         //  booleanParams[0] fundingPollEnable,
         //  booleanParams[1] participantEnable,
-        //  uint256Params[0] maxParticipantsAmount
-        //  uint256Params[1] flexDaoPollingVotingPeriod
-        //  uint256Params[2] flexDaoPollingVotingPower
-        //  uint256Params[3] flexDaoPollingSuperMajority
-        //  uint256Params[4] flexDaoPollingquorum
-        //  uint256Params[5] flexDaoPollingeligibilityType
-        //  uint256Params[6] flexDaoPollingtokenID
-        //  uint256Params[7] flexDaoPollsterMembershipVarifyType
-        //  uint256Params[8] flexDaoPollsterMembershipMinHolding
-        //  uint256Params[9] flexDaoPollsterMembershipTokenId
+        //  uint256Params[0] flexDaoPollingVotingPeriod
+        //  uint256Params[1] flexDaoPollingVotingPower
+        //  uint256Params[2] flexDaoPollingSuperMajority
+        //  uint256Params[3] flexDaoPollingquorum
+        //  uint256Params[4] flexDaoPollingeligibilityType
+        //  uint256Params[5] flexDaoPollingtokenID
+        //  uint256Params[6] flexDaoPollsterMembershipVarifyType
+        //  uint256Params[7] flexDaoPollsterMembershipMinHolding
+        //  uint256Params[8] flexDaoPollsterMembershipTokenId
+        //  uint256Params[9] maxParticipantsAmount
 
         DaoRegistry dao = DaoRegistry(newDaoAddr);
         require(address(this) == msg.sender);
@@ -349,20 +350,20 @@ contract SummonDao {
             dao.setConfiguration(DaoHelper.FLEX_FUNDING_TYPE, 1);
             configFlexDaoFlexPolling(
                 dao,
+                uint256Params[0],
                 uint256Params[1],
                 uint256Params[2],
                 uint256Params[3],
                 uint256Params[4],
                 uint256Params[5],
-                uint256Params[6],
                 flexDaoPollingtokenAddress
             );
             configFlexDaoPollsterMembership(
                 dao,
+                uint256Params[6],
                 uint256Params[7],
-                uint256Params[8],
                 flexDaoPollsterMembershipTokenAddress,
-                uint256Params[9],
+                uint256Params[8],
                 flexDaoPollsterMembershipWhiteList
             );
         }
@@ -370,7 +371,7 @@ contract SummonDao {
         //2config PARTICIPANTS CAP
         if (booleanParams[1]) {
             dao.setConfiguration(DaoHelper.MAX_PARTICIPANTS_ENABLE, 1);
-            dao.setConfiguration(DaoHelper.MAX_PARTICIPANTS, uint256Params[0]);
+            dao.setConfiguration(DaoHelper.MAX_PARTICIPANTS, uint256Params[9]);
         }
 
         return true;
@@ -538,69 +539,69 @@ contract SummonDao {
         return true;
     }
 
-    function setFlexDaoConfiguration(
-        DaoRegistry dao,
-        FlexDaoParams calldata params
-    ) internal {
-        //1config FLEX_MANAGEMENT_FEE_AMOUNT
-        dao.setConfiguration(
-            DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT,
-            params._flexDaoInfo.flexDaoManagementfee
-        );
-        // 2config FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS
-        dao.setAddressConfiguration(
-            DaoHelper.FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS,
-            params._flexDaoInfo.managementFeeAddress
-        );
-        //3config FLEX_FUNDRAISE_STYLE
-        dao.setConfiguration(
-            DaoHelper.FLEX_FUNDRAISE_STYLE,
-            params._flexDaoInfo.flexDaoFundriaseStyle
-        );
+    // function setFlexDaoConfiguration(
+    //     DaoRegistry dao,
+    //     FlexDaoParams calldata params
+    // ) internal {
+    //     //1config FLEX_MANAGEMENT_FEE_AMOUNT
+    //     dao.setConfiguration(
+    //         DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT,
+    //         params._flexDaoInfo.flexDaoManagementfee
+    //     );
+    //     // 2config FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS
+    //     dao.setAddressConfiguration(
+    //         DaoHelper.FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS,
+    //         params._flexDaoInfo.managementFeeAddress
+    //     );
+    //     //3config FLEX_FUNDRAISE_STYLE
+    //     // dao.setConfiguration(
+    //     //     DaoHelper.FLEX_FUNDRAISE_STYLE,
+    //     //     params._flexDaoInfo.flexDaoFundriaseStyle
+    //     // );
 
-        //config voting info
-        // 4config PROPOSAL_EXECUTE_DURATION
-        dao.setConfiguration(
-            DaoHelper.FLEX_VOTING_ELIGIBILITY_TYPE,
-            params._flexDaoVotingInfo.eligibilityType
-        );
+    //     //config voting info
+    //     // 4config PROPOSAL_EXECUTE_DURATION
+    //     dao.setConfiguration(
+    //         DaoHelper.FLEX_VOTING_ELIGIBILITY_TYPE,
+    //         params._flexDaoVotingInfo.eligibilityType
+    //     );
 
-        // 5.config FLEX_VOTING_WEIGHTED_TYPE
-        dao.setConfiguration(
-            DaoHelper.FLEX_VOTING_WEIGHTED_TYPE,
-            params._flexDaoVotingInfo.votingPower
-        );
+    //     // 5.config FLEX_VOTING_WEIGHTED_TYPE
+    //     dao.setConfiguration(
+    //         DaoHelper.FLEX_VOTING_WEIGHTED_TYPE,
+    //         params._flexDaoVotingInfo.votingPower
+    //     );
 
-        // 6.config FLEX_VOTING_ELIGIBILITY_TOKEN_ID
-        dao.setConfiguration(
-            DaoHelper.FLEX_VOTING_ELIGIBILITY_TOKEN_ID,
-            params._flexDaoVotingInfo.tokenID
-        );
+    //     // 6.config FLEX_VOTING_ELIGIBILITY_TOKEN_ID
+    //     dao.setConfiguration(
+    //         DaoHelper.FLEX_VOTING_ELIGIBILITY_TOKEN_ID,
+    //         params._flexDaoVotingInfo.tokenID
+    //     );
 
-        // 7.config FLEX_VOTING_ELIGIBILITY_TOKEN_ADDRESS
-        dao.setAddressConfiguration(
-            DaoHelper.FLEX_VOTING_ELIGIBILITY_TOKEN_ADDRESS,
-            params._flexDaoVotingInfo.tokenAddress
-        );
+    //     // 7.config FLEX_VOTING_ELIGIBILITY_TOKEN_ADDRESS
+    //     dao.setAddressConfiguration(
+    //         DaoHelper.FLEX_VOTING_ELIGIBILITY_TOKEN_ADDRESS,
+    //         params._flexDaoVotingInfo.tokenAddress
+    //     );
 
-        //8.config VOTING_PERIOD
-        dao.setConfiguration(
-            DaoHelper.VOTING_PERIOD,
-            params._flexDaoVotingInfo.votingPeriod
-        );
+    //     //8.config VOTING_PERIOD
+    //     dao.setConfiguration(
+    //         DaoHelper.VOTING_PERIOD,
+    //         params._flexDaoVotingInfo.votingPeriod
+    //     );
 
-        //9.config QUORUM
-        dao.setConfiguration(
-            DaoHelper.QUORUM,
-            params._flexDaoVotingInfo.quorum
-        );
+    //     //9.config QUORUM
+    //     dao.setConfiguration(
+    //         DaoHelper.QUORUM,
+    //         params._flexDaoVotingInfo.quorum
+    //     );
 
-        //10.config SUPER_MAJORITY
-        dao.setConfiguration(
-            DaoHelper.SUPER_MAJORITY,
-            params._flexDaoVotingInfo.superMajority
-        );
-    }
+    //     //10.config SUPER_MAJORITY
+    //     dao.setConfiguration(
+    //         DaoHelper.SUPER_MAJORITY,
+    //         params._flexDaoVotingInfo.superMajority
+    //     );
+    // }
 
     function registerGenesisStewards(
         DaoRegistry dao,
@@ -1032,7 +1033,7 @@ contract SummonDao {
             "summonFlexDao5(uint256,address,uint256,address,uint8,uint256,address,uint256[6])",
             params._flexDaoInfo.flexDaoManagementfee,
             params._flexDaoInfo.managementFeeAddress,
-            params._flexDaoInfo.flexDaoFundriaseStyle,
+            params._flexDaoInfo.returnTokenManagementFee,
             vars.newDaoAddr,
             params._flexDaoVotingInfo.votingPower,
             params._flexDaoVotingInfo.tokenID,
@@ -1049,7 +1050,6 @@ contract SummonDao {
         );
 
         uint256[10] memory uint256Params = [
-            params._flexDaoParticipantCapInfo.maxParticipantsAmount,
             params._flexDaoPollingInfo.votingPeriod,
             params._flexDaoPollingInfo.votingPower,
             params._flexDaoPollingInfo.superMajority,
@@ -1058,8 +1058,10 @@ contract SummonDao {
             params._flexDaoPollingInfo.tokenID,
             params._flexDaoPollsterMembershipInfo.varifyType,
             params._flexDaoPollsterMembershipInfo.minHolding,
-            params._flexDaoPollsterMembershipInfo.tokenId
+            params._flexDaoPollsterMembershipInfo.tokenId,
+            params._flexDaoParticipantCapInfo.maxParticipantsAmount
         ];
+
         bool[2] memory booleanParams = [
             params.fundingPollEnable,
             params._flexDaoParticipantCapInfo.enable
