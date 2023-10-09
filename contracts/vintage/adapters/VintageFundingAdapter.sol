@@ -235,11 +235,11 @@ contract VintageFundingAdapterContract is
         bytes32 proposalId
     ) external reimbursable(dao) onlyRaiser(dao) {
         //  queue is empty
-        require(getQueueLength(dao) > 0, "Funding::Queue length must > 0");
+        require(getQueueLength(dao) > 0, "!ProposalQueue");
         //proposalId must get from begining of the queue
         require(
             proposalId == proposalQueue[address(dao)].front(),
-            "Funding::startVotingProcess::Invalid ProposalId"
+            "!HeadQueueProposalId"
         );
         StartVotingLocalVars memory vars;
         vars.ongongingPrposalId = ongoingProposal[address(dao)];
@@ -254,7 +254,7 @@ contract VintageFundingAdapterContract is
                     FundingLibrary.ProposalState.DONE ||
                     proposals[address(dao)][vars.ongongingPrposalId].status ==
                     FundingLibrary.ProposalState.FAILED,
-                "Funding::startVotingProcess::there is other proposal not finalized"
+                "PrePropsalNotDone"
             );
         }
 
@@ -271,20 +271,26 @@ contract VintageFundingAdapterContract is
                 vars._propsalStopVotingTimestamp +
                     dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION)
             ),
-            "Funding::startVotingProcess::meet redempte period"
+            "HitRedemptePeriod"
         );
 
         require(
             proposal.status == FundingLibrary.ProposalState.IN_QUEUE,
-            "Funding::startVotingProcess::proposal state not satisfied"
+            "ProposalNotInQueue"
         );
+
         //Removes the proposalId at the beginning of the queue
         proposalQueue[address(dao)].popFront();
         vars.votingContract = IVintageVoting(
             dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
-        //fund inefficient
-        if (vars.fundingPoolAdapt.poolBalance(dao) < proposal.totalAmount) {
+        //fund inefficient || refund period
+        if (
+            vars.fundingPoolAdapt.poolBalance(dao) < proposal.totalAmount ||
+            (vars._propsalStopVotingTimestamp +
+                dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION) >
+                dao.getConfiguration(DaoHelper.FUND_END_TIME))
+        ) {
             proposal.status = FundingLibrary.ProposalState.FAILED;
         } else {
             if (proposal.proposalReturnTokenInfo.escrow) {
@@ -526,7 +532,7 @@ contract VintageFundingAdapterContract is
             vars.voteResult == IVintageVoting.VotingState.NOT_PASS ||
             vars.voteResult == IVintageVoting.VotingState.TIE
         ) {
-            proposal.status = FundingLibrary.ProposalState.DONE;
+            proposal.status = FundingLibrary.ProposalState.FAILED;
         } else {
             revert("Funding::processProposal::voting not finalized");
         }
