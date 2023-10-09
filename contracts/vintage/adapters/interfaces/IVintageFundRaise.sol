@@ -56,6 +56,7 @@ interface IVintageFundRaise {
 
     struct FundRaiseRewardAndFeeInfo {
         uint256 managementFeeRatio;
+        uint256 returnTokenManagementFeeRatio;
         uint256 redepmtFeeRatio;
         uint256 protocolFeeRatio;
         address managementFeeAddress;
@@ -145,6 +146,7 @@ interface IVintageFundRaise {
     }
     struct ProposalFeeInfo {
         uint256 managementFeeRatio;
+        uint256 returnTokenManagementFeeRatio;
         uint256 redepmtFeeRatio;
     }
 

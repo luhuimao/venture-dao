@@ -50,11 +50,6 @@ contract VintageAllocationAdapterContract is AdapterGuard {
      */
     uint256 public constant PERCENTAGE_PRECISION = 1e18;
 
-    // bytes32 constant GPAllocationBonusRadio =
-    //     keccak256("allocation.gpAllocationBonusRadio");
-    // bytes32 constant RiceStakeAllocationRadio =
-    //     keccak256("allocation.riceStakeAllocationRadio");
-
     mapping(address => mapping(bytes32 => mapping(address => VestingInfo)))
         public vestingInfos;
 
@@ -99,17 +94,12 @@ contract VintageAllocationAdapterContract is AdapterGuard {
             dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
         );
 
-        uint256 tokenRewards = tokenAmount -
-            ((tokenAmount *
-                dao.getConfiguration(
-                    DaoHelper.VINTAGE_PROPOSER_TOKEN_REWARD_RADIO
-                )) / PERCENTAGE_PRECISION);
         uint256 totalFund = fundingpool.totalSupply();
         uint256 fund = fundingpool.balanceOf(recipient);
-        if (totalFund <= 0 || fund <= 0 || tokenRewards <= 0) {
+        if (totalFund <= 0 || fund <= 0 || tokenAmount <= 0) {
             return 0;
         }
-        return (fund * tokenRewards) / totalFund;
+        return (fund * tokenAmount) / totalFund;
     }
 
     function getProposerBonus(
@@ -144,6 +134,8 @@ contract VintageAllocationAdapterContract is AdapterGuard {
         uint256 vestingCliffEndTime;
         uint256 vestingCliffLockAmount;
         uint256 vestingInterval;
+        uint256 returnTokenManagementFee;
+        address managementFeeAddr;
     }
 
     // uint256Args[0]: tokenAmount
@@ -196,6 +188,32 @@ contract VintageAllocationAdapterContract is AdapterGuard {
             vars.tokenAmount
         );
 
+        vars.returnTokenManagementFee =
+            (vars.tokenAmount *
+                dao.getConfiguration(
+                    DaoHelper.VINTAGE_RETURN_TOKEN_MANAGEMENT_FEE_AMOUNT
+                )) /
+            1e18;
+        vars.proposerBonus = getProposerBonus(
+            dao,
+            proposerAddr,
+            vars.tokenAmount
+        );
+
+        if (vars.returnTokenManagementFee > 0) {
+            vars.managementFeeAddr = dao.getAddressConfiguration(
+                DaoHelper.GP_ADDRESS
+            );
+            vestingInfos[address(dao)][proposalId][
+                vars.managementFeeAddr
+            ] = VestingInfo(
+                vestingInfos[address(dao)][proposalId][vars.managementFeeAddr]
+                    .tokenAmount + vars.returnTokenManagementFee,
+                false
+            );
+            vars.totalReward += vars.returnTokenManagementFee;
+        }
+
         // approve from Allocation adapter contract to vesting contract
         vars.oldAllowance = IERC20(tokenAddress).allowance(
             address(this),
@@ -207,14 +225,15 @@ contract VintageAllocationAdapterContract is AdapterGuard {
             vars.newAllowance
         );
         address[] memory allInvestors = vars.fundingpool.getInvestors();
-        vars.totalReward = 0;
 
         if (allInvestors.length > 0) {
             for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
                 vars.fundingRewards = getFundingRewards(
                     dao,
                     allInvestors[vars.i],
-                    vars.tokenAmount
+                    vars.tokenAmount -
+                        vars.returnTokenManagementFee -
+                        vars.proposerBonus
                 );
                 //bug fixed: fillter fundingRewards > 0 ;20220614
                 if (vars.fundingRewards > 0) {
@@ -227,11 +246,6 @@ contract VintageAllocationAdapterContract is AdapterGuard {
         }
 
         if (proposerAddr != address(0x0)) {
-            vars.proposerBonus = getProposerBonus(
-                dao,
-                proposerAddr,
-                vars.tokenAmount
-            );
             if (vars.proposerBonus > 0) {
                 vestingInfos[address(dao)][proposalId][
                     proposerAddr

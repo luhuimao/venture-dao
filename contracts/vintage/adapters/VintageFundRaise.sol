@@ -185,6 +185,7 @@ contract VintageFundRaiseAdapterContract is
             ),
             FundRaiseRewardAndFeeInfo(
                 params.proposalFeeInfo.managementFeeRatio,
+                params.proposalFeeInfo.returnTokenManagementFeeRatio,
                 params.proposalFeeInfo.redepmtFeeRatio,
                 vars.protocolFeeRatio,
                 params.proposalAddressInfo.managementFeeAddress
@@ -351,7 +352,8 @@ contract VintageFundRaiseAdapterContract is
                 proposalInfo.feeInfo.managementFeeRatio,
                 proposalInfo.feeInfo.redepmtFeeRatio,
                 proposalInfo.proposerReward.fundFromInverstor,
-                proposalInfo.proposerReward.projectTokenFromInvestor
+                proposalInfo.proposerReward.projectTokenFromInvestor,
+                proposalInfo.feeInfo.returnTokenManagementFeeRatio
             ]
         );
 
@@ -409,7 +411,7 @@ contract VintageFundRaiseAdapterContract is
 
     function setFeeAndReward(
         DaoRegistry dao,
-        uint256[4] memory uint256Args
+        uint256[5] memory uint256Args
     ) internal {
         //1 managementFeeRatio
         dao.setConfiguration(
@@ -433,6 +435,9 @@ contract VintageFundRaiseAdapterContract is
             DaoHelper.VINTAGE_PROPOSER_TOKEN_REWARD_RADIO,
             uint256Args[3] //  proposalInfo.proposerReward.projectTokenFromInvestor
         );
+
+        //set returnTokenManagement fee 
+        dao.setConfiguration(DaoHelper.VINTAGE_RETURN_TOKEN_MANAGEMENT_FEE_AMOUNT,uint256Args[4]);
     }
 
     function setAddresses(
