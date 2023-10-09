@@ -146,6 +146,8 @@ library DaoHelper {
     bytes32 internal constant VINTAGE_PRIORITY_DEPOSITE_AMOUNT =
         keccak256("VINTAGE_PRIORITY_DEPOSITE_AMOUNT");
 
+    bytes32 internal constant VINTAGE_RETURN_TOKEN_MANAGEMENT_FEE_AMOUNT =
+        keccak256("VINTAGE_RETURN_TOKEN_MANAGEMENT_FEE_AMOUNT");
     /* ********************************
     VINTAGE SETTING 
     *********************************/
@@ -249,6 +251,8 @@ library DaoHelper {
         keccak256("FLEX_MANAGEMENT_FEE_TYPE");
     bytes32 internal constant FLEX_MANAGEMENT_FEE_AMOUNT =
         keccak256("FLEX_MANAGEMENT_FEE_AMOUNT");
+    bytes32 internal constant FLEX_RETURN_TOKEN_MANAGEMENT_FEE_AMOUNT =
+        keccak256("FLEX_RETURN_TOKEN_MANAGEMENT_FEE_AMOUNT");
     bytes32 internal constant FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS =
         keccak256("FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS");
     bytes32 internal constant FLEX_PROTOCOL_FEE =
@@ -376,7 +380,7 @@ library DaoHelper {
         keccak256("flex-funding-return-token-adapter");
     bytes32 internal constant FLEX_FREE_IN_ESCROW_FUND_ADAPTER =
         keccak256("flex-free-in-escrow-fund-adapter");
-     bytes32 internal constant FLEX_FUNDING_HELPER_ADAPTER =
+    bytes32 internal constant FLEX_FUNDING_HELPER_ADAPTER =
         keccak256("flex-funding-helper-adapter");
     //---------------------------------flex---------------------------------
 

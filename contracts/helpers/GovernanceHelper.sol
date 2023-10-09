@@ -493,6 +493,7 @@ library GovernanceHelper {
                 DaoHelper.FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ADDRESS
             );
             uint256 bal = 0;
+            if (tokenAddress == address(0x0)) return 0;
             if (etype == 0) {
                 //0 ERC20
                 bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
@@ -523,6 +524,8 @@ library GovernanceHelper {
                 DaoHelper.FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ADDRESS
             );
             uint256 bal = 0;
+            if (tokenAddress == address(0x0)) return 0;
+
             if (etype == 0) {
                 //0 ERC20
                 bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
