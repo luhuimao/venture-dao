@@ -76,6 +76,22 @@ contract StewardManagementContract is
         }
     }
 
+    function clearGovernorWhitelist(DaoRegistry dao) external {
+        require(
+            msg.sender ==
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER),
+            "!access"
+        );
+        uint256 len = stewardWhiteList[address(dao)].values().length;
+        address[] memory tem;
+        tem = stewardWhiteList[address(dao)].values();
+        if (len > 0) {
+            for (uint8 i = 0; i < len; i++) {
+                stewardWhiteList[address(dao)].remove(tem[i]);
+            }
+        }
+    }
+
     function submitSteWardInProposal(
         DaoRegistry dao,
         address applicant,
@@ -114,7 +130,7 @@ contract StewardManagementContract is
             stopVoteTime
         );
 
-        _sponsorProposal(dao, proposalId, startVoteTime, bytes(""));
+        _sponsorProposal(dao, proposalId, bytes(""));
         // stewardInProposalIds += 1;
 
         emit ProposalCreated(
@@ -154,7 +170,7 @@ contract StewardManagementContract is
             stopVoteTime
         );
 
-        _sponsorProposal(dao, proposalId, startVoteTime, bytes(""));
+        _sponsorProposal(dao, proposalId, bytes(""));
         // stewardOutProposalIds += 1;
 
         emit ProposalCreated(
@@ -175,21 +191,19 @@ contract StewardManagementContract is
     function _sponsorProposal(
         DaoRegistry dao,
         bytes32 proposalId,
-        uint256 startVotingTime,
         bytes memory data
     ) internal {
         IFlexVoting flexVotingContract = IFlexVoting(
             dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
         );
-        address sponsoredBy = flexVotingContract.getSenderAddress(
-            dao,
-            address(this),
-            data,
-            msg.sender
-        );
+        // address sponsoredBy = flexVotingContract.getSenderAddress(
+        //     dao,
+        //     address(this),
+        //     data,
+        //     msg.sender
+        // );
         dao.sponsorProposal(
             proposalId,
-            sponsoredBy,
             dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
         );
         flexVotingContract.startNewVotingForProposal(dao, proposalId, data);

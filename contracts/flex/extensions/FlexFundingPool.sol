@@ -367,7 +367,6 @@ contract FlexFundingPoolExtension is IExtension, MemberGuard, ERC165 {
         bytes32 proposalId,
         address from,
         address to,
-        address token,
         uint256 amount
     ) external hasExtensionAccess(AclFlag.INTERNAL_TRANSFER) {
         uint256 newAmount = balanceOf(proposalId, from) - amount;

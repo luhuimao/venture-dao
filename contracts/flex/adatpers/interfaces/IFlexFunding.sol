@@ -8,8 +8,6 @@ import "../../extensions/FlexFundingPool.sol";
 import "../FlexFundingPoolAdapter.sol";
 // import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../FlexAllocation.sol";
-import "../FlexPollingVoting.sol";
-import "../../../utils/TypeConver.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 

@@ -230,21 +230,21 @@ contract FlexVotingContract is
                 dao.getConfiguration(DaoHelper.QUORUM)) / 100;
 
             unchecked {
-                uint256 votes = vote.nbYes + vote.nbNo;
-                if (votes <= minVotes)
+                uint256 totalvotes = vote.nbYes + vote.nbNo;
+                if (totalvotes <= minVotes)
                     return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
             }
         }
         if (quorumType == 1) {
-            uint256 votes = vote.nbYes + vote.nbNo;
-            if (votes <= dao.getConfiguration(DaoHelper.QUORUM))
+            uint256 totalvotes = vote.nbYes + vote.nbNo;
+            if (totalvotes <= dao.getConfiguration(DaoHelper.QUORUM))
                 return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
         }
 
         // supermajority check
         if (supportType == 0) {
-            uint256 votes = vote.nbYes + vote.nbNo;
-            uint256 minYes = (votes *
+            uint256 totalvotes = vote.nbYes + vote.nbNo;
+            uint256 minYes = (totalvotes *
                 dao.getConfiguration(DaoHelper.SUPER_MAJORITY)) / 100;
             if (minYes == 0 && vote.nbYes == 0) {
                 return (VotingState.TIE, vote.nbYes, vote.nbNo);

@@ -254,6 +254,8 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         //     vars.totalReward <= vars.tokenAmount,
         //     "AllocationAdapter::noEscrow::allocate token amount exceeds return token amount"
         // );
+
+        return true;
     }
 
     // uint256Args[0]: tokenAmount
@@ -399,6 +401,8 @@ contract FlexAllocationAdapterContract is AdapterGuard {
             "AllocationAdapter:streamCreated:Access deny"
         );
         vestingInfos[address(dao)][proposalId][recipient].created = true;
+
+        return true;
     }
 
     function nftMinted(

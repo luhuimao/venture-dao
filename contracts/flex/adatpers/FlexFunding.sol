@@ -6,6 +6,8 @@ import "../../guards/AdapterGuard.sol";
 import "../../guards/MemberGuard.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "./FlexFundingReturnTokenAdapter.sol";
+import "./FlexPollingVoting.sol";
+import "../../utils/TypeConver.sol";
 
 contract FlexFundingAdapterContract is
     IFlexFunding,
@@ -178,7 +180,7 @@ contract FlexFundingAdapterContract is
         vars.proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
                 bytes8(uint64(uint160(address(dao)))),
-                "Funding#",
+                "Investment#",
                 Strings.toString(dao.getCurrentFundingProposalId())
             )
         );
@@ -285,7 +287,6 @@ contract FlexFundingAdapterContract is
         // Sponsors the guild kick proposal.
         dao.sponsorProposal(
             vars.proposalId,
-            msg.sender,
             dao.getAdapterAddress(DaoHelper.FLEX_POLLING_VOTING_ADAPT)
         );
         // proposalIds += 1;
@@ -299,6 +300,7 @@ contract FlexFundingAdapterContract is
             );
         }
         emit ProposalCreated(address(dao), vars.proposalId, msg.sender);
+        return vars.proposalId;
     }
 
     function processProposal(

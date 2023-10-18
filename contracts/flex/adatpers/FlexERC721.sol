@@ -50,17 +50,17 @@ contract FlexERC721 is ERC721("Flex Vesting", "FLEXVEST") {
     function getTokenAmountByTokenId(
         DaoRegistry dao,
         bytes32 proposalId,
-        uint256 tokenId
+        uint256 _tokenId
     ) external view returns (uint256) {
         FlexAllocationAdapterContract flexAlloc = FlexAllocationAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
         );
-        address owner = ownerOf(tokenId);
+        address tokenowner = ownerOf(_tokenId);
         uint256 tokenAmount;
         (tokenAmount, ) = flexAlloc.vestingInfos(
             address(dao),
             proposalId,
-            owner
+            tokenowner
         );
         return tokenAmount;
     }

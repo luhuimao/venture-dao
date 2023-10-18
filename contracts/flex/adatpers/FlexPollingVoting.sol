@@ -192,8 +192,8 @@ contract FlexPollingVotingContract is
             return (VotingState.IN_PROGRESS, 0, 0);
         }
 
-        uint256 votes = vote.nbYes + vote.nbNo;
-        if (votes <= dao.getConfiguration(DaoHelper.FLEX_POLLING_QUORUM))
+        uint256 totalvotes = vote.nbYes + vote.nbNo;
+        if (totalvotes <= dao.getConfiguration(DaoHelper.FLEX_POLLING_QUORUM))
             return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
 
         uint256 nbYN = vote.nbYes >= vote.nbNo ? vote.nbYes - vote.nbNo : 0;

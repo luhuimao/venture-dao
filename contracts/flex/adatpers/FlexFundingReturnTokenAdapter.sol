@@ -90,5 +90,7 @@ contract FlexFundingReturnTokenAdapterContract {
         require(state == IFlexFunding.ProposalStatus.FAILED, "!satisfied");
         escrowedReturnTokens[address(dao)][proposalId][approver] = 0;
         IERC20(erc20).transfer(approver, lockedTokenAmount);
+
+        return true;
     }
 }
