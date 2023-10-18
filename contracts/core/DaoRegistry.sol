@@ -93,7 +93,14 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         INCREASE_FUNDING_ID,
         INCREASE_NEW_FUND_ID,
         INCREASE_GOVENOR_IN_ID,
-        INCREASE_GOVENOR_OUT_ID
+        INCREASE_GOVENOR_OUT_ID,
+        INCREASE_PARTICIPANT_CAP_ID,
+        INCREASE_GOVERNOR_MEMBERSHIP_ID,
+        INCREASE_INVESTOR_MEMBERSHIP_ID,
+        INCREASE_VOTING_ID,
+        INCREASE_FEE_ID,
+        INCREASE_POLLSTER_MEMBERSHIP_ID,
+        INCREASE_POLLING_ID
     }
     enum VoteType {
         SIMPLE_MAJORITY,
@@ -177,6 +184,15 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     Counters.Counter private _newFundProposalIds;
     Counters.Counter private _govenorInIds;
     Counters.Counter private _govenorOutIds;
+    Counters.Counter private _ParticipantCapProposalIds;
+    Counters.Counter private _governorMembershipProposalIds;
+    Counters.Counter private _investorMembershipProposalIds;
+    Counters.Counter private _votingProposalIds;
+    Counters.Counter private _feesProposalIds;
+    Counters.Counter private _pollsterMembershipProposalIds;
+    Counters.Counter private _pollingProposalIds;
+
+
 
     /// @notice The map that keeps track of all proposasls submitted to the DAO
     mapping(bytes32 => Proposal) public proposals;
@@ -511,11 +527,60 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         _govenorInIds.increment();
     }
 
-       function increaseGovenorOutId()
+    function increaseGovenorOutId()
         external
         hasAccess(this, AclFlag.INCREASE_GOVENOR_IN_ID)
     {
         _govenorOutIds.increment();
+    }
+
+    function increaseParticipantCapId()
+        external
+        hasAccess(this, AclFlag.INCREASE_PARTICIPANT_CAP_ID)
+    {
+        _ParticipantCapProposalIds.increment();
+    }
+
+    function increaseGovernorMembershipId()
+        external
+        hasAccess(this, AclFlag.INCREASE_GOVERNOR_MEMBERSHIP_ID)
+    {
+        _governorMembershipProposalIds.increment();
+    }
+
+    function increaseInvstorMembershipId()
+        external
+        hasAccess(this, AclFlag.INCREASE_INVESTOR_MEMBERSHIP_ID)
+    {
+        _investorMembershipProposalIds.increment();
+    }
+
+    function increaseVotingId()
+        external
+        hasAccess(this, AclFlag.INCREASE_VOTING_ID)
+    {
+        _votingProposalIds.increment();
+    }
+
+     function increaseFeesId()
+        external
+        hasAccess(this, AclFlag.INCREASE_FEE_ID)
+    {
+        _feesProposalIds.increment();
+    }
+
+     function increasePollsterId()
+        external
+        hasAccess(this, AclFlag.INCREASE_POLLSTER_MEMBERSHIP_ID)
+    {
+        _pollsterMembershipProposalIds.increment();
+    }
+
+     function increasePollingId()
+        external
+        hasAccess(this, AclFlag.INCREASE_POLLING_ID)
+    {
+        _pollingProposalIds.increment();
     }
 
 
@@ -614,11 +679,9 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
      * @notice Sponsor proposals that were submitted to the DAO registry
      * @dev adds SPONSORED to the proposal flag
      * @param proposalId The ID of the proposal to sponsor
-     * @param sponsoringMember The member who is sponsoring the proposal
      */
     function sponsorProposal(
         bytes32 proposalId,
-        address sponsoringMember,
         address votingAdapterAddr
     ) external {
         // also checks if the flag was already set
@@ -880,12 +943,43 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     function getCurrentGovenorInProposalId() external view returns (uint256) {
         return _govenorInIds.current();
     }
+
     function getCurrentGovenorOutProposalId() external view returns (uint256) {
         return _govenorOutIds.current();
     }
+
     function getCurrentNewFundProposalId() external view returns (uint256) {
         return _newFundProposalIds.current();
     }
+
+    function getCurrentParticipantCapProposalId()external view returns (uint256){
+        return _ParticipantCapProposalIds.current();
+    }
+
+    function getCurrentGovernorMembershipProposalId()external view returns (uint256){
+        return _governorMembershipProposalIds.current();
+    }
+
+    function getCurrentInvestorMembershipProposalId()external view returns (uint256){
+        return _investorMembershipProposalIds.current();   
+    }
+
+    function getCurrentVotingProposalId()external view returns (uint256){
+        return _votingProposalIds.current();
+    }
+
+     function getCurrentFeeProposalId()external view returns (uint256){
+        return _feesProposalIds.current();
+    }
+
+     function getCurrentPollsterMembershipProposalId()external view returns (uint256){
+        return _pollsterMembershipProposalIds.current();
+    }
+
+     function getCurrentVotingPollingProposalId()external view returns (uint256){
+        return _pollingProposalIds.current();
+    }
+
 
     /**
      * @notice Creates a new delegate checkpoint of a certain member
