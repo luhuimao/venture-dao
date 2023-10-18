@@ -356,6 +356,9 @@ library DaoHelper {
         keccak256("vintage-funding-return-token-adapter");
     bytes32 internal constant VINTAGE_FREE_IN_ESCROW_FUND_ADAPTER =
         keccak256("vintage-free-in-escrow-fund-adapter");
+    bytes32 internal constant VINTAGE_DAO_SET_ADAPTER =
+        keccak256("vintage-daoset-adapter");
+
     /* 
     vintage Adapters **************************************************************************************************
      */
@@ -382,6 +385,9 @@ library DaoHelper {
         keccak256("flex-free-in-escrow-fund-adapter");
     bytes32 internal constant FLEX_FUNDING_HELPER_ADAPTER =
         keccak256("flex-funding-helper-adapter");
+    bytes32 internal constant FLEX_DAO_SET_ADAPTER =
+        keccak256("flex-daoset-adapter");
+
     //---------------------------------flex---------------------------------
 
     bytes32 internal constant FUND_RAISE = keccak256("fund-raise");
