@@ -70,7 +70,7 @@ contract VintageFundRaiseAdapterContract is
 
     function submitProposal(
         ProposalParams calldata params
-    ) external override reimbursable(params.dao) {
+    ) external override onlyRaiser(params.dao) reimbursable(params.dao) {
         if (
             lastProposalIds[address(params.dao)] != bytes32(0x0) &&
             (Proposals[address(params.dao)][
@@ -83,6 +83,13 @@ contract VintageFundRaiseAdapterContract is
                 ProposalState.Executing)
         ) revert LAST_NEW_FUND_PROPOSAL_NOT_FINISH();
         SubmitProposalLocalVars memory vars;
+        vars.daosetAdapt = VintageDaoSetAdapterContract(
+            params.dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER)
+        );
+        require(
+            vars.daosetAdapt.isProposalAllDone(address(params.dao)),
+            "DaoSet Proposal Undone"
+        );
 
         vars.lastFundEndTime = params.dao.getConfiguration(
             DaoHelper.FUND_END_TIME
@@ -149,12 +156,12 @@ contract VintageFundRaiseAdapterContract is
             params.dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
 
-        vars.submittedBy = vars.votingContract.getSenderAddress(
-            params.dao,
-            address(this),
-            bytes(""),
-            msg.sender
-        );
+        // vars.submittedBy = vars.votingContract.getSenderAddress(
+        //     params.dao,
+        //     address(this),
+        //     bytes(""),
+        //     msg.sender
+        // );
         params.dao.increaseNewFundId();
         vars.proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -231,7 +238,6 @@ contract VintageFundRaiseAdapterContract is
         // Sponsors the guild kick proposal.
         params.dao.sponsorProposal(
             vars.proposalId,
-            vars.submittedBy,
             address(vars.votingContract)
         );
 
@@ -436,8 +442,11 @@ contract VintageFundRaiseAdapterContract is
             uint256Args[3] //  proposalInfo.proposerReward.projectTokenFromInvestor
         );
 
-        //set returnTokenManagement fee 
-        dao.setConfiguration(DaoHelper.VINTAGE_RETURN_TOKEN_MANAGEMENT_FEE_AMOUNT,uint256Args[4]);
+        //set returnTokenManagement fee
+        dao.setConfiguration(
+            DaoHelper.VINTAGE_RETURN_TOKEN_MANAGEMENT_FEE_AMOUNT,
+            uint256Args[4]
+        );
     }
 
     function setAddresses(

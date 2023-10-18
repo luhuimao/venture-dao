@@ -15,7 +15,7 @@ library FundingLibrary {
     }
 
     uint256 public constant PERCENTAGE_PRECISION = 1e18;
-    string public constant PROPOSALID_PREFIX = "Funding#";
+    string public constant PROPOSALID_PREFIX = "Investment#";
 
     struct ProposalInfo {
         address fundingToken; // The token in which the project team to trade off.

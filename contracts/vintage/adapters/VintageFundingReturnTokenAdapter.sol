@@ -88,5 +88,7 @@ contract VintageFundingReturnTokenAdapterContract {
         );
         escrowedReturnTokens[address(dao)][proposalId][approver] = 0;
         IERC20(erc20).transfer(approver, lockedTokenAmount);
+
+        return true;
     }
 }

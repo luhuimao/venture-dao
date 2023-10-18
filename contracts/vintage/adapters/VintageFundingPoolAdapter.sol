@@ -144,9 +144,31 @@ contract VintageFundingPoolAdapterContract is
     function registerInvestorWhiteList(
         DaoRegistry dao,
         address account
-    ) external onlyMember(dao) {
+    ) external {
+        require(
+            dao.isMember(msg.sender) ||
+                msg.sender ==
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER),
+            "!access"
+        );
         if (!investorMembershipWhiteList[address(dao)].contains(account)) {
             investorMembershipWhiteList[address(dao)].add(account);
+        }
+    }
+
+    function clearInvestorWhitelist(DaoRegistry dao) external {
+        require(
+            msg.sender ==
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER),
+            "!access"
+        );
+        uint256 len = investorMembershipWhiteList[address(dao)].values().length;
+        address[] memory tem;
+        tem = investorMembershipWhiteList[address(dao)].values();
+        if (len > 0) {
+            for (uint8 i = 0; i < len; i++) {
+                investorMembershipWhiteList[address(dao)].remove(tem[i]);
+            }
         }
     }
 
@@ -305,6 +327,10 @@ contract VintageFundingPoolAdapterContract is
                     escrwoAmount += bal;
                 }
             }
+
+            daoFundRaisingStates[address(dao)] = DaoHelper
+                .FundRaiseState
+                .NOT_STARTED;
             emit ClearFund(address(dao), escrwoAmount, msg.sender);
         }
     }
@@ -445,6 +471,7 @@ contract VintageFundingPoolAdapterContract is
                 poolBalance(dao)
             );
         }
+        return true;
     }
 
     function resetFundRaiseState(DaoRegistry dao) external {

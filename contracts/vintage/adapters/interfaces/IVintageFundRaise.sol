@@ -5,6 +5,8 @@ pragma solidity ^0.8.0;
 import "../../../core/DaoRegistry.sol";
 import "./IVintageVoting.sol";
 import "../VintageFundingPoolAdapter.sol";
+import "../VintageDaoSetAdapter.sol";
+
 
 /**
 MIT License
@@ -103,6 +105,7 @@ interface IVintageFundRaise {
         uint256 redepmtFeeRatio;
         uint256 protocolFeeRatio;
         VintageFundingPoolAdapterContract fundingPoolAdapt;
+        VintageDaoSetAdapterContract daosetAdapt;
     }
 
     struct ProposalParams {

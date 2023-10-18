@@ -280,6 +280,8 @@ contract VintageAllocationAdapterContract is AdapterGuard {
             "AllocationAdapter:streamCreated:Access deny"
         );
         vestingInfos[address(dao)][proposalId][recipient].created = true;
+
+        return true;
     }
 
     function isVestCreated(

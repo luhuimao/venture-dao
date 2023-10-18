@@ -212,7 +212,6 @@ contract VintageFundingAdapterContract is
         // Sponsors the proposal.
         dao.sponsorProposal(
             vars.proposalId,
-            msg.sender,
             dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
 
@@ -441,11 +440,11 @@ contract VintageFundingAdapterContract is
                 //insufficient funds failed the distribution
                 proposal.status = FundingLibrary.ProposalState.FAILED;
             } else {
-                VintageFundingPoolExtension fundingpoolExt = VintageFundingPoolExtension(
-                        dao.getExtensionAddress(
-                            DaoHelper.VINTAGE_FUNDING_POOL_EXT
-                        )
-                    );
+                // VintageFundingPoolExtension fundingpoolExt = VintageFundingPoolExtension(
+                //         dao.getExtensionAddress(
+                //             DaoHelper.VINTAGE_FUNDING_POOL_EXT
+                //         )
+                //     );
 
                 VintageDistributeAdatperContract distributeCont = VintageDistributeAdatperContract(
                         dao.getAdapterAddress(

@@ -123,9 +123,31 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
     function registerRaiserWhiteList(
         DaoRegistry dao,
         address account
-    ) external onlyMember(dao) {
+    ) external {
+        require(
+            dao.isMember(msg.sender) ||
+                msg.sender ==
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER),
+            "!access"
+        );
         if (!raiserWhiteList[address(dao)].contains(account)) {
             raiserWhiteList[address(dao)].add(account);
+        }
+    }
+
+    function clearGovernorWhitelist(DaoRegistry dao) external {
+        require(
+            msg.sender ==
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER),
+            "!access"
+        );
+        uint256 len = raiserWhiteList[address(dao)].values().length;
+        address[] memory tem;
+        tem = raiserWhiteList[address(dao)].values();
+        if (len > 0) {
+            for (uint8 i = 0; i < len; i++) {
+                raiserWhiteList[address(dao)].remove(tem[i]);
+            }
         }
     }
 
@@ -167,7 +189,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
             stopVoteTime
         );
 
-        _sponsorProposal(dao, proposalId, startVoteTime, bytes(""));
+        _sponsorProposal(dao, proposalId, bytes(""));
         // raiserInProposalIds += 1;
 
         emit ProposalCreated(
@@ -207,7 +229,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
             stopVoteTime
         );
 
-        _sponsorProposal(dao, proposalId, startVoteTime, bytes(""));
+        _sponsorProposal(dao, proposalId, bytes(""));
         // raiserdOutProposalIds += 1;
 
         emit ProposalCreated(
@@ -228,21 +250,19 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
     function _sponsorProposal(
         DaoRegistry dao,
         bytes32 proposalId,
-        uint256 startVotingTime,
         bytes memory data
     ) internal {
         IVintageVoting vintageVotingContract = IVintageVoting(
             dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
-        address sponsoredBy = vintageVotingContract.getSenderAddress(
-            dao,
-            address(this),
-            data,
-            msg.sender
-        );
+        // address sponsoredBy = vintageVotingContract.getSenderAddress(
+        //     dao,
+        //     address(this),
+        //     data,
+        //     msg.sender
+        // );
         dao.sponsorProposal(
             proposalId,
-            sponsoredBy,
             dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
         vintageVotingContract.startNewVotingForProposal(
