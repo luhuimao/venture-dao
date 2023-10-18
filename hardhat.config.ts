@@ -52,8 +52,9 @@ module.exports = {
         version: "0.8.4",
         settings: {
           optimizer: {
-            enabled: !(process.env.SOLC_OPTIMIZER === "false"),
-            runs: 200,
+            // enabled: !(process.env.SOLC_OPTIMIZER === "false"),
+            enabled: true,
+            runs: 2000,
           },
         }
       },
@@ -70,8 +71,9 @@ module.exports = {
     ],
     settings: {
       optimizer: {
-        enabled: !(process.env.SOLC_OPTIMIZER === "false"),
-        runs: 200,
+        // enabled: !(process.env.SOLC_OPTIMIZER === "false"),
+        enabled: true,
+        runs: 2000,
       },
     },
   },
@@ -80,32 +82,73 @@ module.exports = {
       // allowUnlimitedContractSize: false,
       // blockGasLimit: 0x1ffffffff,
     },
-    rinkeby: {
-      url: process.env.RINKEBY_NODE_URL,
-      network_id: 4,
-      chainId: 4,
-      skipDryRun: true,
-      gas: 2100000,
-      // gasPrice: 4000000000,
-      accounts: [process.env.RINKEBY_TEST_PRIVATE_KEY],
-      signerId: process.env.SIGNER || undefined,
-    },
-    goerli: {
-      url: process.env.GOERLI_NODE_URL,
-      network_id: 5,
-      chainId: 5,
-      skipDryRun: true,
-      gas: 2100000,
-      // gasPrice: 4000000000,
-      accounts: [process.env.GOERLI_TEST_PRIVATE_KEY],
-      signerId: process.env.SIGNER || undefined,
-    },
-    xDaiTestNet: {
-      url: 'https://xdai.poanetwork.dev/'
-    },
+    // rinkeby: {
+    //   url: process.env.RINKEBY_NODE_URL,
+    //   network_id: 4,
+    //   chainId: 4,
+    //   skipDryRun: true,
+    //   gas: 2100000,
+    //   // gasPrice: 4000000000,
+    //   accounts: [process.env.RINKEBY_TEST_PRIVATE_KEY],
+    //   signerId: process.env.SIGNER || undefined,
+    // },
+    // goerli: {
+    //   // url: process.env.GOERLI_NODE_URL_INFURA,
+    //   url: process.env.GOERLI_NODE_URL,//alchemy
+    //   // network_id: 5,
+    //   // chainId: 5,
+    //   // skipDryRun: true,
+    //   // gas: 2100000,
+    //   // gasPrice: 200000000000,
+    //   accounts: [
+    //     process.env.GOERLI_TEST_PRIVATE_KEY,
+    //     process.env.TEST_PRIVATE_KEY1,
+    //     process.env.TEST_PRIVATE_KEY2,
+    //     process.env.TEST_PRIVATE_KEY3,
+    //     process.env.TEST_PRIVATE_KEY4
+    //   ],
+    //   // signerId: process.env.SIGNER || undefined,
+    // },
+    // xDaiTestNet: {
+    //   url: 'https://xdai.poanetwork.dev/',
+    //   accounts: [
+    //     process.env.GOERLI_TEST_PRIVATE_KEY,
+    //     process.env.TEST_PRIVATE_KEY1,
+    //     process.env.TEST_PRIVATE_KEY2,
+    //     process.env.TEST_PRIVATE_KEY3,
+    //     process.env.TEST_PRIVATE_KEY4
+    //   ],
+    // },
     xdai: {
-      url: 'https://rpc.xdaichain.com'
+      url: 'https://gnosis.blockpi.network/v1/rpc/public',
+      accounts: [
+        process.env.GOERLI_TEST_PRIVATE_KEY,
+        process.env.TEST_PRIVATE_KEY1,
+        process.env.TEST_PRIVATE_KEY2,
+        process.env.TEST_PRIVATE_KEY3,
+        process.env.TEST_PRIVATE_KEY4
+      ],
+    },
+    polygon: {
+      url: 'https://polygon.llamarpc.com',
+      accounts: [
+        process.env.GOERLI_TEST_PRIVATE_KEY,
+        process.env.TEST_PRIVATE_KEY1,
+        process.env.TEST_PRIVATE_KEY2,
+        process.env.TEST_PRIVATE_KEY3,
+        process.env.TEST_PRIVATE_KEY4
+      ],
     }
+    // mumbai: {
+    //   url: process.env.MUMBAI_NODE_URL,
+    //   accounts: [
+    //     process.env.GOERLI_TEST_PRIVATE_KEY,
+    //     process.env.TEST_PRIVATE_KEY1,
+    //     process.env.TEST_PRIVATE_KEY2,
+    //     process.env.TEST_PRIVATE_KEY3,
+    //     process.env.TEST_PRIVATE_KEY4
+    //   ]
+    // }
   },
   // Project Settings
   contractSizer: {

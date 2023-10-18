@@ -231,7 +231,7 @@ const createExtensions = async ({ dao, factories, options }) => {
             newExtension.address,
             options.owner.address
         );
-        log(`${extensionContract.contractName} depoloed address ${newExtension.address}`);
+        // log(`${extensionContract.contractName} depoloed address ${newExtension.address}`);
 
         return newExtension;
     };
@@ -468,100 +468,100 @@ const setDaoConfiguration = async ({ options, dao, testContracts }) => {
     let tx;
 
     if (options.daoMode == 0) {
-        log("config FUND_RAISING_TARGET");
+        // log("config FUND_RAISING_TARGET");
         tx = await dao.setConfiguration(configKey_FundRaisingTarget, options.fundRaisingTarget);
         await tx.wait();
-        log("config FUND_RAISING_MAX");
+        // log("config FUND_RAISING_MAX");
         tx = await dao.setConfiguration(configKey_FundRaisingMax, options.fundRaisingMax);
         await tx.wait();
-        log("config FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP");
+        // log("config FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP");
         tx = await dao.setConfiguration(configKey_FundRaisingMinInvestmentAmountOfLP, options.fundRaisingMinInvestmentAmountOfLP);
         await tx.wait();
-        log("config FUND_RAISING_MAX_INVESTMENT_AMOUNT_OF_LP");
+        // log("config FUND_RAISING_MAX_INVESTMENT_AMOUNT_OF_LP");
         tx = await dao.setConfiguration(configKey_FundRaisingMaxInvestmentAmountOfLP, options.fundRaisingMaxInvestmentAmountOfLP);
         await tx.wait();
-        log("config FUND_RAISING_WINDOW_BEGIN");
+        // log("config FUND_RAISING_WINDOW_BEGIN");
         tx = await dao.setConfiguration(configKey_FundRaisingWindowBegin, options.fundRaisingWindowBegin);
         await tx.wait();
-        log("config FUND_RAISING_WINDOW_END");
+        // log("config FUND_RAISING_WINDOW_END");
         tx = await dao.setConfiguration(configKey_FundRaisingWindowEnd, options.fundRaisingWindowEnd);
         await tx.wait();
 
-        log("config FUND_RAISING_REDEMPTION_PERIOD");
+        // log("config FUND_RAISING_REDEMPTION_PERIOD");
         tx = await dao.setConfiguration(configKey_FundRaisingRedemptionPeriod, options.fundRaisingRedemptionPeriod);
         await tx.wait();
-        log("config FUND_RAISING_REDEMPTION_DURATION");
+        // log("config FUND_RAISING_REDEMPTION_DURATION");
         tx = await dao.setConfiguration(configKey_FundRaisingRedemptionDuration, options.fundRaisingRedemptionDuration);
         await tx.wait();
-        log("config FUND_RAISING_TERM");
+        // log("config FUND_RAISING_TERM");
         tx = await dao.setConfiguration(configKey_FundRaisingTerm, options.fundRaisingTerm);
         await tx.wait();
-        log("config FUND_START_TIME");
+        // log("config FUND_START_TIME");
         tx = await dao.setConfiguration(configKey_FundStartTime, options.fundStartTime);
         await tx.wait();
-        log("config FUND_END_TIME");
+        // log("config FUND_END_TIME");
         tx = await dao.setConfiguration(configKey_FundEndTime, options.fundEndTime);
         await tx.wait();
-        log("config REWARD_FOR_PROPOSER");
+        // log("config REWARD_FOR_PROPOSER");
         tx = await dao.setConfiguration(configKey_RewardForProposer, options.rewardForProposer);
         await tx.wait();
-        log("config REWARD_FOR_GP");
+        // log("config REWARD_FOR_GP");
         tx = await dao.setConfiguration(configKey_RewardForGP, options.rewardForGP);
         await tx.wait();
-        log("config MANAGEMENT_FEE");
+        // log("config MANAGEMENT_FEE");
         tx = await dao.setConfiguration(configKey_MangementFee, options.managementFee);
         await tx.wait();
 
-        log("config REDEMPTION_FEE");
+        // log("config REDEMPTION_FEE");
         tx = await dao.setConfiguration(configKey_RedemptionFee, options.redemptionFee);
         await tx.wait();
-        log("config PROTOCOL_FEE");
+        // log("config PROTOCOL_FEE");
         tx = await dao.setConfiguration(configKey_ProtocolFee, options.protocolFee);
         await tx.wait();
     }
 
     if (options.daoMode == 1) {
-        log("config FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_ENABLE");
+        // log("config FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_ENABLE");
         tx = await dao.setConfiguration(configKey_flexProposerAdditionalIdentificationEnable, options.flexProposerAdditionalIdentificationEnable);
         await tx.wait();
-        log("config FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_TOKEN_TYPE");
+        // log("config FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_TOKEN_TYPE");
         tx = await dao.setConfiguration(configKey_flexProposerAdditionalIdentificationTokenType, options.flexProposerAdditionalIdentificationTokenType);
         await tx.wait();
-        log("config FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_TOKEID");
+        // log("config FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_TOKEID");
         tx = await dao.setConfiguration(configKey_flexProposerAdditionalIdentificationTokenId, options.flexProposerAdditionalIdentificationTokenId);
         await tx.wait();
-        log("config FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_TOKEN_MIN_HOLDING");
+        // log("config FLEX_PROPOSER_ADDTIONAL_IDENTIFACATION_TOKEN_MIN_HOLDING");
         tx = await dao.setConfiguration(configKey_flexProposerAdditionalIdentificationTokenMinHolding, options.flexProposerAdditionalIdentificationTokenMinHolding);
         await tx.wait();
-        log("config FLEX_MANAGEMENT_FEE_AMOUNT");
+        // log("config FLEX_MANAGEMENT_FEE_AMOUNT");
         tx = await dao.setConfiguration(configKey_flexManagementFee, options.flexManagementFeeRatio);
         await tx.wait();
-        log("config FLEX_PROTOCOL_FEE");
+        // log("config FLEX_PROTOCOL_FEE");
         tx = await dao.setConfiguration(configKey_flexProtocolFee, options.flexProtocolFeeRatio);
         await tx.wait();
     }
 
-    log("config MAX_PARTICIPANTS_ENABLE");
+    // log("config MAX_PARTICIPANTS_ENABLE");
     tx = await dao.setConfiguration(configKey_maxParticipantsEnable, options.maxParticipantEnable);
     await tx.wait();
-    log("config MAX_PARTICIPANTS");
+    // log("config MAX_PARTICIPANTS");
     tx = await dao.setConfiguration(configKey_maxParticipants, options.maxParticipants);
     await tx.wait();
 
 
-    log("config PROPOSAL_EXECUTE_DURATION");
+    // log("config PROPOSAL_EXECUTE_DURATION");
     tx = await dao.setConfiguration(configKey_ProposalExecuteDuration, options.proposalExecuteDurantion);
     await tx.wait();
 
-    log("config VOTING_PERIOD");
+    // log("config VOTING_PERIOD");
     tx = await dao.setConfiguration(configKey_VotingPeriod, options.votingPeriod);
     await tx.wait();
 
-    log("config QUORUM");
+    // log("config QUORUM");
     tx = await dao.setConfiguration(configKey_Quorum, options.quorum);
     await tx.wait();
 
-    log("config SUPER_MAJORITY");
+    // log("config SUPER_MAJORITY");
     tx = await dao.setConfiguration(configKey_SuperMajority, options.sumperMajority);
     await tx.wait();
 
@@ -820,6 +820,7 @@ const configureDao = async ({
             .filter((e) => Object.keys(e.configs.acls.extensions).length > 0)
             .reduce((withAccess, e) => {
                 const configs = e.configs;
+                // console.log(configs.id);
                 const v = entryDao(configs.id, e.address, configs.acls);
                 withAccess.push(v);
                 return withAccess;
@@ -888,14 +889,14 @@ const configureDao = async ({
         log("configure Extension Access ...");
         const withAccess = Object.values(contracts).reduce((accessRequired, c) => {
             const configs = c.configs;
-            console.log(`extension/adapter name: ${configs.name}`);
+            // console.log(`extension/adapter name: ${configs.name}`);
             accessRequired.push(
                 extension.configs.buildAclFlag(configs.type == ContractType.Extension ? c.address : c.instance.address, configs.acls)
             );
             return accessRequired;
         }, []);
         if (withAccess.length > 0) {
-            console.log("extension.address: ", extension.address);
+            // console.log("extension.address: ", extension.address);
             // console.log("withAccess: ", withAccess);
 
             const tx = await daoFactory.instance.configureExtension(

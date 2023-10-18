@@ -169,7 +169,7 @@ const deployFunction = async (contractInterface, args, from) => {
     }
 
   }
-  log(`${contractInterface.contractName} deployed address ${instance.address}`);
+  // log(`${contractInterface.contractName} deployed address ${instance.address}`);
   // if (
   //   // Add the new contract to DaoArtifacts, should not store Core, Extension & Test contracts
   //   contractConfig.type === ContractType.Factory ||

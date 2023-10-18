@@ -921,6 +921,27 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
+  {
+    id: adaptersIdsMap.VINTAGE_DAOSET_ADAPTER,
+    name: "VintageDaoSetAdapterContract",
+    alias: "vintageDaoSetAdapterContract",
+    path: "../../contracts/adapters/VintageDaoSetAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.SET_CONFIGURATION,
+        daoAccessFlagsMap.INCREASE_PARTICIPANT_CAP_ID,
+        daoAccessFlagsMap.INCREASE_GOVERNOR_MEMBERSHIP_ID,
+        daoAccessFlagsMap.INCREASE_INVESTOR_MEMBERSHIP_ID,
+        daoAccessFlagsMap.INCREASE_VOTING_ID
+      ],
+      extensions: {
+      },
+    },
+  },
   /***********************************vintage end********************************/
   // flex
   {

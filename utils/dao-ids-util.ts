@@ -4,7 +4,7 @@
  * @Author: huhuimao
  * @Date: 2022-11-10 19:00:47
  * @LastEditors: huhuimao
- * @LastEditTime: 2023-08-31 16:00:42
+ * @LastEditTime: 2023-10-11 13:43:14
  */
 /**
  * @notice the ids defined in this file must match the ids added to DaoHelper.sol.
@@ -12,9 +12,10 @@
 
 /** Adapters */
 export const adaptersIdsMap: Record<string, string> = {
-  //vintage
+  /*******************vintage**********************/
   SUMMON_VINTAGE_DAO: "summon-vintage-dao",
   VINTAGE_FUNDING_POOL_ADAPTER: "vintage-funding-pool-adatper",
+  VINTAGE_FUNDING_POOL_ADAPTER_HELPER: "vintage-funding-pool-adatper-helper",
   VINTAGE_VOTING: "vintage-voting",
   VINTAGE_FUND_RAISE: "vintage-fund-raise",
   VINTAGE_RAISER_MANAGEMENT: "vintage-raiser-management",
@@ -27,6 +28,11 @@ export const adaptersIdsMap: Record<string, string> = {
   VINTAGE_RAISER_ALLOCATION: "vintage-raiser-allocation",
   VINTAGE_DISTRIBUTE_ADAPTER: "vintage-distribute-adapter",
   VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER: "vintage-funding-return-token-adapter",
+  VINTAGE_FREE_IN_ESCORW_FUND_ADAPTER: "vintage-free-in-escrow-fund-adapter",
+  VINTAGE_DAOSET_ADAPTER:"vintage-daoset-adapter",
+  /*******************vintage end******************/
+
+
   /*******************flex**********************/
   FLEX_VESTING_ERC721_ADAPTER: "flex-vesting-erc721",
   FLEX_STEWARD_MANAGEMENT: "flex-steward-management",
@@ -40,6 +46,8 @@ export const adaptersIdsMap: Record<string, string> = {
   FLEX_FUNDING: "flex-funding",
   FLEX_STEWARD_ALLOCATION_ADAPT: "flex-steward-allocation",
   FLEX_FUNDING_RETURN_TOKEN_ADAPT: "flex-funding-return-token-adapter",
+  FLEX_FREE_IN_ESCROW_FUND_ADAPTER: "flex-free-in-escrow-fund-adapter",
+  FLEX_FUNDING_HELPER_ADAPTER: "flex-funding-helper-adapter",
   /*******************flex end******************/
   FUND_RAISE: "fund-raise",
   VESTING: "vesting",
