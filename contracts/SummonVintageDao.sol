@@ -86,6 +86,7 @@ contract SummonVintageDao {
             "SummmonDao::summonVintageDao::create dao failed"
         );
         emit VintageDaoCreated(daoFacAddr, newDaoAddr, daoName, creator);
+        return true;
     }
 
     //create new extension and register to dao
@@ -109,6 +110,7 @@ contract SummonVintageDao {
             IExtension(newVintageFundingPoolExtAddr),
             creator
         );
+        return true;
     }
 
     //register adapters to dao
@@ -122,6 +124,7 @@ contract SummonVintageDao {
         DaoFactory daoFac = DaoFactory(daoFacAddr);
         //add adapters to dao...
         daoFac.addAdapters(newDao, enalbeAdapters);
+        return true;
     }
 
     //configure adapters access to extensions
@@ -145,6 +148,8 @@ contract SummonVintageDao {
             newVintageFundingPoolExtAddr, //vintageFundingPoolExtension
             adapters1
         );
+
+        return true;
     }
 
     // config raiser Membership
@@ -219,6 +224,8 @@ contract SummonVintageDao {
                 }
             }
         }
+
+        return true;
     }
 
     //config voting params
@@ -260,6 +267,8 @@ contract SummonVintageDao {
             DaoHelper.PROPOSAL_EXECUTE_DURATION,
             votingInfo[8]
         );
+
+        return true;
     }
 
     //config genesis raiser
@@ -368,6 +377,8 @@ contract SummonVintageDao {
                 }
             }
         }
+
+        return true;
     }
 
     //config participant cap
@@ -407,9 +418,7 @@ contract SummonVintageDao {
 
     function multiVintageCall(VintageCall[8] memory calls) public {
         for (uint256 i = 0; i < calls.length; i++) {
-            (bool success, bytes memory ret) = calls[i].target.call(
-                calls[i].callData
-            );
+            (bool success, ) = calls[i].target.call(calls[i].callData);
             require(
                 success,
                 string(

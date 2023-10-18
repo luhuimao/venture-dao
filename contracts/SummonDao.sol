@@ -205,8 +205,6 @@ contract SummonDao {
             adapters1
         );
         return true;
-
-        return true;
     }
 
     //set dao configaration
@@ -920,9 +918,7 @@ contract SummonDao {
     function multiCall(Call[9] memory calls) public {
         // console.log("caller:", msg.sender);
         for (uint256 i = 0; i < calls.length; i++) {
-            (bool success, bytes memory ret) = calls[i].target.call(
-                calls[i].callData
-            );
+            (bool success, ) = calls[i].target.call(calls[i].callData);
             require(
                 success,
                 string(
