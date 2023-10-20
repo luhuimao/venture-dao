@@ -479,13 +479,14 @@ contract VintageFundRaiseAdapterContract is
             DaoHelper.FUND_RAISING_WINDOW_END,
             uint256Args[1] //  proposalInfo.timesInfo.fundRaiseEndTime
         );
+        dao.setConfiguration(DaoHelper.FUND_TERM, uint256Args[2]);
         //3 fundStartTime
-        dao.setConfiguration(DaoHelper.FUND_START_TIME, block.timestamp);
+        // dao.setConfiguration(DaoHelper.FUND_START_TIME, block.timestamp);
         //4 fundEndTime
-        dao.setConfiguration(
-            DaoHelper.FUND_END_TIME,
-            block.timestamp + uint256Args[2] //proposalInfo.timesInfo.fundTerm
-        );
+        // dao.setConfiguration(
+        //     DaoHelper.FUND_END_TIME,
+        //     block.timestamp + uint256Args[2] //proposalInfo.timesInfo.fundTerm
+        // );
         //5 redemptPeriod
         dao.setConfiguration(
             DaoHelper.FUND_RAISING_REDEMPTION_PERIOD,
