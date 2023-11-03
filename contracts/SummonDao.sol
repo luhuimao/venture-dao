@@ -161,7 +161,7 @@ contract SummonDao {
         //add funding pool extension to dao...
         DaoRegistry newDao = DaoRegistry(newDaoAddr);
         newDao.addExtension(
-            DaoHelper.FLEX_FUNDING_POOL_EXT, // sha3("flex-funding-pool-ext"),
+            DaoHelper.FLEX_INVESTMENT_POOL_EXT, // sha3("flex-funding-pool-ext"),
             IExtension(newFlexFundingPoolExtAddr),
             creator
         );
@@ -345,7 +345,7 @@ contract SummonDao {
 
         //1config polling
         if (booleanParams[0]) {
-            dao.setConfiguration(DaoHelper.FLEX_FUNDING_TYPE, 1);
+            dao.setConfiguration(DaoHelper.FLEX_INVESTMENT_TYPE, 1);
             configFlexDaoFlexPolling(
                 dao,
                 uint256Params[0],
@@ -371,7 +371,6 @@ contract SummonDao {
             dao.setConfiguration(DaoHelper.MAX_PARTICIPANTS_ENABLE, 1);
             dao.setConfiguration(DaoHelper.MAX_PARTICIPANTS, uint256Params[9]);
         }
-
         return true;
     }
 
@@ -761,8 +760,8 @@ contract SummonDao {
         uint256 flexDaoPaticipantMembershipTokenId,
         address flexDaoPaticipantMembershipTokenAddress
     ) internal {
-        FlexFundingPoolAdapterContract flexFundingPool = FlexFundingPoolAdapterContract(
-                dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_POOL_ADAPT)
+        FlexInvestmentPoolAdapterContract flexFundingPool = FlexInvestmentPoolAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_POOL_ADAPT)
             );
         flexFundingPool.createParticipantMembership(
             dao,
@@ -780,8 +779,8 @@ contract SummonDao {
         address[] calldata _whitelist
     ) internal {
         if (_whitelist.length > 0) {
-            FlexFundingPoolAdapterContract flexFundingPool = FlexFundingPoolAdapterContract(
-                    dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_POOL_ADAPT)
+            FlexInvestmentPoolAdapterContract flexFundingPool = FlexInvestmentPoolAdapterContract(
+                    dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_POOL_ADAPT)
                 );
             for (uint8 i = 0; i < _whitelist.length; i++) {
                 flexFundingPool.registerParticipantWhiteList(
@@ -845,8 +844,8 @@ contract SummonDao {
         address[] calldata _whitelist
     ) internal {
         if (_whitelist.length > 0) {
-            FlexFundingPoolAdapterContract flexFundingPool = FlexFundingPoolAdapterContract(
-                    dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_POOL_ADAPT)
+            FlexInvestmentPoolAdapterContract flexFundingPool = FlexInvestmentPoolAdapterContract(
+                    dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_POOL_ADAPT)
                 );
             for (uint8 i = 0; i < _whitelist.length; i++) {
                 flexFundingPool.registerPriorityDepositWhiteList(

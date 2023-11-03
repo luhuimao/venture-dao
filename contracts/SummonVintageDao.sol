@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 // import "./extensions/fundingpool/FundingPoolFactory.sol";
 // import "./extensions/gpdao/GPDaoFactory.sol";
 // import "./extensions/gpdao/GPDao.sol";
-import "./vintage/extensions/fundingpool/VintageFundingPoolFactory.sol";
+// import "./vintage/extensions/fundingpool/VintageFundingPoolFactory.sol";
 import "./helpers/DaoHelper.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./vintage/extensions/fundingpool/VintageFundingPoolFactory.sol";
@@ -106,7 +106,7 @@ contract SummonVintageDao {
         //add funding pool extension to dao...
         DaoRegistry newDao = DaoRegistry(newDaoAddr);
         newDao.addExtension(
-            DaoHelper.VINTAGE_FUNDING_POOL_EXT, // sha3("vintage-funding-pool-ext"),
+            DaoHelper.VINTAGE_INVESTMENT_POOL_EXT, // sha3("vintage-funding-pool-ext"),
             IExtension(newVintageFundingPoolExtAddr),
             creator
         );
@@ -362,7 +362,7 @@ contract SummonVintageDao {
             ) {
                 VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
                         dao.getAdapterAddress(
-                            DaoHelper.VINTAGE_FUNDING_POOL_ADAPT
+                            DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT
                         )
                     );
                 for (
