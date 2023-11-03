@@ -10,6 +10,7 @@ import "./interfaces/IVintageVoting.sol";
 import "./VintageRaiserManagement.sol";
 import "./VintageFundingPoolAdapter.sol";
 import "./VintageRaiserAllocation.sol";
+import "../../guards/RaiserGuard.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
@@ -153,7 +154,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
 
     function fundPeriodCheck(DaoRegistry dao) internal view {
         VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
-                dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
+                dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
             );
         // if (
         //     block.timestamp >=
@@ -615,60 +616,6 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         );
     }
 
-    // function processProposal(
-    //     DaoRegistry dao,
-    //     bytes32 proposalId,
-    //     ProposalType ptype
-    // ) external reimbursable(dao) {
-    //     dao.processProposal(proposalId);
-
-    //     IVintageVoting votingContract = IVintageVoting(
-    //         dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
-    //     );
-
-    //     IVintageVoting.VotingState voteResult;
-    //     uint128 nbYes;
-    //     uint128 nbNo;
-
-    //     (voteResult, nbYes, nbNo) = votingContract.voteResult(dao, proposalId);
-
-    //     if (voteResult == IVintageVoting.VotingState.PASS) {
-    //         if (ptype == ProposalType.PARTICIPANT_CAP) {
-    //             setParticipantCap(
-    //                 dao,
-    //                 participantCapProposals[address(dao)][proposalId]
-    //             );
-    //             participantCapProposals[address(dao)][proposalId]
-    //                 .state = ProposalState.Done;
-    //         } else if (ptype == ProposalType.GOVERNOR_MEMBERSHIP) {
-    //             setGovernorMembership(
-    //                 dao,
-    //                 governorMembershipProposals[address(dao)][proposalId]
-    //             );
-    //             governorMembershipProposals[address(dao)][proposalId]
-    //                 .state = ProposalState.Done;
-    //         } else if (ptype == ProposalType.INVESTOR_MEMBERSHIP) {
-    //             setInvestorMembership(
-    //                 dao,
-    //                 investorMembershipProposals[address(dao)][proposalId]
-    //             );
-    //             investorMembershipProposals[address(dao)][proposalId]
-    //                 .state = ProposalState.Done;
-    //         } else if (ptype == ProposalType.VOTING) {
-    //             setVoting(dao, votingProposals[address(dao)][proposalId]);
-    //             votingProposals[address(dao)][proposalId].state = ProposalState
-    //                 .Done;
-    //         } else {}
-    //     } else if (
-    //         voteResult == IVintageVoting.VotingState.NOT_PASS ||
-    //         voteResult == IVintageVoting.VotingState.TIE
-    //     ) {
-    //         proposal.state = ProposalState.Failed;
-    //     } else {
-    //         revert VOTING_NOT_FINISH();
-    //     }
-    // }
-
     function setParticipantCap(
         DaoRegistry dao,
         ParticipantCapProposalDetails storage proposal
@@ -767,7 +714,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
             if (len > 0) {
                 VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
                         dao.getAdapterAddress(
-                            DaoHelper.VINTAGE_FUNDING_POOL_ADAPT
+                            DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT
                         )
                     );
                 fundingPoolAdapt.clearInvestorWhitelist(dao);
@@ -850,17 +797,6 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
     //     bytes32 proposalId
     // ) external view returns (address[] memory) {
     //     return governorMembershipWhitelists[proposalId].values();
-    // }
-
-    // function clearGovernorMembershipWhitelist(bytes32 proposalId) external {
-    //     uint256 len = governorMembershipWhitelists[proposalId].values().length;
-    //     address[] memory tem;
-    //     tem = governorMembershipWhitelists[proposalId].values();
-    //     if (len > 0) {
-    //         for (uint8 i = 0; i < len; i++) {
-    //             governorMembershipWhitelists[proposalId].remove(tem[i]);
-    //         }
-    //     }
     // }
 
     function isProposalAllDone(address daoAddr) external view returns (bool) {

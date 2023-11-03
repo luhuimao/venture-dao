@@ -98,7 +98,7 @@ contract VintageFundRaiseAdapterContract is
             DaoHelper.RETURN_DURATION
         );
         vars.fundingPoolAdapt = VintageFundingPoolAdapterContract(
-            params.dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
+            params.dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
         );
         require(
             vars.fundingPoolAdapt.poolBalance(params.dao) <= 0,
@@ -269,7 +269,7 @@ contract VintageFundRaiseAdapterContract is
         ];
         dao.processProposal(proposalId);
         vars.fundingPoolAdapt = VintageFundingPoolAdapterContract(
-            dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
+            dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
         );
         vars.votingContract = VintageVotingContract(
             dao.votingAdapter(proposalId)

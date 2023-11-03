@@ -4,7 +4,7 @@ import "../../helpers/DaoHelper.sol";
 
 // SPDX-License-Identifier: MIT
 
-library FundingLibrary {
+library InvestmentLibrary {
     // proposal  status
     enum ProposalState {
         IN_QUEUE,
@@ -18,8 +18,8 @@ library FundingLibrary {
     string public constant PROPOSALID_PREFIX = "Investment#";
 
     struct ProposalInfo {
-        address fundingToken; // The token in which the project team to trade off.
-        uint256 fundingAmount; // The amount project team requested.
+        address investmentToken; // The token in which the project team to trade off.
+        uint256 investmentAmount; // The amount project team requested.
         uint256 totalAmount;
         uint256 price;
         address recipientAddr; // The receiver address that will receive the funds.
@@ -75,7 +75,7 @@ library FundingLibrary {
     //     VestInfo vestInfo;
     // }
 
-    function createNewFundingProposal(
+    function createNewInvestmentProposal(
         ProposalInfo memory proposal,
         DaoRegistry dao,
         uint256[11] calldata _uint256Args,
@@ -86,7 +86,7 @@ library FundingLibrary {
         string memory vestDest
     ) public returns (ProposalInfo memory) {
         VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
-                dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
+                dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
             );
         fundingPoolAdapt.processFundRaise(dao);
         require(
@@ -97,10 +97,10 @@ library FundingLibrary {
             "Funding::submitProposal::only can submit proposal in investing period"
         );
 
-        proposal.fundingAmount = _uint256Args[0];
+        proposal.investmentAmount = _uint256Args[0];
         proposal.price = _uint256Args[1];
         // proposal.totalAmount = _uint256Args[2];
-        uint256 totalFund = (proposal.fundingAmount * PERCENTAGE_PRECISION) /
+        uint256 totalFund = (proposal.investmentAmount * PERCENTAGE_PRECISION) /
             (PERCENTAGE_PRECISION -
                 (fundingPoolAdapt.protocolFee() +
                     dao.getConfiguration(DaoHelper.MANAGEMENT_FEE) +
@@ -117,7 +117,7 @@ library FundingLibrary {
         proposal.proposalTimeInfo.proposalStopVotingTimestamp = _uint256Args[4];
         proposal.proposalTimeInfo.proposalExecuteTimestamp = _uint256Args[5];
 
-        proposal.fundingToken = _addressArgs[0];
+        proposal.investmentToken = _addressArgs[0];
         proposal.proposalReturnTokenInfo.approveOwnerAddr = _addressArgs[1];
         proposal.proposalReturnTokenInfo.returnToken = _addressArgs[2];
 
@@ -151,7 +151,7 @@ library FundingLibrary {
                 proposal.price > 0,
                 "Funding::submitProposal::price must > 0"
             );
-            uint256 returnTokenAmount = (proposal.fundingAmount *
+            uint256 returnTokenAmount = (proposal.investmentAmount *
                 PERCENTAGE_PRECISION) / proposal.price;
 
             require(
@@ -172,7 +172,7 @@ library FundingLibrary {
         if (proposal.proposalReturnTokenInfo.nftEnable) {}
 
         require(
-            proposal.fundingAmount > 0,
+            proposal.investmentAmount > 0,
             "Funding::submitProposal::invalid funding token Amount"
         );
 
@@ -206,7 +206,7 @@ library FundingLibrary {
     //     );
 
     //     require(
-    //         proposal.status == FundingLibrary.ProposalState.IN_QUEUE,
+    //         proposal.status == InvestmentLibrary.ProposalState.IN_QUEUE,
     //         "Funding::startVotingProcess::proposal state not satisfied"
     //     );
     // }
@@ -233,7 +233,7 @@ library FundingLibrary {
     //         block.timestamp +
     //         dao.getConfiguration(DaoHelper.VOTING_PERIOD);
 
-    //     proposal.status = FundingLibrary.ProposalState.IN_VOTING_PROGRESS;
+    //     proposal.status = InvestmentLibrary.ProposalState.IN_VOTING_PROGRESS;
     // }
 
     // function startVotingForProposal(

@@ -84,7 +84,9 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
                 DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS
             );
             VintageFundingPoolAdapterContract fundingpoolAdapt = VintageFundingPoolAdapterContract(
-                    dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
+                    dao.getAdapterAddress(
+                        DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT
+                    )
                 );
             //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS 4 DEPOSIT
             if (varifyType == 0) {
@@ -383,6 +385,13 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
 
             if (proposal.pType == ProposalType.RAISER_OUT) {
                 dao.removeMember(applicant);
+                // reset allocation to 0
+                VintageRaiserAllocationAdapter raiserAlloc = VintageRaiserAllocationAdapter(
+                        dao.getAdapterAddress(
+                            DaoHelper.VINTAGE_RAISER_ALLOCATION_ADAPTER
+                        )
+                    );
+                raiserAlloc.setAllocation(dao, proposal.account, 0);
             }
 
             proposal.state = ProposalState.Done;
@@ -409,6 +418,13 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
     function quit(DaoRegistry dao) external onlyMember(dao) {
         require(dao.daoCreator() != msg.sender, "dao summonor cant quit");
         dao.removeMember(msg.sender);
+        // reset allocation to 0
+        VintageRaiserAllocationAdapter raiserAlloc = VintageRaiserAllocationAdapter(
+                dao.getAdapterAddress(
+                    DaoHelper.VINTAGE_RAISER_ALLOCATION_ADAPTER
+                )
+            );
+        raiserAlloc.setAllocation(dao, msg.sender, 0);
     }
 
     function isRaiserWhiteList(

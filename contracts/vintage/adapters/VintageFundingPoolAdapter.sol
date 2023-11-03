@@ -205,7 +205,7 @@ contract VintageFundingPoolAdapterContract is
             "!withdraw"
         );
         VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
+            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
         );
 
         address tokenAddr = fundingpool.getFundRaisingTokenAddress();
@@ -280,7 +280,7 @@ contract VintageFundingPoolAdapterContract is
             "FundingPoolAdapter::clearFund::Cant clearFund at this time"
         );
         VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
+            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
         );
 
         address tokenAddr = fundingpool.getFundRaisingTokenAddress();
@@ -393,7 +393,7 @@ contract VintageFundingPoolAdapterContract is
         }
 
         vars.fundingpool = VintageFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
+            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
         );
         // max participant check
         vars.fundRaiseContract = VintageFundRaiseAdapterContract(
@@ -419,7 +419,7 @@ contract VintageFundingPoolAdapterContract is
         );
         IERC20(token).transferFrom(msg.sender, address(this), amount);
         IERC20(token).approve(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT),
+            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT),
             amount
         );
         vars.fundingpool.addToBalance(msg.sender, amount);
@@ -514,7 +514,7 @@ contract VintageFundingPoolAdapterContract is
             poolBalance(dao) > dao.getConfiguration(DaoHelper.FUND_RAISING_MAX)
         ) {
             vars.fundingpool = VintageFundingPoolExtension(
-                dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
+                dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
             );
             address[] memory allInvestors = vars.fundingpool.getInvestors();
             vars.extraFund = 0;
@@ -620,21 +620,21 @@ contract VintageFundingPoolAdapterContract is
         address investorAddr
     ) public view returns (uint256) {
         VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
+            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
         );
         return fundingpool.balanceOf(investorAddr);
     }
 
     function poolBalance(DaoRegistry dao) public view returns (uint256) {
         VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
+            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
         );
         return fundingpool.balanceOf(address(DaoHelper.DAOSQUARE_TREASURY));
     }
 
     function raiserBalance(DaoRegistry dao) public view returns (uint256) {
         VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
+            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
         );
         return fundingpool.balanceOf(address(DaoHelper.GP_POOL));
     }

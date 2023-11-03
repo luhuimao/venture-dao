@@ -8,7 +8,7 @@ contract VintageDistributeAdatperContract {
     _addressArgs: project team,protocolfee address, proposer
     fees: requested fund amount, management fee, protocol fee, proposer reward
     **/
-    function distributeFundByFunding(
+    function distributeFundByInvestment(
         DaoRegistry dao,
         address[3] calldata _addressArgs,
         uint256[4] calldata fees
@@ -16,10 +16,10 @@ contract VintageDistributeAdatperContract {
         require(
             msg.sender ==
                 dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_ADAPTER),
-            "!funding adapter"
+            "!access"
         );
         VintageFundingPoolExtension fundingpoolExt = VintageFundingPoolExtension(
-                dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
+                dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
             );
         distributeFundToProductTeam(fundingpoolExt, _addressArgs[0], fees[0]);
         if (fees[1] > 0)
@@ -99,7 +99,7 @@ contract VintageDistributeAdatperContract {
             "!funding adapter"
         );
         VintageFundingPoolExtension fundingpoolExt = VintageFundingPoolExtension(
-                dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
+                dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
             );
         fundingpoolExt.subtractAllFromBalance(
             fundingpoolExt.getFundRaisingTokenAddress(),

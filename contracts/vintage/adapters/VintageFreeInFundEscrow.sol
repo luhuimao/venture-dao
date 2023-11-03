@@ -66,7 +66,7 @@ contract VintageFreeInEscrowFundAdapterContract is Reimbursable {
     ) external {
         require(
             msg.sender ==
-                dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT),
+                dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT),
             "!access"
         );
         escrowFunds[address(dao)][fundRound][account].amount += uint128(amount);

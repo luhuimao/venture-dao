@@ -34,10 +34,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-interface IVintageFunding {
+interface IVintageInvestment {
     function submitProposal(
         DaoRegistry dao,
-        FundingProposalParams calldata params
+        InvestmentProposalParams calldata params
     ) external;
 
     function processProposal(
@@ -53,37 +53,6 @@ interface IVintageFunding {
         DONE,
         FAILED
     }
-    // State of the Funding proposal
-    // struct ProposalInfo {
-    //     address fundingToken; // The token in which the project team to trade off.
-    //     uint256 fundingAmount; // The amount project team requested.
-    //     uint256 totalAmount;
-    //     uint256 price;
-    //     address recipientAddr; // The receiver address that will receive the funds.
-    //     address proposer;
-    //     ProposalState status; // The distribution status.
-    //     VestInfo vestInfo;
-    //     ProposalReturnTokenInfo proposalReturnTokenInfo;
-    //     ProposalTimeInfo proposalTimeInfo;
-    // }
-
-    // struct ProposalReturnTokenInfo {
-    //     bool escrow;
-    //     address returnToken;
-    //     uint256 returnTokenAmount; //project token amount for trading off
-    //     address approveOwnerAddr; // owner address when approve
-    //     bool nftEnable;
-    //     string name;
-    //     string symbol;
-    //     string description;
-    // }
-
-    // struct ProposalTimeInfo {
-    //     uint256 inQueueTimestamp;
-    //     uint256 proposalStartVotingTimestamp; //project start voting timestamp
-    //     uint256 proposalStopVotingTimestamp;
-    //     uint256 proposalExecuteTimestamp;
-    // }
 
     struct VestInfo {
         string name;
@@ -110,83 +79,62 @@ interface IVintageFunding {
         uint256 returnTokenAmount;
     }
 
-    struct ReturnTokenInfo {
+    struct PaybackTokenInfo {
         bool escrow;
-        address returnToken;
+        address paybackToken;
         uint256 price;
-        uint256 returnTokenAmount;
+        uint256 paybackTokenAmount;
         address approver;
         bool nftEnable;
         address vestingNft;
     }
 
-    struct FundingInfo {
-        uint256 fundingAmount;
-        address fundingToken;
+    struct InvestmentInfo {
+        uint256 investmentAmount;
+        address investmentToken;
         address receiver;
     }
-    struct FundingProposalParams {
-        FundingInfo fundingInfo;
-        ReturnTokenInfo returnTokenInfo;
+    struct InvestmentProposalParams {
+        InvestmentInfo investmentInfo;
+        PaybackTokenInfo paybackTokenInfo;
         VestInfo vestInfo;
     }
 
     struct StartVotingLocalVars {
         bytes32 ongongingPrposalId;
-        VintageFundingPoolExtension fundingpoolExt;
-        VintageFundingPoolAdapterContract fundingPoolAdapt;
+        VintageFundingPoolExtension investmentpoolExt;
+        VintageFundingPoolAdapterContract investmentPoolAdapt;
         uint256 _propsalStartVotingTimestamp;
         uint256 _propsalStopVotingTimestamp;
         bool rel;
         IVintageVoting votingContract;
-        // uint256 totalFund;
     }
 
     struct ProcessProposalLocalVars {
         bytes32 ongoingProposalId;
         VintageVotingContract votingContract;
-        VintageFundingPoolAdapterContract fundingPoolAdapt;
-        VintageFundingPoolExtension fundingpool;
+        VintageFundingPoolAdapterContract investmentPoolAdapt;
+        VintageFundingPoolExtension investmentpool;
         IVintageVoting.VotingState voteResult;
         uint128 nbYes;
         uint128 nbNo;
         uint128 allVotingWeight;
-        // address fundRaiseTokenAddr;
         uint256 protocolFee;
         uint256 managementFee;
         uint256 proposerFundReward;
-        // uint256 proposerTokenReward;
     }
 
-    event ProposalCreated(
-        address daoAddr,
-        bytes32 proposalId
-        // uint256 vestingStartTime,
-        // uint256 vetingEndTime,
-        // uint256 vestingCliffEndTime,
-        // uint256 vestingCliffLockAmount,
-        // uint256 vestingInterval,
-        // uint256 proposalInQueueTimestamp
-    );
+    event ProposalCreated(address daoAddr, bytes32 proposalId);
 
-    event StartVote(
-        address daoAddr,
-        bytes32 proposalID
-        // uint256 startVoteTime,
-        // uint256 stopVoteTime,
-        // FundingLibrary.ProposalState state
-    );
+    event StartVote(address daoAddr, bytes32 proposalID);
 
     event ProposalExecuted(
         address daoAddr,
         bytes32 proposalID,
-        // uint256 state,
         uint128 allVotingWeight,
         uint128 nbYes,
         uint128 nbNo
-        // uint256 distributeState
     );
     // error InvalidStepSetting();
-
-    // function distribute(DaoRegistry dao, uint256 toIndex) external;
+    error INVESTMENT_PROPOSAL_NOT_FINALIZED();
 }

@@ -91,7 +91,7 @@ contract VintageAllocationAdapterContract is AdapterGuard {
         uint256 tokenAmount
     ) public view returns (uint256) {
         VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
+            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
         );
 
         uint256 totalFund = fundingpool.totalSupply();
@@ -168,13 +168,13 @@ contract VintageAllocationAdapterContract is AdapterGuard {
         vars.vestingInterval = uint256Args[5];
 
         vars.fundingpool = VintageFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
+            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
         );
 
         require(
             IERC20(tokenAddress).allowance(
                 dao.getAdapterAddress(
-                    DaoHelper.VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER
+                    DaoHelper.VINTAGE_INVESTMENT_PAYBACK_TOKEN_ADAPTER
                 ),
                 address(this)
             ) >= vars.tokenAmount,
@@ -182,7 +182,7 @@ contract VintageAllocationAdapterContract is AdapterGuard {
         );
         IERC20(tokenAddress).transferFrom(
             dao.getAdapterAddress(
-                DaoHelper.VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER
+                DaoHelper.VINTAGE_INVESTMENT_PAYBACK_TOKEN_ADAPTER
             ),
             address(this),
             vars.tokenAmount

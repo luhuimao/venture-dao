@@ -85,8 +85,8 @@ interface IVesting {
         uint256 vestingStartTime;
         uint256 vestingSteps;
         address allocAdaptAddr;
-        FundingLibrary.VestInfo vestInfo;
-        FundingLibrary.ProposalReturnTokenInfo returnTokenInfo;
+        InvestmentLibrary.VestInfo vestInfo;
+        InvestmentLibrary.ProposalReturnTokenInfo returnTokenInfo;
         uint256 newTokenId;
     }
 

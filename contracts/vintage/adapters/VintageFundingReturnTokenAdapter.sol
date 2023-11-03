@@ -6,7 +6,7 @@ import "../../helpers/DaoHelper.sol";
 import "../libraries/fundingLibrary.sol";
 import "hardhat/console.sol";
 
-contract VintageFundingReturnTokenAdapterContract {
+contract VintageInvestmentPaybackTokenAdapterContract {
     mapping(address => mapping(bytes32 => mapping(address => mapping(address => uint256))))
         public approvedInfos; // dao => funding proposal => approver => erc20 => amount
 
@@ -23,7 +23,7 @@ contract VintageFundingReturnTokenAdapterContract {
         return true;
     }
 
-    function escrowFundingReturnToken(
+    function escrowInvestmentPaybackToken(
         uint256 escrowAmount,
         DaoRegistry dao,
         address approver,
@@ -60,12 +60,12 @@ contract VintageFundingReturnTokenAdapterContract {
         return true;
     }
 
-    function withdrawFundingReturnToken(
+    function withdrawInvestmentPaybackToken(
         DaoRegistry dao,
         bytes32 proposalId,
         address erc20,
         address approver,
-        FundingLibrary.ProposalState state
+        InvestmentLibrary.ProposalState state
     ) external returns (bool) {
         require(
             msg.sender ==
@@ -83,7 +83,7 @@ contract VintageFundingReturnTokenAdapterContract {
         );
 
         require(
-            state == FundingLibrary.ProposalState.FAILED,
+            state == InvestmentLibrary.ProposalState.FAILED,
             "VintageFunding::unLockProjectTeamToken::not satisfied"
         );
         escrowedReturnTokens[address(dao)][proposalId][approver] = 0;
