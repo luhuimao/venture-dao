@@ -99,8 +99,8 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         INCREASE_INVESTOR_MEMBERSHIP_ID,
         INCREASE_VOTING_ID,
         INCREASE_FEE_ID,
-        INCREASE_POLLSTER_MEMBERSHIP_ID,
-        INCREASE_POLLING_ID
+        INCREASE_POLL_FOR_INVESTMENT_ID,
+        INCREASE_PROPOSER_MEMBERSHIP
     }
     enum VoteType {
         SIMPLE_MAJORITY,
@@ -189,8 +189,8 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     Counters.Counter private _investorMembershipProposalIds;
     Counters.Counter private _votingProposalIds;
     Counters.Counter private _feesProposalIds;
-    Counters.Counter private _pollsterMembershipProposalIds;
-    Counters.Counter private _pollingProposalIds;
+    Counters.Counter private _pollForInvestmentProposalIds;
+    Counters.Counter private _proposerMembershipPropossalIds;
 
 
 
@@ -506,7 +506,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         emit ExtensionRemoved(extensionId);
     }
 
-    function increaseFundingId()
+    function increaseInvestmentId()
         external
         hasAccess(this, AclFlag.INCREASE_FUNDING_ID)
     {
@@ -569,18 +569,18 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         _feesProposalIds.increment();
     }
 
-     function increasePollsterId()
+     function increasePollForInvestmentId()
         external
-        hasAccess(this, AclFlag.INCREASE_POLLSTER_MEMBERSHIP_ID)
+        hasAccess(this, AclFlag.INCREASE_POLL_FOR_INVESTMENT_ID)
     {
-        _pollsterMembershipProposalIds.increment();
+        _pollForInvestmentProposalIds.increment();
     }
 
-     function increasePollingId()
+     function increaseProposerMembershipId()
         external
-        hasAccess(this, AclFlag.INCREASE_POLLING_ID)
+        hasAccess(this, AclFlag.INCREASE_PROPOSER_MEMBERSHIP)
     {
-        _pollingProposalIds.increment();
+        _proposerMembershipPropossalIds.increment();
     }
 
 
@@ -936,7 +936,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         return stewards.values();
     }
 
-    function getCurrentFundingProposalId() external view returns (uint256) {
+    function getCurrentInvestmentProposalId() external view returns (uint256) {
         return _fundingProposalIds.current();
     }
 
@@ -972,12 +972,12 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         return _feesProposalIds.current();
     }
 
-     function getCurrentPollsterMembershipProposalId()external view returns (uint256){
-        return _pollsterMembershipProposalIds.current();
+     function getCurrentPollForInvestorProposalId()external view returns (uint256){
+        return _pollForInvestmentProposalIds.current();
     }
 
-     function getCurrentVotingPollingProposalId()external view returns (uint256){
-        return _pollingProposalIds.current();
+     function getCurrentProposerMembershipProposalId()external view returns (uint256){
+        return _proposerMembershipPropossalIds.current();
     }
 
 
