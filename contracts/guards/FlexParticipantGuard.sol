@@ -39,8 +39,8 @@ abstract contract FlexParticipantGuard {
                 DaoHelper.FLEX_PARTICIPANT_MEMBERSHIP_ENABLE
             ) == 1
         ) {
-            FlexFundingPoolAdapterContract flexFundingPoolAdapt = FlexFundingPoolAdapterContract(
-                    dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_POOL_ADAPT)
+            FlexInvestmentPoolAdapterContract flexFundingPoolAdapt = FlexInvestmentPoolAdapterContract(
+                    dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_POOL_ADAPT)
                 );
             (
                 bool created,

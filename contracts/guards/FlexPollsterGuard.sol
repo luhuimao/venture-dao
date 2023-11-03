@@ -34,7 +34,7 @@ SOFTWARE.
  */
 abstract contract FlexPollsterGuard {
     modifier onlyPollster(DaoRegistry dao) {
-        if (dao.getConfiguration(DaoHelper.FLEX_FUNDING_TYPE) == 1) {
+        if (dao.getConfiguration(DaoHelper.FLEX_INVESTMENT_TYPE) == 1) {
             //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
             if (
                 dao.getConfiguration(DaoHelper.FLEX_POLLSTER_MEMBERSHIP_TYPE) ==
