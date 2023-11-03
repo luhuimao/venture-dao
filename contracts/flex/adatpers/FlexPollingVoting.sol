@@ -74,9 +74,31 @@ contract FlexPollingVotingContract is
     function registerPollsterWhiteList(
         DaoRegistry dao,
         address account
-    ) external onlyMember(dao) {
+    ) external {
+        require(
+            msg.sender ==
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER) ||
+                dao.isMember(msg.sender),
+            "!access"
+        );
         if (!pollsterWhiteList[address(dao)].contains(account)) {
             pollsterWhiteList[address(dao)].add(account);
+        }
+    }
+
+    function clearPollsterWhiteList(DaoRegistry dao) external {
+        require(
+            msg.sender ==
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER),
+            "!access"
+        );
+        address[] memory tem;
+        tem = pollsterWhiteList[address(dao)].values();
+        uint256 len = tem.length;
+        if (len > 0) {
+            for (uint8 i = 0; i < len; i++) {
+                pollsterWhiteList[address(dao)].remove(tem[i]);
+            }
         }
     }
 
@@ -247,10 +269,16 @@ contract FlexPollingVotingContract is
         }
     }
 
-     function getVotingWeight(
+    function getVotingWeight(
         DaoRegistry dao,
         address account
     ) public view returns (uint128) {
         return GovernanceHelper.getFlexPollVotingWeight(dao, account);
+    }
+
+    function getWhitelist(
+        address daoAddr
+    ) external view returns (address[] memory) {
+        return pollsterWhiteList[daoAddr].values();
     }
 }

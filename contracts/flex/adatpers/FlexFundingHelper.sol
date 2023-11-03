@@ -10,39 +10,39 @@ contract FlexFundingHelperAdapterContract {
         DaoRegistry dao,
         bytes32 proposalId
     ) external view returns (uint256) {
-        FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
+        FlexFundingAdapterContract flexInvestment = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
         (
             ,
-            IFlexFunding.ProposalFundingInfo memory fundingInfo,
+            IFlexFunding.ProposalInvestmentInfo memory investmentInfo,
             ,
             ,
             IFlexFunding.ProposerRewardInfo memory proposerRewardInfo,
             ,
             ,
 
-        ) = flexFunding.Proposals(address(dao), proposalId);
-        uint256 maxFundingAmount = 0;
-        uint256 maxFundingTargetAmount = fundingInfo.maxFundingAmount;
+        ) = flexInvestment.Proposals(address(dao), proposalId);
+        uint256 maxInvestmentAmount = 0;
+        uint256 maxInvestmentTargetAmount = investmentInfo.maxInvestmentAmount;
 
         if (dao.getConfiguration(DaoHelper.FLEX_MANAGEMENT_FEE_TYPE) == 0)
-            maxFundingAmount =
-                (maxFundingTargetAmount * 1e18) /
+            maxInvestmentAmount =
+                (maxInvestmentTargetAmount * 1e18) /
                 (1e18 -
                     dao.getConfiguration(DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT) -
-                    flexFunding.protocolFee() -
+                    flexInvestment.protocolFee() -
                     proposerRewardInfo.cashRewardAmount);
         else {
-            maxFundingAmount =
-                ((maxFundingTargetAmount +
+            maxInvestmentAmount =
+                ((maxInvestmentTargetAmount +
                     dao.getConfiguration(
                         DaoHelper.FLEX_MANAGEMENT_FEE_AMOUNT
                     )) * 1e18) /
-                (flexFunding.protocolFee() -
+                (flexInvestment.protocolFee() -
                     proposerRewardInfo.cashRewardAmount);
         }
-        return maxFundingAmount;
+        return maxInvestmentAmount;
     }
 
     function getfundRaiseType(
@@ -69,21 +69,21 @@ contract FlexFundingHelperAdapterContract {
         DaoRegistry dao,
         bytes32 proposalId
     ) external view returns (address) {
-        FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
+        FlexFundingAdapterContract flexInvestment = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
         (
             ,
-            IFlexFunding.ProposalFundingInfo memory fundingInfo,
+            IFlexFunding.ProposalInvestmentInfo memory investmentInfo,
             ,
             ,
             ,
             ,
             ,
 
-        ) = flexFunding.Proposals(address(dao), proposalId);
+        ) = flexInvestment.Proposals(address(dao), proposalId);
 
-        return fundingInfo.tokenAddress;
+        return investmentInfo.tokenAddress;
     }
 
     function getFundRaiseTimes(

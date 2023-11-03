@@ -55,7 +55,7 @@ contract FlexFundingPoolFactory is IFactory, CloneFactory, ReentrancyGuard {
         require(dao != address(0x0), "invalid dao addr");
         address extensionAddr = _createClone(identityAddress);
         _extensions[dao] = extensionAddr;
-        FlexFundingPoolExtension flexfundingpool = FlexFundingPoolExtension(
+        FlexInvestmentPoolExtension flexfundingpool = FlexInvestmentPoolExtension(
             extensionAddr
         );
         // fundingpool.setMaxExternalTokens(maxExternalTokens);

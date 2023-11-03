@@ -13,9 +13,11 @@ contract FlexStewardAllocationAdapter {
         uint256 value
     ) external {
         require(
-            DaoHelper.isInCreationModeAndHasAccess(dao) ||
+            dao.isMember(msg.sender) ||
                 msg.sender ==
-                dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_MANAGEMENT),
+                dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_MANAGEMENT) ||
+                msg.sender ==
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER),
             "!Access"
         );
         allocations[address(dao)][account] = value;

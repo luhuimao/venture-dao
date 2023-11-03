@@ -44,7 +44,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract FlexFundingPoolAdapterContract is
+contract FlexInvestmentPoolAdapterContract is
     AdapterGuard,
     MemberGuard,
     FlexParticipantGuard,
@@ -102,12 +102,12 @@ contract FlexFundingPoolAdapterContract is
     ) external reimbursable(dao) {
         // We do not need to check if the token is supported by the bank,
         // because if it is not, the balance will always be zero.
-        FlexFundingPoolExtension flexFundingPool = FlexFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+        FlexInvestmentPoolExtension flexInvestmentPool = FlexInvestmentPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
         );
-        uint256 balance = flexFundingPool.balanceOf(proposalId, msg.sender);
+        uint256 balance = flexInvestmentPool.balanceOf(proposalId, msg.sender);
         require(balance > 0 && amount <= balance, "!amount");
-        FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
+        FlexFundingAdapterContract flexInvestment = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
 
@@ -120,7 +120,7 @@ contract FlexFundingPoolAdapterContract is
             ,
             ,
             IFlexFunding.ProposalStatus state
-        ) = flexFunding.Proposals(address(dao), proposalId);
+        ) = flexInvestment.Proposals(address(dao), proposalId);
         require(
             fundRaiseInfo.fundRaiseEndTime > block.timestamp ||
                 ((fundRaiseInfo.fundRaiseEndTime < block.timestamp) &&
@@ -129,22 +129,22 @@ contract FlexFundingPoolAdapterContract is
         );
         (
             ,
-            IFlexFunding.ProposalFundingInfo memory fundingInfo,
+            IFlexFunding.ProposalInvestmentInfo memory investmentInfo,
             ,
             ,
             ,
             ,
             ,
 
-        ) = flexFunding.Proposals(address(dao), proposalId);
-        flexFundingPool.withdraw(
+        ) = flexInvestment.Proposals(address(dao), proposalId);
+        flexInvestmentPool.withdraw(
             proposalId,
             msg.sender,
-            fundingInfo.tokenAddress,
+            investmentInfo.tokenAddress,
             amount
         );
 
-        if (flexFunding.isPriorityDepositer(dao, proposalId, msg.sender))
+        if (flexInvestment.isPriorityDepositer(dao, proposalId, msg.sender))
             freeINPriorityDeposits[address(dao)][proposalId] -= amount;
 
         // if (balanceOf(dao, proposalId, msg.sender) <= 0)
@@ -160,7 +160,13 @@ contract FlexFundingPoolAdapterContract is
         uint256 minHolding,
         address tokenAddress,
         uint256 tokenId
-    ) external onlyMember(dao) {
+    ) external {
+        require(
+            msg.sender ==
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER) ||
+                dao.isMember(msg.sender),
+            "!access"
+        );
         bytes32 hashedName = TypeConver.bytesToBytes32(abi.encodePacked(name));
         require(
             !participantMemberShips[address(dao)][hashedName].created,
@@ -187,10 +193,36 @@ contract FlexFundingPoolAdapterContract is
         DaoRegistry dao,
         string calldata name,
         address account
-    ) external onlyMember(dao) {
+    ) external {
+        require(
+            msg.sender ==
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER) ||
+                dao.isMember(msg.sender),
+            "!access"
+        );
         bytes32 hashedName = TypeConver.bytesToBytes32(abi.encodePacked(name));
         if (!participantWhiteList[address(dao)][hashedName].contains(account)) {
             participantWhiteList[address(dao)][hashedName].add(account);
+        }
+    }
+
+    function clearInvestorWhitelist(
+        DaoRegistry dao,
+        string calldata name
+    ) external {
+        require(
+            msg.sender ==
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER),
+            "!access"
+        );
+        bytes32 hashedName = TypeConver.bytesToBytes32(abi.encodePacked(name));
+        address[] memory tem;
+        tem = participantWhiteList[address(dao)][hashedName].values();
+        uint256 len = tem.length;
+        if (len > 0) {
+            for (uint8 i = 0; i < len; i++) {
+                participantWhiteList[address(dao)][hashedName].remove(tem[i]);
+            }
         }
     }
 
@@ -205,7 +237,7 @@ contract FlexFundingPoolAdapterContract is
 
     struct DepositLocalVars {
         FlexFundingAdapterContract flexFunding;
-        FlexFundingPoolExtension flexFungdingPoolExt;
+        FlexInvestmentPoolExtension flexFungdingPoolExt;
         FlexFundingHelperAdapterContract flexFundingHelper;
         IFlexFunding.FundRaiseType fundRaiseType;
         uint256 fundRaiseStartTime;
@@ -228,8 +260,8 @@ contract FlexFundingPoolAdapterContract is
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
 
-        vars.flexFungdingPoolExt = FlexFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+        vars.flexFungdingPoolExt = FlexInvestmentPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
         );
         vars.flexFundingHelper = FlexFundingHelperAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_HELPER_ADAPTER)
@@ -303,7 +335,7 @@ contract FlexFundingPoolAdapterContract is
             amount
         );
         IERC20(vars.fundingToken).safeTransfer(
-            dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT),
+            dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT),
             amount
         );
 
@@ -312,9 +344,10 @@ contract FlexFundingPoolAdapterContract is
         vars.flexFungdingPoolExt.addToBalance(proposalId, msg.sender, amount);
         emit Deposit(address(dao), proposalId, amount, msg.sender);
     }
+
     struct EscrowFundLocalVars {
         FlexFundingHelperAdapterContract flexFundingHelper;
-        FlexFundingPoolExtension fundingpool;
+        FlexInvestmentPoolExtension fundingpool;
         FlexFreeInEscrowFundAdapterContract freeInEscrowFundAdapter;
         FlexFundingAdapterContract flexFunding;
         uint256 maxFund;
@@ -349,8 +382,8 @@ contract FlexFundingPoolAdapterContract is
             IFlexFunding.FundRaiseType.FREE_IN &&
             vars.poolFunds > vars.maxFund
         ) {
-            vars.fundingpool = FlexFundingPoolExtension(
-                dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+            vars.fundingpool = FlexInvestmentPoolExtension(
+                dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
             );
             address[] memory allInvestors = vars
                 .fundingpool
@@ -438,8 +471,8 @@ contract FlexFundingPoolAdapterContract is
         bytes32 proposalId,
         address account
     ) public view returns (uint160) {
-        FlexFundingPoolExtension flexFungdingPoolExt = FlexFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+        FlexInvestmentPoolExtension flexFungdingPoolExt = FlexInvestmentPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
         );
         return flexFungdingPoolExt.balanceOf(proposalId, account);
     }
@@ -448,8 +481,8 @@ contract FlexFundingPoolAdapterContract is
         DaoRegistry dao,
         bytes32 proposalId
     ) external view returns (uint160) {
-        FlexFundingPoolExtension flexFungdingPoolExt = FlexFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+        FlexInvestmentPoolExtension flexFungdingPoolExt = FlexInvestmentPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
         );
         return flexFungdingPoolExt.balanceOf(proposalId, DaoHelper.TOTAL);
     }

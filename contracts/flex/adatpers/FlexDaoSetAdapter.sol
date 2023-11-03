@@ -6,229 +6,113 @@ import "../../helpers/GovernanceHelper.sol";
 import "../../helpers/DaoHelper.sol";
 import "../../utils/TypeConver.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
-import "./FlexVoting.sol";
 import "./FlexFundingPoolAdapter.sol";
 import "./FlexStewardAllocation.sol";
 import "./StewardManagement.sol";
+import "./FlexFunding.sol";
+import "./FlexDaoSetHelperAdapter.sol";
+import "./FlexDaoSetPollingAdapter.sol";
+import "./FlexDaoSetVotingAdapter.sol";
 import "./interfaces/IFlexVoting.sol";
+import "../libraries/LibFlexDaoset.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
 
-contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable {
+contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
     using EnumerableSet for EnumerableSet.AddressSet;
-    using EnumerableSet for EnumerableSet.UintSet;
+    // using EnumerableSet for EnumerableSet.UintSet;
 
     mapping(address => bytes32) public ongoingParticipantCapProposal;
     mapping(address => bytes32) public ongoingGovernorMembershipProposal;
     mapping(address => bytes32) public ongoingInvstorMembershipProposal;
-    mapping(address => bytes32) public ongoingVotingProposal;
-    // mapping(address => bytes32) public ongoingFeeProposal;
+    // mapping(address => bytes32) public ongoingVotingProposal;
+    mapping(address => bytes32) public ongoingFeesProposal;
+    mapping(address => bytes32) public ongoingProposerMembershipProposal;
+    // mapping(address => bytes32) public ongoingPollForInvestmentProposal;
 
-    mapping(address => mapping(bytes32 => ParticipantCapProposalDetails))
+    mapping(address => mapping(bytes32 => FlexDaosetLibrary.ParticipantCapProposalDetails))
         public participantCapProposals;
 
-    mapping(address => mapping(bytes32 => GovernorMembershipProposalDetails))
+    mapping(address => mapping(bytes32 => FlexDaosetLibrary.GovernorMembershipProposalDetails))
         public governorMembershipProposals;
 
-    mapping(address => mapping(bytes32 => InvestorMembershipProposalDetails))
+    mapping(address => mapping(bytes32 => FlexDaosetLibrary.InvestorMembershipProposalDetails))
         public investorMembershipProposals;
 
-    mapping(address => mapping(bytes32 => VotingProposalDetails))
-        public votingProposals;
+    // mapping(address => mapping(bytes32 => FlexDaosetLibrary.VotingProposalDetails))
+    //     public votingProposals;
 
-    // mapping(address => mapping(bytes32 => FeeProposalDetails))
-    //     public feeProposals;
+    mapping(address => mapping(bytes32 => FlexDaosetLibrary.FeeProposalDetails))
+        public feesProposals;
+    mapping(address => mapping(bytes32 => FlexDaosetLibrary.ProposerMembershipProposalDetails))
+        public proposerMembershipProposals;
+    // mapping(address => mapping(bytes32 => FlexDaosetLibrary.PollForInvestmentProposalDetails))
+    //     public pollForInvestmentProposals;
 
     mapping(bytes32 => EnumerableSet.AddressSet) governorMembershipWhitelists;
     mapping(bytes32 => EnumerableSet.AddressSet) investorMembershipWhiteLists;
-
-    mapping(bytes32 => EnumerableSet.UintSet) votingAllocations;
-    mapping(bytes32 => EnumerableSet.AddressSet) votingGovernors;
-    enum ProposalState {
-        Voting,
-        Executing,
-        Done,
-        Failed
-    }
-
-    enum ProposalType {
-        PARTICIPANT_CAP,
-        GOVERNOR_MEMBERSHIP,
-        INVESTOR_MEMBERSHIP,
-        VOTING
-    }
-
-    struct ParticipantCapProposalDetails {
-        bytes32 proposalId;
-        bool enable;
-        uint256 cap;
-        uint256 creationTime;
-        uint256 stopVoteTime;
-        ProposalState state;
-    }
-
-    struct GovernorMembershipProposalDetails {
-        bytes32 proposalId;
-        bool enable;
-        uint8 varifyType;
-        uint256 minAmount;
-        address tokenAddress;
-        uint256 tokenId;
-        uint256 creationTime;
-        uint256 stopVoteTime;
-        ProposalState state;
-    }
-
-    struct InvestorMembershipProposalDetails {
-        bytes32 proposalId;
-        bool enable;
-        string name;
-        uint8 varifyType;
-        uint256 minAmount;
-        address tokenAddress;
-        uint256 tokenId;
-        uint256 creationTime;
-        uint256 stopVoteTime;
-        ProposalState state;
-    }
-
-    struct VotingProposalDetails {
-        bytes32 proposalId;
-        VotingSupportInfo supportInfo;
-        VotingEligibilityInfo eligibilityInfo;
-        VotingTimeInfo timeInfo;
-        ProposalState state;
-    }
-
-    // struct FeeProposalDetails {
-    //     bytes32 proposalId;
-    //     uint256 managementFee;
-    //     address managementFeeAddress;
-    //     uint256 creationTime;
-    //     uint256 stopVoteTime;
-    //     ProposalState state;
-    // }
-
-    struct VotingSupportInfo {
-        uint256 supportType;
-        uint256 quorumType;
-        uint256 support;
-        uint256 quorum;
-    }
-
-    struct VotingTimeInfo {
-        uint256 votingPeriod;
-        uint256 executingPeriod;
-        uint256 creationTime;
-        uint256 stopVoteTime;
-    }
-
-    struct VotingEligibilityInfo {
-        uint256 eligibilityType;
-        address tokenAddress;
-        uint256 tokenID;
-        uint256 votingWeightedType;
-    }
-
-    struct VotingParams {
-        uint256 eligibilityType;
-        address tokenAddress;
-        uint256 tokenID;
-        uint256 votingWeightedType;
-        uint256 supportType;
-        uint256 quorumType;
-        uint256 support;
-        uint256 quorum;
-        uint256 votingPeriod;
-        uint256 executingPeriod;
-        address[] governors;
-        uint256[] allocations;
-    }
-
-    struct InvestorMembershipParams{
-        DaoRegistry dao;
-        bool enable;
-        string name;
-        uint8 varifyType;
-        uint256 minAmount;
-        address tokenAddress;
-        uint256 tokenId;
-        address[] whiteList;
-    }
+    mapping(bytes32 => EnumerableSet.AddressSet) proposerMembershipWhiteLists;
+    mapping(bytes32 => EnumerableSet.AddressSet) pollsterMembershipWhiteLists;
+    // mapping(bytes32 => EnumerableSet.UintSet) votingAllocations;
+    // mapping(bytes32 => EnumerableSet.AddressSet) votingGovernors;
 
     event ProposalCreated(
         address daoAddr,
         bytes32 proposalId,
-        ProposalType pType
+        FlexDaosetLibrary.ProposalType pType
     );
     event ProposalProcessed(
         address daoAddr,
         bytes32 proposalId,
-        ProposalState state,
         uint256 voteResult,
         uint128 allVotingWeight,
-        uint128 nbYes,
-        uint128 nbNo
+        uint256 nbYes,
+        uint256 nbNo
     );
 
-    error VOTING_NOT_FINISH();
+    function unDoneProposalsCheck(
+        DaoRegistry dao
+    ) internal view returns (bool) {
+        FlexFundingAdapterContract funding = FlexFundingAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
+        );
+        StewardManagementContract steward = StewardManagementContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_MANAGEMENT)
+        );
 
-    // error FUND_PERIOD();
-
-    function fundPeriodCheck(DaoRegistry dao) internal view {
-        // VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
-        //         dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
-        //     );
-        // DaoHelper.FundRaiseState state = fundingPoolAdapt.daoFundRaisingStates(
-        //     address(dao)
-        // );
-        // uint256 returnDuration = dao.getConfiguration(
-        //     DaoHelper.RETURN_DURATION
-        // );
-        // require(
-        //     (state == DaoHelper.FundRaiseState.NOT_STARTED) ||
-        //         (state == DaoHelper.FundRaiseState.FAILED &&
-        //             block.timestamp >
-        //             dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) +
-        //                 returnDuration) ||
-        //         (state == DaoHelper.FundRaiseState.DONE &&
-        //             block.timestamp >
-        //             dao.getConfiguration(DaoHelper.FUND_END_TIME) +
-        //                 returnDuration),
-        //     "FUND_PERIOD"
-        // );
+        if (funding.allDone(dao) && steward.allDone(dao)) return true;
+        return false;
     }
 
     function submitParticipantCapProposal(
         DaoRegistry dao,
         bool enable,
         uint256 cap
-    ) external onlyRaiser(dao) reimbursable(dao) {
-        fundPeriodCheck(dao);
+    ) external onlyMember(dao) reimbursable(dao) {
         require(
             ongoingParticipantCapProposal[address(dao)] == bytes32(0),
-            "last cap proposal not finalized"
+            "!submit"
         );
+        require(unDoneProposalsCheck(dao), "unDone Proposals");
         dao.increaseParticipantCapId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
                 bytes8(uint64(uint160(address(dao)))),
-                "Participant-Cap#",
+                "Participant Cap #",
                 Strings.toString(dao.getCurrentParticipantCapProposalId())
             )
         );
-        participantCapProposals[address(dao)][
-            proposalId
-        ] = ParticipantCapProposalDetails(
-            proposalId,
-            enable,
-            cap,
-            block.timestamp,
-            block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD),
-            ProposalState.Voting
-        );
+
+        participantCapProposals[address(dao)][proposalId] = FlexDaosetLibrary
+            .ParticipantCapProposalDetails(
+                enable,
+                cap,
+                block.timestamp,
+                block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD),
+                FlexDaosetLibrary.ProposalState.Voting
+            );
         ongoingParticipantCapProposal[address(dao)] = proposalId;
 
         setProposal(dao, proposalId);
@@ -236,87 +120,89 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable {
         emit ProposalCreated(
             address(dao),
             proposalId,
-            ProposalType.PARTICIPANT_CAP
+            FlexDaosetLibrary.ProposalType.PARTICIPANT_CAP
         );
     }
 
     function submitGovernorMembershpProposal(
-        DaoRegistry dao,
-        bool enable,
-        uint8 varifyType,
-        uint256 minAmount,
-        address tokenAddress,
-        uint256 tokenId,
-        address[] calldata whiteList
-    ) external onlyRaiser(dao) reimbursable(dao) {
+        FlexDaosetLibrary.GovernorMembershipParams calldata params
+    ) external onlyMember(params.dao) reimbursable(params.dao) {
         require(
-            ongoingGovernorMembershipProposal[address(dao)] == bytes32(0),
-            "last GovernorMembership proposal not finalized"
+            ongoingGovernorMembershipProposal[address(params.dao)] ==
+                bytes32(0),
+            "!submit"
         );
-        fundPeriodCheck(dao);
+        require(unDoneProposalsCheck(params.dao), "unDone Proposals");
 
-        dao.increaseGovernorMembershipId();
+        params.dao.increaseGovernorMembershipId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
-                bytes8(uint64(uint160(address(dao)))),
-                "Governor-Membership#",
-                Strings.toString(dao.getCurrentGovernorMembershipProposalId())
+                bytes8(uint64(uint160(address(params.dao)))),
+                "Governor Membership #",
+                Strings.toString(
+                    params.dao.getCurrentGovernorMembershipProposalId()
+                )
             )
         );
-        governorMembershipProposals[address(dao)][
+
+        governorMembershipProposals[address(params.dao)][
             proposalId
-        ] = GovernorMembershipProposalDetails(
-            proposalId,
-            enable,
-            varifyType,
-            minAmount,
-            tokenAddress,
-            tokenId,
+        ] = FlexDaosetLibrary.GovernorMembershipProposalDetails(
+            params.enable,
+            params.varifyType,
+            params.minAmount,
+            params.tokenAddress,
+            params.tokenId,
             block.timestamp,
-            block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD),
-            ProposalState.Voting
+            block.timestamp +
+                params.dao.getConfiguration(DaoHelper.VOTING_PERIOD),
+            FlexDaosetLibrary.ProposalState.Voting
         );
 
-        if (whiteList.length > 0) {
-            for (uint8 i = 0; i < whiteList.length; i++) {
-                governorMembershipWhitelists[proposalId].add(whiteList[i]);
+        if (params.whiteList.length > 0) {
+            for (uint8 i = 0; i < params.whiteList.length; i++) {
+                governorMembershipWhitelists[proposalId].add(
+                    params.whiteList[i]
+                );
             }
         }
 
-        ongoingGovernorMembershipProposal[address(dao)] = proposalId;
+        ongoingGovernorMembershipProposal[address(params.dao)] = proposalId;
 
-        setProposal(dao, proposalId);
+        setProposal(params.dao, proposalId);
 
         emit ProposalCreated(
-            address(dao),
+            address(params.dao),
             proposalId,
-            ProposalType.GOVERNOR_MEMBERSHIP
+            FlexDaosetLibrary.ProposalType.GOVERNOR_MEMBERSHIP
         );
     }
 
     function submitInvestorMembershipProposal(
-       InvestorMembershipParams calldata params
-    ) external onlyRaiser(params.dao) reimbursable(params.dao) {
+        FlexDaosetLibrary.InvestorMembershipParams calldata params
+    ) external onlyMember(params.dao) reimbursable(params.dao) {
         require(
             ongoingInvstorMembershipProposal[address(params.dao)] == bytes32(0),
-            "last InvestorMembership proposal not finalized"
+            "!submit"
         );
-        fundPeriodCheck(params.dao);
+        require(unDoneProposalsCheck(params.dao), "unDone Proposals");
 
         params.dao.increaseInvstorMembershipId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
                 bytes8(uint64(uint160(address(params.dao)))),
-                "Investor-Membership#",
-                Strings.toString(params.dao.getCurrentInvestorMembershipProposalId())
+                "Investor Membership #",
+                Strings.toString(
+                    params.dao.getCurrentInvestorMembershipProposalId()
+                )
             )
         );
+
         investorMembershipProposals[address(params.dao)][
             proposalId
-        ] = InvestorMembershipProposalDetails(
-            proposalId,
+        ] = FlexDaosetLibrary.InvestorMembershipProposalDetails(
             params.enable,
             params.name,
             params.varifyType,
@@ -324,13 +210,16 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable {
             params.tokenAddress,
             params.tokenId,
             block.timestamp,
-            block.timestamp + params.dao.getConfiguration(DaoHelper.VOTING_PERIOD),
-            ProposalState.Voting
+            block.timestamp +
+                params.dao.getConfiguration(DaoHelper.VOTING_PERIOD),
+            FlexDaosetLibrary.ProposalState.Voting
         );
 
         if (params.whiteList.length > 0) {
             for (uint8 i = 0; i < params.whiteList.length; i++) {
-                investorMembershipWhiteLists[proposalId].add(params.whiteList[i]);
+                investorMembershipWhiteLists[proposalId].add(
+                    params.whiteList[i]
+                );
             }
         }
 
@@ -341,479 +230,556 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable {
         emit ProposalCreated(
             address(params.dao),
             proposalId,
-            ProposalType.INVESTOR_MEMBERSHIP
+            FlexDaosetLibrary.ProposalType.INVESTOR_MEMBERSHIP
         );
     }
 
     function submitVotingProposal(
-        DaoRegistry dao,
-        VotingParams calldata params
-    ) external onlyRaiser(dao) reimbursable(dao) {
-        require(
-            ongoingVotingProposal[address(dao)] == bytes32(0),
-            "last voting proposal not finalized"
-        );
-        require(
-            params.governors.length == params.allocations.length,
-            "!allocation params"
-        );
-        fundPeriodCheck(dao);
+        FlexDaosetLibrary.VotingParams calldata params
+    ) external onlyMember(params.dao) reimbursable(params.dao) {
+        require(unDoneProposalsCheck(params.dao), "unDone Proposals");
 
-        dao.increaseVotingId();
+        FlexDaoSetVotingAdapterContract votingDaoset = FlexDaoSetVotingAdapterContract(
+                params.dao.getAdapterAddress(
+                    DaoHelper.FLEX_DAO_SET_VOTING_ADAPTER
+                )
+            );
+        bytes32 proposalId = votingDaoset.submitVotingProposal(params);
+
+        emit ProposalCreated(
+            address(params.dao),
+            proposalId,
+            FlexDaosetLibrary.ProposalType.VOTING
+        );
+    }
+
+    function submitFeesProposal(
+        DaoRegistry dao,
+        uint256 flexDaoManagementfee,
+        uint256 returnTokenManagementFee,
+        address managementFeeAddress
+    ) external onlyMember(dao) reimbursable(dao) {
+        require(ongoingFeesProposal[address(dao)] == bytes32(0), "!submit");
+        require(unDoneProposalsCheck(dao), "unDone Proposals");
+
+        dao.increaseFeesId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
                 bytes8(uint64(uint160(address(dao)))),
-                "voting#",
-                Strings.toString(dao.getCurrentVotingProposalId())
+                "Fees #",
+                Strings.toString(dao.getCurrentFeeProposalId())
             )
         );
-        votingProposals[address(dao)][proposalId] = VotingProposalDetails(
-            proposalId,
-            VotingSupportInfo(
-                params.supportType,
-                params.quorumType,
-                params.support,
-                params.quorum
-            ),
-            VotingEligibilityInfo(
-                params.eligibilityType,
-                params.tokenAddress,
-                params.tokenID,
-                params.votingWeightedType
-            ),
-            VotingTimeInfo(
-                params.votingPeriod,
-                params.executingPeriod,
-                block.timestamp,
-                block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD)
-            ),
-            ProposalState.Voting
-        );
-        ongoingVotingProposal[address(dao)] = proposalId;
 
-        if (params.governors.length > 0) {
-            for (uint8 i = 0; i < params.governors.length; i++) {
-                votingAllocations[proposalId].add(params.allocations[i]);
-                votingGovernors[proposalId].add(params.governors[i]);
-            }
-        }
+        feesProposals[address(dao)][proposalId] = FlexDaosetLibrary
+            .FeeProposalDetails(
+                flexDaoManagementfee,
+                returnTokenManagementFee,
+                managementFeeAddress,
+                block.timestamp,
+                block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD),
+                FlexDaosetLibrary.ProposalState.Voting
+            );
+        ongoingFeesProposal[address(dao)] = proposalId;
+
         setProposal(dao, proposalId);
-        emit ProposalCreated(address(dao), proposalId, ProposalType.VOTING);
+        emit ProposalCreated(
+            address(dao),
+            proposalId,
+            FlexDaosetLibrary.ProposalType.FEES
+        );
     }
 
-    // function submitFeeProposal(
-    //     DaoRegistry dao,
-    //     address managementFeeAddress,
-    //     uint256 managementFeeAmount
-    // ) external onlyRaiser(dao) reimbursable(dao) {
-    //     fundPeriodCheck(dao);
-    //     require(
-    //         ongoingFeeProposal[address(dao)] == bytes32(0),
-    //         "last fee proposal not finalized"
-    //     );
-    //     dao.increaseParticipantCapId();
+    function submitProposerMembershipProposal(
+        FlexDaosetLibrary.ProposerMembershipParams calldata params
+    ) external onlyMember(params.dao) reimbursable(params.dao) {
+        require(
+            ongoingProposerMembershipProposal[address(params.dao)] ==
+                bytes32(0),
+            "!submit"
+        );
+        require(unDoneProposalsCheck(params.dao), "unDone Proposals");
 
-    //     bytes32 proposalId = TypeConver.bytesToBytes32(
-    //         abi.encodePacked(
-    //             bytes8(uint64(uint160(address(dao)))),
-    //             "Fees#",
-    //             Strings.toString(dao.getCurrentParticipantCapProposalId())
-    //         )
-    //     );
-    //     feeProposals[address(dao)][proposalId] = FeeProposalDetails(
-    //         proposalId,
-    //         managementFeeAmount,
-    //         managementFeeAddress,
-    //         block.timestamp,
-    //         block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD),
-    //         ProposalState.Voting
-    //     );
-    //     ongoingFeeProposal[address(dao)] = proposalId;
+        params.dao.increaseProposerMembershipId();
 
-    //     setProposal(dao, proposalId);
+        bytes32 proposalId = TypeConver.bytesToBytes32(
+            abi.encodePacked(
+                bytes8(uint64(uint160(address(params.dao)))),
+                "Proposer Membership #",
+                Strings.toString(
+                    params.dao.getCurrentProposerMembershipProposalId()
+                )
+            )
+        );
 
-    //     emit ProposalCreated(
-    //         address(dao),
-    //         proposalId,
-    //         ProposalType.PARTICIPANT_CAP
-    //     );
-    // }
+        proposerMembershipProposals[address(params.dao)][
+            proposalId
+        ] = FlexDaosetLibrary.ProposerMembershipProposalDetails(
+            params.proposerMembershipEnable,
+            params.varifyType, //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
+            params.minHolding,
+            params.tokenAddress,
+            params.tokenId,
+            block.timestamp,
+            block.timestamp +
+                params.dao.getConfiguration(DaoHelper.VOTING_PERIOD),
+            FlexDaosetLibrary.ProposalState.Voting
+        );
+
+        if (params.whiteList.length > 0) {
+            for (uint8 i = 0; i < params.whiteList.length; i++) {
+                proposerMembershipWhiteLists[proposalId].add(
+                    params.whiteList[i]
+                );
+            }
+        }
+        ongoingProposerMembershipProposal[address(params.dao)] = proposalId;
+
+        setProposal(params.dao, proposalId);
+        emit ProposalCreated(
+            address(params.dao),
+            proposalId,
+            FlexDaosetLibrary.ProposalType.PROPOSER_MEMBERHSIP
+        );
+    }
+
+    function submitPollForInvestmentProposal(
+        FlexDaosetLibrary.PollForInvestmentParams calldata params
+    ) external onlyMember(params.dao) reimbursable(params.dao) {
+        require(unDoneProposalsCheck(params.dao), "unDone Proposals");
+
+        FlexDaoSetPollingAdapterContract pollingDaoset = FlexDaoSetPollingAdapterContract(
+                params.dao.getAdapterAddress(
+                    DaoHelper.FLEX_DAO_SET_POLLING_ADAPTER
+                )
+            );
+        bytes32 proposalId = pollingDaoset.submitPollForInvestmentProposal(
+            params
+        );
+        emit ProposalCreated(
+            address(params.dao),
+            proposalId,
+            FlexDaosetLibrary.ProposalType.POLL_FOR_INVESTMENT
+        );
+    }
 
     function setProposal(DaoRegistry dao, bytes32 proposalId) internal {
         dao.submitProposal(proposalId);
 
-        IVintageVoting votingContract = IVintageVoting(
-            dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
+        IFlexVoting votingContract = IFlexVoting(
+            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
         );
-        votingContract.startNewVotingForProposal(
-            dao,
-            proposalId,
-            block.timestamp,
-            bytes("")
-        );
+        votingContract.startNewVotingForProposal(dao, proposalId, bytes(""));
 
         dao.sponsorProposal(proposalId, address(votingContract));
+
+        // emit ProposalCreated(
+        //     address(dao),
+        //     proposalId,
+        //     FlexDaosetLibrary.ProposalType.VOTING
+        // );
     }
 
     function processParticipantCapProposal(
         DaoRegistry dao,
         bytes32 proposalId
     ) external reimbursable(dao) {
-        ParticipantCapProposalDetails
+        FlexDaosetLibrary.ParticipantCapProposalDetails
             storage proposal = participantCapProposals[address(dao)][
                 proposalId
             ];
 
-        dao.processProposal(proposalId);
-
-        IVintageVoting votingContract = IVintageVoting(
-            dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
+        (IFlexVoting.VotingState voteResult, , ) = processProposal(
+            dao,
+            proposalId
         );
 
-        // require(address(votingContract) != address(0x0), "!votingContract");
-        IVintageVoting.VotingState voteResult;
-        uint128 nbYes;
-        uint128 nbNo;
-
-        (voteResult, nbYes, nbNo) = votingContract.voteResult(dao, proposalId);
-
-        if (voteResult == IVintageVoting.VotingState.PASS) {
+        if (voteResult == IFlexVoting.VotingState.PASS) {
             setParticipantCap(dao, proposal);
-            proposal.state = ProposalState.Done;
+            proposal.state = FlexDaosetLibrary.ProposalState.Done;
         } else if (
-            voteResult == IVintageVoting.VotingState.NOT_PASS ||
-            voteResult == IVintageVoting.VotingState.TIE
+            voteResult == IFlexVoting.VotingState.NOT_PASS ||
+            voteResult == IFlexVoting.VotingState.TIE
         ) {
-            proposal.state = ProposalState.Failed;
+            proposal.state = FlexDaosetLibrary.ProposalState.Failed;
         } else {
-            revert VOTING_NOT_FINISH();
+            revert FlexDaosetLibrary.VOTING_NOT_FINISH();
         }
 
         ongoingParticipantCapProposal[address(dao)] = bytes32(0);
 
-        uint128 allGPsWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
-        emit ProposalProcessed(
-            address(dao),
-            proposalId,
-            proposal.state,
-            uint256(voteResult),
-            allGPsWeight,
-            nbYes,
-            nbNo
-        );
+        // uint128 allWeight = GovernanceHelper
+        //     .getAllStewardVotingWeightByProposalId(dao, proposalId);
+
+        // emit ProposalProcessed(
+        //     address(dao),
+        //     proposalId,
+        //     proposal.state,
+        //     uint256(voteResult),
+        //     allWeight,
+        //     nbYes,
+        //     nbNo
+        // );
     }
 
     function processGovernorMembershipProposal(
         DaoRegistry dao,
         bytes32 proposalId
     ) external reimbursable(dao) {
-        GovernorMembershipProposalDetails
+        FlexDaosetLibrary.GovernorMembershipProposalDetails
             storage proposal = governorMembershipProposals[address(dao)][
                 proposalId
             ];
 
-        dao.processProposal(proposalId);
+        // IFlexVoting.VotingState voteResult;
+        // uint256 nbYes;
+        // uint256 nbNo;
 
-        IVintageVoting votingContract = IVintageVoting(
-            dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
+        (IFlexVoting.VotingState voteResult, , ) = processProposal(
+            dao,
+            proposalId
         );
 
-        // require(address(votingContract) != address(0x0), "!votingContract");
-        IVintageVoting.VotingState voteResult;
-        uint128 nbYes;
-        uint128 nbNo;
-
-        (voteResult, nbYes, nbNo) = votingContract.voteResult(dao, proposalId);
-
-        if (voteResult == IVintageVoting.VotingState.PASS) {
-            setGovernorMembership(dao, proposal);
-            proposal.state = ProposalState.Done;
+        if (voteResult == IFlexVoting.VotingState.PASS) {
+            setGovernorMembership(dao, proposalId, proposal);
+            proposal.state = FlexDaosetLibrary.ProposalState.Done;
         } else if (
-            voteResult == IVintageVoting.VotingState.NOT_PASS ||
-            voteResult == IVintageVoting.VotingState.TIE
+            voteResult == IFlexVoting.VotingState.NOT_PASS ||
+            voteResult == IFlexVoting.VotingState.TIE
         ) {
-            proposal.state = ProposalState.Failed;
+            proposal.state = FlexDaosetLibrary.ProposalState.Failed;
         } else {
-            revert VOTING_NOT_FINISH();
+            revert FlexDaosetLibrary.VOTING_NOT_FINISH();
         }
 
         ongoingGovernorMembershipProposal[address(dao)] = bytes32(0);
 
-        uint128 allGPsWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
-        emit ProposalProcessed(
-            address(dao),
-            proposalId,
-            proposal.state,
-            uint256(voteResult),
-            allGPsWeight,
-            nbYes,
-            nbNo
-        );
+        // uint128 allGPsWeight = GovernanceHelper
+        //     .getAllStewardVotingWeightByProposalId(dao, proposalId);
+        // emit ProposalProcessed(
+        //     address(dao),
+        //     proposalId,
+        //     proposal.state,
+        //     uint256(voteResult),
+        //     allGPsWeight,
+        //     nbYes,
+        //     nbNo
+        // );
     }
 
     function processInvestorMembershipProposal(
         DaoRegistry dao,
         bytes32 proposalId
     ) external reimbursable(dao) {
-        InvestorMembershipProposalDetails
+        FlexDaosetLibrary.InvestorMembershipProposalDetails
             storage proposal = investorMembershipProposals[address(dao)][
                 proposalId
             ];
 
-        dao.processProposal(proposalId);
+        // IFlexVoting.VotingState voteResult;
+        // uint256 nbYes;
+        // uint256 nbNo;
 
-        IVintageVoting votingContract = IVintageVoting(
-            dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
+        (IFlexVoting.VotingState voteResult, , ) = processProposal(
+            dao,
+            proposalId
         );
 
-        // require(address(votingContract) != address(0x0), "!votingContract");
-        IVintageVoting.VotingState voteResult;
-        uint128 nbYes;
-        uint128 nbNo;
-
-        (voteResult, nbYes, nbNo) = votingContract.voteResult(dao, proposalId);
-
-        if (voteResult == IVintageVoting.VotingState.PASS) {
-            setInvestorMembership(dao, proposal);
-            proposal.state = ProposalState.Done;
+        if (voteResult == IFlexVoting.VotingState.PASS) {
+            setInvestorMembership(dao, proposalId, proposal);
+            proposal.state = FlexDaosetLibrary.ProposalState.Done;
         } else if (
-            voteResult == IVintageVoting.VotingState.NOT_PASS ||
-            voteResult == IVintageVoting.VotingState.TIE
+            voteResult == IFlexVoting.VotingState.NOT_PASS ||
+            voteResult == IFlexVoting.VotingState.TIE
         ) {
-            proposal.state = ProposalState.Failed;
+            proposal.state = FlexDaosetLibrary.ProposalState.Failed;
         } else {
-            revert VOTING_NOT_FINISH();
+            revert FlexDaosetLibrary.VOTING_NOT_FINISH();
         }
 
         ongoingInvstorMembershipProposal[address(dao)] = bytes32(0);
 
-        uint128 allGPsWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
-        emit ProposalProcessed(
-            address(dao),
-            proposalId,
-            proposal.state,
-            uint256(voteResult),
-            allGPsWeight,
-            nbYes,
-            nbNo
-        );
+        // uint128 allGPsWeight = GovernanceHelper
+        //     .getAllStewardVotingWeightByProposalId(dao, proposalId);
+        // emit ProposalProcessed(
+        //     address(dao),
+        //     proposalId,
+        //     proposal.state,
+        //     uint256(voteResult),
+        //     allGPsWeight,
+        //     nbYes,
+        //     nbNo
+        // );
     }
 
     function processVotingProposal(
         DaoRegistry dao,
         bytes32 proposalId
     ) external reimbursable(dao) {
-        VotingProposalDetails storage proposal = votingProposals[address(dao)][
-            proposalId
-        ];
-
-        dao.processProposal(proposalId);
-
-        IVintageVoting votingContract = IVintageVoting(
-            dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
-        );
-
-        // require(address(votingContract) != address(0x0), "!votingContract");
-        IVintageVoting.VotingState voteResult;
-        uint128 nbYes;
-        uint128 nbNo;
-
-        (voteResult, nbYes, nbNo) = votingContract.voteResult(dao, proposalId);
-
-        if (voteResult == IVintageVoting.VotingState.PASS) {
-            setVoting(dao, proposal);
-            proposal.state = ProposalState.Done;
-        } else if (
-            voteResult == IVintageVoting.VotingState.NOT_PASS ||
-            voteResult == IVintageVoting.VotingState.TIE
-        ) {
-            proposal.state = ProposalState.Failed;
-        } else {
-            revert VOTING_NOT_FINISH();
-        }
-
-        ongoingVotingProposal[address(dao)] = bytes32(0);
-
-        uint128 allGPsWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
+        FlexDaoSetVotingAdapterContract votingDaoset = FlexDaoSetVotingAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_VOTING_ADAPTER)
+            );
+        (
+            IFlexVoting.VotingState vs,
+            uint256 nbYes,
+            uint256 nbNo,
+            uint128 allWeight
+        ) = votingDaoset.processVotingProposal(dao, proposalId);
         emit ProposalProcessed(
             address(dao),
             proposalId,
-            proposal.state,
-            uint256(voteResult),
-            allGPsWeight,
+            uint256(vs),
+            allWeight,
             nbYes,
             nbNo
         );
     }
 
+    function processFeesProposal(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external reimbursable(dao) {
+        FlexDaosetLibrary.FeeProposalDetails storage proposal = feesProposals[
+            address(dao)
+        ][proposalId];
+
+        // IFlexVoting.VotingState voteResult;
+        // uint256 nbYes;
+        // uint256 nbNo;
+
+        (IFlexVoting.VotingState voteResult, , ) = processProposal(
+            dao,
+            proposalId
+        );
+
+        if (voteResult == IFlexVoting.VotingState.PASS) {
+            setFees(dao, proposal);
+            proposal.state = FlexDaosetLibrary.ProposalState.Done;
+        } else if (
+            voteResult == IFlexVoting.VotingState.NOT_PASS ||
+            voteResult == IFlexVoting.VotingState.TIE
+        ) {
+            proposal.state = FlexDaosetLibrary.ProposalState.Failed;
+        } else {
+            revert FlexDaosetLibrary.VOTING_NOT_FINISH();
+        }
+
+        ongoingFeesProposal[address(dao)] = bytes32(0);
+
+        // uint128 allWeight = GovernanceHelper
+        //     .getAllStewardVotingWeightByProposalId(dao, proposalId);
+        // emit ProposalProcessed(
+        //     address(dao),
+        //     proposalId,
+        //     proposal.state,
+        //     uint256(voteResult),
+        //     allWeight,
+        //     nbYes,
+        //     nbNo
+        // );
+    }
+
+    function processProposerMembershipProposal(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external reimbursable(dao) {
+        FlexDaosetLibrary.ProposerMembershipProposalDetails
+            storage proposal = proposerMembershipProposals[address(dao)][
+                proposalId
+            ];
+
+        (IFlexVoting.VotingState voteResult, , ) = processProposal(
+            dao,
+            proposalId
+        );
+
+        if (voteResult == IFlexVoting.VotingState.PASS) {
+            setProposerMembership(dao, proposalId, proposal);
+            proposal.state = FlexDaosetLibrary.ProposalState.Done;
+        } else if (
+            voteResult == IFlexVoting.VotingState.NOT_PASS ||
+            voteResult == IFlexVoting.VotingState.TIE
+        ) {
+            proposal.state = FlexDaosetLibrary.ProposalState.Failed;
+        } else {
+            revert FlexDaosetLibrary.VOTING_NOT_FINISH();
+        }
+
+        ongoingProposerMembershipProposal[address(dao)] = bytes32(0);
+
+        // uint128 allWeight = GovernanceHelper
+        //     .getAllStewardVotingWeightByProposalId(dao, proposalId);
+        // emit ProposalProcessed(
+        //     address(dao),
+        //     proposalId,
+        //     proposal.state,
+        //     uint256(voteResult),
+        //     allWeight,
+        //     nbYes,
+        //     nbNo
+        // );
+    }
+
+    function processPollForInvestmentProposal(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external reimbursable(dao) {
+        FlexDaoSetPollingAdapterContract pollingDaoset = FlexDaoSetPollingAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_POLLING_ADAPTER)
+            );
+        (
+            IFlexVoting.VotingState vs,
+            uint256 nbYes,
+            uint256 nbNo,
+            uint128 allWeight
+        ) = pollingDaoset.processPollForInvestmentProposal(dao, proposalId);
+        emit ProposalProcessed(
+            address(dao),
+            proposalId,
+            uint256(vs),
+            allWeight,
+            nbYes,
+            nbNo
+        );
+    }
+
+    function processProposal(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) internal returns (IFlexVoting.VotingState, uint256, uint256) {
+        dao.processProposal(proposalId);
+
+        IFlexVoting votingContract = IFlexVoting(
+            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
+        );
+
+        require(address(votingContract) != address(0x0), "!votingContract");
+
+        (
+            IFlexVoting.VotingState vs,
+            uint256 nbYes,
+            uint256 nbNo
+        ) = votingContract.voteResult(dao, proposalId);
+        uint128 allWeight = GovernanceHelper
+            .getAllStewardVotingWeightByProposalId(dao, proposalId);
+        emit ProposalProcessed(
+            address(dao),
+            proposalId,
+            uint256(vs),
+            allWeight,
+            nbYes,
+            nbNo
+        );
+
+        // return votingContract.voteResult(dao, proposalId);
+        return (vs, nbYes, nbNo);
+    }
+
     function setParticipantCap(
         DaoRegistry dao,
-        ParticipantCapProposalDetails storage proposal
+        FlexDaosetLibrary.ParticipantCapProposalDetails storage proposal
     ) internal {
-        dao.setConfiguration(
-            DaoHelper.MAX_PARTICIPANTS_ENABLE,
-            proposal.enable == true ? 1 : 0
-        );
-        dao.setConfiguration(DaoHelper.MAX_PARTICIPANTS, proposal.cap);
+        FlexDaoSetHelperAdapterContract daosetHelper = FlexDaoSetHelperAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
+            );
+        daosetHelper.setParticipantCap(dao, proposal.enable, proposal.cap);
     }
 
     function setGovernorMembership(
         DaoRegistry dao,
-        GovernorMembershipProposalDetails storage proposal
+        bytes32 proposalId,
+        FlexDaosetLibrary.GovernorMembershipProposalDetails storage proposal
     ) internal {
-        dao.setConfiguration(
-            DaoHelper.FLEX_STEWARD_MEMBERSHIP_ENABLE,
-            proposal.enable == true ? 1 : 0
+        FlexDaoSetHelperAdapterContract daosetHelper = FlexDaoSetHelperAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
+            );
+        daosetHelper.setGovernorMembership(
+            dao,
+            proposal.enable,
+            proposal.minAmount,
+            proposal.tokenAddress,
+            proposal.tokenId,
+            proposal.varifyType,
+            governorMembershipWhitelists[proposalId].values()
         );
-
-        if (proposal.enable) {
-            dao.setConfiguration(
-                DaoHelper.FLEX_STEWARD_MEMBERSHIP_TYPE,
-                proposal.varifyType
-            );
-            dao.setConfiguration(
-                DaoHelper.FLEX_STEWARD_MEMBERSHIP_MINI_HOLDING,
-                proposal.minAmount
-            );
-            dao.setAddressConfiguration(
-                DaoHelper.FLEX_STEWARD_MEMBERSHIP_TOKEN_ADDRESS,
-                proposal.tokenAddress
-            );
-
-            dao.setConfiguration(
-                DaoHelper.FLEX_STEWARD_MEMBERSHIP_TOKEN_ID,
-                proposal.tokenId
-            );
-
-            uint256 len = governorMembershipWhitelists[proposal.proposalId]
-                .values()
-                .length;
-            if (len > 0) {
-                StewardManagementContract stewardContract = StewardManagementContract(
-                        dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_MANAGEMENT)
-                    );
-
-                stewardContract.clearGovernorWhitelist(dao);
-                for (uint8 i = 0; i < len; i++) {
-                    stewardContract.registerStewardWhiteList(
-                        dao,
-                        governorMembershipWhitelists[proposal.proposalId].at(i)
-                    );
-                }
-            }
-        }
     }
 
     function setInvestorMembership(
         DaoRegistry dao,
-        InvestorMembershipProposalDetails storage proposal
+        bytes32 proposalId,
+        FlexDaosetLibrary.InvestorMembershipProposalDetails storage proposal
     ) internal {
-        dao.setConfiguration(
-            DaoHelper.FLEX_PARTICIPANT_MEMBERSHIP_ENABLE,
-            proposal.enable == true ? 1 : 0
+        FlexDaoSetHelperAdapterContract daosetHelper = FlexDaoSetHelperAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
+            );
+        daosetHelper.setInvestorMembership(
+            dao,
+            proposal.enable,
+            proposal.varifyType,
+            proposal.name,
+            proposal.minAmount,
+            proposal.tokenAddress,
+            proposal.tokenId,
+            investorMembershipWhiteLists[proposalId].values()
         );
-        if (proposal.enable) {
-            dao.setConfiguration(
-                DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_TYPE,
-                proposal.varifyType
-            );
-            //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
-
-            FlexFundingPoolAdapterContract flexFundingPool = FlexFundingPoolAdapterContract(
-                    dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_POOL_ADAPT)
-                );
-            flexFundingPool.createParticipantMembership(
-                dao,
-                proposal.name,
-                uint8(proposal.varifyType),
-                proposal.minAmount,
-                proposal.tokenAddress,
-                proposal.tokenId
-            );
-
-            uint256 len = investorMembershipWhiteLists[proposal.proposalId]
-                .values()
-                .length;
-            if (len > 0) {
-                VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
-                        dao.getAdapterAddress(
-                            DaoHelper.VINTAGE_FUNDING_POOL_ADAPT
-                        )
-                    );
-                fundingPoolAdapt.clearInvestorWhitelist(dao);
-                for (uint8 i = 0; i < len; i++) {
-                    flexFundingPool.registerParticipantWhiteList(
-                        dao,
-                        proposal.name,
-                        investorMembershipWhiteLists[proposal.proposalId].at(i)
-                    );
-                }
-            }
-        }
     }
 
-    function setVoting(
+    function setFees(
         DaoRegistry dao,
-        VotingProposalDetails storage proposal
+        FlexDaosetLibrary.FeeProposalDetails storage proposal
     ) internal {
-        dao.setConfiguration(
-            DaoHelper.FLEX_VOTING_ELIGIBILITY_TYPE,
-            proposal.eligibilityInfo.eligibilityType
+        FlexDaoSetHelperAdapterContract daosetHelper = FlexDaoSetHelperAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
+            );
+        daosetHelper.setFees(
+            dao,
+            proposal.flexDaoManagementfee,
+            proposal.returnTokenManagementFee,
+            proposal.managementFeeAddress
         );
-        dao.setAddressConfiguration(
-            DaoHelper.FLEX_VOTING_ELIGIBILITY_TOKEN_ADDRESS,
-            proposal.eligibilityInfo.tokenAddress
-        );
-        dao.setConfiguration(
-            DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TOKEN_ID,
-            proposal.eligibilityInfo.tokenID
-        );
-        dao.setConfiguration(
-            DaoHelper.FLEX_VOTING_WEIGHTED_TYPE,
-            proposal.eligibilityInfo.votingWeightedType
-        );
-        dao.setConfiguration(
-            DaoHelper.FLEX_VOTING_SUPPORT_TYPE,
-            proposal.supportInfo.supportType
-        );
-        dao.setConfiguration(
-            DaoHelper.FLEX_VOTING_QUORUM_TYPE,
-            proposal.supportInfo.quorumType
-        );
-        dao.setConfiguration(DaoHelper.QUORUM, proposal.supportInfo.quorum);
-        dao.setConfiguration(
-            DaoHelper.SUPER_MAJORITY,
-            proposal.supportInfo.support
-        );
-        dao.setConfiguration(
-            DaoHelper.VOTING_PERIOD,
-            proposal.timeInfo.votingPeriod
-        );
-        // dao.setConfiguration(
-        //     DaoHelper.PROPOSAL_EXECUTE_DURATION,
-        //     proposal.timeInfo.executingPeriod
-        // );
+    }
 
-        uint256 len = votingAllocations[proposal.proposalId].values().length;
-        if (len > 0) {
-            FlexStewardAllocationAdapter stewardAlloc = FlexStewardAllocationAdapter(
-                    dao.getAdapterAddress(
-                        DaoHelper.VINTAGE_RAISER_ALLOCATION_ADAPTER
-                    )
-                );
-            for (uint8 i = 0; i < len; i++) {
-                stewardAlloc.setAllocation(
-                    dao,
-                    votingGovernors[proposal.proposalId].at(i),
-                    votingAllocations[proposal.proposalId].at(i)
-                );
-            }
+    function setProposerMembership(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        FlexDaosetLibrary.ProposerMembershipProposalDetails storage proposal
+    ) internal {
+        FlexDaoSetHelperAdapterContract daosetHelper = FlexDaoSetHelperAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
+            );
+
+        daosetHelper.setProposerMembership(
+            dao,
+            proposal.minHolding,
+            proposal.tokenId,
+            proposal.varifyType,
+            proposal.tokenAddress,
+            proposerMembershipWhiteLists[proposalId].values()
+        );
+    }
+
+    function isProposalAllDone(DaoRegistry dao) external view returns (bool) {
+        FlexDaoSetPollingAdapterContract pollingDaoset = FlexDaoSetPollingAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_POLLING_ADAPTER)
+            );
+
+        FlexDaoSetVotingAdapterContract votingDaoset = FlexDaoSetVotingAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_VOTING_ADAPTER)
+            );
+        if (
+            ongoingParticipantCapProposal[address(dao)] != bytes32(0) ||
+            ongoingGovernorMembershipProposal[address(dao)] != bytes32(0) ||
+            ongoingInvstorMembershipProposal[address(dao)] != bytes32(0) ||
+            votingDaoset.ongoingVotingProposal(address(dao)) != bytes32(0) ||
+            ongoingFeesProposal[address(dao)] != bytes32(0) ||
+            ongoingProposerMembershipProposal[address(dao)] != bytes32(0) ||
+            pollingDaoset.ongoingPollForInvestmentProposal(address(dao)) !=
+            bytes32(0)
+        ) {
+            return false;
         }
+        return true;
     }
 
     // function getInvestorMembershipWhitelist(
@@ -828,26 +794,30 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable {
     //     return governorMembershipWhitelists[proposalId].values();
     // }
 
-    // function clearGovernorMembershipWhitelist(bytes32 proposalId) external {
-    //     uint256 len = governorMembershipWhitelists[proposalId].values().length;
-    //     address[] memory tem;
-    //     tem = governorMembershipWhitelists[proposalId].values();
-    //     if (len > 0) {
-    //         for (uint8 i = 0; i < len; i++) {
-    //             governorMembershipWhitelists[proposalId].remove(tem[i]);
-    //         }
-    //     }
+    function getGovernorWhitelist(
+        bytes32 proposalId
+    ) external view returns (address[] memory) {
+        return governorMembershipWhitelists[proposalId].values();
+    }
+
+    function getInvestorWhitelist(
+        bytes32 proposalId
+    ) external view returns (address[] memory) {
+        return investorMembershipWhiteLists[proposalId].values();
+    }
+
+    // function getAllocations(
+    //     bytes32 proposalId
+    // ) external view returns (address[] memory, uint256[] memory) {
+    //     return (
+    //         votingGovernors[proposalId].values(),
+    //         votingAllocations[proposalId].values()
+    //     );
     // }
 
-    function isProposalAllDone(address daoAddr) external view returns (bool) {
-        if (
-            ongoingParticipantCapProposal[daoAddr] != bytes32(0) ||
-            ongoingGovernorMembershipProposal[daoAddr] != bytes32(0) ||
-            ongoingInvstorMembershipProposal[daoAddr] != bytes32(0) ||
-            ongoingVotingProposal[daoAddr] != bytes32(0)
-        ) {
-            return false;
-        }
-        return true;
+    function getProposerMembershipWhitelist(
+        bytes32 proposalId
+    ) external view returns (address[] memory) {
+        return proposerMembershipWhiteLists[proposalId].values();
     }
 }

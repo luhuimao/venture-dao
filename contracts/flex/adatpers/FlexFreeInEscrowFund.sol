@@ -66,7 +66,7 @@ contract FlexFreeInEscrowFundAdapterContract is Reimbursable {
     ) external {
         require(
             msg.sender ==
-                dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_POOL_ADAPT),
+                dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_POOL_ADAPT),
             "!access"
         );
         escrowFunds[address(dao)][proposalId][account].amount += uint128(

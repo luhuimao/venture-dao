@@ -6,6 +6,7 @@ import "../../helpers/DaoHelper.sol";
 import "../../utils/TypeConver.sol";
 import "./FlexVoting.sol";
 import "./FlexStewardAllocation.sol";
+import "./FlexDaoSetAdapter.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "../../guards/FlexStewardGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -18,6 +19,7 @@ contract StewardManagementContract is
     FlexStewardGuard
 {
     using EnumerableSet for EnumerableSet.AddressSet;
+    using EnumerableSet for EnumerableSet.Bytes32Set;
 
     enum ProposalState {
         Voting,
@@ -63,6 +65,7 @@ contract StewardManagementContract is
     mapping(DaoRegistry => mapping(bytes32 => ProposalDetails))
         public proposals;
     mapping(address => EnumerableSet.AddressSet) stewardWhiteList;
+    mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
 
     // uint256 public stewardInProposalIds = 1;
     // uint256 public stewardOutProposalIds = 1;
@@ -70,7 +73,13 @@ contract StewardManagementContract is
     function registerStewardWhiteList(
         DaoRegistry dao,
         address account
-    ) external onlyMember(dao) {
+    ) external {
+        require(
+            msg.sender ==
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER) ||
+                dao.isMember(msg.sender),
+            "!access"
+        );
         if (!stewardWhiteList[address(dao)].contains(account)) {
             stewardWhiteList[address(dao)].add(account);
         }
@@ -79,7 +88,7 @@ contract StewardManagementContract is
     function clearGovernorWhitelist(DaoRegistry dao) external {
         require(
             msg.sender ==
-                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER),
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER),
             "!access"
         );
         uint256 len = stewardWhiteList[address(dao)].values().length;
@@ -90,6 +99,13 @@ contract StewardManagementContract is
                 stewardWhiteList[address(dao)].remove(tem[i]);
             }
         }
+    }
+
+    function daosetProposalCheck(DaoRegistry dao) internal view returns (bool) {
+        FlexDaoSetAdapterContract daoset = FlexDaoSetAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER)
+        );
+        return daoset.isProposalAllDone(dao);
     }
 
     function submitSteWardInProposal(
@@ -108,6 +124,7 @@ contract StewardManagementContract is
             DaoHelper.isNotReservedAddress(applicant),
             "applicant is reserved address"
         );
+        require(daosetProposalCheck(dao), "UnDone Daoset Proposal");
         dao.increaseGovenorInId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -132,7 +149,7 @@ contract StewardManagementContract is
 
         _sponsorProposal(dao, proposalId, bytes(""));
         // stewardInProposalIds += 1;
-
+        unDoneProposals[address(dao)].add(proposalId);
         emit ProposalCreated(
             address(dao),
             proposalId,
@@ -172,6 +189,7 @@ contract StewardManagementContract is
 
         _sponsorProposal(dao, proposalId, bytes(""));
         // stewardOutProposalIds += 1;
+        unDoneProposals[address(dao)].add(proposalId);
 
         emit ProposalCreated(
             address(dao),
@@ -315,6 +333,13 @@ contract StewardManagementContract is
 
             if (proposal.pType == ProposalType.STEWARD_OUT) {
                 dao.removeMember(applicant);
+                FlexStewardAllocationAdapter stewardAlloc = FlexStewardAllocationAdapter(
+                        dao.getAdapterAddress(
+                            DaoHelper.FLEX_STEWARD_ALLOCATION_ADAPT
+                        )
+                    );
+                // remove governor set allocation to 0
+                stewardAlloc.setAllocation(dao, proposal.account, 0);
             }
 
             proposal.state = ProposalState.Done;
@@ -326,6 +351,8 @@ contract StewardManagementContract is
         } else {
             revert("proposal has not been voted on yet");
         }
+        if (unDoneProposals[address(dao)].contains(proposalId))
+            unDoneProposals[address(dao)].remove(proposalId);
 
         // uint128 allWeight = GovernanceHelper.getAllStewardVotingWeight(dao);
         emit ProposalProcessed(
@@ -342,6 +369,11 @@ contract StewardManagementContract is
     function quit(DaoRegistry dao) external onlyMember(dao) {
         require(dao.daoCreator() != msg.sender, "dao summonor cant quit");
         dao.removeMember(msg.sender);
+        FlexStewardAllocationAdapter stewardAlloc = FlexStewardAllocationAdapter(
+                dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_ALLOCATION_ADAPT)
+            );
+        // remove governor set allocation to 0
+        stewardAlloc.setAllocation(dao, msg.sender, 0);
     }
 
     function isStewardWhiteList(
@@ -365,5 +397,9 @@ contract StewardManagementContract is
         DaoRegistry dao
     ) external view returns (address[] memory) {
         return DaoHelper.getAllActiveMember(dao);
+    }
+
+    function allDone(DaoRegistry dao) external view returns (bool) {
+        return unDoneProposals[address(dao)].length() > 0 ? false : true;
     }
 }

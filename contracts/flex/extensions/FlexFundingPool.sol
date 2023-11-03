@@ -39,7 +39,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract FlexFundingPoolExtension is IExtension, MemberGuard, ERC165 {
+contract FlexInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
     using Address for address payable;
     using SafeERC20 for IERC20;
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -249,7 +249,7 @@ contract FlexFundingPoolExtension is IExtension, MemberGuard, ERC165 {
      * @dev Cannot be a reserved token or an available internal token
      * @param proposalId The address of the token
      */
-    function registerPotentialNewFundingProposal(
+    function registerPotentialNewInvestmentProposal(
         bytes32 proposalId
     ) external hasExtensionAccess(AclFlag.REGISTER_NEW_TOKEN) {
         // require(DaoHelper.isNotReservedAddress(token), "reservedToken");

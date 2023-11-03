@@ -98,21 +98,9 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         address investor,
         uint256 tokenAmount
     ) public view returns (uint256) {
-        FlexFundingPoolAdapterContract fundingpool = FlexFundingPoolAdapterContract(
-                dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_POOL_ADAPT)
+        FlexInvestmentPoolAdapterContract fundingpool = FlexInvestmentPoolAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_POOL_ADAPT)
             );
-        // FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
-        //     dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
-        // );
-        // IFlexFunding.ProposerRewardInfo memory proposerRewardInfo;
-        // (, , , , proposerRewardInfo, , , ) = flexFunding.Proposals(
-        //     address(dao),
-        //     proposalId
-        // );
-
-        // uint256 fundingRewards = tokenAmount -
-        //     (tokenAmount * proposerRewardInfo.tokenRewardAmount) /
-        //     1e18;
 
         uint256 totalFund = fundingpool.getTotalFundByProposalId(
             dao,
@@ -150,7 +138,7 @@ contract FlexAllocationAdapterContract is AdapterGuard {
     struct allocateProjectTokenLocalVars {
         // ISablier streamingPaymentContract;
         // IFuroVesting vestingContract;
-        FlexFundingPoolExtension fundingpool;
+        FlexInvestmentPoolExtension investmentpool;
         FlexERC721 flexErc721;
         uint256 totalReward;
         uint256 oldAllowance;
@@ -181,30 +169,30 @@ contract FlexAllocationAdapterContract is AdapterGuard {
             "access deny"
         );
         allocateProjectTokenLocalVars memory vars;
-        FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
+        FlexFundingAdapterContract flexInvestment = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
-        vars.fundingpool = FlexFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+        vars.investmentpool = FlexInvestmentPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
         );
-        IFlexFunding.ProposalFundingInfo memory fundingInfo;
-        (, fundingInfo, , , , , , ) = flexFunding.Proposals(
+        IFlexFunding.ProposalInvestmentInfo memory investmentInfo;
+        (, investmentInfo, , , , , , ) = flexInvestment.Proposals(
             address(dao),
             proposalId
         );
-        vars.tokenAmount = fundingInfo.returnTokenAmount;
+        vars.tokenAmount = investmentInfo.returnTokenAmount;
 
         address[] memory allInvestors = vars
-            .fundingpool
+            .investmentpool
             .getInvestorsByProposalId(proposalId);
         vars.totalReward = 0;
-        vars.totalFund = vars.fundingpool.balanceOf(
+        vars.totalFund = vars.investmentpool.balanceOf(
             proposalId,
             DaoHelper.TOTAL
         );
         if (allInvestors.length > 0) {
             for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
-                vars.bal = vars.fundingpool.balanceOf(
+                vars.bal = vars.investmentpool.balanceOf(
                     proposalId,
                     allInvestors[vars.i]
                 );
@@ -214,47 +202,8 @@ contract FlexAllocationAdapterContract is AdapterGuard {
                         allInvestors[vars.i]
                     ] = VestingInfo(vars.shares, false);
                 }
-                // vars.fundingRewards = getFundingRewards(
-                //     dao,
-                //     proposalId,
-                //     allInvestors[vars.i],
-                //     vars.tokenAmount
-                // );
-                // //bug fixed: fillter fundingRewards > 0 ;20220614
-                // if (vars.fundingRewards > 0) {
-                //     vestingInfos[address(dao)][proposalId][
-                //         allInvestors[vars.i]
-                //     ] = VestingInfo(vars.fundingRewards, false);
-                //     vars.totalReward += vars.fundingRewards;
-                // }
             }
         }
-
-        // vars.proposerBonus = getProposerBonus(
-        //     dao,
-        //     proposalId,
-        //     vars.tokenAmount
-        // );
-        // (vars.proposerAddr, , , , , , , ) = flexFunding.Proposals(
-        //     address(dao),
-        //     proposalId
-        // );
-
-        // if (vars.proposerBonus > 0) {
-        //     vestingInfos[address(dao)][proposalId][
-        //         vars.proposerAddr
-        //     ] = VestingInfo(
-        //         vestingInfos[address(dao)][proposalId][vars.proposerAddr]
-        //             .tokenAmount + vars.proposerBonus,
-        //         false
-        //     );
-        //     vars.totalReward += vars.proposerBonus;
-        // }
-        // require(
-        //     vars.totalReward <= vars.tokenAmount,
-        //     "AllocationAdapter::noEscrow::allocate token amount exceeds return token amount"
-        // );
-
         return true;
     }
 
@@ -284,21 +233,21 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         vars.vestingStepDuration = uint256Args[3];
         vars.vestingSteps = uint256Args[4];
 
-        vars.fundingpool = FlexFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+        vars.investmentpool = FlexInvestmentPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
         );
 
         require(
             IERC20(tokenAddress).allowance(
                 dao.getAdapterAddress(
-                    DaoHelper.FLEX_FUNDING_RETURN_TOKEN_ADAPT
+                    DaoHelper.FLEX_INVESTMENT_PAYBACI_TOKEN_ADAPT
                 ),
                 address(this)
             ) >= vars.tokenAmount,
             "AllocationAdapter::allocateProjectToken::insufficient allowance"
         );
         IERC20(tokenAddress).transferFrom(
-            dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_RETURN_TOKEN_ADAPT),
+            dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_PAYBACI_TOKEN_ADAPT),
             address(this),
             vars.tokenAmount
         );
@@ -330,7 +279,7 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         }
 
         address[] memory allInvestors = vars
-            .fundingpool
+            .investmentpool
             .getInvestorsByProposalId(proposalId);
         // vars.totalReward = 0;
         // console.log("investor amount: ", allInvestors.length);

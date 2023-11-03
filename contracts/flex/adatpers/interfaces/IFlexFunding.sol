@@ -15,14 +15,14 @@ interface IFlexFunding {
     function submitProposal(
         DaoRegistry dao,
         ProposalParams calldata params
-    ) external returns (bytes32 proposalId);
+    ) external;
 
     function processProposal(
         DaoRegistry dao,
         bytes32 proposalId
     ) external returns (bool);
 
-    enum FundingType {
+    enum InvestmentType {
         DIRECT,
         POLL
     }
@@ -55,10 +55,10 @@ interface IFlexFunding {
      */
     struct ProcessProposalLocalVars {
         ProposalInfo proposalInfo;
-        uint256 minFundingAmount;
-        uint256 maxFundingAmount;
-        FlexFundingPoolAdapterContract flexFundingPoolAdapt;
-        FlexFundingPoolExtension flexFundingPoolExt;
+        uint256 minInvestmentAmount;
+        uint256 maxInvestmentAmount;
+        FlexInvestmentPoolAdapterContract flexInvestmentPoolAdapt;
+        FlexInvestmentPoolExtension flexInvestmentPoolExt;
         FlexAllocationAdapterContract flexAllocAdapt;
         IFlexVoting flexVoting;
         IFlexVoting.VotingState voteResult;
@@ -69,7 +69,7 @@ interface IFlexFunding {
         uint256 managementFee;
         uint256 returnTokenManagementFee;
         uint256 proposerReward;
-        address propodalFundingToken;
+        address propodalInvestmentToken;
         address returnToken;
         address proposer;
         uint256 totalSendOutAmount;
@@ -79,7 +79,7 @@ interface IFlexFunding {
     struct SubmitProposalLocalVars {
         uint256 lastFundEndTime;
         IFlexVoting flexVotingContract;
-        FlexFundingPoolExtension flexFundingPoolExt;
+        FlexInvestmentPoolExtension flexInvestmentPoolExt;
         address fundRaiseTokenAddr;
         address managementFeeAddress;
         address submittedBy;
@@ -101,17 +101,17 @@ interface IFlexFunding {
     }
 
     struct ProposalParams {
-        FundingInfo fundingInfo;
+        InvestmentInfo investmentInfo;
         VestInfo vestInfo;
         FundRaiseInfo fundRaiseInfo;
         ProposerRewardInfo proposerRewardInfo;
         address[] priorityDepositWhitelist;
     }
 
-    struct FundingInfo {
+    struct InvestmentInfo {
         address tokenAddress;
-        uint256 minFundingAmount;
-        uint256 maxFundingAmount;
+        uint256 minInvestmentAmount;
+        uint256 maxInvestmentAmount;
         bool escrow;
         address returnTokenAddr;
         uint256 returnTokenAmount;
@@ -124,7 +124,7 @@ interface IFlexFunding {
 
     struct ProposalInfo {
         address proposer;
-        ProposalFundingInfo fundingInfo;
+        ProposalInvestmentInfo investmentInfo;
         VestInfo vestInfo;
         FundRaiseInfo fundRaiseInfo;
         ProposerRewardInfo proposerRewardInfo;
@@ -133,10 +133,10 @@ interface IFlexFunding {
         ProposalStatus state;
     }
 
-    struct ProposalFundingInfo {
+    struct ProposalInvestmentInfo {
         address tokenAddress;
-        uint256 minFundingAmount;
-        uint256 maxFundingAmount;
+        uint256 minInvestmentAmount;
+        uint256 maxInvestmentAmount;
         uint256 finalRaisedAmount;
         bool escrow;
         address returnTokenAddr;
@@ -206,7 +206,7 @@ interface IFlexFunding {
     error FundRaiseEndTimeNotUP();
     error InvalidBackerPriorityDepositParams();
     error InvalidBackerIdentificationParams();
-    error InvalidFundingInfoParams();
+    error InvalidInvestmentInfoParams();
     error InvalidReturnFundParams();
     error InvalidVestingParams();
     error InvalidTokenRewardAmount();

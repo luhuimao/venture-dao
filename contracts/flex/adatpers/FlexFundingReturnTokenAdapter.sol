@@ -7,7 +7,7 @@ import "./interfaces/IFlexFunding.sol";
 import "../../helpers/DaoHelper.sol";
 import "hardhat/console.sol";
 
-contract FlexFundingReturnTokenAdapterContract {
+contract FlexInvestmentPaybackTokenAdapterContract {
     mapping(address => mapping(bytes32 => mapping(address => mapping(address => uint256))))
         public approvedInfos; // dao => funding proposal => approver => erc20 => amount
 
@@ -25,7 +25,7 @@ contract FlexFundingReturnTokenAdapterContract {
         return true;
     }
 
-    function escrowFundingReturnToken(
+    function escrowInvestmentPaybackToken(
         uint256 escrowAmount,
         DaoRegistry dao,
         address approver,
@@ -66,7 +66,7 @@ contract FlexFundingReturnTokenAdapterContract {
         return true;
     }
 
-    function withdrawFundingReturnToken(
+    function withdrawInvestmentPaybackToken(
         DaoRegistry dao,
         bytes32 proposalId,
         address erc20,

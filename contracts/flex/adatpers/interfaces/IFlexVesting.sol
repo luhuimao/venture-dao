@@ -92,7 +92,7 @@ interface IFlexVesting {
         uint256 vestingSteps;
         address allocAdaptAddr;
         IFlexFunding.VestInfo vestInfo;
-        IFlexFunding.ProposalFundingInfo fundingInfo;
+        IFlexFunding.ProposalInvestmentInfo fundingInfo;
         uint256 newTokenId;
     }
 
