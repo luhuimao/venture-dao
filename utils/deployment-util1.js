@@ -637,10 +637,10 @@ const deployDao = async (options) => {
         lootTokenToMint: LOOT,
     };
     const libraries = await createLibraries({ options });
-    console.log("libraries FundingLibrary address: ", libraries.FundingLibrary.instance.address);
+    console.log("libraries InvestmentLibrary address: ", libraries.InvestmentLibrary.instance.address);
     options = {
         ...options,
-        vintageFundingLibraryAddress: libraries.FundingLibrary.instance.address,
+        vintageInvestmentLibraryAddress: libraries.InvestmentLibrary.instance.address,
     };
     const factories = await createFactories({ options });
     const extensions = await createExtensions({ dao, factories, options });

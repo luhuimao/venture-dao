@@ -29,7 +29,7 @@ export const adaptersIdsMap: Record<string, string> = {
   VINTAGE_DISTRIBUTE_ADAPTER: "vintage-distribute-adapter",
   VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER: "vintage-funding-return-token-adapter",
   VINTAGE_FREE_IN_ESCORW_FUND_ADAPTER: "vintage-free-in-escrow-fund-adapter",
-  VINTAGE_DAOSET_ADAPTER:"vintage-daoset-adapter",
+  VINTAGE_DAOSET_ADAPTER: "vintage-daoset-adapter",
   /*******************vintage end******************/
 
 
@@ -48,6 +48,10 @@ export const adaptersIdsMap: Record<string, string> = {
   FLEX_FUNDING_RETURN_TOKEN_ADAPT: "flex-funding-return-token-adapter",
   FLEX_FREE_IN_ESCROW_FUND_ADAPTER: "flex-free-in-escrow-fund-adapter",
   FLEX_FUNDING_HELPER_ADAPTER: "flex-funding-helper-adapter",
+  FLEX_DAOSET_ADAPTER: "flex-daoset-adapter",
+  FLEX_DAOSET_HELPER_ADAPTER: "flex-daoset-helper-adapter",
+  FLEX_DAO_SET_POLLING_ADAPTER: "flex-daoset-polling-adapter",
+  FLEX_DAO_SET_VOTING_ADAPTER: "flex-daoset-voting-adapter",
   /*******************flex end******************/
   FUND_RAISE: "fund-raise",
   VESTING: "vesting",

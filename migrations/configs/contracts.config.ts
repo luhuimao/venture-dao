@@ -515,9 +515,9 @@ export const contracts: Array<ContractConfig> = [
   },
   {
     id: extensionsIdsMap.FLEX_FUNDING_POOL_EXT,
-    name: "FlexFundingPoolExtension",
+    name: "FlexInvestmentPoolExtension",
     alias: "flexFundingPoolExt",
-    path: "../../contracts/flex/extensions/FlexFundingPoolExtension",
+    path: "../../contracts/flex/extensions/FlexInvestmentPoolExtension",
     enabled: true,
     version: "1.0.0",
     type: ContractType.Extension,
@@ -702,7 +702,9 @@ export const contracts: Array<ContractConfig> = [
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
-      dao: [],
+      dao: [
+        daoAccessFlagsMap.SET_CONFIGURATION,
+      ],
       extensions: {
         [extensionsIdsMap.VINTAGE_FUNDING_POOL_EXT]: [
           vintageFundingPoolExtensionAclFlagsMap.WITHDRAW,
@@ -802,7 +804,7 @@ export const contracts: Array<ContractConfig> = [
     enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
-    deploymentArgs: ["vintageFundingLibraryAddress"],
+    deploymentArgs: ["vintageInvestmentLibraryAddress"],
     acls: {
       dao: [
         daoAccessFlagsMap.SUBMIT_PROPOSAL,
@@ -883,7 +885,7 @@ export const contracts: Array<ContractConfig> = [
     id: adaptersIdsMap.VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER,
     name: "VintageFundingReturnTokenAdapterContract",
     alias: "vintageFundingReturnTokenAdapterContract",
-    path: "../../contracts/adapters/VintageFundingReturnTokenAdapterContract",
+    path: "../../contracts/adapters/VintageInvestmentPaybackTokenAdapterContract",
     enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
@@ -1036,9 +1038,9 @@ export const contracts: Array<ContractConfig> = [
   },
   {
     id: adaptersIdsMap.FLEX_FUNDING_POOL_ADAPTER,
-    name: "FlexFundingPoolAdapterContract",
+    name: "FlexInvestmentPoolAdapterContract",
     alias: "flexFundingPoolAdapterContract",
-    path: "../../contracts/adapters/FlexFundingPoolAdapterContract",
+    path: "../../contracts/adapters/FlexInvestmentPoolAdapterContract",
     enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
@@ -1118,9 +1120,9 @@ export const contracts: Array<ContractConfig> = [
   },
   {
     id: adaptersIdsMap.FLEX_FUNDING_RETURN_TOKEN_ADAPT,
-    name: "FlexFundingReturnTokenAdapterContract",
+    name: "FlexInvestmentPaybackTokenAdapterContract",
     alias: "flexFundingReturnTokenAdapterContract",
-    path: "../../contracts/adapters/FlexFundingReturnTokenAdapterContract",
+    path: "../../contracts/adapters/FlexInvestmentPaybackTokenAdapterContract",
     enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
@@ -1154,6 +1156,77 @@ export const contracts: Array<ContractConfig> = [
     type: ContractType.Adapter,
     acls: {
       dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_DAOSET_ADAPTER,
+    name: "FlexDaoSetAdapterContract",
+    alias: "flexDaoSetAdapterContract",
+    path: "../../contracts/adapters/FlexDaoSetAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.INCREASE_PARTICIPANT_CAP_ID,
+        daoAccessFlagsMap.INCREASE_GOVERNOR_MEMBERSHIP_ID,
+        daoAccessFlagsMap.INCREASE_INVESTOR_MEMBERSHIP_ID,
+        daoAccessFlagsMap.INCREASE_FEE_ID,
+        daoAccessFlagsMap.INCREASE_PROPOSER_MEMBERSHIP
+      ],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_DAOSET_HELPER_ADAPTER,
+    name: "FlexDaoSetHelperAdapterContract",
+    alias: "flexDaoSetHelperAdapterContract",
+    path: "../../contracts/adapters/FlexDaoSetHelperAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SET_CONFIGURATION
+      ],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_DAO_SET_POLLING_ADAPTER,
+    name: "FlexDaoSetPollingAdapterContract",
+    alias: "flexDaoSetPollingAdapterContract",
+    path: "../../contracts/adapters/FlexDaoSetPollingAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.INCREASE_POLL_FOR_INVESTMENT_ID
+      ],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_DAO_SET_VOTING_ADAPTER,
+    name: "FlexDaoSetVotingAdapterContract",
+    alias: "flexDaoSetVotingAdapterContract",
+    path: "../../contracts/adapters/FlexDaoSetVotingAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.INCREASE_VOTING_ID
+      ],
       extensions: {
       },
     },
@@ -1979,8 +2052,8 @@ export const contracts: Array<ContractConfig> = [
 
   {
     id: "vintagefundinglibrary",
-    name: "FundingLibrary",
-    path: "../../contracts/vintage/libraries/FundingLibrary",
+    name: "InvestmentLibrary",
+    path: "../../contracts/vintage/libraries/InvestmentLibrary",
     enabled: true,
     version: "1.0.0",
     type: ContractType.Library,

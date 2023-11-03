@@ -45,7 +45,11 @@ const {
     oneDay,
     oneWeek
 } = require("../utils/contract-util");
-const { checkBalance, depositToFundingPool, createDistributeFundsProposal } = require("../utils/test-util");
+const {
+    checkBalance,
+    depositToFundingPool,
+    createDistributeFundsProposal
+} = require("../utils/test-util");
 
 const {
     expectRevert,
@@ -57,19 +61,33 @@ const {
     accounts
 } = require("../utils/oz-util");
 
-import { exec } from "child_process";
+import {
+    exec
+} from "child_process";
 import {
     DaoFactory,
     DaoRegistry,
     FundingPoolExtension,
     deployDefaultDao,
     takeChainSnapshot,
-    revertChainSnapshot, proposalIdGenerator, expect, expectRevert, web3
+    revertChainSnapshot,
+    proposalIdGenerator,
+    expect,
+    expectRevert,
+    web3
 } from "../utils/hh-util";
-import { createDao } from "../utils/deployment-util1";
-import { zeroPad } from "ethers/lib/utils";
-import { boolean } from "hardhat/internal/core/params/argumentTypes";
-import { addAbortSignal } from "stream";
+import {
+    createDao
+} from "../utils/deployment-util1";
+import {
+    zeroPad
+} from "ethers/lib/utils";
+import {
+    boolean
+} from "hardhat/internal/core/params/argumentTypes";
+import {
+    addAbortSignal
+} from "stream";
 const hre = require("hardhat");
 
 describe("Summon A Vintage Dao", () => {
@@ -111,9 +129,15 @@ describe("Summon A Vintage Dao", () => {
 
         const _daoName = "my_vintage_dao1";
 
-        const { dao, factories, adapters, extensions, testContracts } = await deployDefaultDao({
+        const {
+            dao,
+            factories,
+            adapters,
+            extensions,
+            testContracts
+        } = await deployDefaultDao({
             owner: this.owner,
-            daoMode: 0,//  Vintage = 0, Flex = 1,   Collective = 2,
+            daoMode: 0, //  Vintage = 0, Flex = 1,   Collective = 2,
             daoName: _daoName
         });
 
@@ -168,7 +192,10 @@ describe("Summon A Vintage Dao", () => {
         let result = await tx.wait();
         const daoAddr = await daoFactoryContract.getDaoAddress(vintageDaoParams[0]);
         const daoName = await daoFactoryContract.daos(daoAddr);
-        return { daoAddr: daoAddr, daoName: daoName };
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
     };
 
     it("summom a vintage dao by summon contract...", async () => {
@@ -181,113 +208,111 @@ describe("Summon A Vintage Dao", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [
-            {
-                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed',//fund raise
+        const enalbeAdapters = [{
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
             },
             {
-                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892',//FundingPoolAdapterContract
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
                 addr: this.vintageFundingPoolAdapterContract.address,
-                flags: 0
+                flags: 8
             },
             {
-                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8',//vintageVotingAdapterContract
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
                 addr: this.vintageVotingAdapterContract.address,
                 flags: 258
             },
             {
-                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa',//vintageRaiserManagementContract
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
                 addr: this.vintageRaiserManagementContract.address,
                 flags: 6346
             },
             {
-                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
                 addr: this.vintageFundingAdapterContract.address,
                 flags: 770
             },
             {
-                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
                 addr: this.vintageAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
                 addr: this.vintageVesting.address,
                 flags: 0
             },
             {
-                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
             {
-                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3',// vintageEscrowFundAdapterContract
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
                 addr: this.vintageEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a',// vintageDistrubteAdapterContract
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
                 addr: this.vintageDistributeAdatperContract.address,
                 flags: 0
             },
             {
-                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4',// vintageRaiserAllocation
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
                 addr: this.vintageRaiserAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257',// vintageFundingReturnTokenAdapterContract
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
                 addr: this.vintageFundingReturnTokenAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5',//vintageFreeInEscrowFundAdapterContract
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
                 addr: this.vintageFreeInEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1',//vintageFundingPoolAdapterHelperContract
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
                 addr: this.vintageFundingPoolAdapterHelperContract.address,
                 flags: 0
             },
             {
-                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e',//vintageDaoSetAdapterContract
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
                 addr: this.vintageDaoSetAdapterContract.address,
                 flags: 122890
             }
         ];
 
-        const adapters1 = [
-            {
+        const adapters1 = [{
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
                 flags: 14
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageDistributeAdatperContract.address,// vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
             }
         ];
 
         const vintageDaoParticipantCapInfo = [
-            true,//bool enable;
-            5//uint256 maxParticipantsAmount;
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
         ];
 
         const vintageDaoBackerMembershipInfo = [
             1, // bool enable;
             0, // uint256 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -295,22 +320,22 @@ describe("Summon A Vintage Dao", () => {
             1, // bool enable;
             0, // uint256 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
         const vintageDaoVotingInfo = [
-            0,//eligibilityType
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;
-            0,//  uint256 supportType;
-            0,//uint256 quorumType;
+            0, //  uint256 supportType;
+            0, //uint256 quorumType;
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoGenesisRaisers = [this.genesis_steward1.address, this.genesis_steward2.address];
@@ -330,7 +355,10 @@ describe("Summon A Vintage Dao", () => {
         ];
         console.log("vintageDaoParams: ", vintageDaoParams);
 
-        const { daoAddr, daoName } = await sommonVintageDao(this.summonDao, this.daoFactory, vintageDaoParams);
+        const {
+            daoAddr,
+            daoName
+        } = await sommonVintageDao(this.summonDao, this.daoFactory, vintageDaoParams);
         console.log("summon succeed...");
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
         const fundingpoolextensionAddr = await daoContract.getExtensionAddress(sha3("vintage-funding-pool-ext"));
@@ -347,41 +375,41 @@ describe("Summon A Vintage Dao", () => {
         const proposalFundRaiseInfo = [
             hre.ethers.utils.parseEther("10000"), // uint256 fundRaiseMinTarget;
             hre.ethers.utils.parseEther("20000"), // uint256 fundRaiseMaxCap;
-            hre.ethers.utils.parseEther("1000"),   // uint256 lpMinDepositAmount;
-            hre.ethers.utils.parseEther("10000"),    // uint256 lpMaxDepositAmount;
-            0    // uint8 fundRaiseType; // 0 FCFS 1 Free In
+            hre.ethers.utils.parseEther("1000"), // uint256 lpMinDepositAmount;
+            hre.ethers.utils.parseEther("10000"), // uint256 lpMaxDepositAmount;
+            0 // uint8 fundRaiseType; // 0 FCFS 1 Free In
         ]
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
         const proposalTimeInfo = [
-            blocktimestamp + 60 * 60 * 1,  // uint256 startTime;
-            blocktimestamp + 60 * 60 * 6,    // uint256 endTime;
-            60 * 60 * 3,   // uint256 fundTerm;
-            60 * 60 * 1,   // uint256 redemptPeriod;
-            60 * 60 * 2,   // uint256 redemptInterval;
-            60 * 60 * 1,  // uint256 returnPeriod;
+            blocktimestamp + 60 * 60 * 1, // uint256 startTime;
+            blocktimestamp + 60 * 60 * 6, // uint256 endTime;
+            60 * 60 * 3, // uint256 fundTerm;
+            60 * 60 * 1, // uint256 redemptPeriod;
+            60 * 60 * 2, // uint256 redemptInterval;
+            60 * 60 * 1, // uint256 returnPeriod;
         ]
 
         const proposalFeeInfo = [
-            hre.ethers.utils.parseEther("0.005"),     // uint256 managementFeeRatio;
-            hre.ethers.utils.parseEther("0.005"),     // uint256 managementFeeRatio;
+            hre.ethers.utils.parseEther("0.005"), // uint256 managementFeeRatio;
+            hre.ethers.utils.parseEther("0.005"), // uint256 managementFeeRatio;
             hre.ethers.utils.parseEther("0.005") // uint256 redepmtFeeRatio;
         ]
         console.log(this.user1.address);
         console.log(this.testtoken1.address);
 
         const proposalAddressInfo = [
-            this.user1.address,  // address managementFeeAddress;
-            this.testtoken1.address  // address fundRaiseTokenAddress;
+            this.user1.address, // address managementFeeAddress;
+            this.testtoken1.address // address fundRaiseTokenAddress;
         ]
 
         const proposerReward = [
-            hre.ethers.utils.parseEther("0.005"),   // uint256 fundFromInverstor;
-            hre.ethers.utils.parseEther("0.005"),  // uint256 projectTokenFromInvestor;
+            hre.ethers.utils.parseEther("0.005"), // uint256 fundFromInverstor;
+            hre.ethers.utils.parseEther("0.005"), // uint256 projectTokenFromInvestor;
         ];
 
         const enalbePriorityDeposit = true;
-        const vtype = 3;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 3; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = ZERO_ADDRESS;
         const tokenId = 0;
         const amount = 0;
@@ -402,9 +430,9 @@ describe("Summon A Vintage Dao", () => {
         const ProposalParams = [
             this.vintagedaoAddress, // DaoRegistry dao;
             proposalFundRaiseInfo, // ProposalFundRaiseInfo ;
-            proposalTimeInfo,   // ProposalTimeInfo ;
-            proposalFeeInfo,    // ProposalFeeInfo ;
-            proposalAddressInfo,      // ProposalAddressInfo ;
+            proposalTimeInfo, // ProposalTimeInfo ;
+            proposalFeeInfo, // ProposalFeeInfo ;
+            proposalAddressInfo, // ProposalAddressInfo ;
             proposerReward, // ProoserReward ;
             proposalPriorityDepositInfo,
             participantCapInfo
@@ -483,9 +511,15 @@ describe("verify raiser membership...", () => {
         const _daoName4 = "my_vintage_dao4";
         const _daoName5 = "my_vintage_dao5";
 
-        const { dao, factories, adapters, extensions, testContracts } = await deployDefaultDao({
+        const {
+            dao,
+            factories,
+            adapters,
+            extensions,
+            testContracts
+        } = await deployDefaultDao({
             owner: this.owner,
-            daoMode: 0,//  Vintage = 0, Flex = 1,   Collective = 2,
+            daoMode: 0, //  Vintage = 0, Flex = 1,   Collective = 2,
             daoName: "init dao"
         });
 
@@ -543,108 +577,106 @@ describe("verify raiser membership...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [
-            {
-                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed',//fund raise
+        const enalbeAdapters = [{
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
             },
             {
-                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892',//FundingPoolAdapterContract
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
                 addr: this.vintageFundingPoolAdapterContract.address,
-                flags: 0
+                flags: 8
             },
             {
-                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8',//vintageVotingAdapterContract
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
                 addr: this.vintageVotingAdapterContract.address,
                 flags: 258
             },
             {
-                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa',//vintageRaiserManagementContract
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
                 addr: this.vintageRaiserManagementContract.address,
                 flags: 6346
             },
             {
-                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
                 addr: this.vintageFundingAdapterContract.address,
                 flags: 770
             },
             {
-                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
                 addr: this.vintageAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
                 addr: this.vintageVesting.address,
                 flags: 0
             },
             {
-                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3',// vintageEscrowFundAdapterContract
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
                 addr: this.vintageEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a',// vintageDistrubteAdapterContract
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
                 addr: this.vintageDistributeAdatperContract.address,
                 flags: 0
             },
             {
-                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4',// vintageRaiserAllocation
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
                 addr: this.vintageRaiserAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257',// vintageFundingReturnTokenAdapterContract
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
                 addr: this.vintageFundingReturnTokenAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5',//vintageFreeInEscrowFundAdapterContract
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
                 addr: this.vintageFreeInEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1',//vintageFundingPoolAdapterHelperContract
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
                 addr: this.vintageFundingPoolAdapterHelperContract.address,
                 flags: 0
             },
             {
-                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e',//vintageDaoSetAdapterContract
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
                 addr: this.vintageDaoSetAdapterContract.address,
                 flags: 122890
             }
         ];
-        const adapters1 = [
-            {
+        const adapters1 = [{
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
                 flags: 14
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageDistributeAdatperContract.address,// vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
             }
         ];
 
 
         const vintageDaoParticipantCapInfo = [
-            true,//bool enable;
-            5//uint256 maxParticipantsAmount;
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
         ];
 
         const vintageDaoBackerMembershipInfo = [
             1, // bool enable;
             0, // uint256 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -652,8 +684,8 @@ describe("verify raiser membership...", () => {
             1, // bool enable;
             0, // uint256 varifyType;erc20
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -665,8 +697,8 @@ describe("verify raiser membership...", () => {
             1, // bool enable;
             1, // uint256 varifyType;erc721
             1, // uint256 minHolding;
-            erc721.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            erc721.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -678,8 +710,8 @@ describe("verify raiser membership...", () => {
             1, // bool enable;
             2, // uint256 varifyType;erc1155
             2, // uint256 minHolding;
-            erc1155.address,  // address tokenAddress;
-            1,  // uint256 tokenId;
+            erc1155.address, // address tokenAddress;
+            1, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -687,8 +719,8 @@ describe("verify raiser membership...", () => {
             1, // bool enable;
             3, // uint256 varifyType;whitelist
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [this.gp1.address] // address[] whiteList;
         ];
 
@@ -696,22 +728,22 @@ describe("verify raiser membership...", () => {
             1, // bool enable;
             4, // uint256 varifyType;deposit
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
         const vintageDaoVotingInfo = [
-            0,//eligibilityType
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;
-            0,//  uint256 supportType;
-            0,//uint256 quorumType;
+            0, //  uint256 supportType;
+            0, //uint256 quorumType;
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
@@ -816,7 +848,10 @@ describe("verify raiser membership...", () => {
         const daoAddr = await daoFactoryContract.getDaoAddress(vintageDaoParams[0]);
         console.log("daoAddr ", daoAddr);
         const daoName = await daoFactoryContract.daos(daoAddr);
-        return { daoAddr: daoAddr, daoName: daoName };
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
     };
 
     it("verify raiser erc20 memberhsip...", async () => {
@@ -955,9 +990,15 @@ describe("voting....", () => {
         const _daoName29 = "my_vintage_dao29";
         const _daoName30 = "my_vintage_dao30";
 
-        const { dao, factories, adapters, extensions, testContracts } = await deployDefaultDao({
+        const {
+            dao,
+            factories,
+            adapters,
+            extensions,
+            testContracts
+        } = await deployDefaultDao({
             owner: this.owner,
-            daoMode: 0,//  Vintage = 0, Flex = 1,   Collective = 2,
+            daoMode: 0, //  Vintage = 0, Flex = 1,   Collective = 2,
             daoName: "init dao"
         });
 
@@ -1010,114 +1051,112 @@ describe("voting....", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [
-            {
-                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed',//fund raise
+        const enalbeAdapters = [{
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
             },
             {
-                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892',//FundingPoolAdapterContract
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
                 addr: this.vintageFundingPoolAdapterContract.address,
-                flags: 0
+                flags: 8
             },
             {
-                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8',//vintageVotingAdapterContract
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
                 addr: this.vintageVotingAdapterContract.address,
                 flags: 258
             },
             {
-                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa',//vintageRaiserManagementContract
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
                 addr: this.vintageRaiserManagementContract.address,
                 flags: 6346
             },
             {
-                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
                 addr: this.vintageFundingAdapterContract.address,
                 flags: 770
             },
             {
-                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
                 addr: this.vintageAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
                 addr: this.vintageVesting.address,
                 flags: 0
             },
             {
-                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
             {
-                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3',// vintageEscrowFundAdapterContract
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
                 addr: this.vintageEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a',// vintageDistrubteAdapterContract
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
                 addr: this.vintageDistributeAdatperContract.address,
                 flags: 0
             },
             {
-                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4',// vintageRaiserAllocation
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
                 addr: this.vintageRaiserAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257',// vintageFundingReturnTokenAdapterContract
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
                 addr: this.vintageFundingReturnTokenAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5',//vintageFreeInEscrowFundAdapterContract
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
                 addr: this.vintageFreeInEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1',//vintageFundingPoolAdapterHelperContract
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
                 addr: this.vintageFundingPoolAdapterHelperContract.address,
                 flags: 0
             },
             {
-                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e',//vintageDaoSetAdapterContract
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
                 addr: this.vintageDaoSetAdapterContract.address,
                 flags: 122890
             }
         ];
 
-        const adapters1 = [
-            {
+        const adapters1 = [{
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
                 flags: 14
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageDistributeAdatperContract.address,// vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
             }
         ];
 
 
         const vintageDaoParticipantCapInfo = [
-            true,//bool enable;
-            5//uint256 maxParticipantsAmount;
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
         ];
 
         const vintageDaoBackerMembershipInfo = [
             1, // bool enable;
             0, // uint256 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -1126,8 +1165,8 @@ describe("voting....", () => {
             1, // bool enable;
             0, // uint256 varifyType;erc20
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -1139,8 +1178,8 @@ describe("voting....", () => {
             1, // bool enable;
             1, // uint256 varifyType;erc721
             1, // uint256 minHolding;
-            erc721.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            erc721.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -1152,8 +1191,8 @@ describe("voting....", () => {
             1, // bool enable;
             2, // uint256 varifyType;erc1155
             2, // uint256 minHolding;
-            erc1155.address,  // address tokenAddress;
-            1,  // uint256 tokenId;
+            erc1155.address, // address tokenAddress;
+            1, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         //whitelist
@@ -1161,8 +1200,8 @@ describe("voting....", () => {
             1, // bool enable;
             3, // uint256 varifyType;whitelist
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [this.gp1.address] // address[] whiteList;
         ];
         //deposit
@@ -1170,401 +1209,401 @@ describe("voting....", () => {
             1, // bool enable;
             4, // uint256 varifyType;deposit
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
         //ERC20 log2 YES / (YES + NO) > X% (YES + NO) / Total > X%
         const vintageDaoVotingInfo1 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType ERC721; votingPower log2 YES / (YES + NO) > X% (YES + NO) / Total > X%
         const vintageDaoVotingInfo2 = [
-            1,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testERC721.address,//tokenAddress
-            0,//tokenID
+            1, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testERC721.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType ERC1155; votingPower log2 YES / (YES + NO) > X% (YES + NO) / Total > X%
         const vintageDaoVotingInfo3 = [
-            2,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testERC1155.address,//tokenAddress
-            1,//tokenID
+            2, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testERC1155.address, //tokenAddress
+            1, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType allocation; votingPower log2 YES / (YES + NO) > X% (YES + NO) / Total > X%
         const vintageDaoVotingInfo4 = [
-            3,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            3, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType deposit; votingPower log2 YES / (YES + NO) > X% (YES + NO) / Total > X%
         const vintageDaoVotingInfo5 = [
-            4,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            4, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType ERC20; votingPower log2 YES - NO > X YES + NO > X
         const vintageDaoVotingInfo6 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType ERC721; votingPower log2 YES - NO > X YES + NO > X
         const vintageDaoVotingInfo7 = [
-            1,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testERC721.address,//tokenAddress
-            0,//tokenID
+            1, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testERC721.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType ERC1155; votingPower log2 YES - NO > X YES + NO > X
         const vintageDaoVotingInfo8 = [
-            2,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testERC1155.address,//tokenAddress
-            1,//tokenID
+            2, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testERC1155.address, //tokenAddress
+            1, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType allocation; votingPower log2 YES - NO > X YES + NO > X
         const vintageDaoVotingInfo9 = [
-            3,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            3, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType deposit; votingPower log2 YES - NO > X YES + NO > X
         const vintageDaoVotingInfo10 = [
-            4,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            4, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         //eligibilityType ERC20; votingPower quantity YES / (YES + NO) > X%  (YES + NO) / Total > X%
         const vintageDaoVotingInfo11 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType ERC721; votingPower quantity YES / (YES + NO) > X%  (YES + NO) / Total > X%
         const vintageDaoVotingInfo12 = [
-            1,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testERC721.address,//tokenAddress
-            0,//tokenID
+            1, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testERC721.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType ERC1155; votingPower quantity YES / (YES + NO) > X%  (YES + NO) / Total > X%
         const vintageDaoVotingInfo13 = [
-            2,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testERC1155.address,//tokenAddress
-            1,//tokenID
+            2, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testERC1155.address, //tokenAddress
+            1, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType allocation; votingPower quantity YES / (YES + NO) > X%  (YES + NO) / Total > X%
         const vintageDaoVotingInfo14 = [
-            3,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            3, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType deposit; votingPower quantity YES / (YES + NO) > X%  (YES + NO) / Total > X%
         const vintageDaoVotingInfo15 = [
-            4,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            4, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType ERC20; votingPower quantity YES - NO > X; YES + NO > X
         const vintageDaoVotingInfo16 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType ERC721; votingPower quantity YES - NO > X; YES + NO > X
         const vintageDaoVotingInfo17 = [
-            1,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testERC721.address,//tokenAddress
-            0,//tokenID
+            1, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testERC721.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType ERC1155; votingPower quantity YES - NO > X; YES + NO > X
         const vintageDaoVotingInfo18 = [
-            2,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testERC1155.address,//tokenAddress
-            1,//tokenID
+            2, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testERC1155.address, //tokenAddress
+            1, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType allocation; votingPower quantity YES - NO > X; YES + NO > X
         const vintageDaoVotingInfo19 = [
-            3,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            3, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType deposit; votingPower quantity YES - NO > X; YES + NO > X
         const vintageDaoVotingInfo20 = [
-            4,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            4, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         //eligibilityType ERC20; votingPower 1 voter 1 vote YES - NO > X; YES + NO > X
         const vintageDaoVotingInfo21 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             2, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo22 = [
-            1,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testERC721.address,//tokenAddress
-            0,//tokenID
+            1, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testERC721.address, //tokenAddress
+            0, //tokenID
             2, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo23 = [
-            2,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testERC1155.address,//tokenAddress
-            1,//tokenID
+            2, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testERC1155.address, //tokenAddress
+            1, //tokenID
             2, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo24 = [
-            3,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            3, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             2, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo25 = [
-            4,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            4, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             2, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo26 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             2, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo27 = [
-            1,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testERC721.address,//tokenAddress
-            0,//tokenID
+            1, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testERC721.address, //tokenAddress
+            0, //tokenID
             2, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo28 = [
-            2,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testERC1155.address,//tokenAddress
-            1,//tokenID
+            2, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testERC1155.address, //tokenAddress
+            1, //tokenID
             2, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo29 = [
-            3,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            3, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             2, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo30 = [
-            4,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            4, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             2, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
@@ -2180,7 +2219,10 @@ describe("voting....", () => {
         const daoAddr = await daoFactoryContract.getDaoAddress(vintageDaoParams[0]);
         console.log("daoAddr ", daoAddr);
         const daoName = await daoFactoryContract.daos(daoAddr);
-        return { daoAddr: daoAddr, daoName: daoName };
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
     };
 
 
@@ -4442,9 +4484,15 @@ describe("fund term...", () => {
 
         const _daoName1 = "my_vintage_dao1";
 
-        const { dao, factories, adapters, extensions, testContracts } = await deployDefaultDao({
+        const {
+            dao,
+            factories,
+            adapters,
+            extensions,
+            testContracts
+        } = await deployDefaultDao({
             owner: this.owner,
-            daoMode: 0,//  Vintage = 0, Flex = 1,   Collective = 2,
+            daoMode: 0, //  Vintage = 0, Flex = 1,   Collective = 2,
             daoName: "init dao"
         });
 
@@ -4502,114 +4550,112 @@ describe("fund term...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [
-            {
-                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed',//fund raise
+        const enalbeAdapters = [{
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
             },
             {
-                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892',//FundingPoolAdapterContract
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
                 addr: this.vintageFundingPoolAdapterContract.address,
-                flags: 0
+                flags: 8
             },
             {
-                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8',//vintageVotingAdapterContract
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
                 addr: this.vintageVotingAdapterContract.address,
                 flags: 258
             },
             {
-                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa',//vintageRaiserManagementContract
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
                 addr: this.vintageRaiserManagementContract.address,
                 flags: 6346
             },
             {
-                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
                 addr: this.vintageFundingAdapterContract.address,
                 flags: 770
             },
             {
-                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
                 addr: this.vintageAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
                 addr: this.vintageVesting.address,
                 flags: 0
             },
             {
-                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
             {
-                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3',// vintageEscrowFundAdapterContract
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
                 addr: this.vintageEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a',// vintageDistrubteAdapterContract
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
                 addr: this.vintageDistributeAdatperContract.address,
                 flags: 0
             },
             {
-                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4',// vintageRaiserAllocation
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
                 addr: this.vintageRaiserAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257',// vintageFundingReturnTokenAdapterContract
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
                 addr: this.vintageFundingReturnTokenAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5',//vintageFreeInEscrowFundAdapterContract
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
                 addr: this.vintageFreeInEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1',//vintageFundingPoolAdapterHelperContract
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
                 addr: this.vintageFundingPoolAdapterHelperContract.address,
                 flags: 0
             },
             {
-                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e',//vintageDaoSetAdapterContract
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
                 addr: this.vintageDaoSetAdapterContract.address,
                 flags: 122890
             }
         ];
 
-        const adapters1 = [
-            {
+        const adapters1 = [{
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
                 flags: 14
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageDistributeAdatperContract.address,// vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
             }
         ];
 
 
         const vintageDaoParticipantCapInfo = [
-            true,//bool enable;
-            5//uint256 maxParticipantsAmount;
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
         ];
 
         const vintageDaoBackerMembershipInfo = [
             1, // bool enable;
             0, // uint256 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -4618,22 +4664,22 @@ describe("fund term...", () => {
             1, // bool enable;
             0, // uint256 varifyType;erc20
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
         const vintageDaoVotingInfo1 = [
-            0,//eligibilityType 0. raiser membership type 1.deposit 2.raiser allocation
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. raiser membership type 1.deposit 2.raiser allocation
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
@@ -4666,7 +4712,10 @@ describe("fund term...", () => {
         const daoAddr = await daoFactoryContract.getDaoAddress(vintageDaoParams[0]);
         console.log("daoAddr ", daoAddr);
         const daoName = await daoFactoryContract.daos(daoAddr);
-        return { daoAddr: daoAddr, daoName: daoName };
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
     };
 
     const createFundRaiseProposal = async (vintageFundRaiseAdapterContract, params) => {
@@ -4716,8 +4765,8 @@ describe("fund term...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.001");
         const proposalFeeInfo = [
@@ -4741,12 +4790,11 @@ describe("fund term...", () => {
             projectTokenFromInvestor
         ];
         const enalbePriorityDeposit = true;
-        const vtype = 1;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 1; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = this.testERC721.address;
         const tokenId = 0;
         const amount = 2;
-        const priorityDepositeWhitelist = [
-        ];
+        const priorityDepositeWhitelist = [];
         const proposalPriorityDepositInfo = [
             enalbePriorityDeposit,
             vtype,
@@ -4757,16 +4805,16 @@ describe("fund term...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr1,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         console.log(`
         fund raise proposal created ${fundRaiserProposalId}
         vote for proposal...
@@ -4794,9 +4842,6 @@ describe("fund term...", () => {
         //deposit
         await this.testtoken1.approve(vintageFundingPoolAdapterContract.address, hre.ethers.utils.parseEther("10000"));
         await this.testtoken1.connect(this.investor1).approve(vintageFundingPoolAdapterContract.address, hre.ethers.utils.parseEther("10000"));
-
-
-
 
         await this.testtoken1.transfer(this.investor1.address, hre.ethers.utils.parseEther("10000"));
 
@@ -4912,9 +4957,15 @@ describe("funding...", () => {
         const _daoName9 = "my_vintage_dao9";
         const _daoName10 = "my_vintage_dao10";
 
-        const { dao, factories, adapters, extensions, testContracts } = await deployDefaultDao({
+        const {
+            dao,
+            factories,
+            adapters,
+            extensions,
+            testContracts
+        } = await deployDefaultDao({
             owner: this.owner,
-            daoMode: 0,//  Vintage = 0, Flex = 1,   Collective = 2,
+            daoMode: 0, //  Vintage = 0, Flex = 1,   Collective = 2,
             daoName: "init dao"
         });
 
@@ -4967,114 +5018,112 @@ describe("funding...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [
-            {
-                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed',//fund raise
+        const enalbeAdapters = [{
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
             },
             {
-                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892',//FundingPoolAdapterContract
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
                 addr: this.vintageFundingPoolAdapterContract.address,
-                flags: 0
+                flags: 8
             },
             {
-                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8',//vintageVotingAdapterContract
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
                 addr: this.vintageVotingAdapterContract.address,
                 flags: 258
             },
             {
-                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa',//vintageRaiserManagementContract
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
                 addr: this.vintageRaiserManagementContract.address,
                 flags: 6346
             },
             {
-                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
                 addr: this.vintageFundingAdapterContract.address,
                 flags: 770
             },
             {
-                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
                 addr: this.vintageAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
                 addr: this.vintageVesting.address,
                 flags: 0
             },
             {
-                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
             {
-                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3',// vintageEscrowFundAdapterContract
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
                 addr: this.vintageEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a',// vintageDistrubteAdapterContract
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
                 addr: this.vintageDistributeAdatperContract.address,
                 flags: 0
             },
             {
-                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4',// vintageRaiserAllocation
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
                 addr: this.vintageRaiserAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257',// vintageFundingReturnTokenAdapterContract
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
                 addr: this.vintageFundingReturnTokenAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5',//vintageFreeInEscrowFundAdapterContract
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
                 addr: this.vintageFreeInEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1',//vintageFundingPoolAdapterHelperContract
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
                 addr: this.vintageFundingPoolAdapterHelperContract.address,
                 flags: 0
             },
             {
-                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e',//vintageDaoSetAdapterContract
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
                 addr: this.vintageDaoSetAdapterContract.address,
                 flags: 122890
             }
         ];
 
-        const adapters1 = [
-            {
+        const adapters1 = [{
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
                 flags: 14
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageDistributeAdatperContract.address,// vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
             }
         ];
 
 
         const vintageDaoParticipantCapInfo = [
-            true,//bool enable;
-            5//uint256 maxParticipantsAmount;
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
         ];
 
         const vintageDaoBackerMembershipInfo = [
             1, // bool enable;
             0, // uint256 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -5083,8 +5132,8 @@ describe("funding...", () => {
             1, // bool enable;
             0, // uint256 varifyType;erc20
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -5096,8 +5145,8 @@ describe("funding...", () => {
             1, // bool enable;
             1, // uint256 varifyType;erc721
             1, // uint256 minHolding;
-            erc721.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            erc721.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -5109,8 +5158,8 @@ describe("funding...", () => {
             1, // bool enable;
             2, // uint256 varifyType;erc1155
             2, // uint256 minHolding;
-            erc1155.address,  // address tokenAddress;
-            1,  // uint256 tokenId;
+            erc1155.address, // address tokenAddress;
+            1, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         //whitelist
@@ -5118,8 +5167,8 @@ describe("funding...", () => {
             1, // bool enable;
             3, // uint256 varifyType;whitelist
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [this.gp1.address] // address[] whiteList;
         ];
         //deposit
@@ -5127,74 +5176,74 @@ describe("funding...", () => {
             1, // bool enable;
             4, // uint256 varifyType;deposit
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
         const vintageDaoVotingInfo1 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo2 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo3 = [
-            4,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            4, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo4 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo5 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
@@ -5329,7 +5378,10 @@ describe("funding...", () => {
         const daoAddr = await daoFactoryContract.getDaoAddress(vintageDaoParams[0]);
         console.log("daoAddr ", daoAddr);
         const daoName = await daoFactoryContract.daos(daoAddr);
-        return { daoAddr: daoAddr, daoName: daoName };
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
     };
 
     const createFundingProposal = async (vintageFundingAdapterContract, proposer, dao, params) => {
@@ -5393,8 +5445,8 @@ describe("funding...", () => {
             redemptInterval,
             returnPeriod
         ];
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -5418,12 +5470,11 @@ describe("funding...", () => {
             projectTokenFromInvestor
         ];
         const enalbePriorityDeposit = true;
-        const vtype = 1;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 1; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = this.testERC721.address;
         const tokenId = 0;
         const amount = 2;
-        const priorityDepositeWhitelist = [
-        ];
+        const priorityDepositeWhitelist = [];
         const proposalPriorityDepositInfo = [
             enalbePriorityDeposit,
             vtype,
@@ -5435,24 +5486,24 @@ describe("funding...", () => {
 
 
         const fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr1,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiseParams2 = [
-            this.daoAddr6,
-            proposalFundRaiseInfo,
-            proposalTimeInfo2,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+            const fundRaiseParams2 = [
+                this.daoAddr6,
+                proposalFundRaiseInfo,
+                proposalTimeInfo2,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ];
 
 
         const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
@@ -5525,15 +5576,29 @@ describe("funding...", () => {
         await vintageFundingPoolAdapterContract.connect(this.investor1).deposit(this.daoAddr6, hre.ethers.utils.parseEther("10000"));
         bal = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr6, this.owner.address);
         bal1 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr6, this.investor1.address);
+        let poolBal1 = await vintageFundingPoolAdapterContract.
+        poolBalance(this.daoAddr1);
+        let poolBal2 = await vintageFundingPoolAdapterContract.
+        poolBalance(this.daoAddr6);
         let vp = await vintageVotingAdapterContract.getVotingWeight(this.daoAddr6, this.investor1.address);
         console.log(`
         deposited ${hre.ethers.utils.formatEther(bal)}
         deposited ${hre.ethers.utils.formatEther(bal1)}
+        pool bal1 ${hre.ethers.utils.formatEther(poolBal1)}
+        pool bal2 ${hre.ethers.utils.formatEther(poolBal2)}
         investor1 voting power ${vp}
         process fund raise...
         `);
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        const fundRaiseEndTime2 = await this.vintageFundingPoolAdapterHelperContract.getFundRaiseWindowCloseTime(this.daoAddr6);
+
+        if (parseInt(fundRaiseEndTime2) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaiseEndTime2) + 60])
+            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        }
+
         await vintageFundingPoolAdapterContract.processFundRaise(this.daoAddr6);
-        fundRaiseState = await vintageFundingPoolAdapterContract.daoFundRaisingStates(this.daoAddr1);
+        fundRaiseState = await vintageFundingPoolAdapterContract.daoFundRaisingStates(this.daoAddr6);
         console.log(`
         fund raise state ${fundRaiseState}
         `);
@@ -5547,7 +5612,6 @@ describe("funding...", () => {
         const vestingCliffEndTime = vestingStartTime + 60 * 60 * 1;
         const vestingInterval = 60 * 10;
 
-        // const stepPercentage=hre.ethers.utils.parseEther("1").div(toBN(steps));
         const vestingCliffLockAmount = hre.ethers.utils.parseEther("0.3");
 
         const projectTeamAddr = this.project_team1.address;
@@ -5555,12 +5619,8 @@ describe("funding...", () => {
         const GPAddr = await dao.getAddressConfiguration(sha3("GP_ADDRESS"));
         const DaoSquareAddr = await vintageFundingAdapterContract.protocolAddress();
 
-        // managementFeeRatio = await dao.getConfiguration(sha3("MANAGEMENT_FEE"))
-        // const protocolFeeRatio = await dao.getConfiguration(sha3("PROTOCOL_FEE"));
-        // await this.testtoken2.transfer(this.project_team1.address, tradingOffTokenAmount);
-        // await this.testtoken2.connect(this.project_team1).approve(vintageFundingAdapterContract.address, tradingOffTokenAmount);
-
         const fundRaiseEndTime = await this.vintageFundingPoolAdapterHelperContract.getFundRaiseWindowCloseTime(this.daoAddr1);
+
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
         if (parseInt(fundRaiseEndTime) > blocktimestamp) {
@@ -5568,8 +5628,9 @@ describe("funding...", () => {
             await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
         }
 
-        await vintageFundingPoolAdapterContract.processFundRaise(this.daoAddr6);
+        await vintageFundingPoolAdapterContract.processFundRaise(this.daoAddr1);
         fundRaiseState = await vintageFundingPoolAdapterContract.daoFundRaisingStates(this.daoAddr1);
+        expect(fundRaiseState, 2);
         vp = await vintageVotingAdapterContract.getVotingWeight(this.daoAddr6, this.investor1.address);
         console.log(`
         fund raise state ${fundRaiseState}
@@ -5716,15 +5777,13 @@ describe("funding...", () => {
         start voting...
         `);
 
-        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.
-            mul(hre.ethers.utils.parseEther("1")).div(price));
+        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price));
 
         await this.vintageFundingReturnTokenAdapterContract.setFundingApprove(
             this.daoAddr1,
             proposalId,
             this.testtoken2.address,
-            requestedFundAmount.
-                mul(hre.ethers.utils.parseEther("1")).div(price)
+            requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price)
         );
         let approvalAmount = await this.vintageFundingReturnTokenAdapterContract.approvedInfos(this.daoAddr1, proposalId, approver, this.testtoken2.address);
         let fundingProposalInfo = await vintageFundingAdapterContract.proposals(this.daoAddr1, proposalId);
@@ -5777,15 +5836,13 @@ describe("funding...", () => {
         console.log(`
         process funding proposal2...
         `);
-        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.
-            mul(hre.ethers.utils.parseEther("1")).div(price2));
+        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price2));
 
         await this.vintageFundingReturnTokenAdapterContract.setFundingApprove(
             this.daoAddr1,
             proposalId2,
             this.testtoken2.address,
-            requestedFundAmount.
-                mul(hre.ethers.utils.parseEther("1")).div(price2)
+            requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price2)
         );
 
         await vintageFundingAdapterContract.startVotingProcess(this.daoAddr1, proposalId2);
@@ -5803,15 +5860,13 @@ describe("funding...", () => {
         console.log(`
         process funding proposal3...
         `);
-        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.
-            mul(hre.ethers.utils.parseEther("1")).div(price3));
+        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price3));
 
         await this.vintageFundingReturnTokenAdapterContract.setFundingApprove(
             this.daoAddr1,
             proposalId3,
             this.testtoken2.address,
-            requestedFundAmount.
-                mul(hre.ethers.utils.parseEther("1")).div(price3)
+            requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price3)
         );
 
         await vintageFundingAdapterContract.startVotingProcess(this.daoAddr1, proposalId3);
@@ -5830,15 +5885,13 @@ describe("funding...", () => {
         console.log(`
         process funding proposal4...
         `);
-        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.
-            mul(hre.ethers.utils.parseEther("1")).div(price4));
+        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price4));
 
         await this.vintageFundingReturnTokenAdapterContract.setFundingApprove(
             this.daoAddr1,
             proposalId4,
             this.testtoken2.address,
-            requestedFundAmount.
-                mul(hre.ethers.utils.parseEther("1")).div(price4)
+            requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price4)
         );
 
         await vintageFundingAdapterContract.startVotingProcess(this.daoAddr1, proposalId4);
@@ -5858,15 +5911,13 @@ describe("funding...", () => {
         console.log(`
         process funding proposal5...
         `);
-        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.
-            mul(hre.ethers.utils.parseEther("1")).div(price5));
+        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price5));
 
         await this.vintageFundingReturnTokenAdapterContract.setFundingApprove(
             this.daoAddr1,
             proposalId5,
             this.testtoken2.address,
-            requestedFundAmount.
-                mul(hre.ethers.utils.parseEther("1")).div(price5)
+            requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price5)
         );
 
 
@@ -6115,8 +6166,8 @@ describe("funding...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -6140,12 +6191,11 @@ describe("funding...", () => {
             projectTokenFromInvestor
         ];
         const enalbePriorityDeposit = true;
-        const vtype = 1;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 1; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = this.testERC721.address;
         const tokenId = 0;
         const amount = 2;
-        const priorityDepositeWhitelist = [
-        ];
+        const priorityDepositeWhitelist = [];
         const proposalPriorityDepositInfo = [
             enalbePriorityDeposit,
             vtype,
@@ -6348,9 +6398,15 @@ describe("investor membership...", () => {
         const _daoName9 = "my_vintage_dao9";
         const _daoName10 = "my_vintage_dao10";
 
-        const { dao, factories, adapters, extensions, testContracts } = await deployDefaultDao({
+        const {
+            dao,
+            factories,
+            adapters,
+            extensions,
+            testContracts
+        } = await deployDefaultDao({
             owner: this.owner,
-            daoMode: 0,//  Vintage = 0, Flex = 1,   Collective = 2,
+            daoMode: 0, //  Vintage = 0, Flex = 1,   Collective = 2,
             daoName: "init dao"
         });
 
@@ -6403,98 +6459,96 @@ describe("investor membership...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [
-            {
-                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed',//fund raise
+        const enalbeAdapters = [{
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
             },
             {
-                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892',//FundingPoolAdapterContract
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
                 addr: this.vintageFundingPoolAdapterContract.address,
-                flags: 0
+                flags: 8
             },
             {
-                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8',//vintageVotingAdapterContract
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
                 addr: this.vintageVotingAdapterContract.address,
                 flags: 258
             },
             {
-                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa',//vintageRaiserManagementContract
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
                 addr: this.vintageRaiserManagementContract.address,
                 flags: 6346
             },
             {
-                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
                 addr: this.vintageFundingAdapterContract.address,
                 flags: 770
             },
             {
-                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
                 addr: this.vintageAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
                 addr: this.vintageVesting.address,
                 flags: 0
             },
             {
-                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
             {
-                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3',// vintageEscrowFundAdapterContract
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
                 addr: this.vintageEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a',// vintageDistrubteAdapterContract
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
                 addr: this.vintageDistributeAdatperContract.address,
                 flags: 0
             },
             {
-                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4',// vintageRaiserAllocation
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
                 addr: this.vintageRaiserAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257',// vintageFundingReturnTokenAdapterContract
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
                 addr: this.vintageFundingReturnTokenAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5',//vintageFreeInEscrowFundAdapterContract
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
                 addr: this.vintageFreeInEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1',//vintageFundingPoolAdapterHelperContract
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
                 addr: this.vintageFundingPoolAdapterHelperContract.address,
                 flags: 0
             },
             {
-                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e',//vintageDaoSetAdapterContract
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
                 addr: this.vintageDaoSetAdapterContract.address,
                 flags: 122890
             }
         ];
 
-        const adapters1 = [
-            {
+        const adapters1 = [{
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
                 flags: 14
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageDistributeAdatperContract.address,// vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
             }
 
@@ -6502,8 +6556,8 @@ describe("investor membership...", () => {
 
 
         const vintageDaoParticipantCapInfo = [
-            true,//bool enable;
-            5//uint256 maxParticipantsAmount;
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
         ];
         const ERC721 = await hre.ethers.getContractFactory("PixelNFT");
         const erc721 = await ERC721.deploy(4);
@@ -6513,8 +6567,8 @@ describe("investor membership...", () => {
             1, // bool enable;
             0, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         const ERC1155 = await hre.ethers.getContractFactory("ERC1155TestToken");
@@ -6525,8 +6579,8 @@ describe("investor membership...", () => {
             1, // bool enable;
             1, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             2, // uint256 minHolding;
-            this.testERC721.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testERC721.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -6535,8 +6589,8 @@ describe("investor membership...", () => {
             1, // bool enable;
             2, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             2, // uint256 minHolding;
-            this.testERC1155.address,  // address tokenAddress;
-            1,  // uint256 tokenId;
+            this.testERC1155.address, // address tokenAddress;
+            1, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -6545,8 +6599,8 @@ describe("investor membership...", () => {
             1, // bool enable;
             3, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("0"), // uint256 minHolding;
-            ZERO_ADDRESS,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            ZERO_ADDRESS, // address tokenAddress;
+            0, // uint256 tokenId;
             [this.owner.address, this.investor1.address, this.investor2.address] // address[] whiteList;
         ];
 
@@ -6554,8 +6608,8 @@ describe("investor membership...", () => {
             0, // bool enable;
             3, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("0"), // uint256 minHolding;
-            ZERO_ADDRESS,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            ZERO_ADDRESS, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -6565,8 +6619,8 @@ describe("investor membership...", () => {
             1, // bool enable;
             0, // uint256 varifyType;erc20
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -6575,8 +6629,8 @@ describe("investor membership...", () => {
             1, // bool enable;
             1, // uint256 varifyType;erc721
             1, // uint256 minHolding;
-            erc721.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            erc721.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -6585,8 +6639,8 @@ describe("investor membership...", () => {
             1, // bool enable;
             2, // uint256 varifyType;erc1155
             2, // uint256 minHolding;
-            erc1155.address,  // address tokenAddress;
-            1,  // uint256 tokenId;
+            erc1155.address, // address tokenAddress;
+            1, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         //whitelist
@@ -6594,8 +6648,8 @@ describe("investor membership...", () => {
             1, // bool enable;
             3, // uint256 varifyType;whitelist
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [this.gp1.address] // address[] whiteList;
         ];
         //deposit
@@ -6603,74 +6657,74 @@ describe("investor membership...", () => {
             1, // bool enable;
             4, // uint256 varifyType;deposit
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
         const vintageDaoVotingInfo1 = [
-            0,//eligibilityType 0. raiser membership type 1.deposit 2.raiser allocation
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. raiser membership type 1.deposit 2.raiser allocation
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo2 = [
-            0,//eligibilityType 0. raiser membership type 1.deposit 2.raiser allocation
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. raiser membership type 1.deposit 2.raiser allocation
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo3 = [
-            0,//eligibilityType 0. raiser membership type 1.deposit 2.raiser allocation
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. raiser membership type 1.deposit 2.raiser allocation
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo4 = [
-            0,//eligibilityType 0. raiser membership type 1.deposit 2.raiser allocation
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. raiser membership type 1.deposit 2.raiser allocation
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo5 = [
-            0,//eligibilityType 0. raiser membership type 1.deposit 2.raiser allocation
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. raiser membership type 1.deposit 2.raiser allocation
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
@@ -6782,7 +6836,10 @@ describe("investor membership...", () => {
         const daoAddr = await daoFactoryContract.getDaoAddress(vintageDaoParams[0]);
         console.log("daoAddr ", daoAddr);
         const daoName = await daoFactoryContract.daos(daoAddr);
-        return { daoAddr: daoAddr, daoName: daoName };
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
     };
 
     const createFundingProposal = async (vintageFundingAdapterContract, proposer, dao, params) => {
@@ -6839,8 +6896,8 @@ describe("investor membership...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -6865,12 +6922,11 @@ describe("investor membership...", () => {
         ];
 
         const enalbePriorityDeposit = true;
-        const vtype = 1;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 1; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = this.testERC721.address;
         const tokenId = 0;
         const amount = 2;
-        const priorityDepositeWhitelist = [
-        ];
+        const priorityDepositeWhitelist = [];
         const proposalPriorityDepositInfo = [
             enalbePriorityDeposit,
             vtype,
@@ -6881,16 +6937,16 @@ describe("investor membership...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr1,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         console.log(`
         fund raise proposal created ${fundRaiserProposalId}
         vote for proposal...
@@ -6975,8 +7031,8 @@ describe("investor membership...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -7001,12 +7057,11 @@ describe("investor membership...", () => {
         ];
 
         const enalbePriorityDeposit = true;
-        const vtype = 1;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 1; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = this.testERC721.address;
         const tokenId = 0;
         const amount = 2;
-        const priorityDepositeWhitelist = [
-        ];
+        const priorityDepositeWhitelist = [];
         const proposalPriorityDepositInfo = [
             enalbePriorityDeposit,
             vtype,
@@ -7017,16 +7072,16 @@ describe("investor membership...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr2,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr2,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         console.log(`
         fund raise proposal created ${fundRaiserProposalId}
         vote for proposal...
@@ -7129,8 +7184,8 @@ describe("investor membership...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -7155,12 +7210,11 @@ describe("investor membership...", () => {
         ];
 
         const enalbePriorityDeposit = true;
-        const vtype = 1;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 1; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = this.testERC721.address;
         const tokenId = 0;
         const amount = 2;
-        const priorityDepositeWhitelist = [
-        ];
+        const priorityDepositeWhitelist = [];
         const proposalPriorityDepositInfo = [
             enalbePriorityDeposit,
             vtype,
@@ -7171,16 +7225,16 @@ describe("investor membership...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr3,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr3,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         console.log(`
         fund raise proposal created ${fundRaiserProposalId}
         vote for proposal...
@@ -7283,8 +7337,8 @@ describe("investor membership...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -7309,12 +7363,11 @@ describe("investor membership...", () => {
         ];
 
         const enalbePriorityDeposit = true;
-        const vtype = 1;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 1; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = this.testERC721.address;
         const tokenId = 0;
         const amount = 2;
-        const priorityDepositeWhitelist = [
-        ];
+        const priorityDepositeWhitelist = [];
         const proposalPriorityDepositInfo = [
             enalbePriorityDeposit,
             vtype,
@@ -7325,16 +7378,16 @@ describe("investor membership...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr4,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr4,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         console.log(`
         fund raise proposal created ${fundRaiserProposalId}
         vote for proposal...
@@ -7436,8 +7489,8 @@ describe("investor membership...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const rerturnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const rerturnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -7462,12 +7515,11 @@ describe("investor membership...", () => {
         ];
 
         const enalbePriorityDeposit = true;
-        const vtype = 1;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 1; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = this.testERC721.address;
         const tokenId = 0;
         const amount = 2;
-        const priorityDepositeWhitelist = [
-        ];
+        const priorityDepositeWhitelist = [];
         const proposalPriorityDepositInfo = [
             enalbePriorityDeposit,
             vtype,
@@ -7478,16 +7530,16 @@ describe("investor membership...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr5,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr5,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         console.log(`
         fund raise proposal created ${fundRaiserProposalId}
         vote for proposal...
@@ -7598,9 +7650,15 @@ describe("eligibility deposit voting...", () => {
         const _daoName9 = "my_vintage_dao9";
         const _daoName10 = "my_vintage_dao10";
 
-        const { dao, factories, adapters, extensions, testContracts } = await deployDefaultDao({
+        const {
+            dao,
+            factories,
+            adapters,
+            extensions,
+            testContracts
+        } = await deployDefaultDao({
             owner: this.owner,
-            daoMode: 0,//  Vintage = 0, Flex = 1,   Collective = 2,
+            daoMode: 0, //  Vintage = 0, Flex = 1,   Collective = 2,
             daoName: "init dao"
         });
 
@@ -7653,98 +7711,96 @@ describe("eligibility deposit voting...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [
-            {
-                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed',//fund raise
+        const enalbeAdapters = [{
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
             },
             {
-                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892',//FundingPoolAdapterContract
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
                 addr: this.vintageFundingPoolAdapterContract.address,
-                flags: 0
+                flags: 8
             },
             {
-                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8',//vintageVotingAdapterContract
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
                 addr: this.vintageVotingAdapterContract.address,
                 flags: 258
             },
             {
-                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa',//vintageRaiserManagementContract
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
                 addr: this.vintageRaiserManagementContract.address,
                 flags: 6346
             },
             {
-                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
                 addr: this.vintageFundingAdapterContract.address,
                 flags: 770
             },
             {
-                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
                 addr: this.vintageAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
                 addr: this.vintageVesting.address,
                 flags: 0
             },
             {
-                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
             {
-                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3',// vintageEscrowFundAdapterContract
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
                 addr: this.vintageEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a',// vintageDistrubteAdapterContract
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
                 addr: this.vintageDistributeAdatperContract.address,
                 flags: 0
             },
             {
-                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4',// vintageRaiserAllocation
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
                 addr: this.vintageRaiserAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257',// vintageFundingReturnTokenAdapterContract
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
                 addr: this.vintageFundingReturnTokenAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5',//vintageFreeInEscrowFundAdapterContract
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
                 addr: this.vintageFreeInEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1',//vintageFundingPoolAdapterHelperContract
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
                 addr: this.vintageFundingPoolAdapterHelperContract.address,
                 flags: 0
             },
             {
-                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e',//vintageDaoSetAdapterContract
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
                 addr: this.vintageDaoSetAdapterContract.address,
                 flags: 122890
             }
         ];
 
-        const adapters1 = [
-            {
+        const adapters1 = [{
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
                 flags: 14
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageDistributeAdatperContract.address,// vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
             }
 
@@ -7752,8 +7808,8 @@ describe("eligibility deposit voting...", () => {
 
 
         const vintageDaoParticipantCapInfo = [
-            true,//bool enable;
-            5//uint256 maxParticipantsAmount;
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
         ];
         const ERC721 = await hre.ethers.getContractFactory("PixelNFT");
         const erc721 = await ERC721.deploy(4);
@@ -7763,8 +7819,8 @@ describe("eligibility deposit voting...", () => {
             1, // bool enable;
             0, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         const ERC1155 = await hre.ethers.getContractFactory("ERC1155TestToken");
@@ -7775,8 +7831,8 @@ describe("eligibility deposit voting...", () => {
             1, // bool enable;
             1, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             2, // uint256 minHolding;
-            this.testERC721.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testERC721.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -7785,8 +7841,8 @@ describe("eligibility deposit voting...", () => {
             1, // bool enable;
             2, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             2, // uint256 minHolding;
-            this.testERC1155.address,  // address tokenAddress;
-            1,  // uint256 tokenId;
+            this.testERC1155.address, // address tokenAddress;
+            1, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -7795,8 +7851,8 @@ describe("eligibility deposit voting...", () => {
             1, // bool enable;
             3, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("0"), // uint256 minHolding;
-            ZERO_ADDRESS,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            ZERO_ADDRESS, // address tokenAddress;
+            0, // uint256 tokenId;
             [this.owner.address, this.investor1.address, this.investor2.address] // address[] whiteList;
         ];
 
@@ -7804,8 +7860,8 @@ describe("eligibility deposit voting...", () => {
             0, // bool enable;
             3, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("0"), // uint256 minHolding;
-            ZERO_ADDRESS,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            ZERO_ADDRESS, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -7815,8 +7871,8 @@ describe("eligibility deposit voting...", () => {
             1, // bool enable;
             0, // uint256 varifyType;erc20
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -7825,8 +7881,8 @@ describe("eligibility deposit voting...", () => {
             1, // bool enable;
             1, // uint256 varifyType;erc721
             1, // uint256 minHolding;
-            erc721.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            erc721.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -7835,8 +7891,8 @@ describe("eligibility deposit voting...", () => {
             1, // bool enable;
             2, // uint256 varifyType;erc1155
             2, // uint256 minHolding;
-            erc1155.address,  // address tokenAddress;
-            1,  // uint256 tokenId;
+            erc1155.address, // address tokenAddress;
+            1, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         //whitelist
@@ -7844,8 +7900,8 @@ describe("eligibility deposit voting...", () => {
             1, // bool enable;
             3, // uint256 varifyType;whitelist
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [this.gp1.address] // address[] whiteList;
         ];
         //deposit
@@ -7853,75 +7909,75 @@ describe("eligibility deposit voting...", () => {
             1, // bool enable;
             4, // uint256 varifyType;deposit
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
         //deposit
         const vintageDaoVotingInfo1 = [
-            4,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            4, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo2 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo3 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo4 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo5 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
@@ -8033,7 +8089,10 @@ describe("eligibility deposit voting...", () => {
         const daoAddr = await daoFactoryContract.getDaoAddress(vintageDaoParams[0]);
         console.log("daoAddr ", daoAddr);
         const daoName = await daoFactoryContract.daos(daoAddr);
-        return { daoAddr: daoAddr, daoName: daoName };
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
     };
 
     const createFundingProposal = async (vintageFundingAdapterContract, proposer, dao, params) => {
@@ -8101,8 +8160,8 @@ describe("eligibility deposit voting...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -8127,12 +8186,11 @@ describe("eligibility deposit voting...", () => {
         ];
 
         const enalbePriorityDeposit = true;
-        const vtype = 1;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 1; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = this.testERC721.address;
         const tokenId = 0;
         const amount = 2;
-        const priorityDepositeWhitelist = [
-        ];
+        const priorityDepositeWhitelist = [];
         const proposalPriorityDepositInfo = [
             enalbePriorityDeposit,
             vtype,
@@ -8143,16 +8201,16 @@ describe("eligibility deposit voting...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr1,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         console.log(`
         fund raise proposal created ${fundRaiserProposalId}
         vote for proposal...
@@ -8282,8 +8340,8 @@ describe("eligibility deposit voting...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -8308,12 +8366,11 @@ describe("eligibility deposit voting...", () => {
         ];
 
         const enalbePriorityDeposit = true;
-        const vtype = 1;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 1; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = this.testERC721.address;
         const tokenId = 0;
         const amount = 2;
-        const priorityDepositeWhitelist = [
-        ];
+        const priorityDepositeWhitelist = [];
         const proposalPriorityDepositInfo = [
             enalbePriorityDeposit,
             vtype,
@@ -8324,16 +8381,16 @@ describe("eligibility deposit voting...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr2,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr2,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         console.log(`
         fund raise proposal created ${fundRaiserProposalId}
         vote for proposal...
@@ -8444,9 +8501,16 @@ describe("funding NFT", () => {
         const _daoName9 = "my_vintage_dao9";
         const _daoName10 = "my_vintage_dao10";
 
-        const { dao, factories, adapters, extensions, utilContracts, testContracts } = await deployDefaultDao({
+        const {
+            dao,
+            factories,
+            adapters,
+            extensions,
+            utilContracts,
+            testContracts
+        } = await deployDefaultDao({
             owner: this.owner,
-            daoMode: 0,//  Vintage = 0, Flex = 1,   Collective = 2,
+            daoMode: 0, //  Vintage = 0, Flex = 1,   Collective = 2,
             daoName: "init dao"
         });
 
@@ -8510,106 +8574,104 @@ describe("funding NFT", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [
-            {
-                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed',//fund raise
+        const enalbeAdapters = [{
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
             },
             {
-                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892',//FundingPoolAdapterContract
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
                 addr: this.vintageFundingPoolAdapterContract.address,
-                flags: 0
+                flags: 8
             },
             {
-                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8',//vintageVotingAdapterContract
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
                 addr: this.vintageVotingAdapterContract.address,
                 flags: 258
             },
             {
-                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa',//vintageRaiserManagementContract
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
                 addr: this.vintageRaiserManagementContract.address,
                 flags: 6346
             },
             {
-                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
                 addr: this.vintageFundingAdapterContract.address,
                 flags: 770
             },
             {
-                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
                 addr: this.vintageAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
                 addr: this.vintageVesting.address,
                 flags: 0
             },
             {
-                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
             {
-                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3',// vintageEscrowFundAdapterContract
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
                 addr: this.vintageEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a',// vintageDistrubteAdapterContract
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
                 addr: this.vintageDistributeAdatperContract.address,
                 flags: 0
             },
             {
-                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4',// vintageRaiserAllocation
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
                 addr: this.vintageRaiserAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257',// vintageFundingReturnTokenAdapterContract
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
                 addr: this.vintageFundingReturnTokenAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5',//vintageFreeInEscrowFundAdapterContract
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
                 addr: this.vintageFreeInEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1',//vintageFundingPoolAdapterHelperContract
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
                 addr: this.vintageFundingPoolAdapterHelperContract.address,
                 flags: 0
             },
             {
-                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e',//vintageDaoSetAdapterContract
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
                 addr: this.vintageDaoSetAdapterContract.address,
                 flags: 122890
             }
         ];
 
-        const adapters1 = [
-            {
+        const adapters1 = [{
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
                 flags: 14
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageDistributeAdatperContract.address,// vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
             }
         ];
 
 
         const vintageDaoParticipantCapInfo = [
-            true,//bool enable;
-            5//uint256 maxParticipantsAmount;
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
         ];
         const ERC721 = await hre.ethers.getContractFactory("PixelNFT");
         const erc721 = await ERC721.deploy(4);
@@ -8619,8 +8681,8 @@ describe("funding NFT", () => {
             1, // bool enable;
             0, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         const ERC1155 = await hre.ethers.getContractFactory("ERC1155TestToken");
@@ -8631,8 +8693,8 @@ describe("funding NFT", () => {
             1, // bool enable;
             1, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             2, // uint256 minHolding;
-            this.testERC721.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testERC721.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -8641,8 +8703,8 @@ describe("funding NFT", () => {
             1, // bool enable;
             2, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             2, // uint256 minHolding;
-            this.testERC1155.address,  // address tokenAddress;
-            1,  // uint256 tokenId;
+            this.testERC1155.address, // address tokenAddress;
+            1, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -8651,8 +8713,8 @@ describe("funding NFT", () => {
             1, // bool enable;
             3, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("0"), // uint256 minHolding;
-            ZERO_ADDRESS,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            ZERO_ADDRESS, // address tokenAddress;
+            0, // uint256 tokenId;
             [this.owner.address, this.investor1.address, this.investor2.address] // address[] whiteList;
         ];
 
@@ -8660,8 +8722,8 @@ describe("funding NFT", () => {
             0, // bool enable;
             3, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("0"), // uint256 minHolding;
-            ZERO_ADDRESS,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            ZERO_ADDRESS, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -8671,8 +8733,8 @@ describe("funding NFT", () => {
             1, // bool enable;
             0, // uint256 varifyType;erc20
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -8681,8 +8743,8 @@ describe("funding NFT", () => {
             1, // bool enable;
             1, // uint256 varifyType;erc721
             1, // uint256 minHolding;
-            erc721.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            erc721.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
@@ -8691,8 +8753,8 @@ describe("funding NFT", () => {
             1, // bool enable;
             2, // uint256 varifyType;erc1155
             2, // uint256 minHolding;
-            erc1155.address,  // address tokenAddress;
-            1,  // uint256 tokenId;
+            erc1155.address, // address tokenAddress;
+            1, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         //whitelist
@@ -8700,8 +8762,8 @@ describe("funding NFT", () => {
             1, // bool enable;
             3, // uint256 varifyType;whitelist
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [this.gp1.address] // address[] whiteList;
         ];
         //deposit
@@ -8709,75 +8771,75 @@ describe("funding NFT", () => {
             1, // bool enable;
             4, // uint256 varifyType;deposit
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
 
         //deposit
         const vintageDaoVotingInfo1 = [
-            4,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            4, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo2 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            1,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            1,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            1, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            1, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             2, // uint256 support;
             2, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo3 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo4 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoVotingInfo5 = [
-            0,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            0, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             0, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
@@ -8889,7 +8951,10 @@ describe("funding NFT", () => {
         const daoAddr = await daoFactoryContract.getDaoAddress(vintageDaoParams[0]);
         console.log("daoAddr ", daoAddr);
         const daoName = await daoFactoryContract.daos(daoAddr);
-        return { daoAddr: daoAddr, daoName: daoName };
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
     };
 
     const createFundingProposal = async (vintageFundingAdapterContract, proposer, dao, params) => {
@@ -8938,8 +9003,8 @@ describe("funding NFT", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -8964,12 +9029,11 @@ describe("funding NFT", () => {
         ];
 
         const enalbePriorityDeposit = true;
-        const vtype = 1;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 1; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = this.testERC721.address;
         const tokenId = 0;
         const amount = 2;
-        const priorityDepositeWhitelist = [
-        ];
+        const priorityDepositeWhitelist = [];
         const proposalPriorityDepositInfo = [
             enalbePriorityDeposit,
             vtype,
@@ -8980,16 +9044,16 @@ describe("funding NFT", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr1,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         console.log(`
         fund raise proposal created ${fundRaiserProposalId}
         vote for proposal...
@@ -9032,6 +9096,12 @@ describe("funding NFT", () => {
          process fund raise...
          `);
 
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(endTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(endTime) + 1])
+            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        }
         await this.vintageFundingPoolAdapterContract.processFundRaise(this.daoAddr1);
 
 
@@ -9060,8 +9130,8 @@ describe("funding NFT", () => {
 
         let fundRaiseState = await this.vintageFundingPoolAdapterContract.daoFundRaisingStates(this.daoAddr1);
         console.log(`
-                fund raise state ${fundRaiseState}
-                `);
+        fund raise state ${fundRaiseState}
+        `);
 
         const approver = this.owner.address;
         const escrow = true;
@@ -9130,15 +9200,13 @@ describe("funding NFT", () => {
         start voting...
         `);
 
-        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.
-            mul(hre.ethers.utils.parseEther("1")).div(price));
+        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price));
 
         await this.vintageFundingReturnTokenAdapterContract.setFundingApprove(
             this.daoAddr1,
             proposalId,
             this.testtoken2.address,
-            requestedFundAmount.
-                mul(hre.ethers.utils.parseEther("1")).div(price)
+            requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price)
         );
 
         await this.vintageFundingAdapterContract.startVotingProcess(this.daoAddr1, proposalId);
@@ -9364,15 +9432,13 @@ describe("funding NFT", () => {
         start voting...
         `);
 
-        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.
-            mul(hre.ethers.utils.parseEther("1")).div(price));
+        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price));
 
         await this.vintageFundingReturnTokenAdapterContract.setFundingApprove(
             this.daoAddr1,
             proposalId,
             this.testtoken2.address,
-            requestedFundAmount.
-                mul(hre.ethers.utils.parseEther("1")).div(price)
+            requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price)
         );
 
         await this.vintageFundingAdapterContract.startVotingProcess(this.daoAddr1, proposalId);
@@ -9493,8 +9559,7 @@ describe("funding NFT", () => {
 
         testtokenBal1 ${hre.ethers.utils.formatEther(testtokenBal1)}
         `);
-    }
-    );
+    });
 
     it("non escrow...", async () => {
         // Submit funding proposal
@@ -9674,9 +9739,16 @@ describe("raiser allocations...", () => {
         const _daoName4 = "my_vintage_dao4";
         const _daoName5 = "my_vintage_dao5";
 
-        const { dao, factories, adapters, extensions, utilContracts, testContracts } = await deployDefaultDao({
+        const {
+            dao,
+            factories,
+            adapters,
+            extensions,
+            utilContracts,
+            testContracts
+        } = await deployDefaultDao({
             owner: this.owner,
-            daoMode: 0,//  Vintage = 0, Flex = 1,   Collective = 2,
+            daoMode: 0, //  Vintage = 0, Flex = 1,   Collective = 2,
             daoName: "init dao"
         });
 
@@ -9730,105 +9802,103 @@ describe("raiser allocations...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [
-            {
-                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed',//fund raise
+        const enalbeAdapters = [{
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
             },
             {
-                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892',//FundingPoolAdapterContract
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
                 addr: this.vintageFundingPoolAdapterContract.address,
-                flags: 0
+                flags: 8
             },
             {
-                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8',//vintageVotingAdapterContract
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
                 addr: this.vintageVotingAdapterContract.address,
                 flags: 258
             },
             {
-                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa',//vintageRaiserManagementContract
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
                 addr: this.vintageRaiserManagementContract.address,
                 flags: 6346
             },
             {
-                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
                 addr: this.vintageFundingAdapterContract.address,
                 flags: 770
             },
             {
-                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
                 addr: this.vintageAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
                 addr: this.vintageVesting.address,
                 flags: 0
             },
             {
-                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
             {
-                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3',// vintageEscrowFundAdapterContract
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
                 addr: this.vintageEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a',// vintageDistrubteAdapterContract
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
                 addr: this.vintageDistributeAdatperContract.address,
                 flags: 0
             },
             {
-                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4',// vintageRaiserAllocation
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
                 addr: this.vintageRaiserAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257',// vintageFundingReturnTokenAdapterContract
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
                 addr: this.vintageFundingReturnTokenAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5',//vintageFreeInEscrowFundAdapterContract
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
                 addr: this.vintageFreeInEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1',//vintageFundingPoolAdapterHelperContract
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
                 addr: this.vintageFundingPoolAdapterHelperContract.address,
                 flags: 0
             },
             {
-                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e',//vintageDaoSetAdapterContract
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
                 addr: this.vintageDaoSetAdapterContract.address,
                 flags: 122890
             }
         ];
 
-        const adapters1 = [
-            {
+        const adapters1 = [{
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
                 flags: 14
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageDistributeAdatperContract.address,// vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
             }
         ];
 
         const vintageDaoParticipantCapInfo = [
-            true,//bool enable;
-            5//uint256 maxParticipantsAmount;
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
         ];
         const ERC721 = await hre.ethers.getContractFactory("PixelNFT");
         const erc721 = await ERC721.deploy(4);
@@ -9838,8 +9908,8 @@ describe("raiser allocations...", () => {
             1, // bool enable;
             0, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         const ERC1155 = await hre.ethers.getContractFactory("ERC1155TestToken");
@@ -9852,22 +9922,22 @@ describe("raiser allocations...", () => {
             1, // bool enable;
             0, // uint256 varifyType;erc20
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         //allocation
         const vintageDaoVotingInfo1 = [
-            3,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            3, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
@@ -9901,7 +9971,10 @@ describe("raiser allocations...", () => {
         const daoAddr = await daoFactoryContract.getDaoAddress(vintageDaoParams[0]);
         console.log("daoAddr ", daoAddr);
         const daoName = await daoFactoryContract.daos(daoAddr);
-        return { daoAddr: daoAddr, daoName: daoName };
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
     };
 
     it("eligibilityType = allocation...", async () => {
@@ -10018,9 +10091,16 @@ describe("Free-In...", () => {
         const _daoName4 = "my_vintage_dao4";
         const _daoName5 = "my_vintage_dao5";
 
-        const { dao, factories, adapters, extensions, utilContracts, testContracts } = await deployDefaultDao({
+        const {
+            dao,
+            factories,
+            adapters,
+            extensions,
+            utilContracts,
+            testContracts
+        } = await deployDefaultDao({
             owner: this.owner,
-            daoMode: 0,//  Vintage = 0, Flex = 1,   Collective = 2,
+            daoMode: 0, //  Vintage = 0, Flex = 1,   Collective = 2,
             daoName: "init dao"
         });
 
@@ -10074,105 +10154,103 @@ describe("Free-In...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [
-            {
-                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed',//fund raise
+        const enalbeAdapters = [{
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
             },
             {
-                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892',//FundingPoolAdapterContract
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
                 addr: this.vintageFundingPoolAdapterContract.address,
-                flags: 0
+                flags: 8
             },
             {
-                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8',//vintageVotingAdapterContract
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
                 addr: this.vintageVotingAdapterContract.address,
                 flags: 258
             },
             {
-                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa',//vintageRaiserManagementContract
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
                 addr: this.vintageRaiserManagementContract.address,
                 flags: 6346
             },
             {
-                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
                 addr: this.vintageFundingAdapterContract.address,
                 flags: 770
             },
             {
-                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
                 addr: this.vintageAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
                 addr: this.vintageVesting.address,
                 flags: 0
             },
             {
-                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
             {
-                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3',// vintageEscrowFundAdapterContract
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
                 addr: this.vintageEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a',// vintageDistrubteAdapterContract
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
                 addr: this.vintageDistributeAdatperContract.address,
                 flags: 0
             },
             {
-                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4',// vintageRaiserAllocation
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
                 addr: this.vintageRaiserAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257',// vintageFundingReturnTokenAdapterContract
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
                 addr: this.vintageFundingReturnTokenAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5',//vintageFreeInEscrowFundAdapterContract
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
                 addr: this.vintageFreeInEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1',//vintageFundingPoolAdapterHelperContract
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
                 addr: this.vintageFundingPoolAdapterHelperContract.address,
                 flags: 0
             },
             {
-                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e',//vintageDaoSetAdapterContract
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
                 addr: this.vintageDaoSetAdapterContract.address,
                 flags: 122890
             }
         ];
 
-        const adapters1 = [
-            {
+        const adapters1 = [{
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
                 flags: 14
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageDistributeAdatperContract.address,// vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
             }
         ];
 
         const vintageDaoParticipantCapInfo = [
-            true,//bool enable;
-            5//uint256 maxParticipantsAmount;
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
         ];
         const ERC721 = await hre.ethers.getContractFactory("PixelNFT");
         const erc721 = await ERC721.deploy(4);
@@ -10182,8 +10260,8 @@ describe("Free-In...", () => {
             1, // bool enable;
             0, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         const ERC1155 = await hre.ethers.getContractFactory("ERC1155TestToken");
@@ -10196,22 +10274,22 @@ describe("Free-In...", () => {
             1, // bool enable;
             0, // uint256 varifyType;erc20
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         //allocation
         const vintageDaoVotingInfo1 = [
-            3,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            3, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
@@ -10245,7 +10323,10 @@ describe("Free-In...", () => {
         const daoAddr = await daoFactoryContract.getDaoAddress(vintageDaoParams[0]);
         console.log("daoAddr ", daoAddr);
         const daoName = await daoFactoryContract.daos(daoAddr);
-        return { daoAddr: daoAddr, daoName: daoName };
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
     };
 
     const createFundingProposal = async (vintageFundingAdapterContract, proposer, dao, params) => {
@@ -10294,8 +10375,8 @@ describe("Free-In...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -10320,7 +10401,7 @@ describe("Free-In...", () => {
 
 
         const enalbePriorityDeposit = true;
-        const vtype = 3;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 3; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = ZERO_ADDRESS;
         const tokenId = 0;
         const amount = 0;
@@ -10338,16 +10419,16 @@ describe("Free-In...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr1,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         const whitelistVal = await this.vintageFundRaiseAdapterContract.getWhiteList(this.daoAddr1, fundRaiserProposalId);
         console.log("whitelistVal ", whitelistVal);
         console.log(`
@@ -10435,10 +10516,10 @@ describe("Free-In...", () => {
         deposited ${hre.ethers.utils.formatEther(bal1)}
         withdraw in redempte period...
         `);
-
+        
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(blocktimestamp) + 60 * 60 * 24 * 7 - 60 * 30])
         await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
         await this.vintageFundingPoolAdapterContract.withdraw(this.daoAddr1, bal);
         await this.vintageFundingPoolAdapterContract.connect(this.investor1).withdraw(this.daoAddr1, bal1);
@@ -10488,8 +10569,8 @@ describe("Free-In...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -10514,7 +10595,7 @@ describe("Free-In...", () => {
 
 
         const enalbePriorityDeposit = true;
-        const vtype = 3;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 3; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = ZERO_ADDRESS;
         const tokenId = 0;
         const amount = 0;
@@ -10702,8 +10783,8 @@ describe("Free-In...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -10728,7 +10809,7 @@ describe("Free-In...", () => {
 
 
         const enalbePriorityDeposit = true;
-        const vtype = 3;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 3; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = ZERO_ADDRESS;
         const tokenId = 0;
         const amount = 0;
@@ -10746,16 +10827,16 @@ describe("Free-In...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr1,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         const whitelistVal = await this.vintageFundRaiseAdapterContract.getWhiteList(this.daoAddr1, fundRaiserProposalId);
         const isPriorityDepositer1 = await this.vintageFundRaiseAdapterContract.isPriorityDepositer(this.daoAddr1, fundRaiserProposalId, this.user1.address);
         const isPriorityDepositer2 = await this.vintageFundRaiseAdapterContract.isPriorityDepositer(this.daoAddr1, fundRaiserProposalId, this.user2.address);
@@ -10914,8 +10995,8 @@ describe("Free-In...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -10940,12 +11021,11 @@ describe("Free-In...", () => {
 
 
         const enalbePriorityDeposit = true;
-        const vtype = 0;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 0; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = this.testtoken2.address;
         const tokenId = 0;
         const amount = hre.ethers.utils.parseEther("1000");
-        const priorityDepositeWhitelist = [
-        ];
+        const priorityDepositeWhitelist = [];
         const proposalPriorityDepositInfo = [
             enalbePriorityDeposit,
             vtype,
@@ -10956,16 +11036,16 @@ describe("Free-In...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr1,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         const whitelistVal = await this.vintageFundRaiseAdapterContract.getWhiteList(this.daoAddr1, fundRaiserProposalId);
 
         await this.testtoken2.transfer(this.user1.address, hre.ethers.utils.parseEther("1000"));
@@ -11128,8 +11208,8 @@ describe("Free-In...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -11154,12 +11234,11 @@ describe("Free-In...", () => {
 
 
         const enalbePriorityDeposit = true;
-        const vtype = 1;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 1; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = this.testERC721.address;
         const tokenId = 0;
         const amount = 2;
-        const priorityDepositeWhitelist = [
-        ];
+        const priorityDepositeWhitelist = [];
         const proposalPriorityDepositInfo = [
             enalbePriorityDeposit,
             vtype,
@@ -11170,16 +11249,16 @@ describe("Free-In...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr1,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         const whitelistVal = await this.vintageFundRaiseAdapterContract.getWhiteList(this.daoAddr1, fundRaiserProposalId);
 
         await this.testERC721.mintPixel(this.user1.address, 0, 0);
@@ -11344,8 +11423,8 @@ describe("Free-In...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -11370,12 +11449,11 @@ describe("Free-In...", () => {
 
 
         const enalbePriorityDeposit = true;
-        const vtype = 2;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 2; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = this.testERC1155.address;
         const tokenId = 1;
         const amount = 2;
-        const priorityDepositeWhitelist = [
-        ];
+        const priorityDepositeWhitelist = [];
         const proposalPriorityDepositInfo = [
             enalbePriorityDeposit,
             vtype,
@@ -11386,16 +11464,16 @@ describe("Free-In...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr1,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         const whitelistVal = await this.vintageFundRaiseAdapterContract.getWhiteList(this.daoAddr1, fundRaiserProposalId);
 
         await this.testERC1155.mint(this.user1.address, 1, 2, hexToBytes(toHex(2233)));
@@ -11558,8 +11636,8 @@ describe("Free-In...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -11584,7 +11662,7 @@ describe("Free-In...", () => {
 
 
         const enalbePriorityDeposit = true;
-        const vtype = 3;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 3; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = ZERO_ADDRESS;
         const tokenId = 0;
         const amount = 0;
@@ -11602,16 +11680,16 @@ describe("Free-In...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr1,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         const whitelistVal = await this.vintageFundRaiseAdapterContract.getWhiteList(this.daoAddr1, fundRaiserProposalId);
 
         const isPriorityDepositer1 = await this.vintageFundRaiseAdapterContract.isPriorityDepositer(this.daoAddr1, fundRaiserProposalId, this.user1.address);
@@ -11780,9 +11858,16 @@ describe("participant cap...", () => {
 
         const _daoName1 = "my_vintage_dao1";
 
-        const { dao, factories, adapters, extensions, utilContracts, testContracts } = await deployDefaultDao({
+        const {
+            dao,
+            factories,
+            adapters,
+            extensions,
+            utilContracts,
+            testContracts
+        } = await deployDefaultDao({
             owner: this.owner,
-            daoMode: 0,//  Vintage = 0, Flex = 1,   Collective = 2,
+            daoMode: 0, //  Vintage = 0, Flex = 1,   Collective = 2,
             daoName: "init dao"
         });
 
@@ -11836,105 +11921,103 @@ describe("participant cap...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [
-            {
-                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed',//fund raise
+        const enalbeAdapters = [{
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
             },
             {
-                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892',//FundingPoolAdapterContract
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
                 addr: this.vintageFundingPoolAdapterContract.address,
-                flags: 0
+                flags: 8
             },
             {
-                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8',//vintageVotingAdapterContract
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
                 addr: this.vintageVotingAdapterContract.address,
                 flags: 258
             },
             {
-                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa',//vintageRaiserManagementContract
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
                 addr: this.vintageRaiserManagementContract.address,
                 flags: 6346
             },
             {
-                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
                 addr: this.vintageFundingAdapterContract.address,
                 flags: 770
             },
             {
-                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
                 addr: this.vintageAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
                 addr: this.vintageVesting.address,
                 flags: 0
             },
             {
-                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
             {
-                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3',// vintageEscrowFundAdapterContract
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
                 addr: this.vintageEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a',// vintageDistrubteAdapterContract
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
                 addr: this.vintageDistributeAdatperContract.address,
                 flags: 0
             },
             {
-                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4',// vintageRaiserAllocation
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
                 addr: this.vintageRaiserAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257',// vintageFundingReturnTokenAdapterContract
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
                 addr: this.vintageFundingReturnTokenAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5',//vintageFreeInEscrowFundAdapterContract
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
                 addr: this.vintageFreeInEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1',//vintageFundingPoolAdapterHelperContract
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
                 addr: this.vintageFundingPoolAdapterHelperContract.address,
                 flags: 0
             },
             {
-                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e',//vintageDaoSetAdapterContract
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
                 addr: this.vintageDaoSetAdapterContract.address,
                 flags: 122890
             }
         ];
 
-        const adapters1 = [
-            {
+        const adapters1 = [{
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
                 flags: 14
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageDistributeAdatperContract.address,// vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
             }
         ];
 
         const vintageDaoParticipantCapInfo = [
-            true,//bool enable;
-            5//uint256 maxParticipantsAmount;
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
         ];
         const ERC721 = await hre.ethers.getContractFactory("PixelNFT");
         const erc721 = await ERC721.deploy(4);
@@ -11944,8 +12027,8 @@ describe("participant cap...", () => {
             1, // bool enable;
             0, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         const ERC1155 = await hre.ethers.getContractFactory("ERC1155TestToken");
@@ -11958,22 +12041,22 @@ describe("participant cap...", () => {
             1, // bool enable;
             0, // uint256 varifyType;erc20
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         //allocation
         const vintageDaoVotingInfo1 = [
-            3,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            3, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
@@ -12007,7 +12090,10 @@ describe("participant cap...", () => {
         const daoAddr = await daoFactoryContract.getDaoAddress(vintageDaoParams[0]);
         console.log("daoAddr ", daoAddr);
         const daoName = await daoFactoryContract.daos(daoAddr);
-        return { daoAddr: daoAddr, daoName: daoName };
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
     };
 
     const createFundingProposal = async (vintageFundingAdapterContract, proposer, dao, params) => {
@@ -12057,8 +12143,8 @@ describe("participant cap...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.001");//0.4%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.001"); //0.4%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -12083,7 +12169,7 @@ describe("participant cap...", () => {
 
 
         const enalbePriorityDeposit = true;
-        const vtype = 3;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 3; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = ZERO_ADDRESS;
         const tokenId = 0;
         const amount = 0;
@@ -12101,16 +12187,16 @@ describe("participant cap...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr1,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         const whitelistVal = await this.vintageFundRaiseAdapterContract.getWhiteList(this.daoAddr1, fundRaiserProposalId);
         console.log("whitelistVal ", whitelistVal);
         console.log(`
@@ -12247,9 +12333,16 @@ describe("return token management fee...", () => {
 
         const _daoName1 = "my_vintage_dao1";
 
-        const { dao, factories, adapters, extensions, utilContracts, testContracts } = await deployDefaultDao({
+        const {
+            dao,
+            factories,
+            adapters,
+            extensions,
+            utilContracts,
+            testContracts
+        } = await deployDefaultDao({
             owner: this.owner,
-            daoMode: 0,//  Vintage = 0, Flex = 1,   Collective = 2,
+            daoMode: 0, //  Vintage = 0, Flex = 1,   Collective = 2,
             daoName: "init dao"
         });
 
@@ -12303,105 +12396,103 @@ describe("return token management fee...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [
-            {
-                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed',//fund raise
+        const enalbeAdapters = [{
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
             },
             {
-                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892',//FundingPoolAdapterContract
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
                 addr: this.vintageFundingPoolAdapterContract.address,
-                flags: 0
+                flags: 8
             },
             {
-                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8',//vintageVotingAdapterContract
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
                 addr: this.vintageVotingAdapterContract.address,
                 flags: 258
             },
             {
-                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa',//vintageRaiserManagementContract
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
                 addr: this.vintageRaiserManagementContract.address,
                 flags: 6346
             },
             {
-                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
                 addr: this.vintageFundingAdapterContract.address,
                 flags: 770
             },
             {
-                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
                 addr: this.vintageAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
                 addr: this.vintageVesting.address,
                 flags: 0
             },
             {
-                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
             {
-                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3',// vintageEscrowFundAdapterContract
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
                 addr: this.vintageEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a',// vintageDistrubteAdapterContract
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
                 addr: this.vintageDistributeAdatperContract.address,
                 flags: 0
             },
             {
-                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4',// vintageRaiserAllocation
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
                 addr: this.vintageRaiserAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257',// vintageFundingReturnTokenAdapterContract
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
                 addr: this.vintageFundingReturnTokenAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5',//vintageFreeInEscrowFundAdapterContract
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
                 addr: this.vintageFreeInEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1',//vintageFundingPoolAdapterHelperContract
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
                 addr: this.vintageFundingPoolAdapterHelperContract.address,
                 flags: 0
             },
             {
-                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e',//vintageDaoSetAdapterContract
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
                 addr: this.vintageDaoSetAdapterContract.address,
                 flags: 122890
             }
         ];
 
-        const adapters1 = [
-            {
+        const adapters1 = [{
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
                 flags: 14
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageDistributeAdatperContract.address,// vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
             }
         ];
 
         const vintageDaoParticipantCapInfo = [
-            true,//bool enable;
-            5//uint256 maxParticipantsAmount;
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
         ];
         const ERC721 = await hre.ethers.getContractFactory("PixelNFT");
         const erc721 = await ERC721.deploy(4);
@@ -12411,8 +12502,8 @@ describe("return token management fee...", () => {
             1, // bool enable;
             0, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         const ERC1155 = await hre.ethers.getContractFactory("ERC1155TestToken");
@@ -12425,22 +12516,22 @@ describe("return token management fee...", () => {
             1, // bool enable;
             0, // uint256 varifyType;erc20
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         //allocation
         const vintageDaoVotingInfo1 = [
-            3,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            3, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
@@ -12474,7 +12565,10 @@ describe("return token management fee...", () => {
         const daoAddr = await daoFactoryContract.getDaoAddress(vintageDaoParams[0]);
         console.log("daoAddr ", daoAddr);
         const daoName = await daoFactoryContract.daos(daoAddr);
-        return { daoAddr: daoAddr, daoName: daoName };
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
     };
 
     const createFundingProposal = async (vintageFundingAdapterContract, proposer, dao, params) => {
@@ -12527,8 +12621,8 @@ describe("return token management fee...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.001");//0.1%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.001"); //0.1%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -12553,7 +12647,7 @@ describe("return token management fee...", () => {
 
 
         const enalbePriorityDeposit = true;
-        const vtype = 3;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 3; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = ZERO_ADDRESS;
         const tokenId = 0;
         const amount = 0;
@@ -12571,16 +12665,16 @@ describe("return token management fee...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr1,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         const whitelistVal = await this.vintageFundRaiseAdapterContract.getWhiteList(this.daoAddr1, fundRaiserProposalId);
         console.log("whitelistVal ", whitelistVal);
         console.log(`
@@ -12733,15 +12827,13 @@ describe("return token management fee...", () => {
          start voting...
          `);
 
-        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.
-            mul(hre.ethers.utils.parseEther("1")).div(price));
+        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price));
 
         await this.vintageFundingReturnTokenAdapterContract.setFundingApprove(
             this.daoAddr1,
             proposalId,
             this.testtoken2.address,
-            requestedFundAmount.
-                mul(hre.ethers.utils.parseEther("1")).div(price)
+            requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price)
         );
         let approvalAmount = await this.vintageFundingReturnTokenAdapterContract.approvedInfos(this.daoAddr1, proposalId, approver, this.testtoken2.address);
         let fundingProposalInfo = await vintageFundingAdapterContract.proposals(this.daoAddr1, proposalId);
@@ -12862,9 +12954,16 @@ describe("funding proposal start voting at refund period...", () => {
 
         const _daoName1 = "my_vintage_dao1";
 
-        const { dao, factories, adapters, extensions, utilContracts, testContracts } = await deployDefaultDao({
+        const {
+            dao,
+            factories,
+            adapters,
+            extensions,
+            utilContracts,
+            testContracts
+        } = await deployDefaultDao({
             owner: this.owner,
-            daoMode: 0,//  Vintage = 0, Flex = 1,   Collective = 2,
+            daoMode: 0, //  Vintage = 0, Flex = 1,   Collective = 2,
             daoName: "init dao"
         });
 
@@ -12918,105 +13017,103 @@ describe("funding proposal start voting at refund period...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [
-            {
-                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed',//fund raise
+        const enalbeAdapters = [{
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
             },
             {
-                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892',//FundingPoolAdapterContract
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
                 addr: this.vintageFundingPoolAdapterContract.address,
-                flags: 0
+                flags: 8
             },
             {
-                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8',//vintageVotingAdapterContract
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
                 addr: this.vintageVotingAdapterContract.address,
                 flags: 258
             },
             {
-                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa',//vintageRaiserManagementContract
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
                 addr: this.vintageRaiserManagementContract.address,
                 flags: 6346
             },
             {
-                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
                 addr: this.vintageFundingAdapterContract.address,
                 flags: 770
             },
             {
-                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
                 addr: this.vintageAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
                 addr: this.vintageVesting.address,
                 flags: 0
             },
             {
-                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
             {
-                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3',// vintageEscrowFundAdapterContract
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
                 addr: this.vintageEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a',// vintageDistrubteAdapterContract
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
                 addr: this.vintageDistributeAdatperContract.address,
                 flags: 0
             },
             {
-                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4',// vintageRaiserAllocation
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
                 addr: this.vintageRaiserAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257',// vintageFundingReturnTokenAdapterContract
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
                 addr: this.vintageFundingReturnTokenAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5',//vintageFreeInEscrowFundAdapterContract
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
                 addr: this.vintageFreeInEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1',//vintageFundingPoolAdapterHelperContract
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
                 addr: this.vintageFundingPoolAdapterHelperContract.address,
                 flags: 0
             },
             {
-                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e',//vintageDaoSetAdapterContract
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
                 addr: this.vintageDaoSetAdapterContract.address,
                 flags: 122890
             }
         ];
 
-        const adapters1 = [
-            {
+        const adapters1 = [{
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
                 flags: 14
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageDistributeAdatperContract.address,// vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
             }
         ];
 
         const vintageDaoParticipantCapInfo = [
-            true,//bool enable;
-            5//uint256 maxParticipantsAmount;
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
         ];
         const ERC721 = await hre.ethers.getContractFactory("PixelNFT");
         const erc721 = await ERC721.deploy(4);
@@ -13026,8 +13123,8 @@ describe("funding proposal start voting at refund period...", () => {
             1, // bool enable;
             0, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         const ERC1155 = await hre.ethers.getContractFactory("ERC1155TestToken");
@@ -13040,22 +13137,22 @@ describe("funding proposal start voting at refund period...", () => {
             1, // bool enable;
             0, // uint256 varifyType;erc20
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         //allocation
         const vintageDaoVotingInfo1 = [
-            3,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            3, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
@@ -13089,7 +13186,10 @@ describe("funding proposal start voting at refund period...", () => {
         const daoAddr = await daoFactoryContract.getDaoAddress(vintageDaoParams[0]);
         console.log("daoAddr ", daoAddr);
         const daoName = await daoFactoryContract.daos(daoAddr);
-        return { daoAddr: daoAddr, daoName: daoName };
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
     };
 
     const createFundingProposal = async (vintageFundingAdapterContract, proposer, dao, params) => {
@@ -13143,8 +13243,8 @@ describe("funding proposal start voting at refund period...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.001");//0.1%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.001"); //0.1%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -13169,7 +13269,7 @@ describe("funding proposal start voting at refund period...", () => {
 
 
         const enalbePriorityDeposit = true;
-        const vtype = 3;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 3; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = ZERO_ADDRESS;
         const tokenId = 0;
         const amount = 0;
@@ -13187,16 +13287,16 @@ describe("funding proposal start voting at refund period...", () => {
         ];
 
         const fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ],
+                this.daoAddr1,
+                proposalFundRaiseInfo,
+                proposalTimeInfo,
+                proposalFeeInfo,
+                proposalAddressInfo,
+                proposerReward,
+                proposalPriorityDepositInfo
+            ],
 
-        const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
+            const fundRaiserProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, fundRaiseParams);
         const whitelistVal = await this.vintageFundRaiseAdapterContract.getWhiteList(this.daoAddr1, fundRaiserProposalId);
         console.log("whitelistVal ", whitelistVal);
         console.log(`
@@ -13350,15 +13450,13 @@ describe("funding proposal start voting at refund period...", () => {
          start voting...
          `);
 
-        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.
-            mul(hre.ethers.utils.parseEther("1")).div(price));
+        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price));
 
         await this.vintageFundingReturnTokenAdapterContract.setFundingApprove(
             this.daoAddr1,
             proposalId,
             this.testtoken2.address,
-            requestedFundAmount.
-                mul(hre.ethers.utils.parseEther("1")).div(price)
+            requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price)
         );
         let approvalAmount = await this.vintageFundingReturnTokenAdapterContract.approvedInfos(this.daoAddr1, proposalId, approver, this.testtoken2.address);
         let fundingProposalInfo = await vintageFundingAdapterContract.proposals(this.daoAddr1, proposalId);
@@ -13439,9 +13537,16 @@ describe("daoset proposal...", () => {
 
         const _daoName1 = "my_vintage_dao1";
 
-        const { dao, factories, adapters, extensions, utilContracts, testContracts } = await deployDefaultDao({
+        const {
+            dao,
+            factories,
+            adapters,
+            extensions,
+            utilContracts,
+            testContracts
+        } = await deployDefaultDao({
             owner: this.owner,
-            daoMode: 0,//  Vintage = 0, Flex = 1,   Collective = 2,
+            daoMode: 0, //  Vintage = 0, Flex = 1,   Collective = 2,
             daoName: "init dao"
         });
 
@@ -13495,105 +13600,103 @@ describe("daoset proposal...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [
-            {
-                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed',//fund raise
+        const enalbeAdapters = [{
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
             },
             {
-                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892',//FundingPoolAdapterContract
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
                 addr: this.vintageFundingPoolAdapterContract.address,
-                flags: 0
+                flags: 8
             },
             {
-                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8',//vintageVotingAdapterContract
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
                 addr: this.vintageVotingAdapterContract.address,
                 flags: 258
             },
             {
-                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa',//vintageRaiserManagementContract
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
                 addr: this.vintageRaiserManagementContract.address,
                 flags: 6346
             },
             {
-                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1',//VintageFundingAdapterContract
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
                 addr: this.vintageFundingAdapterContract.address,
                 flags: 770
             },
             {
-                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603',//vintageAllocationAdapterContract
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
                 addr: this.vintageAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a',//vintageVestingContract
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
                 addr: this.vintageVesting.address,
                 flags: 0
             },
             {
-                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a',// ben to box
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
             {
-                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3',// vintageEscrowFundAdapterContract
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
                 addr: this.vintageEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a',// vintageDistrubteAdapterContract
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
                 addr: this.vintageDistributeAdatperContract.address,
                 flags: 0
             },
             {
-                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4',// vintageRaiserAllocation
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
                 addr: this.vintageRaiserAllocationAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257',// vintageFundingReturnTokenAdapterContract
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
                 addr: this.vintageFundingReturnTokenAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5',//vintageFreeInEscrowFundAdapterContract
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
                 addr: this.vintageFreeInEscrowFundAdapterContract.address,
                 flags: 0
             },
             {
-                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1',//vintageFundingPoolAdapterHelperContract
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
                 addr: this.vintageFundingPoolAdapterHelperContract.address,
                 flags: 0
             },
             {
-                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e',//vintageDaoSetAdapterContract
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
                 addr: this.vintageDaoSetAdapterContract.address,
                 flags: 122890
             }
         ];
 
-        const adapters1 = [
-            {
+        const adapters1 = [{
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingPoolAdapterContract.address,//vintageFundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageFundingAdapterContract.address,//VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
                 flags: 14
             },
             {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-                addr: this.vintageDistributeAdatperContract.address,// vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
             }
         ];
 
         const vintageDaoParticipantCapInfo = [
-            true,//bool enable;
-            5//uint256 maxParticipantsAmount;
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
         ];
         const ERC721 = await hre.ethers.getContractFactory("PixelNFT");
         const erc721 = await ERC721.deploy(4);
@@ -13603,8 +13706,8 @@ describe("daoset proposal...", () => {
             1, // bool enable;
             0, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         const ERC1155 = await hre.ethers.getContractFactory("ERC1155TestToken");
@@ -13617,22 +13720,22 @@ describe("daoset proposal...", () => {
             1, // bool enable;
             0, // uint256 varifyType;erc20
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address,  // address tokenAddress;
-            0,  // uint256 tokenId;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
         //allocation
         const vintageDaoVotingInfo1 = [
-            3,//eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
-            this.testtoken1.address,//tokenAddress
-            0,//tokenID
+            3, //eligibilityType 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+            this.testtoken1.address, //tokenAddress
+            0, //tokenID
             1, // uint8 votingPower;  0. quantity 1. log2 2. 1 voter 1 vote
-            0,//  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
-            0,//uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
+            0, //  uint256 supportType;   // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            0, //uint256 quorumType;  // 0. - (YES + NO) / Total > X% 1. - YES + NO > X
             60, // uint256 support;
             66, // uint256 quorum;
-            60 * 10,// uint256 votingPeriod;
-            60 * 10  // uint256 proposalExecutePeriod;
+            60 * 10, // uint256 votingPeriod;
+            60 * 10 // uint256 proposalExecutePeriod;
         ];
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
@@ -13666,7 +13769,10 @@ describe("daoset proposal...", () => {
         const daoAddr = await daoFactoryContract.getDaoAddress(vintageDaoParams[0]);
         console.log("daoAddr ", daoAddr);
         const daoName = await daoFactoryContract.daos(daoAddr);
-        return { daoAddr: daoAddr, daoName: daoName };
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
     };
 
     const createFundingProposal = async (vintageFundingAdapterContract, proposer, dao, params) => {
@@ -13735,8 +13841,8 @@ describe("daoset proposal...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004");//0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.001");//0.1%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.001"); //0.1%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -13761,7 +13867,7 @@ describe("daoset proposal...", () => {
 
 
         const enalbePriorityDeposit = true;
-        const vtype = 3;// 0 erc20 1 erc721 2 erc1155 3 whitelist
+        const vtype = 3; // 0 erc20 1 erc721 2 erc1155 3 whitelist
         const token = ZERO_ADDRESS;
         const tokenId = 0;
         const amount = 0;
@@ -13900,7 +14006,8 @@ describe("daoset proposal...", () => {
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(fundRaiseProposalInfo.timesInfo.fundRaiseEndTime) + parseInt(fundRaiseProposalInfo.timesInfo.returnDuration) > blocktimestamp) {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaiseProposalInfo.timesInfo.fundRaiseEndTime) +
-                + parseInt(fundRaiseProposalInfo.timesInfo.returnDuration) + 1])
+                +parseInt(fundRaiseProposalInfo.timesInfo.returnDuration) + 1
+            ])
             await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
         }
 
@@ -13913,7 +14020,7 @@ describe("daoset proposal...", () => {
 
     it("create daoset governor membership proposal...", async () => {
         const enable = true;
-        const varifyType = 0;//0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS 4 DEPOSIT
+        const varifyType = 0; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS 4 DEPOSIT
         const minAmount = hre.ethers.utils.parseEther("10000");
         const tokenAddress = this.testtoken1.address;
         const tokenId = 0;
@@ -14006,7 +14113,7 @@ describe("daoset proposal...", () => {
     it("create daoset investor membership proposal...", async () => {
 
         const enable = true;
-        const varifyType = 1;//0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
+        const varifyType = 1; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
         const minAmount = 2;
         const tokenAddress = this.testtoken1.address;
         const tokenId = 1;
@@ -14091,12 +14198,12 @@ describe("daoset proposal...", () => {
     });
 
     it("create daoset voting proposal...", async () => {
-        const eligibilityType = 1;//0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+        const eligibilityType = 1; //0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
         const tokenAddress = this.testtoken1.address;
         const tokenID = 0;
-        const votingWeightedType = 1;//0. quantity 1. log2 2. 1 voter 1 vote
-        const supportType = 1;  // 0. - YES / (YES + NO) > X% 1. - YES - NO > X
-        const quorumType = 1;// 0. - YES / (YES + NO) > X% 1. - YES - NO > X
+        const votingWeightedType = 1; //0. quantity 1. log2 2. 1 voter 1 vote
+        const supportType = 1; // 0. - YES / (YES + NO) > X% 1. - YES - NO > X
+        const quorumType = 1; // 0. - YES / (YES + NO) > X% 1. - YES - NO > X
         const support = 2;
         const quorum = 4;
         const votingPeriod = 60 * 10;
@@ -14170,7 +14277,7 @@ describe("daoset proposal...", () => {
 
         expect(eligibilityType == cvetype, true);
         expect(cvwtype == votingWeightedType, true);
-      
+
         console.log(`
         processed...
         proposal state ${ProposalInfo.state}

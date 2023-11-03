@@ -129,16 +129,16 @@ module.exports = {
         process.env.TEST_PRIVATE_KEY4
       ],
     },
-    polygon: {
-      url: 'https://polygon.llamarpc.com',
-      accounts: [
-        process.env.GOERLI_TEST_PRIVATE_KEY,
-        process.env.TEST_PRIVATE_KEY1,
-        process.env.TEST_PRIVATE_KEY2,
-        process.env.TEST_PRIVATE_KEY3,
-        process.env.TEST_PRIVATE_KEY4
-      ],
-    }
+    // polygon: {
+    //   url: 'https://polygon.llamarpc.com',
+    //   accounts: [
+    //     process.env.GOERLI_TEST_PRIVATE_KEY,
+    //     process.env.TEST_PRIVATE_KEY1,
+    //     process.env.TEST_PRIVATE_KEY2,
+    //     process.env.TEST_PRIVATE_KEY3,
+    //     process.env.TEST_PRIVATE_KEY4
+    //   ],
+    // }
     // mumbai: {
     //   url: process.env.MUMBAI_NODE_URL,
     //   accounts: [

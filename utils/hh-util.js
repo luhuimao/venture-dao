@@ -151,7 +151,7 @@ const deployFunction = async (contractInterface, args, from) => {
 
           const VintageFundingAdapterContract = await hre.ethers.getContractFactory("VintageFundingAdapterContract", {
             libraries: {
-              FundingLibrary: args[0],
+              InvestmentLibrary: args[0],
             }
           });
           instance = await VintageFundingAdapterContract.connect(from).deploy();
@@ -194,7 +194,7 @@ const getContractFromHardhat = (c) => {
   if (c.substring(c.lastIndexOf("/") + 1) == "VintageFundingAdapterContract") {
     return hre.ethers.getContractFactory("VintageFundingAdapterContract", {
       libraries: {
-        FundingLibrary: "0xA8CAD0437ed7DaA74fee5C08651BDF1b9e8ada7e"
+        InvestmentLibrary: "0xA8CAD0437ed7DaA74fee5C08651BDF1b9e8ada7e"
       }
     })
   } else {
