@@ -233,7 +233,7 @@ library DaoHelper {
     bytes32 internal constant FLEX_POLLSTER_MEMBERSHIP_TOKENID =
         keccak256("FLEX_POLLSTER_MEMBERSHIP_TOKENID");
 
-    bytes32 internal constant FLEX_FUNDING_TYPE =
+    bytes32 internal constant FLEX_INVESTMENT_TYPE =
         keccak256("FLEX_FUNDING_TYPE");
     // -----flex steward membership setting
     bytes32 internal constant FLEX_STEWARD_MEMBERSHIP_ENABLE =
@@ -303,6 +303,7 @@ library DaoHelper {
         keccak256("FUND_RAISING_TERM");
     bytes32 internal constant FUND_START_TIME = keccak256("FUND_START_TIME");
     bytes32 internal constant FUND_END_TIME = keccak256("FUND_END_TIME");
+    bytes32 internal constant FUND_TERM = keccak256("FUND_TERM");
     bytes32 internal constant REWARD_FOR_PROPOSER =
         keccak256("REWARD_FOR_PROPOSER");
     bytes32 internal constant REWARD_FOR_GP = keccak256("REWARD_FOR_GP");
@@ -327,7 +328,7 @@ library DaoHelper {
     /* 
     vintage Adapters **************************************************************************************************
      */
-    bytes32 internal constant VINTAGE_FUNDING_POOL_ADAPT =
+    bytes32 internal constant VINTAGE_INVESTMENT_POOL_ADAPT =
         keccak256("vintage-funding-pool-adatper");
     bytes32 internal constant VINTAGE_VOTING_ADAPT =
         keccak256("vintage-voting");
@@ -352,7 +353,7 @@ library DaoHelper {
         keccak256("vintage-raiser-allocation");
     bytes32 internal constant VINTAGE_DISTRIBUTE_ADAPTER =
         keccak256("vintage-distribute-adapter");
-    bytes32 internal constant VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER =
+    bytes32 internal constant VINTAGE_INVESTMENT_PAYBACK_TOKEN_ADAPTER =
         keccak256("vintage-funding-return-token-adapter");
     bytes32 internal constant VINTAGE_FREE_IN_ESCROW_FUND_ADAPTER =
         keccak256("vintage-free-in-escrow-fund-adapter");
@@ -371,7 +372,7 @@ library DaoHelper {
         keccak256("flex-erc721-adatper");
     bytes32 internal constant FLEX_ALLOCATION_ADAPT =
         keccak256("flex-allocation-adatper");
-    bytes32 internal constant FLEX_FUNDING_POOL_ADAPT =
+    bytes32 internal constant FLEX_INVESTMENT_POOL_ADAPT =
         keccak256("flex-funding-pool-adatper");
     bytes32 internal constant FLEX_FUNDING_ADAPT = keccak256("flex-funding");
     bytes32 internal constant FLEX_VOTING_ADAPT = keccak256("flex-voting");
@@ -379,7 +380,7 @@ library DaoHelper {
         keccak256("flex-polling-voting");
     bytes32 internal constant FLEX_STEWARD_ALLOCATION_ADAPT =
         keccak256("flex-steward-allocation");
-    bytes32 internal constant FLEX_FUNDING_RETURN_TOKEN_ADAPT =
+    bytes32 internal constant FLEX_INVESTMENT_PAYBACI_TOKEN_ADAPT =
         keccak256("flex-funding-return-token-adapter");
     bytes32 internal constant FLEX_FREE_IN_ESCROW_FUND_ADAPTER =
         keccak256("flex-free-in-escrow-fund-adapter");
@@ -387,6 +388,12 @@ library DaoHelper {
         keccak256("flex-funding-helper-adapter");
     bytes32 internal constant FLEX_DAO_SET_ADAPTER =
         keccak256("flex-daoset-adapter");
+    bytes32 internal constant FLEX_DAO_SET_HELPER_ADAPTER =
+        keccak256("flex-daoset-helper-adapter");
+    bytes32 internal constant FLEX_DAO_SET_POLLING_ADAPTER =
+        keccak256("flex-daoset-polling-adapter");
+   bytes32 internal constant FLEX_DAO_SET_VOTING_ADAPTER =
+        keccak256("flex-daoset-voting-adapter");
 
     //---------------------------------flex---------------------------------
 
@@ -443,7 +450,7 @@ library DaoHelper {
     /* 
     vintage extensions **************************************************************************************************
      */
-    bytes32 internal constant VINTAGE_FUNDING_POOL_EXT =
+    bytes32 internal constant VINTAGE_INVESTMENT_POOL_EXT =
         keccak256("vintage-funding-pool-ext");
     /* 
     vintage extensions **************************************************************************************************
@@ -452,7 +459,7 @@ library DaoHelper {
     /* 
     flex extensions **************************************************************************************************
      */
-    bytes32 internal constant FLEX_FUNDING_POOL_EXT =
+    bytes32 internal constant FLEX_INVESTMENT_POOL_EXT =
         keccak256("flex-funding-pool-ext");
     /* 
     flex extensions **************************************************************************************************
@@ -659,8 +666,8 @@ library DaoHelper {
         DaoRegistry dao,
         bytes32 proposalId
     ) internal view returns (uint256) {
-        FlexFundingPoolExtension flexFungdingPoolExt = FlexFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FLEX_FUNDING_POOL_EXT)
+        FlexInvestmentPoolExtension flexFungdingPoolExt = FlexInvestmentPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
         );
         address[] memory investors = flexFungdingPoolExt
             .getInvestorsByProposalId(proposalId);

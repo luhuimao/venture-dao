@@ -175,7 +175,7 @@ library GovernanceHelper {
     //     address voterAddr
     // ) internal view returns (uint128) {
     //     VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
-    //         dao.getExtensionAddress(DaoHelper.VINTAGE_FUNDING_POOL_EXT)
+    //         dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
     //     );
     //     uint256 balanceInEther = fundingpool.balanceOf(voterAddr) / 10 ** 18;
     //     //need to fix 2022.6.14
@@ -278,7 +278,7 @@ library GovernanceHelper {
         address account
     ) internal view returns (uint128) {
         VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
-                dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_POOL_ADAPT)
+                dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
             );
         VintageFundRaiseAdapterContract newFundAdapt = VintageFundRaiseAdapterContract(
                 dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
