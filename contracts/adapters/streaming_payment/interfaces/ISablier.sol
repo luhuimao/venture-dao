@@ -1,5 +1,6 @@
 pragma solidity ^0.8.0;
 import "../../../helpers/DaoHelper.sol";
+// SPDX-License-Identifier: MIT
 
 /**
  * @title ISablier
