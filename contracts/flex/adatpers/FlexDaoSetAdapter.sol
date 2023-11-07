@@ -6,6 +6,7 @@ import "../../helpers/GovernanceHelper.sol";
 import "../../helpers/DaoHelper.sol";
 import "../../utils/TypeConver.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
+import "../../guards/RaiserGuard.sol";
 import "./FlexFundingPoolAdapter.sol";
 import "./FlexStewardAllocation.sol";
 import "./StewardManagement.sol";

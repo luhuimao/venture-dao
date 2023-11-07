@@ -513,7 +513,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         _fundingProposalIds.increment();
     }
 
-    function increaseNewFundId()
+    function increaseFundEstablishmentId()
         external
         hasAccess(this, AclFlag.INCREASE_NEW_FUND_ID)
     {
@@ -948,7 +948,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         return _govenorOutIds.current();
     }
 
-    function getCurrentNewFundProposalId() external view returns (uint256) {
+    function getCurrentFundEstablishmentProposalId() external view returns (uint256) {
         return _newFundProposalIds.current();
     }
 

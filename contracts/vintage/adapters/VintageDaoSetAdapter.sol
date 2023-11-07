@@ -40,7 +40,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
     mapping(bytes32 => EnumerableSet.AddressSet) governorMembershipWhitelists;
     mapping(bytes32 => EnumerableSet.AddressSet) investorMembershipWhiteLists;
 
-    mapping(bytes32 => EnumerableSet.UintSet) votingAllocations;
+    // mapping(bytes32 => uint256[]) votingAllocations;
     mapping(bytes32 => EnumerableSet.AddressSet) votingGovernors;
     enum ProposalState {
         Voting,
@@ -94,7 +94,12 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         VotingSupportInfo supportInfo;
         VotingEligibilityInfo eligibilityInfo;
         VotingTimeInfo timeInfo;
+        VotingAllocs allocs;
         ProposalState state;
+    }
+
+    struct VotingAllocs{
+        uint256[] allocations;
     }
 
     struct VotingSupportInfo {
@@ -189,7 +194,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         DaoRegistry dao,
         bool enable,
         uint256 cap
-    ) external onlyRaiser(dao) reimbursable(dao) {
+    ) external onlyGovernor(dao) reimbursable(dao) {
         fundPeriodCheck(dao);
         require(
             ongoingParticipantCapProposal[address(dao)] == bytes32(0),
@@ -246,7 +251,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         address tokenAddress,
         uint256 tokenId,
         address[] calldata whiteList
-    ) external onlyRaiser(dao) reimbursable(dao) {
+    ) external onlyGovernor(dao) reimbursable(dao) {
         require(
             ongoingGovernorMembershipProposal[address(dao)] == bytes32(0),
             "last GovernorMembership proposal not finalized"
@@ -301,7 +306,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         address tokenAddress,
         uint256 tokenId,
         address[] calldata whiteList
-    ) external onlyRaiser(dao) reimbursable(dao) {
+    ) external onlyGovernor(dao) reimbursable(dao) {
         require(
             ongoingInvstorMembershipProposal[address(dao)] == bytes32(0),
             "last InvestorMembership proposal not finalized"
@@ -351,7 +356,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
     function submitVotingProposal(
         DaoRegistry dao,
         VotingParams calldata params
-    ) external onlyRaiser(dao) reimbursable(dao) {
+    ) external onlyGovernor(dao) reimbursable(dao) {
         require(
             ongoingVotingProposal[address(dao)] == bytes32(0),
             "last voting proposal not finalized"
@@ -391,13 +396,15 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
                 block.timestamp,
                 block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD)
             ),
+            VotingAllocs(new uint256[](params.governors.length)),
             ProposalState.Voting
         );
         ongoingVotingProposal[address(dao)] = proposalId;
-
         if (params.governors.length > 0) {
+            // votingProposals[address(dao)][proposalId].allocations=new uint256[](params.governors.length);
             for (uint8 i = 0; i < params.governors.length; i++) {
-                votingAllocations[proposalId].add(params.allocations[i]);
+                votingProposals[address(dao)][proposalId].allocs.allocations[i]= params.allocations[i];
+                // votingProposals[address(dao)][proposalId].allocations.push(params.allocations[i]);
                 votingGovernors[proposalId].add(params.governors[i]);
             }
         }
@@ -770,7 +777,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
             proposal.timeInfo.executingPeriod
         );
 
-        uint256 len = votingAllocations[proposal.proposalId].values().length;
+        uint256 len = votingGovernors[proposal.proposalId].values().length;
         if (len > 0) {
             VintageRaiserAllocationAdapter raiserAlloc = VintageRaiserAllocationAdapter(
                     dao.getAdapterAddress(
@@ -781,7 +788,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
                 raiserAlloc.setAllocation(
                     dao,
                     votingGovernors[proposal.proposalId].at(i),
-                    votingAllocations[proposal.proposalId].at(i)
+                    proposal.allocs.allocations[i]
                 );
             }
         }
@@ -797,6 +804,12 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
     //     bytes32 proposalId
     // ) external view returns (address[] memory) {
     //     return governorMembershipWhitelists[proposalId].values();
+    // }
+
+    // function getAllocation(
+    //     bytes32 proposalId
+    // ) external view returns (uint256[] memory) {
+    //     return votingAllocations[proposalId];
     // }
 
     function isProposalAllDone(address daoAddr) external view returns (bool) {

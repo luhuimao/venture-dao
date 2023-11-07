@@ -38,7 +38,7 @@ interface IFlexFunding {
         FCSF,
         FREE_IN
     }
-    enum BackerIdentificationType {
+    enum InvestorIdentificationType {
         ERC20,
         ERC721,
         ERC1155,
@@ -67,13 +67,13 @@ interface IFlexFunding {
         uint160 poolBalance;
         uint256 protocolFee;
         uint256 managementFee;
-        uint256 returnTokenManagementFee;
+        uint256 paybackTokenManagementFee;
         uint256 proposerReward;
         address propodalInvestmentToken;
-        address returnToken;
+        address paybackToken;
         address proposer;
         uint256 totalSendOutAmount;
-        uint256 returnTokenAmount;
+        uint256 paybackTokenAmount;
     }
 
     struct SubmitProposalLocalVars {
@@ -113,8 +113,8 @@ interface IFlexFunding {
         uint256 minInvestmentAmount;
         uint256 maxInvestmentAmount;
         bool escrow;
-        address returnTokenAddr;
-        uint256 returnTokenAmount;
+        address paybackTokenAddr;
+        uint256 paybackTokenAmount;
         uint256 price;
         uint256 minReturnAmount;
         uint256 maxReturnAmount;
@@ -139,8 +139,8 @@ interface IFlexFunding {
         uint256 maxInvestmentAmount;
         uint256 finalRaisedAmount;
         bool escrow;
-        address returnTokenAddr;
-        uint256 returnTokenAmount;
+        address paybackTokenAddr;
+        uint256 paybackTokenAmount;
         uint256 price;
         uint256 minReturnAmount;
         uint256 maxReturnAmount;
@@ -165,12 +165,12 @@ interface IFlexFunding {
         uint256 fundRaiseEndTime;
         uint256 minDepositAmount;
         uint256 maxDepositAmount;
-        bool backerIdentification;
-        BackerIdentificationInfo bakckerIdentificationInfo;
+        bool investorIdentification;
+        InvestorIdentificationInfo investorIdentificationInfo;
         PriorityDepositInfo priorityDepositInfo;
     }
-    struct BackerIdentificationInfo {
-        BackerIdentificationType bType;
+    struct InvestorIdentificationInfo {
+        InvestorIdentificationType bType;
         uint32 bChainId;
         address bTokanAddr;
         uint256 bTokenId;
@@ -204,8 +204,8 @@ interface IFlexFunding {
     );
 
     error FundRaiseEndTimeNotUP();
-    error InvalidBackerPriorityDepositParams();
-    error InvalidBackerIdentificationParams();
+    error InvalidInvestorPriorityDepositParams();
+    error InvalidInvestorIdentificationParams();
     error InvalidInvestmentInfoParams();
     error InvalidReturnFundParams();
     error InvalidVestingParams();

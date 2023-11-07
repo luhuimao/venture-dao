@@ -176,17 +176,17 @@ contract FlexFundingAdapterContract is
             RETRUN_TOKEN_AMOUNT_PRECISION
         ) revert InvalidInvestmentInfoParams();
         if (
-            params.fundRaiseInfo.backerIdentification == true &&
-            params.fundRaiseInfo.bakckerIdentificationInfo.bType !=
-            BackerIdentificationType.WHITE_LIST &&
-            (params.fundRaiseInfo.bakckerIdentificationInfo.bTokanAddr ==
+            params.fundRaiseInfo.investorIdentification == true &&
+            params.fundRaiseInfo.investorIdentificationInfo.bType !=
+            InvestorIdentificationType.WHITE_LIST &&
+            (params.fundRaiseInfo.investorIdentificationInfo.bTokanAddr ==
                 address(0x0) ||
                 params
                     .fundRaiseInfo
-                    .bakckerIdentificationInfo
+                    .investorIdentificationInfo
                     .bMinHoldingAmount <=
                 0)
-        ) revert InvalidBackerIdentificationParams();
+        ) revert InvalidInvestorIdentificationParams();
 
         if (
             params.fundRaiseInfo.priorityDepositInfo.enable == true &&
@@ -194,7 +194,7 @@ contract FlexFundingAdapterContract is
             PriorityDepositType.WHITE_LIST &&
             (params.fundRaiseInfo.priorityDepositInfo.token == address(0x0) ||
                 params.fundRaiseInfo.priorityDepositInfo.amount <= 0)
-        ) revert InvalidBackerPriorityDepositParams();
+        ) revert InvalidInvestorPriorityDepositParams();
 
         SubmitProposalLocalVars memory vars;
 
@@ -211,7 +211,7 @@ contract FlexFundingAdapterContract is
         );
         if (params.investmentInfo.escrow) {
             if (
-                params.investmentInfo.returnTokenAddr == address(0x0) ||
+                params.investmentInfo.paybackTokenAddr == address(0x0) ||
                 params.investmentInfo.approverAddr == address(0x0) ||
                 params.investmentInfo.minReturnAmount <= 0
             ) revert InvalidReturnFundParams();
@@ -244,8 +244,8 @@ contract FlexFundingAdapterContract is
                 params.investmentInfo.maxInvestmentAmount,
                 0,
                 params.investmentInfo.escrow,
-                params.investmentInfo.returnTokenAddr,
-                params.investmentInfo.returnTokenAmount,
+                params.investmentInfo.paybackTokenAddr,
+                params.investmentInfo.paybackTokenAmount,
                 params.investmentInfo.price,
                 params.investmentInfo.minReturnAmount,
                 params.investmentInfo.maxReturnAmount,
@@ -269,9 +269,8 @@ contract FlexFundingAdapterContract is
                 params.fundRaiseInfo.fundRaiseEndTime,
                 params.fundRaiseInfo.minDepositAmount,
                 params.fundRaiseInfo.maxDepositAmount,
-                params.fundRaiseInfo.backerIdentification,
-                params.fundRaiseInfo.bakckerIdentificationInfo,
-                // params.fundRaiseInfo.priorityDeposit,
+                params.fundRaiseInfo.investorIdentification,
+                params.fundRaiseInfo.investorIdentificationInfo,
                 params.fundRaiseInfo.priorityDepositInfo
             ),
             ProposerRewardInfo(
@@ -340,7 +339,7 @@ contract FlexFundingAdapterContract is
         if (proposal.state == ProposalStatus.IN_VOTING_PROGRESS) {
             require(
                 block.timestamp > proposal.stopVoteTime,
-                "FlexInvestment::processProposal::proposal in voting period"
+                "proposal in voting period"
             );
             // Checks if the proposal has passed.
             vars.flexVoting = FlexPollingVotingContract(
@@ -348,7 +347,7 @@ contract FlexFundingAdapterContract is
             );
             require(
                 address(vars.flexVoting) != address(0x0),
-                "FlexInvestment::processProposal::adapter not found"
+                "adapter not found"
             );
 
             (vars.voteResult, , ) = vars.flexVoting.voteResult(dao, proposalId);
@@ -394,22 +393,22 @@ contract FlexFundingAdapterContract is
                 proposal.investmentInfo.finalRaisedAmount = vars.poolBalance;
 
                 if (proposal.investmentInfo.escrow) {
-                    // calculate && update return token amount
-                    proposal.investmentInfo.returnTokenAmount =
+                    // calculate && update payback token amount
+                    proposal.investmentInfo.paybackTokenAmount =
                         ((vars.poolBalance -
                             vars.protocolFee -
                             vars.managementFee -
                             vars.proposerReward) / proposal.investmentInfo.price) *
                         RETRUN_TOKEN_AMOUNT_PRECISION;
-                    vars.returnTokenAmount = proposal
+                    vars.paybackTokenAmount = proposal
                         .investmentInfo
-                        .returnTokenAmount;
+                        .paybackTokenAmount;
                     if (
                         !_escrowToken(
                             dao,
                             proposal.investmentInfo.approverAddr,
-                            proposal.investmentInfo.returnTokenAddr,
-                            vars.returnTokenAmount,
+                            proposal.investmentInfo.paybackTokenAddr,
+                            vars.paybackTokenAmount,
                             proposalId
                         )
                     ) {
@@ -428,11 +427,11 @@ contract FlexFundingAdapterContract is
 
                     vars.flexAllocAdapt.allocateProjectToken(
                         dao,
-                        proposal.investmentInfo.returnTokenAddr,
+                        proposal.investmentInfo.paybackTokenAddr,
                         proposal.proposer,
                         proposalId,
                         [
-                            vars.returnTokenAmount,
+                            vars.paybackTokenAmount,
                             proposal.vestInfo.vestingStartTime,
                             proposal.vestInfo.vestingCliffEndTime -
                                 proposal.vestInfo.vestingStartTime,
@@ -525,7 +524,7 @@ contract FlexFundingAdapterContract is
         flexInvestmentPaybackTokenAdapt.withdrawInvestmentPaybackToken(
             dao,
             proposalId,
-            proposal.investmentInfo.returnTokenAddr,
+            proposal.investmentInfo.paybackTokenAddr,
             msg.sender,
             proposal.state
         );
@@ -551,7 +550,7 @@ contract FlexFundingAdapterContract is
     function _escrowToken(
         DaoRegistry dao,
         address approver,
-        address returnToken,
+        address paybackToken,
         uint256 escrowAmount,
         bytes32 proposalId
     ) internal returns (bool) {
@@ -563,7 +562,7 @@ contract FlexFundingAdapterContract is
                 escrowAmount,
                 dao,
                 approver,
-                returnToken,
+                paybackToken,
                 proposalId
             );
     }

@@ -33,17 +33,15 @@ abstract contract RaiserGuard {
     /**
      * @dev Only general partner of the DAO are allowed to execute the function call.
      */
-    modifier onlyRaiser(DaoRegistry dao) {
-        _onlyRaiser(dao, msg.sender);
+    modifier onlyGovernor(DaoRegistry dao) {
+        _onlyGovernor(dao, msg.sender);
         _;
     }
 
-    function _onlyRaiser(DaoRegistry dao, address _addr) internal view {
-        // address gpDAOAddress = dao.extensions(DaoHelper.GPDAO_EXT);
+    function _onlyGovernor(DaoRegistry dao, address _addr) internal view {
         require(
-            // GPDaoExtension(gpDAOAddress).isGeneralPartner(_addr),
             dao.isMember(_addr),
-            "onlyRaiser"
+            "onlyGovernor"
         );
     }
 }

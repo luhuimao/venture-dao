@@ -180,7 +180,7 @@ contract FlexAllocationAdapterContract is AdapterGuard {
             address(dao),
             proposalId
         );
-        vars.tokenAmount = investmentInfo.returnTokenAmount;
+        vars.tokenAmount = investmentInfo.paybackTokenAmount;
 
         address[] memory allInvestors = vars
             .investmentpool

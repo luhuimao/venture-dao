@@ -45,7 +45,7 @@ interface IVintageFundRaise {
         uint256 fundTerm;
         uint256 redemptPeriod;
         uint256 redemptDuration;
-        uint256 returnDuration;
+        uint256 refundDuration;
     }
 
     struct PriorityDeposite {
@@ -58,7 +58,7 @@ interface IVintageFundRaise {
 
     struct FundRaiseRewardAndFeeInfo {
         uint256 managementFeeRatio;
-        uint256 returnTokenManagementFeeRatio;
+        uint256 paybackTokenManagementFeeRatio;
         uint256 redepmtFeeRatio;
         uint256 protocolFeeRatio;
         address managementFeeAddress;
@@ -99,12 +99,12 @@ interface IVintageFundRaise {
         uint256 fundTerm;
         uint256 redemptPeriod;
         uint256 redemptDuration;
-        uint256 returnDuration;
+        uint256 refundDuration;
         uint256 proposerRewardRatio;
         uint256 managementFeeRatio;
         uint256 redepmtFeeRatio;
         uint256 protocolFeeRatio;
-        VintageFundingPoolAdapterContract fundingPoolAdapt;
+        VintageFundingPoolAdapterContract investmentPoolAdapt;
         VintageDaoSetAdapterContract daosetAdapt;
     }
 
@@ -116,13 +116,7 @@ interface IVintageFundRaise {
         ProposalAddressInfo proposalAddressInfo;
         ProoserReward proposerReward;
         ProposalPriorityDepositInfo priorityDeposite;
-        // ParticipantCap participantCapInfo;
     }
-
-    // struct ParticipantCap {
-    //     bool enable;
-    //     uint256 capacity;
-    // }
 
     struct ProposalPriorityDepositInfo {
         bool enable;
@@ -149,7 +143,7 @@ interface IVintageFundRaise {
     }
     struct ProposalFeeInfo {
         uint256 managementFeeRatio;
-        uint256 returnTokenManagementFeeRatio;
+        uint256 paybackTokenManagementFeeRatio;
         uint256 redepmtFeeRatio;
     }
 
@@ -159,7 +153,7 @@ interface IVintageFundRaise {
         uint256 fundTerm;
         uint256 redemptPeriod;
         uint256 redemptInterval;
-        uint256 returnPeriod;
+        uint256 refundPeriod;
     }
     /*
      * EVENTS

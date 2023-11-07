@@ -50,7 +50,7 @@ contract FlexVesting is IFlexVesting {
             .Proposals(address(dao), proposalId);
         if (
             vars.vestInfo.vestingCliffLockAmount >
-            vars.fundingInfo.returnTokenAmount
+            vars.fundingInfo.paybackTokenAmount
         ) revert InvalidVestingAmountSetting();
         if (
             vars.vestInfo.vestingStartTime == 0 ||
@@ -61,7 +61,7 @@ contract FlexVesting is IFlexVesting {
 
         vars.depositedShares = _depositToken(
             dao,
-            vars.fundingInfo.returnTokenAddr,
+            vars.fundingInfo.paybackTokenAddr,
             vars.allocAdaptAddr,
             address(this),
             vars.depositAmount,
@@ -140,7 +140,7 @@ contract FlexVesting is IFlexVesting {
                 vars.vestInfo.vestDescription,
                 msg.sender,
                 recipientAddr,
-                vars.fundingInfo.returnTokenAddr
+                vars.fundingInfo.paybackTokenAddr
             )
         );
 
@@ -148,7 +148,7 @@ contract FlexVesting is IFlexVesting {
 
         emit CreateVesting(
             vars.vestId,
-            vars.fundingInfo.returnTokenAddr,
+            vars.fundingInfo.paybackTokenAddr,
             recipientAddr,
             uint32(vars.vestInfo.vestingStartTime),
             uint32(

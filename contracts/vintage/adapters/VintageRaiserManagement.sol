@@ -60,9 +60,6 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         public proposals;
     mapping(address => EnumerableSet.AddressSet) raiserWhiteList;
 
-    // uint256 public raiserInProposalIds = 1;
-    // uint256 public raiserdOutProposalIds = 1;
-
     modifier onlyRaiser(DaoRegistry dao, address account) {
         if (
             dao.getConfiguration(DaoHelper.VINTAGE_RAISER_MEMBERSHIP_ENABLE) ==

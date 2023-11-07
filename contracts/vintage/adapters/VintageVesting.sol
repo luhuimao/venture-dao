@@ -47,7 +47,7 @@ contract VintageVesting is IVesting {
             recipientAddr
         );
 
-        (, , , , , , , vars.vestInfo, vars.returnTokenInfo, ) = vars
+        (, , , , , , , vars.vestInfo, vars.paybackTokenInfo, ) = vars
             .vintageFundingAdapt
             .proposals(address(dao), proposalId);
 
@@ -60,7 +60,7 @@ contract VintageVesting is IVesting {
 
         vars.depositedShares = _depositToken(
             dao,
-            vars.returnTokenInfo.returnToken,
+            vars.paybackTokenInfo.paybackToken,
             vars.allocAdaptAddr,
             address(this),
             vars.depositAmount,
@@ -101,41 +101,13 @@ contract VintageVesting is IVesting {
 
         vars.vestId = vestIds++;
 
-        if (vars.returnTokenInfo.nftEnable) {
-            vars.newTokenId = VintageVestingERC721(vars.returnTokenInfo.erc721)
+        if (vars.paybackTokenInfo.nftEnable) {
+            vars.newTokenId = VintageVestingERC721(vars.paybackTokenInfo.erc721)
                 .safeMint(recipientAddr);
 
-            tokenIdToVestId[vars.returnTokenInfo.erc721][vars.vestId] = vars
+            tokenIdToVestId[vars.paybackTokenInfo.erc721][vars.vestId] = vars
                 .newTokenId;
         }
-
-        // vests[vars.vestId] = Vest(
-        //     proposalId,
-        //     msg.sender,
-        //     recipientAddr,
-        //     vars.returnTokenInfo.returnToken,
-        //     uint32(vars.vestingSteps),
-        //     vars.cliffShares,
-        //     vars.stepShares,
-        //     0,
-        //     vars.depositAmount,
-        //     TimeInfo(
-        //         uint32(vars.vestInfo.vestingStartTime),
-        //         uint32(vars.vestInfo.vetingEndTime),
-        //         uint32(
-        //             vars.vestInfo.vestingCliffEndTime -
-        //                 vars.vestInfo.vestingStartTime
-        //         ),
-        //         uint32(vars.vestInfo.vestingInterval)
-        //     ),
-        //     VestNFTInfo(
-        //         vars.returnTokenInfo.nftEnable == true
-        //             ? vars.returnTokenInfo.erc721
-        //             : address(0x0),
-        //         vars.newTokenId
-        //     ),
-        //     VestInfo("", "")
-        // );
 
         createNewVest(
             vars.vestId,
@@ -143,9 +115,9 @@ contract VintageVesting is IVesting {
             [
                 msg.sender,
                 recipientAddr,
-                vars.returnTokenInfo.returnToken,
-                vars.returnTokenInfo.nftEnable == true
-                    ? vars.returnTokenInfo.erc721
+                vars.paybackTokenInfo.paybackToken,
+                vars.paybackTokenInfo.nftEnable == true
+                    ? vars.paybackTokenInfo.erc721
                     : address(0x0)
             ],
             [
@@ -159,7 +131,7 @@ contract VintageVesting is IVesting {
                 vars.vestInfo.vestingInterval,
                 vars.newTokenId
             ],
-            vars.returnTokenInfo.nftEnable,
+            vars.paybackTokenInfo.nftEnable,
             vars.vestInfo.name,
             vars.vestInfo.description
         );
@@ -167,7 +139,7 @@ contract VintageVesting is IVesting {
 
         emit CreateVesting(
             vars.vestId,
-            vars.returnTokenInfo.returnToken,
+            vars.paybackTokenInfo.paybackToken,
             recipientAddr,
             uint32(vars.vestInfo.vestingStartTime),
             uint32(

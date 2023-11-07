@@ -3,8 +3,10 @@ pragma solidity ^0.8.0;
 
 import "../../core/DaoRegistry.sol";
 import "../../helpers/DaoHelper.sol";
+import "../../helpers/GovernanceHelper.sol";
 import "../../utils/TypeConver.sol";
 import "./FlexVoting.sol";
+import "./interfaces/IFlexVoting.sol";
 import "./FlexStewardAllocation.sol";
 import "./FlexDaoSetAdapter.sol";
 import "../../adapters/modifiers/Reimbursable.sol";

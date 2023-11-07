@@ -179,7 +179,7 @@ contract VintageVotingContract is
         DaoRegistry dao,
         bytes32 proposalId,
         uint256 voteValue
-    ) external onlyRaiser(dao) reimbursable(dao) {
+    ) external onlyGovernor(dao) reimbursable(dao) {
         require(
             dao.getProposalFlag(proposalId, DaoRegistry.ProposalFlag.SPONSORED),
             "the proposal has not been sponsored yet"

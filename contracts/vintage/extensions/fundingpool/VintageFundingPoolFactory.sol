@@ -53,11 +53,8 @@ contract VintageFundingPoolFactory is IFactory, CloneFactory, ReentrancyGuard {
         require(dao != address(0x0), "invalid dao addr");
         address extensionAddr = _createClone(identityAddress);
         _extensions[dao] = extensionAddr;
-        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(extensionAddr);
-        // fundingpool.setMaxExternalTokens(maxExternalTokens);
-        // fundingpool.setServiceFeeRatio(serviceFeeRatio);
-
-        emit FundingPoolCreated(dao, address(fundingpool));
+       
+        emit FundingPoolCreated(dao, extensionAddr);
     }
 
     /**

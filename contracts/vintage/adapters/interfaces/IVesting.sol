@@ -86,7 +86,7 @@ interface IVesting {
         uint256 vestingSteps;
         address allocAdaptAddr;
         InvestmentLibrary.VestInfo vestInfo;
-        InvestmentLibrary.ProposalReturnTokenInfo returnTokenInfo;
+        InvestmentLibrary.ProposalPaybackTokenInfo paybackTokenInfo;
         uint256 newTokenId;
     }
 

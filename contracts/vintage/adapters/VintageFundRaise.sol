@@ -59,7 +59,6 @@ contract VintageFundRaiseAdapterContract is
      */
     // Keeps track of all the Proposals executed per DAO.
     mapping(address => mapping(bytes32 => ProposalDetails)) public Proposals;
-    // uint256 public proposalIds = 1;
     mapping(address => uint256) public createdFundCounter;
     mapping(address => bytes32) public lastProposalIds;
     mapping(address => mapping(bytes32 => EnumerableSet.AddressSet)) priorityDepositeWhiteList;
@@ -70,7 +69,7 @@ contract VintageFundRaiseAdapterContract is
 
     function submitProposal(
         ProposalParams calldata params
-    ) external override onlyRaiser(params.dao) reimbursable(params.dao) {
+    ) external override onlyGovernor(params.dao) reimbursable(params.dao) {
         if (
             lastProposalIds[address(params.dao)] != bytes32(0x0) &&
             (Proposals[address(params.dao)][
@@ -94,33 +93,33 @@ contract VintageFundRaiseAdapterContract is
         vars.lastFundEndTime = params.dao.getConfiguration(
             DaoHelper.FUND_END_TIME
         );
-        vars.returnDuration = params.dao.getConfiguration(
+        vars.refundDuration = params.dao.getConfiguration(
             DaoHelper.RETURN_DURATION
         );
-        vars.fundingPoolAdapt = VintageFundingPoolAdapterContract(
+        vars.investmentPoolAdapt = VintageFundingPoolAdapterContract(
             params.dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
         );
         require(
-            vars.fundingPoolAdapt.poolBalance(params.dao) <= 0,
+            vars.investmentPoolAdapt.poolBalance(params.dao) <= 0,
             "!clear fund"
         );
         require(
-            vars.fundingPoolAdapt.daoFundRaisingStates(address(params.dao)) ==
+            vars.investmentPoolAdapt.daoFundRaisingStates(address(params.dao)) ==
                 DaoHelper.FundRaiseState.NOT_STARTED ||
-                vars.fundingPoolAdapt.daoFundRaisingStates(
+                vars.investmentPoolAdapt.daoFundRaisingStates(
                     address(params.dao)
                 ) ==
                 DaoHelper.FundRaiseState.FAILED ||
-                (vars.fundingPoolAdapt.daoFundRaisingStates(
+                (vars.investmentPoolAdapt.daoFundRaisingStates(
                     address(params.dao)
                 ) ==
                     DaoHelper.FundRaiseState.DONE &&
                     block.timestamp >
-                    vars.lastFundEndTime + vars.returnDuration),
+                    vars.lastFundEndTime + vars.refundDuration),
             "not now"
         );
 
-        vars.protocolFeeRatio = vars.fundingPoolAdapt.protocolFee();
+        vars.protocolFeeRatio = vars.investmentPoolAdapt.protocolFee();
         if (
             params.proposalFundRaiseInfo.fundRaiseMinTarget <= 0 ||
             (params.proposalFundRaiseInfo.fundRaiseMaxCap > 0 &&
@@ -138,7 +137,7 @@ contract VintageFundRaiseAdapterContract is
             params.proposalTimeInfo.redemptInterval ||
             params.proposalTimeInfo.redemptInterval >
             params.proposalTimeInfo.fundTerm ||
-            params.proposalTimeInfo.returnPeriod >=
+            params.proposalTimeInfo.refundPeriod >=
             params.proposalTimeInfo.fundTerm ||
             params.proposalFeeInfo.managementFeeRatio >= 10 ** 18 ||
             params.proposalFeeInfo.managementFeeRatio < 0 ||
@@ -156,18 +155,12 @@ contract VintageFundRaiseAdapterContract is
             params.dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
 
-        // vars.submittedBy = vars.votingContract.getSenderAddress(
-        //     params.dao,
-        //     address(this),
-        //     bytes(""),
-        //     msg.sender
-        // );
-        params.dao.increaseNewFundId();
+        params.dao.increaseFundEstablishmentId();
         vars.proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
                 bytes8(uint64(uint160(address(params.dao)))),
-                "NewFund#",
-                Strings.toString(params.dao.getCurrentNewFundProposalId())
+                "FundEstablishment#",
+                Strings.toString(params.dao.getCurrentFundEstablishmentProposalId())
             )
         );
 
@@ -188,11 +181,11 @@ contract VintageFundRaiseAdapterContract is
                 params.proposalTimeInfo.fundTerm,
                 params.proposalTimeInfo.redemptPeriod,
                 params.proposalTimeInfo.redemptInterval,
-                params.proposalTimeInfo.returnPeriod
+                params.proposalTimeInfo.refundPeriod
             ),
             FundRaiseRewardAndFeeInfo(
                 params.proposalFeeInfo.managementFeeRatio,
-                params.proposalFeeInfo.returnTokenManagementFeeRatio,
+                params.proposalFeeInfo.paybackTokenManagementFeeRatio,
                 params.proposalFeeInfo.redepmtFeeRatio,
                 vars.protocolFeeRatio,
                 params.proposalAddressInfo.managementFeeAddress
@@ -248,8 +241,8 @@ contract VintageFundRaiseAdapterContract is
     struct ProcessProposalLocalVars {
         bytes32 ongoingProposalId;
         VintageVotingContract votingContract;
-        VintageFundingPoolExtension fundingpool;
-        VintageFundingPoolAdapterContract fundingPoolAdapt;
+        VintageFundingPoolExtension investmentpool;
+        VintageFundingPoolAdapterContract investmentPoolAdapt;
         IVintageVoting.VotingState voteResult;
         uint128 nbYes;
         uint128 nbNo;
@@ -268,7 +261,7 @@ contract VintageFundRaiseAdapterContract is
             proposalId
         ];
         dao.processProposal(proposalId);
-        vars.fundingPoolAdapt = VintageFundingPoolAdapterContract(
+        vars.investmentPoolAdapt = VintageFundingPoolAdapterContract(
             dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
         );
         vars.votingContract = VintageVotingContract(
@@ -276,7 +269,7 @@ contract VintageFundRaiseAdapterContract is
         );
         require(
             address(vars.votingContract) != address(0x0),
-            "FundRaise::processProposal::voting adapter not found"
+            "voting adapter not found"
         );
 
         (vars.voteResult, vars.nbYes, vars.nbNo) = vars
@@ -289,7 +282,7 @@ contract VintageFundRaiseAdapterContract is
             setFundRaiseConfiguration(dao, proposalDetails);
 
             //reset fund raise state
-            vars.fundingPoolAdapt.resetFundRaiseState(dao);
+            vars.investmentPoolAdapt.resetFundRaiseState(dao);
             proposalDetails.state = ProposalState.Done;
 
             // fundsCounter += 1;
@@ -340,7 +333,7 @@ contract VintageFundRaiseAdapterContract is
                 proposalInfo.timesInfo.fundTerm,
                 proposalInfo.timesInfo.redemptPeriod,
                 proposalInfo.timesInfo.redemptDuration,
-                proposalInfo.timesInfo.returnDuration
+                proposalInfo.timesInfo.refundDuration
             ]
         );
 
@@ -359,7 +352,7 @@ contract VintageFundRaiseAdapterContract is
                 proposalInfo.feeInfo.redepmtFeeRatio,
                 proposalInfo.proposerReward.fundFromInverstor,
                 proposalInfo.proposerReward.projectTokenFromInvestor,
-                proposalInfo.feeInfo.returnTokenManagementFeeRatio
+                proposalInfo.feeInfo.paybackTokenManagementFeeRatio
             ]
         );
 
@@ -442,7 +435,7 @@ contract VintageFundRaiseAdapterContract is
             uint256Args[3] //  proposalInfo.proposerReward.projectTokenFromInvestor
         );
 
-        //set returnTokenManagement fee
+        //set paybackTokenManagement fee
         dao.setConfiguration(
             DaoHelper.VINTAGE_RETURN_TOKEN_MANAGEMENT_FEE_AMOUNT,
             uint256Args[4]
@@ -497,10 +490,10 @@ contract VintageFundRaiseAdapterContract is
             DaoHelper.FUND_RAISING_REDEMPTION_DURATION,
             uint256Args[4] //   proposalInfo.timesInfo.redemptDuration
         );
-        //7 returnDuration
+        //7 refundDuration
         dao.setConfiguration(
             DaoHelper.RETURN_DURATION,
-            uint256Args[5] //    proposalInfo.timesInfo.returnDuration
+            uint256Args[5] //    proposalInfo.timesInfo.refundDuration
         );
     }
 

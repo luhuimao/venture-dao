@@ -125,7 +125,7 @@ contract VintageFundingAdapterContract is
         returnTokenAdapt.withdrawInvestmentPaybackToken(
             dao,
             proposalId,
-            proposal.proposalReturnTokenInfo.returnToken,
+            proposal.proposalPaybackTokenInfo.paybackToken,
             msg.sender,
             proposal.status
         );
@@ -143,7 +143,7 @@ contract VintageFundingAdapterContract is
     function submitProposal(
         DaoRegistry dao,
         InvestmentProposalParams calldata params
-    ) external override onlyRaiser(dao) reimbursable(dao) {
+    ) external override onlyGovernor(dao) reimbursable(dao) {
         SubmitProposalLocalVars memory vars;
         dao.increaseInvestmentId();
         vars.proposalId = TypeConver.bytesToBytes32(
@@ -211,7 +211,7 @@ contract VintageFundingAdapterContract is
     function startVotingProcess(
         DaoRegistry dao,
         bytes32 proposalId
-    ) external reimbursable(dao) onlyRaiser(dao) {
+    ) external reimbursable(dao) onlyGovernor(dao) {
         //  queue is empty
         require(getQueueLength(dao) > 0, "!ProposalQueue");
         //proposalId must get from begining of the queue
@@ -271,13 +271,13 @@ contract VintageFundingAdapterContract is
         ) {
             proposal.status = InvestmentLibrary.ProposalState.FAILED;
         } else {
-            if (proposal.proposalReturnTokenInfo.escrow) {
+            if (proposal.proposalPaybackTokenInfo.escrow) {
                 //lock project token
                 vars.rel = _lockProjectTeamToken(
                     dao,
-                    proposal.proposalReturnTokenInfo.approveOwnerAddr,
-                    proposal.proposalReturnTokenInfo.returnToken,
-                    proposal.proposalReturnTokenInfo.returnTokenAmount,
+                    proposal.proposalPaybackTokenInfo.approveOwnerAddr,
+                    proposal.proposalPaybackTokenInfo.paybackToken,
+                    proposal.proposalPaybackTokenInfo.paybackTokenAmount,
                     proposalId
                 );
                 // lock project token failed
@@ -285,8 +285,8 @@ contract VintageFundingAdapterContract is
                     proposal.status = InvestmentLibrary.ProposalState.FAILED;
                 } else {
                     projectTeamLockedTokens[address(dao)][proposalId][
-                        proposal.proposalReturnTokenInfo.approveOwnerAddr
-                    ] = proposal.proposalReturnTokenInfo.returnTokenAmount;
+                        proposal.proposalPaybackTokenInfo.approveOwnerAddr
+                    ] = proposal.proposalPaybackTokenInfo.paybackTokenAmount;
 
                     // Starts the voting process for the proposal. setting voting start time
                     vars.votingContract.startNewVotingForProposal(
@@ -441,7 +441,7 @@ contract VintageFundingAdapterContract is
                     ]
                 );
 
-                if (proposal.proposalReturnTokenInfo.escrow) {
+                if (proposal.proposalPaybackTokenInfo.escrow) {
                     //process5. snap vest info for all eligible investor
                     snapShotVestingInfo(dao, proposalId);
 
@@ -493,7 +493,7 @@ contract VintageFundingAdapterContract is
             address(dao)
         ][proposalId];
         uint256[6] memory uint256Args = [
-            proposal.proposalReturnTokenInfo.returnTokenAmount,
+            proposal.proposalPaybackTokenInfo.paybackTokenAmount,
             proposal.vestInfo.vestingStartTime,
             proposal.vestInfo.vetingEndTime,
             proposal.vestInfo.vestingCliffEndTime,
@@ -502,7 +502,7 @@ contract VintageFundingAdapterContract is
         ];
         allocAda.allocateProjectToken(
             dao,
-            proposal.proposalReturnTokenInfo.returnToken,
+            proposal.proposalPaybackTokenInfo.paybackToken,
             proposal.proposer,
             proposalId,
             uint256Args

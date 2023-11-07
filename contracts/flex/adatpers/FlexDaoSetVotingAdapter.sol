@@ -18,7 +18,7 @@ contract FlexDaoSetVotingAdapterContract {
     mapping(address => bytes32) public ongoingVotingProposal;
     mapping(address => mapping(bytes32 => FlexDaosetLibrary.VotingProposalDetails))
         public votingProposals;
-    mapping(bytes32 => EnumerableSet.UintSet) votingAllocations;
+    // mapping(bytes32 => EnumerableSet.UintSet) votingAllocations;
     mapping(bytes32 => EnumerableSet.AddressSet) votingGovernors;
 
     function submitVotingProposal(
@@ -69,8 +69,16 @@ contract FlexDaoSetVotingAdapterContract {
                     block.timestamp +
                         params.dao.getConfiguration(DaoHelper.VOTING_PERIOD)
                 ),
+                FlexDaosetLibrary.VotingAllocation(
+                    new uint256[](params.allocations.length)
+                ),
                 FlexDaosetLibrary.ProposalState.Voting
             );
+
+        for(uint8 i=0; i<params.allocations.length; i++){
+            votingGovernors[proposalId].add(params.governors[i]);
+            votingProposals[address(params.dao)][proposalId].allocations.allocs[i]=params.allocations[i];
+        }
 
         ongoingVotingProposal[address(params.dao)] = proposalId;
 
@@ -146,7 +154,7 @@ contract FlexDaoSetVotingAdapterContract {
                 proposal.timeInfo.votingPeriod
             ],
             votingGovernors[proposalId].values(),
-            votingAllocations[proposalId].values()
+            proposal.allocations.allocs
         );
     }
 
@@ -174,11 +182,12 @@ contract FlexDaoSetVotingAdapterContract {
     }
 
     function getAllocations(
+        address daoAddr,
         bytes32 proposalId
     ) external view returns (address[] memory, uint256[] memory) {
         return (
             votingGovernors[proposalId].values(),
-            votingAllocations[proposalId].values()
+          votingProposals[daoAddr][proposalId].allocations.allocs
         );
     }
 }

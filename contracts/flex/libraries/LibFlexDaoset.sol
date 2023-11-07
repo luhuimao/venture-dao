@@ -39,6 +39,7 @@ library FlexDaosetLibrary {
         VotingSupportInfo supportInfo;
         VotingEligibilityInfo eligibilityInfo;
         VotingTimeInfo timeInfo;
+        VotingAllocation allocations;
         ProposalState state;
     }
 
@@ -113,6 +114,10 @@ library FlexDaosetLibrary {
         uint256 stopVoteTime;
     }
 
+    struct VotingAllocation{
+        uint256[] allocs;
+    }
+
     struct VotingEligibilityInfo {
         uint256 eligibilityType;
         address tokenAddress;
@@ -185,178 +190,4 @@ library FlexDaosetLibrary {
     }
 
     error VOTING_NOT_FINISH();
-
-    // event ProposalCreated(
-    //     address daoAddr,
-    //     bytes32 proposalId,
-    //     ProposalType pType
-    // );
-    // event ProposalProcessed(
-    //     address daoAddr,
-    //     bytes32 proposalId,
-    //     ProposalState state,
-    //     uint256 voteResult,
-    //     uint128 allVotingWeight,
-    //     uint256 nbYes,
-    //     uint256 nbNo
-    // );
-
-    // function createParticipantCapProposal(
-    //     ParticipantCapProposalDetails memory proposal,
-    //     DaoRegistry dao,
-    //     bool enable,
-    //     uint256 cap
-    // ) public view returns (ParticipantCapProposalDetails memory) {
-    //     proposal.enable = enable;
-    //     proposal.cap = cap;
-    //     proposal.creationTime = block.timestamp;
-    //     proposal.stopVoteTime =
-    //         block.timestamp +
-    //         dao.getConfiguration(DaoHelper.VOTING_PERIOD);
-    //     proposal.state = ProposalState.Voting;
-
-    //     return proposal;
-    // }
-
-    // function createGovernorMembershpProposal(
-    //     GovernorMembershipProposalDetails memory proposal,
-    //     DaoRegistry dao,
-    //     bool enable,
-    //     uint8 varifyType,
-    //     uint256 minAmount,
-    //     address tokenAddress,
-    //     uint256 tokenId
-    // ) public view returns (GovernorMembershipProposalDetails memory) {
-    //     proposal.enable = enable;
-    //     proposal.varifyType = varifyType;
-    //     proposal.minAmount = minAmount;
-    //     proposal.tokenAddress = tokenAddress;
-    //     proposal.tokenId = tokenId;
-    //     proposal.creationTime = block.timestamp;
-    //     proposal.stopVoteTime =
-    //         block.timestamp +
-    //         dao.getConfiguration(DaoHelper.VOTING_PERIOD);
-    //     proposal.state = ProposalState.Voting;
-    //     return proposal;
-    // }
-
-    // function createInvestorMembershipProposal(
-    //     InvestorMembershipProposalDetails memory proposal,
-    //     DaoRegistry dao,
-    //     bool enable,
-    //     string calldata name,
-    //     uint8 varifyType,
-    //     uint256 minAmount,
-    //     address tokenAddress,
-    //     uint256 tokenId
-    // ) public view returns (InvestorMembershipProposalDetails memory) {
-    //     proposal.enable = enable;
-    //     proposal.name = name;
-    //     proposal.varifyType = varifyType;
-    //     proposal.minAmount = minAmount;
-    //     proposal.tokenAddress = tokenAddress;
-    //     proposal.tokenId = tokenId;
-    //     proposal.creationTime = block.timestamp;
-    //     proposal.stopVoteTime =
-    //         block.timestamp +
-    //         dao.getConfiguration(DaoHelper.VOTING_PERIOD);
-    //     proposal.state = ProposalState.Voting;
-
-    //     return proposal;
-    // }
-
-    // function createVotingProposal(
-    //     VotingProposalDetails memory proposal,
-    //     DaoRegistry dao,
-    //     address tokenAddress,
-    //     uint256[9] calldata uint256Args
-    // ) public view returns (VotingProposalDetails memory) {
-    //     proposal.supportInfo.supportType = uint256Args[0];
-    //     proposal.supportInfo.quorumType = uint256Args[1];
-    //     proposal.supportInfo.support = uint256Args[2];
-    //     proposal.supportInfo.quorum = uint256Args[3];
-    //     proposal.eligibilityInfo.eligibilityType = uint256Args[4];
-    //     proposal.eligibilityInfo.tokenAddress = tokenAddress;
-    //     proposal.eligibilityInfo.tokenID = uint256Args[5];
-    //     proposal.eligibilityInfo.votingWeightedType = uint256Args[6];
-    //     proposal.timeInfo.votingPeriod = uint256Args[7];
-    //     proposal.timeInfo.executingPeriod = uint256Args[8];
-    //     proposal.timeInfo.creationTime = block.timestamp;
-    //     proposal.timeInfo.stopVoteTime =
-    //         block.timestamp +
-    //         dao.getConfiguration(DaoHelper.VOTING_PERIOD);
-    //     proposal.state = ProposalState.Voting;
-
-    //     return proposal;
-    // }
-
-    // function createFeesProposal(
-    //     FeeProposalDetails memory proposal,
-    //     DaoRegistry dao,
-    //     uint256 flexDaoManagementfee,
-    //     uint256 returnTokenManagementFee,
-    //     address managementFeeAddress
-    // ) public view returns (FeeProposalDetails memory) {
-    //     proposal.flexDaoManagementfee = flexDaoManagementfee;
-    //     proposal.returnTokenManagementFee = returnTokenManagementFee;
-    //     proposal.managementFeeAddress = managementFeeAddress;
-    //     proposal.creationTime = block.timestamp;
-    //     proposal.stopVoteTime =
-    //         block.timestamp +
-    //         dao.getConfiguration(DaoHelper.VOTING_PERIOD);
-    //     proposal.state = ProposalState.Voting;
-    //     return proposal;
-    // }
-
-    // function createProposerMembershipProposal(
-    //     ProposerMembershipProposalDetails memory proposal,
-    //     DaoRegistry dao,
-    //     bool proposerMembershipEnable,
-    //     uint8 varifyType, //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
-    //     uint256 minHolding,
-    //     address tokenAddress,
-    //     uint256 tokenId
-    // ) public view returns (ProposerMembershipProposalDetails memory) {
-    //     proposal.proposerMembershipEnable;
-    //     proposal.varifyType = varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
-    //     proposal.minHolding = minHolding;
-    //     proposal.tokenAddress = tokenAddress;
-    //     proposal.tokenId = tokenId;
-    //     proposal.creationTime = block.timestamp;
-    //     proposal.stopVoteTime =
-    //         block.timestamp +
-    //         dao.getConfiguration(DaoHelper.VOTING_PERIOD);
-    //     proposal.state = ProposalState.Voting;
-    //     return proposal;
-    // }
-
-    // function crateNewPollForInvestmentProposal(
-    //     PollForInvestmentProposalDetails memory proposal,
-    //     DaoRegistry dao,
-    //     uint256[9] calldata uint256Args,
-    //     uint8[2] calldata uint8Args,
-    //     address[2] calldata addressArgs
-    // ) public view returns (PollForInvestmentProposalDetails memory) {
-    //     proposal.varifyType = uint8Args[0];
-    //     proposal.minHolding = uint256Args[0];
-    //     proposal.tokenAddress = addressArgs[0];
-    //     proposal.tokenId = uint256Args[1];
-    //     proposal.pollingInfo.votingPeriod = uint256Args[2];
-    //     proposal.pollingInfo.votingPower = uint8Args[1];
-    //     proposal.pollingInfo.superMajority = uint256Args[3];
-    //     proposal.pollingInfo.quorum = uint256Args[4];
-    //     proposal.pollingInfo.eligibilityType = uint256Args[5];
-    //     proposal.pollingInfo.tokenAddress = addressArgs[1];
-    //     proposal.pollingInfo.tokenID = uint256Args[6];
-    //     proposal.pollingInfo.supportType = uint256Args[7];
-    //     proposal.pollingInfo.quorumType = uint256Args[8];
-
-    //     proposal.creationTime = block.timestamp;
-    //     proposal.stopVoteTime =
-    //         block.timestamp +
-    //         dao.getConfiguration(DaoHelper.VOTING_PERIOD);
-    //     proposal.state = ProposalState.Voting;
-
-    //     return proposal;
-    // }
 }
