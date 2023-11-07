@@ -23,8 +23,8 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
     }
 
     enum ProposalType {
-        RAISER_IN,
-        RAISER_OUT
+        GOVERNOR_IN,
+        GOVERNOR_OUT
     }
 
     struct ProposalDetails {
@@ -58,27 +58,27 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
     // proposals per dao
     mapping(DaoRegistry => mapping(bytes32 => ProposalDetails))
         public proposals;
-    mapping(address => EnumerableSet.AddressSet) raiserWhiteList;
+    mapping(address => EnumerableSet.AddressSet) governorWhiteList;
 
-    modifier onlyRaiser(DaoRegistry dao, address account) {
+    modifier onlyGovernor(DaoRegistry dao, address account) {
         if (
-            dao.getConfiguration(DaoHelper.VINTAGE_RAISER_MEMBERSHIP_ENABLE) ==
+            dao.getConfiguration(DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_ENABLE) ==
             1
         ) {
             uint256 varifyType = dao.getConfiguration(
-                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TYPE
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TYPE
             );
             uint256 minHolding = dao.getConfiguration(
-                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_MIN_HOLDING
             );
             uint256 minDeposit = dao.getConfiguration(
-                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_MIN_DEPOSIT
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_MIN_DEPOSIT
             );
             uint256 tokenId = dao.getConfiguration(
-                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKENID
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TOKENID
             );
             address tokenAddress = dao.getAddressConfiguration(
-                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS
             );
             VintageFundingPoolAdapterContract fundingpoolAdapt = VintageFundingPoolAdapterContract(
                     dao.getAdapterAddress(
@@ -104,8 +104,8 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
                 );
             } else if (varifyType == 3) {
                 require(
-                    isRaiserWhiteList(dao, account),
-                    "not in raiser whitelist"
+                    isGovernorWhiteList(dao, account),
+                    "not in governor whitelist"
                 );
             } else if (varifyType == 4) {
                 require(
@@ -119,7 +119,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         _;
     }
 
-    function registerRaiserWhiteList(
+    function registerGovernorWhiteList(
         DaoRegistry dao,
         address account
     ) external {
@@ -129,8 +129,8 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
                 dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER),
             "!access"
         );
-        if (!raiserWhiteList[address(dao)].contains(account)) {
-            raiserWhiteList[address(dao)].add(account);
+        if (!governorWhiteList[address(dao)].contains(account)) {
+            governorWhiteList[address(dao)].add(account);
         }
     }
 
@@ -140,17 +140,17 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
                 dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER),
             "!access"
         );
-        uint256 len = raiserWhiteList[address(dao)].values().length;
+        uint256 len = governorWhiteList[address(dao)].values().length;
         address[] memory tem;
-        tem = raiserWhiteList[address(dao)].values();
+        tem = governorWhiteList[address(dao)].values();
         if (len > 0) {
             for (uint8 i = 0; i < len; i++) {
-                raiserWhiteList[address(dao)].remove(tem[i]);
+                governorWhiteList[address(dao)].remove(tem[i]);
             }
         }
     }
 
-    function submitRaiserInProposal(
+    function submitGovernorInProposal(
         DaoRegistry dao,
         address applicant,
         uint256 allocation
@@ -158,10 +158,10 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         external
         reimbursable(dao)
         onlyMember(dao)
-        onlyRaiser(dao, applicant)
+        onlyGovernor(dao, applicant)
         returns (bytes32)
     {
-        require(!dao.isMember(applicant), "applicant is raiser already");
+        require(!dao.isMember(applicant), "applicant is governor already");
         require(
             DaoHelper.isNotReservedAddress(applicant),
             "applicant is reserved address"
@@ -179,7 +179,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         uint256 stopVoteTime = startVoteTime +
             dao.getConfiguration(DaoHelper.VOTING_PERIOD);
 
-        _submitRaiserInProposal(
+        _submitGovernorInProposal(
             dao,
             proposalId,
             applicant,
@@ -189,7 +189,6 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         );
 
         _sponsorProposal(dao, proposalId, bytes(""));
-        // raiserInProposalIds += 1;
 
         emit ProposalCreated(
             address(dao),
@@ -197,16 +196,16 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
             applicant,
             startVoteTime,
             stopVoteTime,
-            ProposalType.RAISER_IN
+            ProposalType.GOVERNOR_IN
         );
         return proposalId;
     }
 
-    function submitSteWardOutProposal(
+    function submitGovernorOutProposal(
         DaoRegistry dao,
         address applicant
     ) external onlyMember(dao) reimbursable(dao) returns (bytes32) {
-        require(dao.isMember(applicant), "applicant isnt raiser");
+        require(dao.isMember(applicant), "applicant isnt governor");
         dao.increaseGovenorOutId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -229,7 +228,6 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         );
 
         _sponsorProposal(dao, proposalId, bytes(""));
-        // raiserdOutProposalIds += 1;
 
         emit ProposalCreated(
             address(dao),
@@ -237,7 +235,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
             applicant,
             startVoteTime,
             stopVoteTime,
-            ProposalType.RAISER_OUT
+            ProposalType.GOVERNOR_OUT
         );
         return proposalId;
     }
@@ -254,12 +252,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         IVintageVoting vintageVotingContract = IVintageVoting(
             dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
-        // address sponsoredBy = vintageVotingContract.getSenderAddress(
-        //     dao,
-        //     address(this),
-        //     data,
-        //     msg.sender
-        // );
+        
         dao.sponsorProposal(
             proposalId,
             dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
@@ -276,7 +269,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
      * @notice Marks the proposalId as submitted in the DAO and saves the information in the internal adapter state.
      * @notice Updates the total of units issued in the DAO, and checks if it is within the limits.
      */
-    function _submitRaiserInProposal(
+    function _submitGovernorInProposal(
         DaoRegistry dao,
         bytes32 proposalId,
         address applicant,
@@ -284,7 +277,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         uint256 startVoteTime,
         uint256 stopVoteTime
     ) internal {
-        require(!dao.isMember(applicant), "raiser existed");
+        require(!dao.isMember(applicant), "governor existed");
 
         proposals[dao][proposalId] = ProposalDetails(
             proposalId,
@@ -293,7 +286,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
             startVoteTime,
             stopVoteTime,
             ProposalState.Voting,
-            ProposalType.RAISER_IN
+            ProposalType.GOVERNOR_IN
         );
 
         dao.submitProposal(proposalId);
@@ -306,7 +299,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         uint256 startVoteTime,
         uint256 stopVoteTime
     ) internal {
-        require(dao.isMember(applicant), "isnt raiser");
+        require(dao.isMember(applicant), "!governor");
 
         proposals[dao][proposalId] = ProposalDetails(
             proposalId,
@@ -315,7 +308,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
             startVoteTime,
             stopVoteTime,
             ProposalState.Voting,
-            ProposalType.RAISER_OUT
+            ProposalType.GOVERNOR_OUT
         );
 
         dao.submitProposal(proposalId);
@@ -354,25 +347,25 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         dao.processProposal(proposalId);
 
         uint128 allGPsWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
+            .getVintageAllGovernorVotingWeightByProposalId(dao, proposalId);
 
         if (voteResult == IVintageVoting.VotingState.PASS) {
             proposal.state = ProposalState.Executing;
             address applicant = proposal.account;
 
-            if (proposal.pType == ProposalType.RAISER_IN) {
+            if (proposal.pType == ProposalType.GOVERNOR_IN) {
                 dao.potentialNewMember(applicant);
                 if (
                     dao.getConfiguration(
                         DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TYPE
                     ) == 3
                 ) {
-                    VintageRaiserAllocationAdapter raiserAlloc = VintageRaiserAllocationAdapter(
+                    VintageRaiserAllocationAdapter governorAlloc = VintageRaiserAllocationAdapter(
                             dao.getAdapterAddress(
-                                DaoHelper.VINTAGE_RAISER_ALLOCATION_ADAPTER
+                                DaoHelper.VINTAGE_GOVERNOR_ALLOCATION_ADAPTER
                             )
                         );
-                    raiserAlloc.setAllocation(
+                    governorAlloc.setAllocation(
                         dao,
                         proposal.account,
                         proposal.allocation
@@ -380,15 +373,15 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
                 }
             }
 
-            if (proposal.pType == ProposalType.RAISER_OUT) {
+            if (proposal.pType == ProposalType.GOVERNOR_OUT) {
                 dao.removeMember(applicant);
                 // reset allocation to 0
-                VintageRaiserAllocationAdapter raiserAlloc = VintageRaiserAllocationAdapter(
+                VintageRaiserAllocationAdapter governorAlloc = VintageRaiserAllocationAdapter(
                         dao.getAdapterAddress(
-                            DaoHelper.VINTAGE_RAISER_ALLOCATION_ADAPTER
+                            DaoHelper.VINTAGE_GOVERNOR_ALLOCATION_ADAPTER
                         )
                     );
-                raiserAlloc.setAllocation(dao, proposal.account, 0);
+                governorAlloc.setAllocation(dao, proposal.account, 0);
             }
 
             proposal.state = ProposalState.Done;
@@ -416,32 +409,32 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         require(dao.daoCreator() != msg.sender, "dao summonor cant quit");
         dao.removeMember(msg.sender);
         // reset allocation to 0
-        VintageRaiserAllocationAdapter raiserAlloc = VintageRaiserAllocationAdapter(
+        VintageRaiserAllocationAdapter governorAlloc = VintageRaiserAllocationAdapter(
                 dao.getAdapterAddress(
-                    DaoHelper.VINTAGE_RAISER_ALLOCATION_ADAPTER
+                    DaoHelper.VINTAGE_GOVERNOR_ALLOCATION_ADAPTER
                 )
             );
-        raiserAlloc.setAllocation(dao, msg.sender, 0);
+        governorAlloc.setAllocation(dao, msg.sender, 0);
     }
 
-    function isRaiserWhiteList(
+    function isGovernorWhiteList(
         DaoRegistry dao,
         address account
     ) public view returns (bool) {
-        return raiserWhiteList[address(dao)].contains(account);
+        return governorWhiteList[address(dao)].contains(account);
     }
 
-    function getRaiserWhitelist(
+    function getGovernorWhitelist(
         DaoRegistry dao
     ) external view returns (address[] memory) {
-        return raiserWhiteList[address(dao)].values();
+        return governorWhiteList[address(dao)].values();
     }
 
-    function getRaiserAmount(DaoRegistry dao) external view returns (uint256) {
+    function getGovernorAmount(DaoRegistry dao) external view returns (uint256) {
         return DaoHelper.getActiveMemberNb(dao);
     }
 
-    function getAllRaiser(
+    function getAllGovernor(
         DaoRegistry dao
     ) external view returns (address[] memory) {
         return DaoHelper.getAllActiveMember(dao);

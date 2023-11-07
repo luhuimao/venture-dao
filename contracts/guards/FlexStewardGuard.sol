@@ -74,7 +74,7 @@ abstract contract FlexStewardGuard {
                         dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_MANAGEMENT)
                     );
                 require(
-                    flexStewardManagement.isStewardWhiteList(dao, account),
+                    flexStewardManagement.isGovernorWhiteList(dao, account),
                     "not in steward whitelist"
                 );
             }

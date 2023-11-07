@@ -295,10 +295,9 @@ contract VintageFundRaiseAdapterContract is
         } else {
             revert VOTING_NOT_FINISH();
         }
-        // uint128 allGPsWeight = GovernanceHelper.getAllRaiserVotingWeight(dao);
 
         uint128 allGPsWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
+            .getVintageAllGovernorVotingWeightByProposalId(dao, proposalId);
 
         emit proposalExecuted(
             address(dao),

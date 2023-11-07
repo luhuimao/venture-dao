@@ -176,7 +176,7 @@ contract FlexDaoSetVotingAdapterContract {
             uint256 nbNo
         ) = votingContract.voteResult(dao, proposalId);
         uint128 allWeight = GovernanceHelper
-            .getAllStewardVotingWeightByProposalId(dao, proposalId);
+            .getAllFlexGovernorVotingWeightByProposalId(dao, proposalId);
 
         return (vs, nbYes, nbNo, allWeight);
     }

@@ -168,9 +168,9 @@ contract SummonVintageDao {
 
         //config raiser Membership
         if (vintageDaoStewardMembershipEnable) {
-            dao.setConfiguration(DaoHelper.VINTAGE_RAISER_MEMBERSHIP_ENABLE, 1);
+            dao.setConfiguration(DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_ENABLE, 1);
             dao.setConfiguration(
-                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TYPE,
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TYPE,
                 uint256Params[0]
             );
             //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS 4 DEPOSIT
@@ -180,25 +180,25 @@ contract SummonVintageDao {
                 uint256Params[0] == 2
             ) {
                 dao.setConfiguration(
-                    DaoHelper.VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING,
+                    DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_MIN_HOLDING,
                     uint256Params[1]
                 );
                 dao.setAddressConfiguration(
-                    DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS,
+                    DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS,
                     vintageDaoStewardMembershipTokenAddress
                 );
             }
 
             if (uint256Params[0] == 2) {
                 dao.setConfiguration(
-                    DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKENID,
+                    DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TOKENID,
                     uint256Params[2]
                 );
             }
 
             if (uint256Params[0] == 4) {
                 dao.setConfiguration(
-                    DaoHelper.VINTAGE_RAISER_MEMBERSHIP_MIN_DEPOSIT,
+                    DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_MIN_DEPOSIT,
                     uint256Params[1]
                 );
             }
@@ -217,7 +217,7 @@ contract SummonVintageDao {
                     i < vintageDaoRaiserMembershipWhitelist.length;
                     i++
                 ) {
-                    raiserManagementAdapt.registerRaiserWhiteList(
+                    raiserManagementAdapt.registerGovernorWhiteList(
                         dao,
                         vintageDaoRaiserMembershipWhitelist[i]
                     );
@@ -281,7 +281,7 @@ contract SummonVintageDao {
         DaoRegistry newDao = DaoRegistry(newDaoAddr);
         VintageRaiserAllocationAdapter raiserAlloc = VintageRaiserAllocationAdapter(
                 newDao.getAdapterAddress(
-                    DaoHelper.VINTAGE_RAISER_ALLOCATION_ADAPTER
+                    DaoHelper.VINTAGE_GOVERNOR_ALLOCATION_ADAPTER
                 )
             );
         if (eligibilityType == 3)

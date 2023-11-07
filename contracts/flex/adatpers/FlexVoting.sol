@@ -223,7 +223,7 @@ contract FlexVotingContract is
         uint256 quorumType = dao.getConfiguration(
             DaoHelper.FLEX_VOTING_QUORUM_TYPE
         );
-        uint128 allWeight = getAllStewardWeight(dao);
+        uint128 allWeight = getAllGovernorWeight(dao);
 
         if (quorumType == 0) {
             uint256 minVotes = (allWeight *
@@ -275,19 +275,19 @@ contract FlexVotingContract is
         }
     }
 
-    function getAllStewardWeight(
+    function getAllGovernorWeight(
         DaoRegistry dao
     ) public view returns (uint128) {
-        uint128 allWeight = GovernanceHelper.getAllStewardVotingWeight(dao);
+        uint128 allWeight = GovernanceHelper.getAllFlexGovernorVotingWeight(dao);
         return allWeight;
     }
 
-    function getAllStewardWeightByProposalId(
+    function getAllGovernorWeightByProposalId(
         DaoRegistry dao,
         bytes32 proposalId
     ) public view returns (uint128) {
         uint128 allWeight = GovernanceHelper
-            .getAllStewardVotingWeightByProposalId(dao, proposalId);
+            .getAllFlexGovernorVotingWeightByProposalId(dao, proposalId);
         return allWeight;
     }
 

@@ -663,7 +663,7 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
             uint256 nbNo
         ) = votingContract.voteResult(dao, proposalId);
         uint128 allWeight = GovernanceHelper
-            .getAllStewardVotingWeightByProposalId(dao, proposalId);
+            .getAllFlexGovernorVotingWeightByProposalId(dao, proposalId);
         emit ProposalProcessed(
             address(dao),
             proposalId,

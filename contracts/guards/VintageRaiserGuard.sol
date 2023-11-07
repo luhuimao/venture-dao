@@ -35,20 +35,20 @@ SOFTWARE.
 abstract contract VintageRaiserGuard {
     modifier onlyRaiser(DaoRegistry dao, address account) {
         if (
-            dao.getConfiguration(DaoHelper.VINTAGE_RAISER_MEMBERSHIP_ENABLE) ==
+            dao.getConfiguration(DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_ENABLE) ==
             1
         ) {
             uint256 varifyType = dao.getConfiguration(
-                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TYPE
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TYPE
             );
             uint256 minHolding = dao.getConfiguration(
-                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_MIN_HOLDING
             );
             uint256 tokenId = dao.getConfiguration(
-                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKENID
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TOKENID
             );
             address tokenAddress = dao.getAddressConfiguration(
-                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS
             );
             //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
             if (varifyType == 0) {
@@ -77,7 +77,7 @@ abstract contract VintageRaiserGuard {
                         )
                     );
                 require(
-                    vintageStewardManagement.isRaiserWhiteList(dao, account),
+                    vintageStewardManagement.isGovernorWhiteList(dao, account),
                     "not in raiser whitelist"
                 );
             }

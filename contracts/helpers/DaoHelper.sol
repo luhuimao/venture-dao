@@ -98,17 +98,17 @@ library DaoHelper {
         keccak256("VINTAGE_INVESTOR_MEMBERSHIP_TOKENID");
 
     //Vintage dao raiser mambership
-    bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_ENABLE =
+    bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_ENABLE =
         keccak256("VINTAGE_RAISER_MEMBERSHIP_ENABLE");
-    bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_TYPE =
+    bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_TYPE =
         keccak256("VINTAGE_RAISER_MEMBERSHIP_TYPE");
-    bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING =
+    bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_MIN_HOLDING =
         keccak256("VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING");
-    bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_MIN_DEPOSIT =
+    bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_MIN_DEPOSIT =
         keccak256("VINTAGE_RAISER_MEMBERSHIP_MIN_DEPOSIT");
-    bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS =
+    bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS =
         keccak256("VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS");
-    bytes32 internal constant VINTAGE_RAISER_MEMBERSHIP_TOKENID =
+    bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_TOKENID =
         keccak256("VINTAGE_RAISER_MEMBERSHIP_TOKENID");
 
     bytes32 internal constant VINTAGE_VOTING_ELIGIBILITY_TYPE =
@@ -349,7 +349,7 @@ library DaoHelper {
 
     bytes32 internal constant VINTAGE_ESCROW_FUND_ADAPTER =
         keccak256("vintage-escrow-fund");
-    bytes32 internal constant VINTAGE_RAISER_ALLOCATION_ADAPTER =
+    bytes32 internal constant VINTAGE_GOVERNOR_ALLOCATION_ADAPTER =
         keccak256("vintage-raiser-allocation");
     bytes32 internal constant VINTAGE_DISTRIBUTE_ADAPTER =
         keccak256("vintage-distribute-adapter");

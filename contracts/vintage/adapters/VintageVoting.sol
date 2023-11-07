@@ -294,7 +294,7 @@ contract VintageVotingContract is
         // uint128 allRaisersWeight = getAllRaiserWeight(dao);
 
         uint128 allRaisersWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
+            .getVintageAllGovernorVotingWeightByProposalId(dao, proposalId);
         // rule out any failed quorums
         uint256 allVotes = vote.nbYes + vote.nbNo;
 
@@ -359,7 +359,7 @@ contract VintageVotingContract is
         bytes32 proposalId
     ) public view returns (uint128) {
         uint128 allGPsWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
+            .getVintageAllGovernorVotingWeightByProposalId(dao, proposalId);
         return allGPsWeight;
     }
 

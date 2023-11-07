@@ -384,7 +384,7 @@ contract VintageFundingAdapterContract is
         );
 
         vars.allVotingWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
+            .getVintageAllGovernorVotingWeightByProposalId(dao, proposalId);
         (vars.voteResult, vars.nbYes, vars.nbNo) = vars
             .votingContract
             .voteResult(dao, proposalId);

@@ -435,7 +435,7 @@ contract SummonDao {
                     i < flexDaoStewardMembershipWhitelist.length;
                     i++
                 ) {
-                    stewardContract.registerStewardWhiteList(
+                    stewardContract.registerGovernorWhiteList(
                         dao,
                         flexDaoStewardMembershipWhitelist[i]
                     );

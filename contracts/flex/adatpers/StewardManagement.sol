@@ -31,8 +31,8 @@ contract StewardManagementContract is
     }
 
     enum ProposalType {
-        STEWARD_IN,
-        STEWARD_OUT
+        GOVERNOR_IN,
+        GOVERNOR_OUT
     }
 
     struct ProposalDetails {
@@ -66,13 +66,10 @@ contract StewardManagementContract is
     // proposals per dao
     mapping(DaoRegistry => mapping(bytes32 => ProposalDetails))
         public proposals;
-    mapping(address => EnumerableSet.AddressSet) stewardWhiteList;
+    mapping(address => EnumerableSet.AddressSet) governorWhiteList;
     mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
 
-    // uint256 public stewardInProposalIds = 1;
-    // uint256 public stewardOutProposalIds = 1;
-
-    function registerStewardWhiteList(
+    function registerGovernorWhiteList(
         DaoRegistry dao,
         address account
     ) external {
@@ -82,8 +79,8 @@ contract StewardManagementContract is
                 dao.isMember(msg.sender),
             "!access"
         );
-        if (!stewardWhiteList[address(dao)].contains(account)) {
-            stewardWhiteList[address(dao)].add(account);
+        if (!governorWhiteList[address(dao)].contains(account)) {
+            governorWhiteList[address(dao)].add(account);
         }
     }
 
@@ -93,12 +90,12 @@ contract StewardManagementContract is
                 dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER),
             "!access"
         );
-        uint256 len = stewardWhiteList[address(dao)].values().length;
+        uint256 len = governorWhiteList[address(dao)].values().length;
         address[] memory tem;
-        tem = stewardWhiteList[address(dao)].values();
+        tem = governorWhiteList[address(dao)].values();
         if (len > 0) {
             for (uint8 i = 0; i < len; i++) {
-                stewardWhiteList[address(dao)].remove(tem[i]);
+                governorWhiteList[address(dao)].remove(tem[i]);
             }
         }
     }
@@ -110,7 +107,7 @@ contract StewardManagementContract is
         return daoset.isProposalAllDone(dao);
     }
 
-    function submitSteWardInProposal(
+    function submitGovernorInProposal(
         DaoRegistry dao,
         address applicant,
         uint256 allocation
@@ -140,7 +137,7 @@ contract StewardManagementContract is
         uint256 stopVoteTime = startVoteTime +
             dao.getConfiguration(DaoHelper.VOTING_PERIOD);
 
-        _submitStewardInProposal(
+        _submitGovernorInProposal(
             dao,
             proposalId,
             applicant,
@@ -150,7 +147,6 @@ contract StewardManagementContract is
         );
 
         _sponsorProposal(dao, proposalId, bytes(""));
-        // stewardInProposalIds += 1;
         unDoneProposals[address(dao)].add(proposalId);
         emit ProposalCreated(
             address(dao),
@@ -158,16 +154,16 @@ contract StewardManagementContract is
             applicant,
             startVoteTime,
             stopVoteTime,
-            ProposalType.STEWARD_IN
+            ProposalType.GOVERNOR_IN
         );
         return proposalId;
     }
 
-    function submitSteWardOutProposal(
+    function submitGovernorOutProposal(
         DaoRegistry dao,
         address applicant
     ) external onlyMember(dao) reimbursable(dao) returns (bytes32) {
-        require(dao.isMember(applicant), "applicant isnt steward");
+        require(dao.isMember(applicant), "applicant isnt governor");
         dao.increaseGovenorOutId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -181,7 +177,7 @@ contract StewardManagementContract is
         uint256 stopVoteTime = startVoteTime +
             dao.getConfiguration(DaoHelper.VOTING_PERIOD);
 
-        _submitStewardOutProposal(
+        _submitGovernorOutProposal(
             dao,
             proposalId,
             applicant,
@@ -190,7 +186,6 @@ contract StewardManagementContract is
         );
 
         _sponsorProposal(dao, proposalId, bytes(""));
-        // stewardOutProposalIds += 1;
         unDoneProposals[address(dao)].add(proposalId);
 
         emit ProposalCreated(
@@ -199,7 +194,7 @@ contract StewardManagementContract is
             applicant,
             startVoteTime,
             stopVoteTime,
-            ProposalType.STEWARD_OUT
+            ProposalType.GOVERNOR_OUT
         );
         return proposalId;
     }
@@ -233,7 +228,7 @@ contract StewardManagementContract is
      * @notice Marks the proposalId as submitted in the DAO and saves the information in the internal adapter state.
      * @notice Updates the total of units issued in the DAO, and checks if it is within the limits.
      */
-    function _submitStewardInProposal(
+    function _submitGovernorInProposal(
         DaoRegistry dao,
         bytes32 proposalId,
         address applicant,
@@ -241,7 +236,7 @@ contract StewardManagementContract is
         uint256 startVoteTime,
         uint256 stopVoteTime
     ) internal {
-        require(!dao.isMember(applicant), "steward existed");
+        require(!dao.isMember(applicant), "governor existed");
 
         proposals[dao][proposalId] = ProposalDetails(
             proposalId,
@@ -250,20 +245,20 @@ contract StewardManagementContract is
             startVoteTime,
             stopVoteTime,
             ProposalState.Voting,
-            ProposalType.STEWARD_IN
+            ProposalType.GOVERNOR_IN
         );
 
         dao.submitProposal(proposalId);
     }
 
-    function _submitStewardOutProposal(
+    function _submitGovernorOutProposal(
         DaoRegistry dao,
         bytes32 proposalId,
         address applicant,
         uint256 startVoteTime,
         uint256 stopVoteTime
     ) internal {
-        require(dao.isMember(applicant), "isnt steward");
+        require(dao.isMember(applicant), "isnt governor");
 
         proposals[dao][proposalId] = ProposalDetails(
             proposalId,
@@ -272,7 +267,7 @@ contract StewardManagementContract is
             startVoteTime,
             stopVoteTime,
             ProposalState.Voting,
-            ProposalType.STEWARD_OUT
+            ProposalType.GOVERNOR_OUT
         );
 
         dao.submitProposal(proposalId);
@@ -305,7 +300,7 @@ contract StewardManagementContract is
             proposalId
         );
         uint128 allWeight = GovernanceHelper
-            .getAllStewardVotingWeightByProposalId(dao, proposalId);
+            .getAllFlexGovernorVotingWeightByProposalId(dao, proposalId);
 
         dao.processProposal(proposalId);
 
@@ -313,7 +308,7 @@ contract StewardManagementContract is
             proposal.state = ProposalState.Executing;
             address applicant = proposal.account;
 
-            if (proposal.pType == ProposalType.STEWARD_IN) {
+            if (proposal.pType == ProposalType.GOVERNOR_IN) {
                 dao.potentialNewMember(applicant);
                 if (
                     dao.getConfiguration(
@@ -333,7 +328,7 @@ contract StewardManagementContract is
                 }
             }
 
-            if (proposal.pType == ProposalType.STEWARD_OUT) {
+            if (proposal.pType == ProposalType.GOVERNOR_OUT) {
                 dao.removeMember(applicant);
                 FlexStewardAllocationAdapter stewardAlloc = FlexStewardAllocationAdapter(
                         dao.getAdapterAddress(
@@ -356,7 +351,6 @@ contract StewardManagementContract is
         if (unDoneProposals[address(dao)].contains(proposalId))
             unDoneProposals[address(dao)].remove(proposalId);
 
-        // uint128 allWeight = GovernanceHelper.getAllStewardVotingWeight(dao);
         emit ProposalProcessed(
             address(dao),
             proposalId,
@@ -378,24 +372,24 @@ contract StewardManagementContract is
         stewardAlloc.setAllocation(dao, msg.sender, 0);
     }
 
-    function isStewardWhiteList(
+    function isGovernorWhiteList(
         DaoRegistry dao,
         address account
     ) external view returns (bool) {
-        return stewardWhiteList[address(dao)].contains(account);
+        return governorWhiteList[address(dao)].contains(account);
     }
 
-    function getStewardWhitelist(
+    function getGovernorWhitelist(
         DaoRegistry dao
     ) external view returns (address[] memory) {
-        return stewardWhiteList[address(dao)].values();
+        return governorWhiteList[address(dao)].values();
     }
 
-    function getStewardAmount(DaoRegistry dao) external view returns (uint256) {
+    function getGovernorAmount(DaoRegistry dao) external view returns (uint256) {
         return DaoHelper.getActiveMemberNb(dao);
     }
 
-    function getAllSteward(
+    function getAllGovernor(
         DaoRegistry dao
     ) external view returns (address[] memory) {
         return DaoHelper.getAllActiveMember(dao);

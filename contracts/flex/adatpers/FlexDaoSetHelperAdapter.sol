@@ -78,7 +78,7 @@ contract FlexDaoSetHelperAdapterContract {
 
                 stewardContract.clearGovernorWhitelist(dao);
                 for (uint8 i = 0; i < whitelist.length; i++) {
-                    stewardContract.registerStewardWhiteList(dao, whitelist[i]);
+                    stewardContract.registerGovernorWhiteList(dao, whitelist[i]);
                 }
             }
         }

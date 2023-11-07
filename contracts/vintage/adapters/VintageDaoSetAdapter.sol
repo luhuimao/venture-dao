@@ -465,7 +465,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         ongoingParticipantCapProposal[address(dao)] = bytes32(0);
 
         uint128 allGPsWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
+            .getVintageAllGovernorVotingWeightByProposalId(dao, proposalId);
         emit ProposalProcessed(
             address(dao),
             proposalId,
@@ -514,7 +514,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         ongoingGovernorMembershipProposal[address(dao)] = bytes32(0);
 
         uint128 allGPsWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
+            .getVintageAllGovernorVotingWeightByProposalId(dao, proposalId);
         emit ProposalProcessed(
             address(dao),
             proposalId,
@@ -563,7 +563,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         ongoingInvstorMembershipProposal[address(dao)] = bytes32(0);
 
         uint128 allGPsWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
+            .getVintageAllGovernorVotingWeightByProposalId(dao, proposalId);
         emit ProposalProcessed(
             address(dao),
             proposalId,
@@ -611,7 +611,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         ongoingVotingProposal[address(dao)] = bytes32(0);
 
         uint128 allGPsWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
+            .getVintageAllGovernorVotingWeightByProposalId(dao, proposalId);
         emit ProposalProcessed(
             address(dao),
             proposalId,
@@ -639,31 +639,31 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         GovernorMembershipProposalDetails storage proposal
     ) internal {
         dao.setConfiguration(
-            DaoHelper.VINTAGE_RAISER_MEMBERSHIP_ENABLE,
+            DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_ENABLE,
             proposal.enable == true ? 1 : 0
         );
 
         if (proposal.enable) {
             dao.setConfiguration(
-                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TYPE,
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TYPE,
                 proposal.varifyType
             );
             dao.setConfiguration(
-                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING,
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_MIN_HOLDING,
                 proposal.minAmount
             );
             dao.setAddressConfiguration(
-                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS,
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS,
                 proposal.tokenAddress
             );
 
             dao.setConfiguration(
-                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_TOKENID,
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TOKENID,
                 proposal.tokenId
             );
 
             dao.setConfiguration(
-                DaoHelper.VINTAGE_RAISER_MEMBERSHIP_MIN_DEPOSIT,
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_MIN_DEPOSIT,
                 proposal.minAmount
             );
             uint256 len = governorMembershipWhitelists[proposal.proposalId]
@@ -678,7 +678,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
 
                 raiserManagementAdapt.clearGovernorWhitelist(dao);
                 for (uint8 i = 0; i < len; i++) {
-                    raiserManagementAdapt.registerRaiserWhiteList(
+                    raiserManagementAdapt.registerGovernorWhiteList(
                         dao,
                         governorMembershipWhitelists[proposal.proposalId].at(i)
                     );
@@ -781,7 +781,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         if (len > 0) {
             VintageRaiserAllocationAdapter raiserAlloc = VintageRaiserAllocationAdapter(
                     dao.getAdapterAddress(
-                        DaoHelper.VINTAGE_RAISER_ALLOCATION_ADAPTER
+                        DaoHelper.VINTAGE_GOVERNOR_ALLOCATION_ADAPTER
                     )
                 );
             for (uint8 i = 0; i < len; i++) {
