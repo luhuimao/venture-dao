@@ -42,10 +42,10 @@ const deploySummonContract = async () => {
 
 async function main() {
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
-    await deploy();
+    // await deploy();
     // await summonVintageDao();
     // await submitVintageDaosetProposal();
-    // await getVintageDaosetProposal();
+    await getVintageDaosetProposal();
     // await getVintageNewFundProposalInfo();
     // await getFlexInvestors();
     // await getFlexFundingProposalInfo();
@@ -2123,10 +2123,10 @@ const submitVintageDaosetProposal = async () => {
 }
 
 const getVintageDaosetProposal = async () => {
-    const vintageDaoSetAdapterContract = (await hre.ethers.getContractFactory("VintageDaoSetAdapterContract")).attach("0x83C09Fc577FfF2f5D0De1dd2C27cA04949747b5C");;
-    const proposal = await vintageDaoSetAdapterContract.participantCapProposals(
-        "0x6565157177a306998f81d8130bdc82b85cd2bcfa",
-        "0x0bdc82b85cd2bcfa5061727469636970616e742d436170233100000000000000"
+    const vintageDaoSetAdapterContract = (await hre.ethers.getContractFactory("VintageDaoSetAdapterContract")).attach("0xE0cF64d485BC72Fd2Ce537Ec850c2F1950EF9f5D");;
+    const proposal = await vintageDaoSetAdapterContract.votingProposals(
+        "0x416be14c8b28b12bfc407eeede29dd144998557e",
+        "0xde29dd144998557e766f74696e67233100000000000000000000000000000000"
     );
 
     console.log(proposal);
@@ -2136,6 +2136,7 @@ const getVintageGovernorAllocation=async()=>{
     const vintageDaoSetAdapterContract = (await hre.ethers.getContractFactory("VintageRaiserAllocationAdapter")).attach("0x8be919827A25ed95072e7364161206e458D034D3");;
 
 }
+
 
 main()
     .then(() => process.exit(0))
