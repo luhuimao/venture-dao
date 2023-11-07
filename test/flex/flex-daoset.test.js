@@ -863,6 +863,10 @@ describe("daoset proposal...", () => {
         let currentvotingPeriod = await this.daoContract
             .getConfiguration("0x9876c0f0505bfb2b1c38d3bbd25ba13159172cd0868972d76927723f5a9480fc");
 
+
+        let alloc0 = await this.flexStewardAllocation.
+            getAllocation(this.flexDirectdaoAddress,
+                this.owner.address);
         let alloc1 = await this.flexStewardAllocation.
         getAllocation(this.flexDirectdaoAddress,
             this.genesis_steward1.address);
@@ -883,6 +887,7 @@ describe("daoset proposal...", () => {
         currentquorum ${currentquorum} 
         currentsupport ${currentsupport}
         currentvotingPeriod ${currentvotingPeriod}
+        alloc0 ${alloc0}
         alloc1 ${alloc1}
         alloc2 ${alloc2}
 
@@ -944,6 +949,9 @@ describe("daoset proposal...", () => {
         currentvotingPeriod = await this.daoContract
             .getConfiguration("0x9876c0f0505bfb2b1c38d3bbd25ba13159172cd0868972d76927723f5a9480fc");
 
+        alloc0 = await this.flexStewardAllocation.
+            getAllocation(this.flexDirectdaoAddress,
+                this.owner.address);
         alloc1 = await this.flexStewardAllocation.
         getAllocation(this.flexDirectdaoAddress,
             this.genesis_steward1.address);
@@ -963,6 +971,7 @@ describe("daoset proposal...", () => {
         currentquorum ${currentquorum} 
         currentsupport ${currentsupport}
         currentvotingPeriod ${currentvotingPeriod}
+        alloc0 ${alloc0}
         alloc1 ${alloc1}
         alloc2 ${alloc2}
         `);
@@ -1756,7 +1765,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const currentfundingId = await this.daoContract.getCurrentInvestmentProposalId();
         const currentgovenorinId = await this.daoContract.getCurrentGovenorInProposalId();
         const currentgovenoroutId = await this.daoContract.getCurrentGovenorOutProposalId();
-        const currentnewfundId = await this.daoContract.getCurrentNewFundProposalId();
+        const currentnewfundId = await this.daoContract.getCurrentFundEstablishmentProposalId();
         console.log(`
         stewardInProposalId ${proposalId}
         currentfundingId ${currentfundingId}
@@ -1847,7 +1856,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const currentfundingId = await this.daoContract.getCurrentInvestmentProposalId();
         const currentgovenorinId = await this.daoContract.getCurrentGovenorInProposalId();
         const currentgovenoroutId = await this.daoContract.getCurrentGovenorOutProposalId();
-        const currentnewfundId = await this.daoContract.getCurrentNewFundProposalId();
+        const currentnewfundId = await this.daoContract.getCurrentFundEstablishmentProposalId();
         console.log(`
         stewardInProposalId ${proposalId}
         currentfundingId ${currentfundingId}
@@ -1946,7 +1955,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const currentfundingId = await this.daoContract.getCurrentInvestmentProposalId();
         const currentgovenorinId = await this.daoContract.getCurrentGovenorInProposalId();
         const currentgovenoroutId = await this.daoContract.getCurrentGovenorOutProposalId();
-        const currentnewfundId = await this.daoContract.getCurrentNewFundProposalId();
+        const currentnewfundId = await this.daoContract.getCurrentFundEstablishmentProposalId();
         console.log(`
         stewardInProposalId ${proposalId}
         currentfundingId ${currentfundingId}
@@ -2047,7 +2056,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const currentfundingId = await this.daoContract.getCurrentInvestmentProposalId();
         const currentgovenorinId = await this.daoContract.getCurrentGovenorInProposalId();
         const currentgovenoroutId = await this.daoContract.getCurrentGovenorOutProposalId();
-        const currentnewfundId = await this.daoContract.getCurrentNewFundProposalId();
+        const currentnewfundId = await this.daoContract.getCurrentFundEstablishmentProposalId();
         console.log(`
         stewardInProposalId ${proposalId}
         currentfundingId ${currentfundingId}
@@ -2163,7 +2172,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const currentfundingId = await this.daoContract.getCurrentInvestmentProposalId();
         const currentgovenorinId = await this.daoContract.getCurrentGovenorInProposalId();
         const currentgovenoroutId = await this.daoContract.getCurrentGovenorOutProposalId();
-        const currentnewfundId = await this.daoContract.getCurrentNewFundProposalId();
+        const currentnewfundId = await this.daoContract.getCurrentFundEstablishmentProposalId();
         console.log(`
         stewardInProposalId ${proposalId}
         currentfundingId ${currentfundingId}
@@ -2258,7 +2267,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const currentfundingId = await this.daoContract.getCurrentInvestmentProposalId();
         const currentgovenorinId = await this.daoContract.getCurrentGovenorInProposalId();
         const currentgovenoroutId = await this.daoContract.getCurrentGovenorOutProposalId();
-        const currentnewfundId = await this.daoContract.getCurrentNewFundProposalId();
+        const currentnewfundId = await this.daoContract.getCurrentFundEstablishmentProposalId();
         console.log(`
         stewardInProposalId ${proposalId}
         currentfundingId ${currentfundingId}
@@ -2363,7 +2372,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const currentfundingId = await this.daoContract.getCurrentInvestmentProposalId();
         const currentgovenorinId = await this.daoContract.getCurrentGovenorInProposalId();
         const currentgovenoroutId = await this.daoContract.getCurrentGovenorOutProposalId();
-        const currentnewfundId = await this.daoContract.getCurrentNewFundProposalId();
+        const currentnewfundId = await this.daoContract.getCurrentFundEstablishmentProposalId();
         console.log(`
         stewardInProposalId ${proposalId}
         currentfundingId ${currentfundingId}

@@ -457,7 +457,7 @@ describe("Summon A Vintage Dao", () => {
          fundTerm; ${detail.timesInfo.fundTerm}
          redemptPeriod; ${detail.timesInfo.redemptPeriod}
          redemptDuration; ${detail.timesInfo.redemptDuration}
-         returnDuration; ${detail.timesInfo.returnDuration}
+         returnDuration; ${detail.timesInfo.refundDuration}
         FundRaiseRewardAndFeeInfo feeInfo
          managementFeeRatio; ${hre.ethers.utils.formatEther(detail.feeInfo.managementFeeRatio)}
          redepmtFeeRatio; ${hre.ethers.utils.formatEther(detail.feeInfo.redepmtFeeRatio)}
@@ -5789,8 +5789,8 @@ describe("funding...", () => {
         let fundingProposalInfo = await vintageFundingAdapterContract.proposals(this.daoAddr1, proposalId);
         let allowance = await this.testtoken2.allowance(this.owner.address, this.vintageFundingReturnTokenAdapterContract.address);
         console.log(`
-            approver ${fundingProposalInfo.proposalReturnTokenInfo.approveOwnerAddr}
-            returnTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalReturnTokenInfo.returnTokenAmount)}
+            approver ${fundingProposalInfo.proposalPaybackTokenInfo.approveOwnerAddr}
+            paybackTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalPaybackTokenInfo.paybackTokenAmount)}
             approvalAmount ${hre.ethers.utils.formatEther(approvalAmount)}
             allowance ${allowance}
             `);
@@ -5801,10 +5801,10 @@ describe("funding...", () => {
 
         console.log(`
         funding proposal state ${fundingProposalInfo.status}
-        returnTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalReturnTokenInfo.returnTokenAmount)}
-        escrow ${fundingProposalInfo.proposalReturnTokenInfo.escrow}
+        paybackTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalPaybackTokenInfo.paybackTokenAmount)}
+        escrow ${fundingProposalInfo.proposalPaybackTokenInfo.escrow}
         totalFundAmount ${hre.ethers.utils.formatEther(fundingProposalInfo.totalAmount)}
-        approver ${fundingProposalInfo.proposalReturnTokenInfo.approveOwnerAddr}
+        approver ${fundingProposalInfo.proposalPaybackTokenInfo.approveOwnerAddr}
         voting...
         `);
 
@@ -9215,10 +9215,10 @@ describe("funding NFT", () => {
 
         console.log(`
         funding proposal state ${fundingProposalInfo.status}
-        returnTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalReturnTokenInfo.returnTokenAmount)}
-        escrow ${fundingProposalInfo.proposalReturnTokenInfo.escrow}
+        paybackTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalPaybackTokenInfo.paybackTokenAmount)}
+        escrow ${fundingProposalInfo.proposalPaybackTokenInfo.escrow}
         totalFundAmount ${hre.ethers.utils.formatEther(fundingProposalInfo.totalAmount)}
-        approver ${fundingProposalInfo.proposalReturnTokenInfo.approveOwnerAddr}
+        approver ${fundingProposalInfo.proposalPaybackTokenInfo.approveOwnerAddr}
         voting...
         `);
 
@@ -9447,10 +9447,10 @@ describe("funding NFT", () => {
 
         console.log(`
         funding proposal state ${fundingProposalInfo.status}
-        returnTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalReturnTokenInfo.returnTokenAmount)}
-        escrow ${fundingProposalInfo.proposalReturnTokenInfo.escrow}
+        paybackTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalPaybackTokenInfo.paybackTokenAmount)}
+        escrow ${fundingProposalInfo.proposalPaybackTokenInfo.escrow}
         totalFundAmount ${hre.ethers.utils.formatEther(fundingProposalInfo.totalAmount)}
-        approver ${fundingProposalInfo.proposalReturnTokenInfo.approveOwnerAddr}
+        approver ${fundingProposalInfo.proposalPaybackTokenInfo.approveOwnerAddr}
         voting...
         `);
 
@@ -9658,10 +9658,10 @@ describe("funding NFT", () => {
 
         console.log(`
         funding proposal state ${fundingProposalInfo.status}
-        returnTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalReturnTokenInfo.returnTokenAmount)}
-        escrow ${fundingProposalInfo.proposalReturnTokenInfo.escrow}
+        paybackTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalPaybackTokenInfo.paybackTokenAmount)}
+        escrow ${fundingProposalInfo.proposalPaybackTokenInfo.escrow}
         totalFundAmount ${hre.ethers.utils.formatEther(fundingProposalInfo.totalAmount)}
-        approver ${fundingProposalInfo.proposalReturnTokenInfo.approveOwnerAddr}
+        approver ${fundingProposalInfo.proposalPaybackTokenInfo.approveOwnerAddr}
         voting...
         `);
 
@@ -12839,8 +12839,8 @@ describe("return token management fee...", () => {
         let fundingProposalInfo = await vintageFundingAdapterContract.proposals(this.daoAddr1, proposalId);
         let allowance = await this.testtoken2.allowance(this.owner.address, this.vintageFundingReturnTokenAdapterContract.address);
         console.log(`
-             approver ${fundingProposalInfo.proposalReturnTokenInfo.approveOwnerAddr}
-             returnTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalReturnTokenInfo.returnTokenAmount)}
+             approver ${fundingProposalInfo.proposalPaybackTokenInfo.approveOwnerAddr}
+             paybackTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalPaybackTokenInfo.paybackTokenAmount)}
              approvalAmount ${hre.ethers.utils.formatEther(approvalAmount)}
              allowance ${allowance}
              `);
@@ -12850,10 +12850,10 @@ describe("return token management fee...", () => {
 
         console.log(`
          funding proposal state ${fundingProposalInfo.status}
-         returnTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalReturnTokenInfo.returnTokenAmount)}
-         escrow ${fundingProposalInfo.proposalReturnTokenInfo.escrow}
+         paybackTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalPaybackTokenInfo.paybackTokenAmount)}
+         escrow ${fundingProposalInfo.proposalPaybackTokenInfo.escrow}
          totalFundAmount ${hre.ethers.utils.formatEther(fundingProposalInfo.totalAmount)}
-         approver ${fundingProposalInfo.proposalReturnTokenInfo.approveOwnerAddr}
+         approver ${fundingProposalInfo.proposalPaybackTokenInfo.approveOwnerAddr}
          voting...
          `);
 
@@ -13462,8 +13462,8 @@ describe("funding proposal start voting at refund period...", () => {
         let fundingProposalInfo = await vintageFundingAdapterContract.proposals(this.daoAddr1, proposalId);
         let allowance = await this.testtoken2.allowance(this.owner.address, this.vintageFundingReturnTokenAdapterContract.address);
         console.log(`
-             approver ${fundingProposalInfo.proposalReturnTokenInfo.approveOwnerAddr}
-             returnTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalReturnTokenInfo.returnTokenAmount)}
+             approver ${fundingProposalInfo.proposalPaybackTokenInfo.approveOwnerAddr}
+             paybackTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalPaybackTokenInfo.paybackTokenAmount)}
              approvalAmount ${hre.ethers.utils.formatEther(approvalAmount)}
              allowance ${allowance}
              `);
@@ -13486,10 +13486,10 @@ describe("funding proposal start voting at refund period...", () => {
          blocktimestamp ${blocktimestamp}
          fundEndTime ${fundEndTime}
          funding proposal state ${fundingProposalInfo.status}
-         returnTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalReturnTokenInfo.returnTokenAmount)}
-         escrow ${fundingProposalInfo.proposalReturnTokenInfo.escrow}
+         paybackTokenAmount: ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalPaybackTokenInfo.paybackTokenAmount)}
+         escrow ${fundingProposalInfo.proposalPaybackTokenInfo.escrow}
          totalFundAmount ${hre.ethers.utils.formatEther(fundingProposalInfo.totalAmount)}
-         approver ${fundingProposalInfo.proposalReturnTokenInfo.approveOwnerAddr}
+         approver ${fundingProposalInfo.proposalPaybackTokenInfo.approveOwnerAddr}
          voting...
          `);
 
@@ -13497,7 +13497,7 @@ describe("funding proposal start voting at refund period...", () => {
 
 });
 
-describe("daoset proposal...", () => {
+describe.only("daoset proposal...", () => {
 
     before("deploy contracts...", async () => {
         let [owner,
@@ -13986,6 +13986,7 @@ describe("daoset proposal...", () => {
         await expectRevert(this.vintageDaoSetAdapterContract.submitParticipantCapProposal(this.daoAddr1, enable, cap), "revert");
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
         if (parseInt(fundRaiseProposalInfo.timesInfo.fundRaiseEndTime) > blocktimestamp) {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaiseProposalInfo.timesInfo.fundRaiseEndTime) + 1])
             await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
@@ -14002,18 +14003,25 @@ describe("daoset proposal...", () => {
         executed...
         fund State ${fundState}
         `);
-
+        const refundEndTime=  parseInt(fundRaiseProposalInfo.timesInfo.fundRaiseEndTime) +
+            + parseInt(fundRaiseProposalInfo.timesInfo.refundDuration);
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        if (parseInt(fundRaiseProposalInfo.timesInfo.fundRaiseEndTime) + parseInt(fundRaiseProposalInfo.timesInfo.returnDuration) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaiseProposalInfo.timesInfo.fundRaiseEndTime) +
-                +parseInt(fundRaiseProposalInfo.timesInfo.returnDuration) + 1
-            ])
+        if (refundEndTime > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [refundEndTime + 1]);
             await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
         }
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        console.log(`
+        ${fundRaiseProposalInfo.timesInfo.fundRaiseEndTime}
+        ${fundRaiseProposalInfo.timesInfo.refundDuration}
+        refundEndTime ${refundEndTime}
+        blocktimestamp ${blocktimestamp}
+        `)
 
         await this.vintageDaoSetAdapterContract.submitParticipantCapProposal(this.daoAddr1, enable, cap);
         console.log(`
-        dat set proposal created...
+        dao set proposal created...
         `);
 
     });
@@ -14208,8 +14216,8 @@ describe("daoset proposal...", () => {
         const quorum = 4;
         const votingPeriod = 60 * 10;
         const executingPeriod = 60 * 10;
-        const governors = [this.genesis_raiser1.address, this.genesis_raiser2.address];
-        const allocations = [2000, 2000];
+        const governors = [this.owner.address, this.genesis_raiser1.address, this.genesis_raiser2.address];
+        const allocations = [1000, 2000, 3000];
         const votingParams = [
             eligibilityType,
             tokenAddress,
@@ -14236,19 +14244,30 @@ describe("daoset proposal...", () => {
 
         const rel = await tx.wait();
 
+        let alloc0 = await this.vintageRaiserAllocationAdapterContract.getAllocation(this.daoAddr1, this.owner.address);
+        let alloc1 = await this.vintageRaiserAllocationAdapterContract.getAllocation(this.daoAddr1, this.genesis_raiser1.address);
+        let alloc2 = await this.vintageRaiserAllocationAdapterContract.getAllocation(this.daoAddr1, this.genesis_raiser2.address);
+
+      
         const proposalId = rel.events[rel.events.length - 1].args.proposalId
-        const proposal = await this.vintageDaoSetAdapterContract.votingProposals(
+        let ProposalInfo = await this.vintageDaoSetAdapterContract.votingProposals(
             this.daoAddr1,
             proposalId);
 
-        console.log(proposal);
+        // const allocs = await this.vintageDaoSetAdapterContract.getAllocation(proposalId);
+        console.log(`
+        alloc0 ${alloc0} 
+        alloc1 ${alloc1} 
+        alloc2 ${alloc2}
+        allocs ${ProposalInfo.allocs.allocations}
+        `);
 
         console.log("voting...");
         await this.vintageVotingAdapterContract.connect(this.genesis_raiser1).submitVote(this.daoAddr1, proposalId, 1);
         await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr1, proposalId, 1);
         await this.vintageVotingAdapterContract.submitVote(this.daoAddr1, proposalId, 1);
 
-        let ProposalInfo = await this.vintageDaoSetAdapterContract.votingProposals(this.daoAddr1, proposalId);
+        ProposalInfo = await this.vintageDaoSetAdapterContract.votingProposals(this.daoAddr1, proposalId);
         let stopVoteTime = ProposalInfo.timeInfo.stopVoteTime;
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
@@ -14275,6 +14294,9 @@ describe("daoset proposal...", () => {
         const cvperiod = await this.dao1Contract.getConfiguration(sha3("VOTING_PERIOD"));
         const cveperiod = await this.dao1Contract.getConfiguration(sha3("PROPOSAL_EXECUTE_DURATION"));
 
+        alloc0 = await this.vintageRaiserAllocationAdapterContract.getAllocation(this.daoAddr1, this.owner.address);
+        alloc1 = await this.vintageRaiserAllocationAdapterContract.getAllocation(this.daoAddr1, this.genesis_raiser1.address);
+        alloc2 = await this.vintageRaiserAllocationAdapterContract.getAllocation(this.daoAddr1, this.genesis_raiser2.address);
         expect(eligibilityType == cvetype, true);
         expect(cvwtype == votingWeightedType, true);
 
@@ -14291,6 +14313,9 @@ describe("daoset proposal...", () => {
         cvsupport ${cvsupport}
         cvperiod ${cvperiod}
         cveperiod ${cveperiod}
+
+        alloc1 ${alloc1} 
+        alloc2 ${alloc2}
         `);
     });
 

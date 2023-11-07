@@ -944,7 +944,7 @@ describe("Summon A Flex Dao", () => {
         processed...
         state ${flexFundingProposalInfo.state}
         finalRaiseAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.finalRaisedAmount)}
-        returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.returnTokenAmount)}
+        returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.paybackTokenAmount)}
         protocol Fee ${hre.ethers.utils.formatEther(protocolFee)}
         management Fee ${hre.ethers.utils.formatEther(managementFee)}
         proposer reward ${hre.ethers.utils.formatEther(proposerreward)}
@@ -1166,7 +1166,7 @@ describe("Summon A Flex Dao", () => {
         state ${flexFundingProposalInfo.state}
         price ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.price)}
         finalRaiseAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.finalRaisedAmount)}
-        returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.returnTokenAmount)}
+        returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.paybackTokenAmount)}
         protocol Fee ${hre.ethers.utils.formatEther(protocolFee)}
         management Fee ${hre.ethers.utils.formatEther(managementFee)}
         proposer reward ${hre.ethers.utils.formatEther(proposerreward)}
@@ -1440,7 +1440,7 @@ describe("Summon A Flex Dao", () => {
         processed...
         state ${flexFundingProposalInfo.state}
         finalRaiseAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.finalRaisedAmount)}
-        returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.returnTokenAmount)}
+        returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.paybackTokenAmount)}
         protocol Fee ${hre.ethers.utils.formatEther(protocolFee3)}
         management Fee ${hre.ethers.utils.formatEther(managementFee3)}
         proposer reward ${hre.ethers.utils.formatEther(proposerreward3)}
@@ -1689,13 +1689,13 @@ describe("Summon A Flex Dao", () => {
         processed...
         state ${flexFundingProposalInfo.state}
         finalRaiseAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.finalRaisedAmount)}
-        returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.returnTokenAmount)}
+        returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.paybackTokenAmount)}
         protocol Fee ${hre.ethers.utils.formatEther(protocolFee3)}
         management Fee ${hre.ethers.utils.formatEther(managementFee3)}
         proposer reward ${hre.ethers.utils.formatEther(proposerreward3)}
         receive Amount ${hre.ethers.utils.formatEther(receiveAmount3)}
         total tributed amount ${hre.ethers.utils.formatEther(allTributedAmount)}
-        return token amount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.returnTokenAmount)}
+        return token amount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.paybackTokenAmount)}
         create vesting...
         `);
 
@@ -2144,7 +2144,7 @@ describe("Steward-In Management", () => {
         const currentfundingId = await daoContract.getCurrentInvestmentProposalId();
         const currentgovenorinId = await daoContract.getCurrentGovenorInProposalId();
         const currentgovenoroutId = await daoContract.getCurrentGovenorOutProposalId();
-        const currentnewfundId = await daoContract.getCurrentNewFundProposalId();
+        const currentnewfundId = await daoContract.getCurrentFundEstablishmentProposalId();
         console.log(`
         new dao address ${daoAddr}
         new dao name ${toUtf8(daoName)}
@@ -2191,7 +2191,7 @@ describe("Steward-In Management", () => {
         const currentfundingId = await this.flexDirectdao.getCurrentInvestmentProposalId();
         const currentgovenorinId = await this.flexDirectdao.getCurrentGovenorInProposalId();
         const currentgovenoroutId = await this.flexDirectdao.getCurrentGovenorOutProposalId();
-        const currentnewfundId = await this.flexDirectdao.getCurrentNewFundProposalId();
+        const currentnewfundId = await this.flexDirectdao.getCurrentFundEstablishmentProposalId();
         console.log(`
         stewardInProposalId ${proposalId}
         currentfundingId ${currentfundingId}
@@ -9697,7 +9697,7 @@ describe("vesting nft...", () => {
             state ${flexFundingProposalInfo.state}
             price ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.price)}
             finalRaiseAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.finalRaisedAmount)}
-            returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.returnTokenAmount)}
+            paybackTokenAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.paybackTokenAmount)}
             protocol Fee ${hre.ethers.utils.formatEther(protocolFee)}
             management Fee ${hre.ethers.utils.formatEther(managementFee)}
             proposer reward ${hre.ethers.utils.formatEther(proposerreward)}
@@ -9977,7 +9977,7 @@ describe("vesting nft...", () => {
             state ${flexFundingProposalInfo.state}
             price ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.price)}
             finalRaiseAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.finalRaisedAmount)}
-            returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.returnTokenAmount)}
+            returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.paybackTokenAmount)}
             protocol Fee ${hre.ethers.utils.formatEther(protocolFee)}
             management Fee ${hre.ethers.utils.formatEther(managementFee)}
             proposer reward ${hre.ethers.utils.formatEther(proposerreward)}
@@ -12165,7 +12165,7 @@ describe("return token management fee...", () => {
 
         await flexFundingAdapterContract.processProposal(dao.address, proposalId);
         flexFundingProposalInfo = await flexFundingAdapterContract.Proposals(dao.address, proposalId);
-        const paybacktokenamount = flexFundingProposalInfo.investmentInfo.returnTokenAmount;
+        const paybacktokenamount = flexFundingProposalInfo.investmentInfo.paybackTokenAmount;
         const managementFeeAddress = await dao.getAddressConfiguration(sha3("FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS"));
 
         const returnTokenManagementFeeAmount = toBN(paybacktokenamount).
@@ -12192,7 +12192,7 @@ describe("return token management fee...", () => {
             state ${flexFundingProposalInfo.state}
             price ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.price)}
             finalRaiseAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.finalRaisedAmount)}
-            returnAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.returnTokenAmount)}
+            paybackTokenAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.paybackTokenAmount)}
             protocol Fee ${hre.ethers.utils.formatEther(protocolFee)}
             management Fee ${hre.ethers.utils.formatEther(managementFee)}
             proposerReturnTokenRewardAmount ${hre.ethers.utils.formatEther(proposerReturnTokenRewardAmount)}
