@@ -2177,14 +2177,14 @@ describe("Steward-In Management", () => {
     it("submit a steward-in proposal by steward applicant not qualified...", async () => {
         const stewardMangementContract = this.flexStewardMangement;
         const daoAddr = this.flexDirectdaoAddress;
-        await expectRevert(stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0), "revert");
+        await expectRevert(stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0), "revert");
     });
 
     it("submit a steward-in proposal by steward applicant qualified...", async () => {
         const stewardMangementContract = this.flexStewardMangement;
         const daoAddr = this.flexDirectdaoAddress;
         await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -2204,14 +2204,14 @@ describe("Steward-In Management", () => {
     it("submit a steward-in proposal by not steward applicant not qualified...", async () => {
         const stewardMangementContract = this.flexStewardMangement;
         const daoAddr = this.flexDirectdaoAddress;
-        await expectRevert(stewardMangementContract.connect(this.user1).submitSteWardInProposal(daoAddr, this.user2.address, 0), "revert");
+        await expectRevert(stewardMangementContract.connect(this.user1).submitGovernorInProposal(daoAddr, this.user2.address, 0), "revert");
     });
 
     it("submit a steward-in proposal by not steward applicant qualified...", async () => {
         const stewardMangementContract = this.flexStewardMangement;
         const daoAddr = this.flexDirectdaoAddress;
         await this.testtoken1.transfer(this.user2.address, hre.ethers.utils.parseEther("100"));
-        await expectRevert(stewardMangementContract.connect(this.user1).submitSteWardInProposal(daoAddr, this.user2.address, 0), "revert");
+        await expectRevert(stewardMangementContract.connect(this.user1).submitGovernorInProposal(daoAddr, this.user2.address, 0), "revert");
     });
 
     it("vote for steward in proposal by not steward", async () => {
@@ -2277,14 +2277,14 @@ describe("Steward-In Management", () => {
         const stewardMangementContract = this.flexStewardMangement;
         const daoAddr = this.flexDirectdaoAddress;
 
-        await expectRevert(stewardMangementContract.connect(this.user2).submitSteWardOutProposal(daoAddr, this.user1.address), "revert");
+        await expectRevert(stewardMangementContract.connect(this.user2).submitGovernorOutProposal(daoAddr, this.user1.address), "revert");
     });
 
     it("submit a steward-out proposal by steward applicant not steward...", async () => {
         const stewardMangementContract = this.flexStewardMangement;
         const daoAddr = this.flexDirectdaoAddress;
 
-        await expectRevert(stewardMangementContract.submitSteWardOutProposal(daoAddr, this.user2.address), "revert");
+        await expectRevert(stewardMangementContract.submitGovernorOutProposal(daoAddr, this.user2.address), "revert");
     });
 
     it("submit a steward-out proposal by steward...", async () => {
@@ -2292,7 +2292,7 @@ describe("Steward-In Management", () => {
         const daoAddr = this.flexDirectdaoAddress;
 
         const tx = await stewardMangementContract.
-        submitSteWardOutProposal(daoAddr, this.user1.address);
+        submitGovernorOutProposal(daoAddr, this.user1.address);
 
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
@@ -2353,7 +2353,7 @@ describe("Steward-In Management", () => {
         const daoAddr = this.flexDirectdaoAddress;
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         let proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
@@ -2385,7 +2385,7 @@ describe("Steward-In Management", () => {
         `);
         await stewardMangementContract.connect(this.genesis_steward1).quit(daoAddr);
         isSteward = await daoContract.isMember(this.genesis_steward1.address);
-        const allStewards = await stewardMangementContract.getAllSteward(daoAddr);
+        const allStewards = await stewardMangementContract.getAllGovernor(daoAddr);
         console.log(allStewards);
         console.log(`
         is genesis_steward1 Steward ${isSteward}
@@ -2635,7 +2635,7 @@ describe("Steward-In Management", () => {
         `);
 
         const stewardMangementContract = this.flexStewardMangement;
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -3573,7 +3573,7 @@ describe("voting...", () => {
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
         await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -3615,7 +3615,7 @@ describe("voting...", () => {
 
         const voteRel = await flexVotingContract.voteResult(daoAddr, proposalId);
         await stewardMangementContract.processProposal(daoAddr, proposalId);
-        const allWeight = await flexVotingContract.getAllStewardWeight(daoAddr);
+        const allWeight = await flexVotingContract.getAllGovernorWeight(daoAddr);
         proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
         const isSteward = await daoContract.isMember(this.user1.address);
         console.log(`
@@ -3633,7 +3633,7 @@ describe("voting...", () => {
         const daoAddr = this.dao1_2;
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -3675,7 +3675,7 @@ describe("voting...", () => {
 
         const voteRel = await flexVotingContract.voteResult(daoAddr, proposalId);
         await stewardMangementContract.processProposal(daoAddr, proposalId);
-        const allWeight = await flexVotingContract.getAllStewardWeight(daoAddr);
+        const allWeight = await flexVotingContract.getAllGovernorWeight(daoAddr);
         proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
         const isSteward = await daoContract.isMember(this.user1.address);
         console.log(`
@@ -3693,7 +3693,7 @@ describe("voting...", () => {
         const daoAddr = this.dao1_3;
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -3735,7 +3735,7 @@ describe("voting...", () => {
 
         const voteRel = await flexVotingContract.voteResult(daoAddr, proposalId);
         await stewardMangementContract.processProposal(daoAddr, proposalId);
-        const allWeight = await flexVotingContract.getAllStewardWeight(daoAddr);
+        const allWeight = await flexVotingContract.getAllGovernorWeight(daoAddr);
 
         proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
         const isSteward = await daoContract.isMember(this.user1.address);
@@ -3755,7 +3755,7 @@ describe("voting...", () => {
         const daoAddr = this.dao1_4;
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -3813,7 +3813,7 @@ describe("voting...", () => {
         const daoAddr = this.dao2_1;
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -3861,7 +3861,7 @@ describe("voting...", () => {
 
         const voteRel = await flexVotingContract.voteResult(daoAddr, proposalId);
         await stewardMangementContract.processProposal(daoAddr, proposalId);
-        const allWeight = await flexVotingContract.getAllStewardWeight(daoAddr);
+        const allWeight = await flexVotingContract.getAllGovernorWeight(daoAddr);
 
         proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
         const isSteward = await daoContract.isMember(this.user1.address);
@@ -3881,7 +3881,7 @@ describe("voting...", () => {
         const daoAddr = this.dao2_2;
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -3914,7 +3914,7 @@ describe("voting...", () => {
 
         const voteRel = await flexVotingContract.voteResult(daoAddr, proposalId);
         await stewardMangementContract.processProposal(daoAddr, proposalId);
-        const allWeight = await flexVotingContract.getAllStewardWeight(daoAddr);
+        const allWeight = await flexVotingContract.getAllGovernorWeight(daoAddr);
 
         proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
         const isSteward = await daoContract.isMember(this.user1.address);
@@ -3934,7 +3934,7 @@ describe("voting...", () => {
         const daoAddr = this.dao2_3;
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -3967,7 +3967,7 @@ describe("voting...", () => {
 
         const voteRel = await flexVotingContract.voteResult(daoAddr, proposalId);
         await stewardMangementContract.processProposal(daoAddr, proposalId);
-        const allWeight = await flexVotingContract.getAllStewardWeight(daoAddr);
+        const allWeight = await flexVotingContract.getAllGovernorWeight(daoAddr);
 
         proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
         const isSteward = await daoContract.isMember(this.user1.address);
@@ -3987,7 +3987,7 @@ describe("voting...", () => {
         const daoAddr = this.dao2_4;
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -4036,7 +4036,7 @@ describe("voting...", () => {
         const daoAddr = this.dao2_5;
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -4069,7 +4069,7 @@ describe("voting...", () => {
 
         const voteRel = await flexVotingContract.voteResult(daoAddr, proposalId);
         await stewardMangementContract.processProposal(daoAddr, proposalId);
-        const allWeight = await flexVotingContract.getAllStewardWeight(daoAddr);
+        const allWeight = await flexVotingContract.getAllGovernorWeight(daoAddr);
 
         proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
         const isSteward = await daoContract.isMember(this.user1.address);
@@ -4089,7 +4089,7 @@ describe("voting...", () => {
         const daoAddr = this.dao2_6;
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -4137,7 +4137,7 @@ describe("voting...", () => {
         const daoAddr = this.dao3;
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -4178,7 +4178,7 @@ describe("voting...", () => {
 
         const voteRel = await flexVotingContract.voteResult(daoAddr, proposalId);
         await stewardMangementContract.processProposal(daoAddr, proposalId);
-        const allWeight = await flexVotingContract.getAllStewardWeight(daoAddr);
+        const allWeight = await flexVotingContract.getAllGovernorWeight(daoAddr);
 
         proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
         const isSteward = await daoContract.isMember(this.user1.address);
@@ -4198,7 +4198,7 @@ describe("voting...", () => {
         const daoAddr = this.dao4;
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -4230,7 +4230,7 @@ describe("voting...", () => {
 
         const voteRel = await flexVotingContract.voteResult(daoAddr, proposalId);
         await stewardMangementContract.processProposal(daoAddr, proposalId);
-        const allWeight = await flexVotingContract.getAllStewardWeight(daoAddr);
+        const allWeight = await flexVotingContract.getAllGovernorWeight(daoAddr);
 
         proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
         const isSteward = await daoContract.isMember(this.user1.address);
@@ -4250,7 +4250,7 @@ describe("voting...", () => {
         const daoAddr = this.dao4_1;
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -4282,7 +4282,7 @@ describe("voting...", () => {
 
         const voteRel = await flexVotingContract.voteResult(daoAddr, proposalId);
         await stewardMangementContract.processProposal(daoAddr, proposalId);
-        const allWeight = await flexVotingContract.getAllStewardWeight(daoAddr);
+        const allWeight = await flexVotingContract.getAllGovernorWeight(daoAddr);
 
         proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
         const isSteward = await daoContract.isMember(this.user1.address);
@@ -4302,7 +4302,7 @@ describe("voting...", () => {
         const daoAddr = this.dao4_2;
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -4334,7 +4334,7 @@ describe("voting...", () => {
 
         const voteRel = await flexVotingContract.voteResult(daoAddr, proposalId);
         await stewardMangementContract.processProposal(daoAddr, proposalId);
-        const allWeight = await flexVotingContract.getAllStewardWeight(daoAddr);
+        const allWeight = await flexVotingContract.getAllGovernorWeight(daoAddr);
 
         proposalDetail = await stewardMangementContract.proposals(daoAddr, proposalId);
         const isSteward = await daoContract.isMember(this.user1.address);
@@ -10419,7 +10419,7 @@ describe("steward allocations...", () => {
         const allocation = 100;
         const stewardMangementContract = this.flexStewardMangement;
         const daoAddr = this.flexDirectdaoAddress;
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, allocation);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, allocation);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
