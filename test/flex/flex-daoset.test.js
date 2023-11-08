@@ -585,7 +585,7 @@ describe("daoset proposal...", () => {
         let currenttokenId = await this.daoContract
             .getConfiguration("0x93cc40268a57b3f7e5eb22a016a12d19010736289cceac5742a116fea3491b35");
         let currentGovernorWhitelist = await this.flexStewardMangement
-            .getStewardWhitelist(this.flexDirectdaoAddress);
+            .getGovernorWhitelist(this.flexDirectdaoAddress);
         console.log(`
         created...
         proposalId ${proposalId}
@@ -649,7 +649,7 @@ describe("daoset proposal...", () => {
         currenttokenId = await this.daoContract
             .getConfiguration("0x93cc40268a57b3f7e5eb22a016a12d19010736289cceac5742a116fea3491b35");
         currentGovernorWhitelist = await this.flexStewardMangement
-            .getStewardWhitelist(this.flexDirectdaoAddress);
+            .getGovernorWhitelist(this.flexDirectdaoAddress);
         expect(varifyType == currentvarifyType, true);
         expect(minAmount == currentminAmount, true);
         expect(tokenAddress == currenttokenAddress, true);
@@ -1758,7 +1758,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const stewardMangementContract = this.flexStewardMangement;
         const daoAddr = this.flexDirectdaoAddress;
         await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -1849,7 +1849,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const stewardMangementContract = this.flexStewardMangement;
         const daoAddr = this.flexDirectdaoAddress;
         await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -1948,7 +1948,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const stewardMangementContract = this.flexStewardMangement;
         const daoAddr = this.flexDirectdaoAddress;
         await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -2049,7 +2049,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const stewardMangementContract = this.flexStewardMangement;
         const daoAddr = this.flexDirectdaoAddress;
         await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -2165,7 +2165,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const stewardMangementContract = this.flexStewardMangement;
         const daoAddr = this.flexDirectdaoAddress;
         await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -2260,7 +2260,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const stewardMangementContract = this.flexStewardMangement;
         const daoAddr = this.flexDirectdaoAddress;
         await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
@@ -2365,7 +2365,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const stewardMangementContract = this.flexStewardMangement;
         const daoAddr = this.flexDirectdaoAddress;
         await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
-        const tx = await stewardMangementContract.submitSteWardInProposal(daoAddr, this.user1.address, 0);
+        const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         this.stewardInProposalId = proposalId;
