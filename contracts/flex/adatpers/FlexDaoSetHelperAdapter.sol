@@ -65,20 +65,15 @@ contract FlexDaoSetHelperAdapterContract {
                 tokenId
             );
 
-            // FlexDaoSetAdapterContract daosetContract = FlexDaoSetAdapterContract(
-            //         dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER)
-            //     );
-            // address[] memory whitelist = daosetContract.getGovernorWhitelist(
-            //     proposalId
-            // );
+
             if (whitelist.length > 0) {
-                StewardManagementContract stewardContract = StewardManagementContract(
+                StewardManagementContract governorContract = StewardManagementContract(
                         dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_MANAGEMENT)
                     );
 
-                stewardContract.clearGovernorWhitelist(dao);
+                governorContract.clearGovernorWhitelist(dao);
                 for (uint8 i = 0; i < whitelist.length; i++) {
-                    stewardContract.registerGovernorWhiteList(dao, whitelist[i]);
+                    governorContract.registerGovernorWhiteList(dao, whitelist[i]);
                 }
             }
         }
@@ -180,20 +175,14 @@ contract FlexDaoSetHelperAdapterContract {
         dao.setConfiguration(DaoHelper.SUPER_MAJORITY, uint256Args[6]); //support
         dao.setConfiguration(DaoHelper.VOTING_PERIOD, uint256Args[7]); //votingPeriod
 
-        // FlexDaoSetAdapterContract daosetContract = FlexDaoSetAdapterContract(
-        //     dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER)
-        // );
-        // address[] memory governors;
-        // uint256[] memory allocations;
-        // (governors, allocations) = daosetContract.getAllocations(proposalId);
         if (governors.length > 0) {
-            FlexStewardAllocationAdapter stewardAlloc = FlexStewardAllocationAdapter(
+            FlexStewardAllocationAdapter governorAlloc = FlexStewardAllocationAdapter(
                     dao.getAdapterAddress(
                         DaoHelper.FLEX_STEWARD_ALLOCATION_ADAPT
                     )
                 );
             for (uint8 i = 0; i < governors.length; i++) {
-                stewardAlloc.setAllocation(dao, governors[i], allocations[i]);
+                governorAlloc.setAllocation(dao, governors[i], allocations[i]);
             }
         }
     }

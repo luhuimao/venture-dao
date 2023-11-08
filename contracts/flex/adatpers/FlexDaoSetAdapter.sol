@@ -78,11 +78,11 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
         FlexFundingAdapterContract funding = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
-        StewardManagementContract steward = StewardManagementContract(
+        StewardManagementContract governor = StewardManagementContract(
             dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_MANAGEMENT)
         );
 
-        if (funding.allDone(dao) && steward.allDone(dao)) return true;
+        if (funding.allDone(dao) && governor.allDone(dao)) return true;
         return false;
     }
 
@@ -409,19 +409,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
         }
 
         ongoingParticipantCapProposal[address(dao)] = bytes32(0);
-
-        // uint128 allWeight = GovernanceHelper
-        //     .getAllStewardVotingWeightByProposalId(dao, proposalId);
-
-        // emit ProposalProcessed(
-        //     address(dao),
-        //     proposalId,
-        //     proposal.state,
-        //     uint256(voteResult),
-        //     allWeight,
-        //     nbYes,
-        //     nbNo
-        // );
     }
 
     function processGovernorMembershipProposal(
@@ -432,10 +419,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
             storage proposal = governorMembershipProposals[address(dao)][
                 proposalId
             ];
-
-        // IFlexVoting.VotingState voteResult;
-        // uint256 nbYes;
-        // uint256 nbNo;
 
         (IFlexVoting.VotingState voteResult, , ) = processProposal(
             dao,
@@ -455,18 +438,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
         }
 
         ongoingGovernorMembershipProposal[address(dao)] = bytes32(0);
-
-        // uint128 allGPsWeight = GovernanceHelper
-        //     .getAllStewardVotingWeightByProposalId(dao, proposalId);
-        // emit ProposalProcessed(
-        //     address(dao),
-        //     proposalId,
-        //     proposal.state,
-        //     uint256(voteResult),
-        //     allGPsWeight,
-        //     nbYes,
-        //     nbNo
-        // );
     }
 
     function processInvestorMembershipProposal(
@@ -477,10 +448,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
             storage proposal = investorMembershipProposals[address(dao)][
                 proposalId
             ];
-
-        // IFlexVoting.VotingState voteResult;
-        // uint256 nbYes;
-        // uint256 nbNo;
 
         (IFlexVoting.VotingState voteResult, , ) = processProposal(
             dao,
@@ -500,18 +467,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
         }
 
         ongoingInvstorMembershipProposal[address(dao)] = bytes32(0);
-
-        // uint128 allGPsWeight = GovernanceHelper
-        //     .getAllStewardVotingWeightByProposalId(dao, proposalId);
-        // emit ProposalProcessed(
-        //     address(dao),
-        //     proposalId,
-        //     proposal.state,
-        //     uint256(voteResult),
-        //     allGPsWeight,
-        //     nbYes,
-        //     nbNo
-        // );
     }
 
     function processVotingProposal(
@@ -545,10 +500,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
             address(dao)
         ][proposalId];
 
-        // IFlexVoting.VotingState voteResult;
-        // uint256 nbYes;
-        // uint256 nbNo;
-
         (IFlexVoting.VotingState voteResult, , ) = processProposal(
             dao,
             proposalId
@@ -567,18 +518,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
         }
 
         ongoingFeesProposal[address(dao)] = bytes32(0);
-
-        // uint128 allWeight = GovernanceHelper
-        //     .getAllStewardVotingWeightByProposalId(dao, proposalId);
-        // emit ProposalProcessed(
-        //     address(dao),
-        //     proposalId,
-        //     proposal.state,
-        //     uint256(voteResult),
-        //     allWeight,
-        //     nbYes,
-        //     nbNo
-        // );
     }
 
     function processProposerMembershipProposal(
@@ -608,18 +547,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
         }
 
         ongoingProposerMembershipProposal[address(dao)] = bytes32(0);
-
-        // uint128 allWeight = GovernanceHelper
-        //     .getAllStewardVotingWeightByProposalId(dao, proposalId);
-        // emit ProposalProcessed(
-        //     address(dao),
-        //     proposalId,
-        //     proposal.state,
-        //     uint256(voteResult),
-        //     allWeight,
-        //     nbYes,
-        //     nbNo
-        // );
     }
 
     function processPollForInvestmentProposal(
@@ -673,7 +600,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
             nbNo
         );
 
-        // return votingContract.voteResult(dao, proposalId);
         return (vs, nbYes, nbNo);
     }
 
