@@ -315,12 +315,12 @@ contract StewardManagementContract is
                         DaoHelper.FLEX_VOTING_ELIGIBILITY_TYPE
                     ) == 3
                 ) {
-                    FlexStewardAllocationAdapter stewardAlloc = FlexStewardAllocationAdapter(
+                    FlexStewardAllocationAdapter governorAlloc = FlexStewardAllocationAdapter(
                             dao.getAdapterAddress(
                                 DaoHelper.FLEX_STEWARD_ALLOCATION_ADAPT
                             )
                         );
-                    stewardAlloc.setAllocation(
+                    governorAlloc.setAllocation(
                         dao,
                         proposal.account,
                         proposal.allocation
@@ -330,13 +330,13 @@ contract StewardManagementContract is
 
             if (proposal.pType == ProposalType.GOVERNOR_OUT) {
                 dao.removeMember(applicant);
-                FlexStewardAllocationAdapter stewardAlloc = FlexStewardAllocationAdapter(
+                FlexStewardAllocationAdapter governorAlloc = FlexStewardAllocationAdapter(
                         dao.getAdapterAddress(
                             DaoHelper.FLEX_STEWARD_ALLOCATION_ADAPT
                         )
                     );
                 // remove governor set allocation to 0
-                stewardAlloc.setAllocation(dao, proposal.account, 0);
+                governorAlloc.setAllocation(dao, proposal.account, 0);
             }
 
             proposal.state = ProposalState.Done;
@@ -365,11 +365,11 @@ contract StewardManagementContract is
     function quit(DaoRegistry dao) external onlyMember(dao) {
         require(dao.daoCreator() != msg.sender, "dao summonor cant quit");
         dao.removeMember(msg.sender);
-        FlexStewardAllocationAdapter stewardAlloc = FlexStewardAllocationAdapter(
+        FlexStewardAllocationAdapter governorAlloc = FlexStewardAllocationAdapter(
                 dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_ALLOCATION_ADAPT)
             );
         // remove governor set allocation to 0
-        stewardAlloc.setAllocation(dao, msg.sender, 0);
+        governorAlloc.setAllocation(dao, msg.sender, 0);
     }
 
     function isGovernorWhiteList(

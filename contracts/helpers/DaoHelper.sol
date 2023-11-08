@@ -236,15 +236,15 @@ library DaoHelper {
     bytes32 internal constant FLEX_INVESTMENT_TYPE =
         keccak256("FLEX_FUNDING_TYPE");
     // -----flex steward membership setting
-    bytes32 internal constant FLEX_STEWARD_MEMBERSHIP_ENABLE =
+    bytes32 internal constant FLEX_GOVERNOR_MEMBERSHIP_ENABLE =
         keccak256("FLEX_STEWARD_MEMBERSHIP_ENABLE");
-    bytes32 internal constant FLEX_STEWARD_MEMBERSHIP_TYPE =
+    bytes32 internal constant FLEX_GOVERNOR_MEMBERSHIP_TYPE =
         keccak256("FLEX_STEWARD_MEMBERSHIP_TYPE");
-    bytes32 internal constant FLEX_STEWARD_MEMBERSHIP_MINI_HOLDING =
+    bytes32 internal constant FLEX_GOVERNOR_MEMBERSHIP_MINI_HOLDING =
         keccak256("FLEX_STEWARD_MEMBERSHIP_MINI_HOLDING");
-    bytes32 internal constant FLEX_STEWARD_MEMBERSHIP_TOKEN_ADDRESS =
+    bytes32 internal constant FLEX_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS =
         keccak256("FLEX_STEWARD_MEMBERSHIP_TOKEN_ADDRESS");
-    bytes32 internal constant FLEX_STEWARD_MEMBERSHIP_TOKEN_ID =
+    bytes32 internal constant FLEX_GOVERNOR_MEMBERSHIP_TOKEN_ID =
         keccak256("FLEX_STEWARD_MEMBERSHIP_TOKEN_ID");
 
     bytes32 internal constant FLEX_MANAGEMENT_FEE_TYPE =

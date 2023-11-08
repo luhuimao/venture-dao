@@ -42,26 +42,26 @@ contract FlexDaoSetHelperAdapterContract {
             "!access"
         );
         dao.setConfiguration(
-            DaoHelper.FLEX_STEWARD_MEMBERSHIP_ENABLE,
+            DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_ENABLE,
             enable == true ? 1 : 0
         );
 
         if (enable) {
             dao.setConfiguration(
-                DaoHelper.FLEX_STEWARD_MEMBERSHIP_TYPE,
+                DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_TYPE,
                 varifyType
             );
             dao.setConfiguration(
-                DaoHelper.FLEX_STEWARD_MEMBERSHIP_MINI_HOLDING,
+                DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_MINI_HOLDING,
                 minAmount
             );
             dao.setAddressConfiguration(
-                DaoHelper.FLEX_STEWARD_MEMBERSHIP_TOKEN_ADDRESS,
+                DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS,
                 tokenAddress
             );
 
             dao.setConfiguration(
-                DaoHelper.FLEX_STEWARD_MEMBERSHIP_TOKEN_ID,
+                DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_TOKEN_ID,
                 tokenId
             );
 

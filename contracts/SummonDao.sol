@@ -396,9 +396,9 @@ contract SummonDao {
 
         //3config Steward Membership
         if (flexDaoStewardMembershipEnable) {
-            dao.setConfiguration(DaoHelper.FLEX_STEWARD_MEMBERSHIP_ENABLE, 1);
+            dao.setConfiguration(DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_ENABLE, 1);
             dao.setConfiguration(
-                DaoHelper.FLEX_STEWARD_MEMBERSHIP_TYPE,
+                DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_TYPE,
                 uint256Params[0]
             );
             if (
@@ -407,18 +407,18 @@ contract SummonDao {
                 uint256Params[0] == 2
             ) {
                 dao.setConfiguration(
-                    DaoHelper.FLEX_STEWARD_MEMBERSHIP_MINI_HOLDING,
+                    DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_MINI_HOLDING,
                     uint256Params[1]
                 );
                 dao.setAddressConfiguration(
-                    DaoHelper.FLEX_STEWARD_MEMBERSHIP_TOKEN_ADDRESS,
+                    DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS,
                     flexDaoStewardMembershipTokenAddress
                 );
             }
 
             if (uint256Params[0] == 2) {
                 dao.setConfiguration(
-                    DaoHelper.FLEX_STEWARD_MEMBERSHIP_TOKEN_ID,
+                    DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_TOKEN_ID,
                     uint256Params[2]
                 );
             }
