@@ -455,4 +455,20 @@ describe("governor management...", () => {
         `);
     });
 
+    it("governor quit...", async () => { 
+        const daoAddr = this.flexDirectdaoAddress;
+        let allocValue = await this.flexStewardAllocation.getAllocation(daoAddr, this.genesis_steward2.address);
+        console.log(`
+        allocValue ${allocValue}
+        `);
+
+        await this.flexStewardMangement.connect(this.genesis_steward2).quit(daoAddr);
+
+        allocValue = await this.flexStewardAllocation.getAllocation(daoAddr, this.genesis_steward2.address);
+        console.log(`
+        quited...
+        allocValue ${allocValue}
+        `);
+    });
+
 });

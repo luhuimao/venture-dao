@@ -935,7 +935,7 @@ export const contracts: Array<ContractConfig> = [
       dao: [
         daoAccessFlagsMap.SUBMIT_PROPOSAL,
         daoAccessFlagsMap.SET_CONFIGURATION,
-        daoAccessFlagsMap.INCREASE_PARTICIPANT_CAP_ID,
+        daoAccessFlagsMap.INCREASE_INVESTOR_CAP_ID,
         daoAccessFlagsMap.INCREASE_GOVERNOR_MEMBERSHIP_ID,
         daoAccessFlagsMap.INCREASE_INVESTOR_MEMBERSHIP_ID,
         daoAccessFlagsMap.INCREASE_VOTING_ID
@@ -1171,7 +1171,7 @@ export const contracts: Array<ContractConfig> = [
     acls: {
       dao: [
         daoAccessFlagsMap.SUBMIT_PROPOSAL,
-        daoAccessFlagsMap.INCREASE_PARTICIPANT_CAP_ID,
+        daoAccessFlagsMap.INCREASE_INVESTOR_CAP_ID,
         daoAccessFlagsMap.INCREASE_GOVERNOR_MEMBERSHIP_ID,
         daoAccessFlagsMap.INCREASE_INVESTOR_MEMBERSHIP_ID,
         daoAccessFlagsMap.INCREASE_FEE_ID,

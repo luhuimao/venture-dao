@@ -467,7 +467,7 @@ describe("daoset proposal...", () => {
         const enableParticipantCap = false;
         const cap = 0;
         const tx = await this.flexDaoSetAdapterContract
-            .submitParticipantCapProposal(
+            .submitInvestorCapProposal(
                 this.flexDirectdaoAddress,
                 enableParticipantCap,
                 cap);
@@ -476,7 +476,7 @@ describe("daoset proposal...", () => {
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
         let proposal = await this.flexDaoSetAdapterContract.
-        participantCapProposals(
+        investorCapProposals(
             this.flexDirectdaoAddress,
             proposalId
         );
@@ -496,7 +496,7 @@ describe("daoset proposal...", () => {
        `);
 
         await expectRevert(this.flexDaoSetAdapterContract
-            .submitParticipantCapProposal(
+            .submitInvestorCapProposal(
                 this.flexDirectdaoAddress,
                 enableParticipantCap,
                 cap),
@@ -520,13 +520,13 @@ describe("daoset proposal...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processParticipantCapProposal(
+        processInvestorCapProposal(
             this.flexDirectdaoAddress,
             proposalId
         );
 
         proposal = await this.flexDaoSetAdapterContract.
-        participantCapProposals(
+        investorCapProposals(
             this.flexDirectdaoAddress,
             proposalId
         );
@@ -705,7 +705,7 @@ describe("daoset proposal...", () => {
             .getConfiguration("0x96b394ec661f77cbb65c26efb1a3308a7405b2ad904ca7bd203e7a1c35737249");
 
         let investorMembershipData = await this.flexFundingPoolAdapterContract
-            .getParticipantMembershipInfo(
+            .getInvestorMembershipInfo(
                 this.flexDirectdaoAddress,
                 name
             );
@@ -775,7 +775,7 @@ describe("daoset proposal...", () => {
             .getConfiguration("0x71ecc01da16acc23ab0eca549b0aaa7659ae183a220304fe5072243bc984fd79");
 
         investorMembershipData = await this.flexFundingPoolAdapterContract
-            .getParticipantMembershipInfo(
+            .getInvestorMembershipInfo(
                 this.flexDirectdaoAddress,
                 name
             );
@@ -1777,7 +1777,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const enableParticipantCap = false;
         const cap = 0;
         await expectRevert(this.flexDaoSetAdapterContract
-            .submitParticipantCapProposal(
+            .submitInvestorCapProposal(
                 this.flexDirectdaoAddress,
                 enableParticipantCap,
                 cap), "revert");
@@ -1811,7 +1811,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         `);
 
         const tx1 = await this.flexDaoSetAdapterContract
-            .submitParticipantCapProposal(
+            .submitInvestorCapProposal(
                 this.flexDirectdaoAddress,
                 enableParticipantCap,
                 cap);
@@ -1820,7 +1820,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const proposalId1 = result1.events[result.events.length - 1].args.proposalId;
 
         let proposal = await this.flexDaoSetAdapterContract.
-        participantCapProposals(
+        investorCapProposals(
             this.flexDirectdaoAddress,
             proposalId1
         );
@@ -1839,7 +1839,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processParticipantCapProposal(
+        processInvestorCapProposal(
             this.flexDirectdaoAddress,
             proposalId1
         );

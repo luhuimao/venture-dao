@@ -13792,17 +13792,17 @@ describe("daoset proposal...", () => {
     it("create daoset participant cap proposal...", async () => {
         const enable = true;
         const cap = 5;
-        const tx = await this.vintageDaoSetAdapterContract.submitParticipantCapProposal(this.daoAddr1, enable, cap);
+        const tx = await this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap);
 
         const rel = await tx.wait();
 
         const proposalId = rel.events[rel.events.length - 1].args.proposalId
-        const proposal = await this.vintageDaoSetAdapterContract.participantCapProposals(
+        const proposal = await this.vintageDaoSetAdapterContract.investorCapProposals(
             this.daoAddr1,
             proposalId);
 
         console.log(proposal);
-        await expectRevert(this.vintageDaoSetAdapterContract.submitParticipantCapProposal(this.daoAddr1, enable, cap), "revert");
+        await expectRevert(this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap), "revert");
 
 
         const vintageFundingAdapterContract = this.vintageFundingAdapterContract;
@@ -13901,7 +13901,7 @@ describe("daoset proposal...", () => {
         await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr1, proposalId, 1);
         await this.vintageVotingAdapterContract.submitVote(this.daoAddr1, proposalId, 1);
 
-        let ProposalInfo = await this.vintageDaoSetAdapterContract.participantCapProposals(this.daoAddr1, proposalId);
+        let ProposalInfo = await this.vintageDaoSetAdapterContract.investorCapProposals(this.daoAddr1, proposalId);
         let stopVoteTime = ProposalInfo.stopVoteTime;
 
         if (parseInt(stopVoteTime) > blocktimestamp) {
@@ -13914,9 +13914,9 @@ describe("daoset proposal...", () => {
         state ${voteRel.state}  nbYes ${voteRel.nbYes}  nbNo ${voteRel.nbNo}
         process proposal...
         `);
-        await this.vintageDaoSetAdapterContract.processParticipantCapProposal(this.daoAddr1, proposalId);
+        await this.vintageDaoSetAdapterContract.processInvestorCapProposal(this.daoAddr1, proposalId);
 
-        ProposalInfo = await this.vintageDaoSetAdapterContract.participantCapProposals(this.daoAddr1, proposalId);
+        ProposalInfo = await this.vintageDaoSetAdapterContract.investorCapProposals(this.daoAddr1, proposalId);
 
         console.log(`
         executed...
@@ -13983,7 +13983,7 @@ describe("daoset proposal...", () => {
         fund State ${fundState}
         submit daoset proposal...
         `);
-        await expectRevert(this.vintageDaoSetAdapterContract.submitParticipantCapProposal(this.daoAddr1, enable, cap), "revert");
+        await expectRevert(this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap), "revert");
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
@@ -14019,7 +14019,7 @@ describe("daoset proposal...", () => {
         blocktimestamp ${blocktimestamp}
         `)
 
-        await this.vintageDaoSetAdapterContract.submitParticipantCapProposal(this.daoAddr1, enable, cap);
+        await this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap);
         console.log(`
         dao set proposal created...
         `);
