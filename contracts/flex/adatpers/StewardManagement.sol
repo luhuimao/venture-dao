@@ -312,7 +312,7 @@ contract StewardManagementContract is
                 dao.potentialNewMember(applicant);
                 if (
                     dao.getConfiguration(
-                        DaoHelper.FLEX_VOTING_ELIGIBILITY_TYPE
+                        DaoHelper.FLEX_VOTING_ASSET_TYPE
                     ) == 3
                 ) {
                     FlexStewardAllocationAdapter governorAlloc = FlexStewardAllocationAdapter(

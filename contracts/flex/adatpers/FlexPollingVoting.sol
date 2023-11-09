@@ -66,12 +66,12 @@ contract FlexPollingVotingContract is
         uint256 stopTime;
         mapping(address => uint256) votes;
     }
-    mapping(address => EnumerableSet.AddressSet) pollsterWhiteList;
+    mapping(address => EnumerableSet.AddressSet) pollvoterWhiteList;
     mapping(address => mapping(bytes32 => Voting)) public votes;
 
     string public constant ADAPTER_NAME = "FlexPollingVotingContract";
 
-    function registerPollsterWhiteList(
+    function registerPollVoterWhiteList(
         DaoRegistry dao,
         address account
     ) external {
@@ -81,23 +81,23 @@ contract FlexPollingVotingContract is
                 dao.isMember(msg.sender),
             "!access"
         );
-        if (!pollsterWhiteList[address(dao)].contains(account)) {
-            pollsterWhiteList[address(dao)].add(account);
+        if (!pollvoterWhiteList[address(dao)].contains(account)) {
+            pollvoterWhiteList[address(dao)].add(account);
         }
     }
 
-    function clearPollsterWhiteList(DaoRegistry dao) external {
+    function clearPollVoterWhiteList(DaoRegistry dao) external {
         require(
             msg.sender ==
                 dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER),
             "!access"
         );
         address[] memory tem;
-        tem = pollsterWhiteList[address(dao)].values();
+        tem = pollvoterWhiteList[address(dao)].values();
         uint256 len = tem.length;
         if (len > 0) {
             for (uint8 i = 0; i < len; i++) {
-                pollsterWhiteList[address(dao)].remove(tem[i]);
+                pollvoterWhiteList[address(dao)].remove(tem[i]);
             }
         }
     }
@@ -109,11 +109,11 @@ contract FlexPollingVotingContract is
         return ADAPTER_NAME;
     }
 
-    function isPollsterWhiteList(
+    function isPollVoterWhiteList(
         DaoRegistry dao,
         address account
     ) external view returns (bool) {
-        return pollsterWhiteList[address(dao)].contains(account);
+        return pollvoterWhiteList[address(dao)].contains(account);
     }
 
     /**
@@ -279,6 +279,6 @@ contract FlexPollingVotingContract is
     function getWhitelist(
         address daoAddr
     ) external view returns (address[] memory) {
-        return pollsterWhiteList[daoAddr].values();
+        return pollvoterWhiteList[daoAddr].values();
     }
 }

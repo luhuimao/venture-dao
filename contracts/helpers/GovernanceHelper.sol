@@ -134,17 +134,17 @@ library GovernanceHelper {
                 )
             );
         uint256 etype = dao.getConfiguration(
-            DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TYPE
+            DaoHelper.VINTAGE_VOTING_ASSET_TYPE
         ); // 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
         uint256 votingWeightedType = dao.getConfiguration(
             DaoHelper.VINTAGE_VOTING_WEIGHTED_TYPE
         ); // 0. quantity 1. log2 2. 1 voter 1 vote
         if (votingWeightedType == 1) {
             uint256 tokenId = dao.getConfiguration(
-                DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TOKEN_ID
+                DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ID
             );
             address tokenAddress = dao.getAddressConfiguration(
-                DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TOKEN_ADDRESS
+                DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ADDRESS
             );
             uint256 bal = 0;
             if (etype == 0) {
@@ -192,10 +192,10 @@ library GovernanceHelper {
         } else if (votingWeightedType == 0) {
             //quantity
             uint256 tokenId = dao.getConfiguration(
-                DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TOKEN_ID
+                DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ID
             );
             address tokenAddress = dao.getAddressConfiguration(
-                DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TOKEN_ADDRESS
+                DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ADDRESS
             );
             uint256 bal = 0;
             if (etype == 0) {
@@ -241,7 +241,7 @@ library GovernanceHelper {
         address account
     ) internal view returns (uint128) {
         uint256 etype = dao.getConfiguration(
-            DaoHelper.FLEX_VOTING_ELIGIBILITY_TYPE
+            DaoHelper.FLEX_VOTING_ASSET_TYPE
         ); // 0. ERC20 1. ERC721, 2. ERC1155 3.allocation
         uint256 votingWeightedType = dao.getConfiguration(
             DaoHelper.FLEX_VOTING_WEIGHTED_TYPE
@@ -252,10 +252,10 @@ library GovernanceHelper {
             );
         if (votingWeightedType == 1) {
             uint256 tokenId = dao.getConfiguration(
-                DaoHelper.FLEX_VOTING_ELIGIBILITY_TOKEN_ID
+                DaoHelper.FLEX_VOTING_ASSET_TOKEN_ID
             );
             address tokenAddress = dao.getAddressConfiguration(
-                DaoHelper.FLEX_VOTING_ELIGIBILITY_TOKEN_ADDRESS
+                DaoHelper.FLEX_VOTING_ASSET_TOKEN_ADDRESS
             );
             uint256 bal = 0;
             if (etype == 0) {
@@ -289,10 +289,10 @@ library GovernanceHelper {
         } else if (votingWeightedType == 0) {
             //quantity
             uint256 tokenId = dao.getConfiguration(
-                DaoHelper.FLEX_VOTING_ELIGIBILITY_TOKEN_ID
+                DaoHelper.FLEX_VOTING_ASSET_TOKEN_ID
             );
             address tokenAddress = dao.getAddressConfiguration(
-                DaoHelper.FLEX_VOTING_ELIGIBILITY_TOKEN_ADDRESS
+                DaoHelper.FLEX_VOTING_ASSET_TOKEN_ADDRESS
             );
             uint256 bal = 0;
             if (etype == 0) {
@@ -325,17 +325,17 @@ library GovernanceHelper {
         address account
     ) internal view returns (uint128) {
         uint256 etype = dao.getConfiguration(
-            DaoHelper.FLEX_POLL_VOTING_ELIGIBILITY_TYPE
+            DaoHelper.FLEX_POLL_VOTING_ASSET_TYPE
         ); // 0. ERC20 1. ERC721, 2. ERC1155
         uint256 votingWeightedType = dao.getConfiguration(
             DaoHelper.FLEX_POLL_VOTING_WEIGHTED_TYPE
         ); // 0. quantity 1. log2 2. 1 voter 1 vote
         if (votingWeightedType == 1) {
             uint256 tokenId = dao.getConfiguration(
-                DaoHelper.FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ID
+                DaoHelper.FLEX_POLL_VOTING_ASSET_TOKEN_ID
             );
             address tokenAddress = dao.getAddressConfiguration(
-                DaoHelper.FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ADDRESS
+                DaoHelper.FLEX_POLL_VOTING_ASSET_TOKEN_ADDRESS
             );
             uint256 bal = 0;
             if (tokenAddress == address(0x0)) return 0;
@@ -363,10 +363,10 @@ library GovernanceHelper {
         } else if (votingWeightedType == 0) {
             //quantity
             uint256 tokenId = dao.getConfiguration(
-                DaoHelper.FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ID
+                DaoHelper.FLEX_POLL_VOTING_ASSET_TOKEN_ID
             );
             address tokenAddress = dao.getAddressConfiguration(
-                DaoHelper.FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ADDRESS
+                DaoHelper.FLEX_POLL_VOTING_ASSET_TOKEN_ADDRESS
             );
             uint256 bal = 0;
             if (tokenAddress == address(0x0)) return 0;

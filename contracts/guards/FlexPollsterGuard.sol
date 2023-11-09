@@ -37,45 +37,45 @@ abstract contract FlexPollsterGuard {
         if (dao.getConfiguration(DaoHelper.FLEX_INVESTMENT_TYPE) == 1) {
             //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
             if (
-                dao.getConfiguration(DaoHelper.FLEX_POLLSTER_MEMBERSHIP_TYPE) ==
+                dao.getConfiguration(DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TYPE) ==
                 0
             ) {
                 require(
                     IERC20(
                         dao.getAddressConfiguration(
-                            DaoHelper.FLEX_POLLSTER_MEMBERSHIP_TOKEN_ADDRESS
+                            DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TOKEN_ADDRESS
                         )
                     ).balanceOf(msg.sender) >=
                         dao.getConfiguration(
-                            DaoHelper.FLEX_POLLSTER_MEMBERSHIP_MIN_HOLDING
+                            DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_MIN_HOLDING
                         ),
                     "dont meet min erc20 token holding requirment"
                 );
             }
             if (
-                dao.getConfiguration(DaoHelper.FLEX_POLLSTER_MEMBERSHIP_TYPE) ==
+                dao.getConfiguration(DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TYPE) ==
                 1
             ) {
                 require(
                     IERC721(
                         dao.getAddressConfiguration(
-                            DaoHelper.FLEX_POLLSTER_MEMBERSHIP_TOKEN_ADDRESS
+                            DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TOKEN_ADDRESS
                         )
                     ).balanceOf(msg.sender) >=
                         dao.getConfiguration(
-                            DaoHelper.FLEX_POLLSTER_MEMBERSHIP_MIN_HOLDING
+                            DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_MIN_HOLDING
                         ),
                     "dont meet min erc721 token holding requirment"
                 );
             }
             if (
-                dao.getConfiguration(DaoHelper.FLEX_POLLSTER_MEMBERSHIP_TYPE) ==
+                dao.getConfiguration(DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TYPE) ==
                 2
             ) {
                 require(
                     IERC1155(
                         dao.getAddressConfiguration(
-                            DaoHelper.FLEX_POLLSTER_MEMBERSHIP_TOKEN_ADDRESS
+                            DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TOKEN_ADDRESS
                         )
                     ).balanceOf(
                             msg.sender,
@@ -84,20 +84,20 @@ abstract contract FlexPollsterGuard {
                             )
                         ) >=
                         dao.getConfiguration(
-                            DaoHelper.FLEX_POLLSTER_MEMBERSHIP_MIN_HOLDING
+                            DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_MIN_HOLDING
                         ),
                     "dont meet min erc1155 token holding requirment"
                 );
             }
             if (
-                dao.getConfiguration(DaoHelper.FLEX_POLLSTER_MEMBERSHIP_TYPE) ==
+                dao.getConfiguration(DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TYPE) ==
                 3
             ) {
                 FlexPollingVotingContract flexPollingVoting = FlexPollingVotingContract(
                         dao.getAdapterAddress(DaoHelper.FLEX_POLLING_VOTING_ADAPT)
                     );
                 require(
-                    flexPollingVoting.isPollsterWhiteList(dao, msg.sender),
+                    flexPollingVoting.isPollVoterWhiteList(dao, msg.sender),
                     "not in pollster whitelist"
                 );
             }

@@ -20,13 +20,13 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    mapping(address => bytes32) public ongoingParticipantCapProposal;
+    mapping(address => bytes32) public ongoingInvestorCapProposal;
     mapping(address => bytes32) public ongoingGovernorMembershipProposal;
     mapping(address => bytes32) public ongoingInvstorMembershipProposal;
     mapping(address => bytes32) public ongoingVotingProposal;
 
-    mapping(address => mapping(bytes32 => ParticipantCapProposalDetails))
-        public participantCapProposals;
+    mapping(address => mapping(bytes32 => InvestorCapProposalDetails))
+        public investorCapProposals;
 
     mapping(address => mapping(bytes32 => GovernorMembershipProposalDetails))
         public governorMembershipProposals;
@@ -50,13 +50,13 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
     }
 
     enum ProposalType {
-        PARTICIPANT_CAP,
+        INVESTOR_CAP,
         GOVERNOR_MEMBERSHIP,
         INVESTOR_MEMBERSHIP,
         VOTING
     }
 
-    struct ParticipantCapProposalDetails {
+    struct InvestorCapProposalDetails {
         bytes32 proposalId;
         bool enable;
         uint256 cap;
@@ -92,7 +92,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
     struct VotingProposalDetails {
         bytes32 proposalId;
         VotingSupportInfo supportInfo;
-        VotingEligibilityInfo eligibilityInfo;
+        VotingAssetInfo votingAssetInfo;
         VotingTimeInfo timeInfo;
         VotingAllocs allocs;
         ProposalState state;
@@ -116,15 +116,15 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         uint256 stopVoteTime;
     }
 
-    struct VotingEligibilityInfo {
-        uint256 eligibilityType;
+    struct VotingAssetInfo {
+        uint256 votingAssetType;
         address tokenAddress;
         uint256 tokenID;
         uint256 votingWeightedType;
     }
 
     struct VotingParams {
-        uint256 eligibilityType;
+        uint256 votingAssetType;
         address tokenAddress;
         uint256 tokenID;
         uint256 votingWeightedType;
@@ -190,28 +190,28 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         );
     }
 
-    function submitParticipantCapProposal(
+    function submitInvestorCapProposal(
         DaoRegistry dao,
         bool enable,
         uint256 cap
     ) external onlyGovernor(dao) reimbursable(dao) {
         fundPeriodCheck(dao);
         require(
-            ongoingParticipantCapProposal[address(dao)] == bytes32(0),
+            ongoingInvestorCapProposal[address(dao)] == bytes32(0),
             "last cap proposal not finalized"
         );
-        dao.increaseParticipantCapId();
+        dao.increaseInvestorCapId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
                 bytes8(uint64(uint160(address(dao)))),
-                "Participant-Cap#",
-                Strings.toString(dao.getCurrentParticipantCapProposalId())
+                "Investor-Cap#",
+                Strings.toString(dao.getCurrentInvestorCapProposalId())
             )
         );
-        participantCapProposals[address(dao)][
+        investorCapProposals[address(dao)][
             proposalId
-        ] = ParticipantCapProposalDetails(
+        ] = InvestorCapProposalDetails(
             proposalId,
             enable,
             cap,
@@ -219,27 +219,14 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
             block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD),
             ProposalState.Voting
         );
-        ongoingParticipantCapProposal[address(dao)] = proposalId;
+        ongoingInvestorCapProposal[address(dao)] = proposalId;
 
-        // dao.submitProposal(proposalId);
-
-        // IVintageVoting votingContract = IVintageVoting(
-        //     dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
-        // );
-        // votingContract.startNewVotingForProposal(
-        //     dao,
-        //     proposalId,
-        //     block.timestamp,
-        //     bytes("")
-        // );
-
-        // dao.sponsorProposal(proposalId, address(votingContract));
         setProposal(dao, proposalId);
 
         emit ProposalCreated(
             address(dao),
             proposalId,
-            ProposalType.PARTICIPANT_CAP
+            ProposalType.INVESTOR_CAP
         );
     }
 
@@ -384,8 +371,8 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
                 params.support,
                 params.quorum
             ),
-            VotingEligibilityInfo(
-                params.eligibilityType,
+            VotingAssetInfo(
+                params.votingAssetType,
                 params.tokenAddress,
                 params.tokenID,
                 params.votingWeightedType
@@ -428,12 +415,12 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         dao.sponsorProposal(proposalId, address(votingContract));
     }
 
-    function processParticipantCapProposal(
+    function processInvestorCapProposal(
         DaoRegistry dao,
         bytes32 proposalId
     ) external reimbursable(dao) {
-        ParticipantCapProposalDetails
-            storage proposal = participantCapProposals[address(dao)][
+        InvestorCapProposalDetails
+            storage proposal = investorCapProposals[address(dao)][
                 proposalId
             ];
 
@@ -451,7 +438,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         (voteResult, nbYes, nbNo) = votingContract.voteResult(dao, proposalId);
 
         if (voteResult == IVintageVoting.VotingState.PASS) {
-            setParticipantCap(dao, proposal);
+            setInvestorCap(dao, proposal);
             proposal.state = ProposalState.Done;
         } else if (
             voteResult == IVintageVoting.VotingState.NOT_PASS ||
@@ -462,7 +449,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
             revert VOTING_NOT_FINISH();
         }
 
-        ongoingParticipantCapProposal[address(dao)] = bytes32(0);
+        ongoingInvestorCapProposal[address(dao)] = bytes32(0);
 
         uint128 allGPsWeight = GovernanceHelper
             .getVintageAllGovernorVotingWeightByProposalId(dao, proposalId);
@@ -623,15 +610,15 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         );
     }
 
-    function setParticipantCap(
+    function setInvestorCap(
         DaoRegistry dao,
-        ParticipantCapProposalDetails storage proposal
+        InvestorCapProposalDetails storage proposal
     ) internal {
         dao.setConfiguration(
-            DaoHelper.MAX_PARTICIPANTS_ENABLE,
+            DaoHelper.MAX_INVESTORS_ENABLE,
             proposal.enable == true ? 1 : 0
         );
-        dao.setConfiguration(DaoHelper.MAX_PARTICIPANTS, proposal.cap);
+        dao.setConfiguration(DaoHelper.MAX_INVESTORS, proposal.cap);
     }
 
     function setGovernorMembership(
@@ -740,20 +727,20 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
         VotingProposalDetails storage proposal
     ) internal {
         dao.setConfiguration(
-            DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TYPE,
-            proposal.eligibilityInfo.eligibilityType
+            DaoHelper.VINTAGE_VOTING_ASSET_TYPE,
+            proposal.votingAssetInfo.votingAssetType
         );
         dao.setAddressConfiguration(
-            DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TOKEN_ADDRESS,
-            proposal.eligibilityInfo.tokenAddress
+            DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ADDRESS,
+            proposal.votingAssetInfo.tokenAddress
         );
         dao.setConfiguration(
-            DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TOKEN_ID,
-            proposal.eligibilityInfo.tokenID
+            DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ID,
+            proposal.votingAssetInfo.tokenID
         );
         dao.setConfiguration(
             DaoHelper.VINTAGE_VOTING_WEIGHTED_TYPE,
-            proposal.eligibilityInfo.votingWeightedType
+            proposal.votingAssetInfo.votingWeightedType
         );
         dao.setConfiguration(
             DaoHelper.VINTAGE_VOTING_SUPPORT_TYPE,
@@ -814,7 +801,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
 
     function isProposalAllDone(address daoAddr) external view returns (bool) {
         if (
-            ongoingParticipantCapProposal[daoAddr] != bytes32(0) ||
+            ongoingInvestorCapProposal[daoAddr] != bytes32(0) ||
             ongoingGovernorMembershipProposal[daoAddr] != bytes32(0) ||
             ongoingInvstorMembershipProposal[daoAddr] != bytes32(0) ||
             ongoingVotingProposal[daoAddr] != bytes32(0)

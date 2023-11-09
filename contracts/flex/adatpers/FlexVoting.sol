@@ -5,7 +5,6 @@ pragma solidity ^0.8.0;
 import "../../core/DaoRegistry.sol";
 import "../../guards/MemberGuard.sol";
 import "../../guards/AdapterGuard.sol";
-// import "../../guards/FlexPollsterGuard.sol";
 import "./interfaces/IFlexVoting.sol";
 import "../../helpers/DaoHelper.sol";
 import "./FlexFunding.sol";
@@ -41,7 +40,6 @@ contract FlexVotingContract is
     IFlexVoting,
     MemberGuard,
     AdapterGuard,
-    // FlexPollsterGuard,
     Reimbursable
 {
     struct Voting {

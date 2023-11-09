@@ -21,7 +21,7 @@ contract SummonVintageDao {
         string name,
         address creator
     );
-    struct VintageParticipantCapInfo {
+    struct VintageInvestorCapInfo {
         bool enable;
         uint256 cap;
     }
@@ -45,7 +45,7 @@ contract SummonVintageDao {
     }
 
     struct VintageVotingInfo {
-        uint256 eligibilityType;
+        uint256 votingAssetType;
         address tokenAddress;
         uint256 tokenID;
         uint256 votingWeightedType;
@@ -63,7 +63,7 @@ contract SummonVintageDao {
         address[] daoFactoriesAddress;
         DaoFactory.Adapter[] enalbeAdapters;
         DaoFactory.Adapter[] adapters1;
-        VintageParticipantCapInfo participantCap;
+        VintageInvestorCapInfo investorCap;
         VintageBackerMembership backerMembership;
         VintageRaiserMembership raiserMembership;
         VintageVotingInfo votingInfo;
@@ -237,15 +237,15 @@ contract SummonVintageDao {
         DaoRegistry newDao = DaoRegistry(newDaoAddr);
 
         newDao.setConfiguration(
-            DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TYPE,
+            DaoHelper.VINTAGE_VOTING_ASSET_TYPE,
             votingInfo[0]
         );
         newDao.setAddressConfiguration(
-            DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TOKEN_ADDRESS,
+            DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ADDRESS,
             tokenAddress
         );
         newDao.setConfiguration(
-            DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TOKEN_ID,
+            DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ID,
             votingInfo[1]
         );
         newDao.setConfiguration(
@@ -274,7 +274,7 @@ contract SummonVintageDao {
     //config genesis raiser
     function summonVintageDao7(
         address newDaoAddr,
-        uint256 eligibilityType,
+        uint256 votingAssetType,
         address[] calldata genesisRaisers,
         uint256[] calldata allcationValues
     ) external returns (bool) {
@@ -284,7 +284,7 @@ contract SummonVintageDao {
                     DaoHelper.VINTAGE_GOVERNOR_ALLOCATION_ADAPTER
                 )
             );
-        if (eligibilityType == 3)
+        if (votingAssetType == 3)
             setAllocation(
                 raiserAlloc,
                 newDao,
@@ -294,7 +294,7 @@ contract SummonVintageDao {
         if (genesisRaisers.length > 0) {
             for (uint8 i = 0; i < genesisRaisers.length; i++) {
                 newDao.potentialNewMember(genesisRaisers[i]);
-                if (eligibilityType == 3)
+                if (votingAssetType == 3)
                     setAllocation(
                         raiserAlloc,
                         newDao,
@@ -381,7 +381,7 @@ contract SummonVintageDao {
         return true;
     }
 
-    //config participant cap
+    //config investor cap
     function summonVintageDao9(
         address newDaoAddr,
         bool enable,
@@ -389,8 +389,8 @@ contract SummonVintageDao {
     ) external returns (bool) {
         if (enable) {
             DaoRegistry newDao = DaoRegistry(newDaoAddr);
-            newDao.setConfiguration(DaoHelper.MAX_PARTICIPANTS_ENABLE, 1);
-            newDao.setConfiguration(DaoHelper.MAX_PARTICIPANTS, cap);
+            newDao.setConfiguration(DaoHelper.MAX_INVESTORS_ENABLE, 1);
+            newDao.setConfiguration(DaoHelper.MAX_INVESTORS, cap);
         }
         return true;
     }
@@ -495,7 +495,7 @@ contract SummonVintageDao {
         );
 
         uint256[9] memory uint256SummonVintageDao6Params = [
-            params.votingInfo.eligibilityType,
+            params.votingInfo.votingAssetType,
             params.votingInfo.tokenID,
             params.votingInfo.votingWeightedType,
             params.votingInfo.supportType,
@@ -515,7 +515,7 @@ contract SummonVintageDao {
         vars.summonVintageDao7Payload = abi.encodeWithSignature(
             "summonVintageDao7(address,uint256,address[],uint256[])",
             vars.newDaoAddr,
-            params.votingInfo.eligibilityType,
+            params.votingInfo.votingAssetType,
             params.genesisRaisers,
             params.allocations
         );
@@ -534,8 +534,8 @@ contract SummonVintageDao {
         vars.summonVintageDao9Payload = abi.encodeWithSignature(
             "summonVintageDao9(address,bool,uint256)",
             vars.newDaoAddr,
-            params.participantCap.enable,
-            params.participantCap.cap
+            params.investorCap.enable,
+            params.investorCap.cap
         );
 
         vars.calls[0] = VintageCall(

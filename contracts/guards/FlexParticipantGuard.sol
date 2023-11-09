@@ -33,10 +33,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 abstract contract FlexParticipantGuard {
-    modifier onlyParticipant(DaoRegistry dao, string calldata name) {
+    modifier onlyInvestor(DaoRegistry dao, string calldata name) {
         if (
             dao.getConfiguration(
-                DaoHelper.FLEX_PARTICIPANT_MEMBERSHIP_ENABLE
+                DaoHelper.FLEX_INVESTOR_MEMBERSHIP_ENABLE
             ) == 1
         ) {
             FlexInvestmentPoolAdapterContract flexFundingPoolAdapt = FlexInvestmentPoolAdapterContract(
@@ -48,7 +48,7 @@ abstract contract FlexParticipantGuard {
                 uint256 minHolding,
                 address tokenAddress,
                 uint256 tokenId
-            ) = flexFundingPoolAdapt.getParticipantMembershipInfo(dao, name);
+            ) = flexFundingPoolAdapt.getInvestorMembershipInfo(dao, name);
             //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
             if (varifyType == 0 && created == true) {
                 require(
@@ -71,12 +71,12 @@ abstract contract FlexParticipantGuard {
             }
             if (varifyType == 3 && created == true) {
                 require(
-                    flexFundingPoolAdapt.isParticipantWhiteList(
+                    flexFundingPoolAdapt.isInvestorWhiteList(
                         dao,
                         name,
                         msg.sender
                     ),
-                    "not in participant whitelist"
+                    "not in investor whitelist"
                 );
             }
         }

@@ -357,7 +357,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
                 dao.potentialNewMember(applicant);
                 if (
                     dao.getConfiguration(
-                        DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TYPE
+                        DaoHelper.VINTAGE_VOTING_ASSET_TYPE
                     ) == 3
                 ) {
                     VintageRaiserAllocationAdapter governorAlloc = VintageRaiserAllocationAdapter(

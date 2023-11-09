@@ -12,7 +12,7 @@ import "./FlexPollingVoting.sol";
 import "hardhat/console.sol";
 
 contract FlexDaoSetHelperAdapterContract {
-    function setParticipantCap(
+    function setInvestorCap(
         DaoRegistry dao,
         bool enable,
         uint256 cap
@@ -22,10 +22,10 @@ contract FlexDaoSetHelperAdapterContract {
             "!access"
         );
         dao.setConfiguration(
-            DaoHelper.MAX_PARTICIPANTS_ENABLE,
+            DaoHelper.MAX_INVESTORS_ENABLE,
             enable == true ? 1 : 0
         );
-        dao.setConfiguration(DaoHelper.MAX_PARTICIPANTS, cap);
+        dao.setConfiguration(DaoHelper.MAX_INVESTORS, cap);
     }
 
     function setGovernorMembership(
@@ -94,7 +94,7 @@ contract FlexDaoSetHelperAdapterContract {
             "!access"
         );
         dao.setConfiguration(
-            DaoHelper.FLEX_PARTICIPANT_MEMBERSHIP_ENABLE,
+            DaoHelper.FLEX_INVESTOR_MEMBERSHIP_ENABLE,
             enable == true ? 1 : 0
         );
         if (enable) {
@@ -107,7 +107,7 @@ contract FlexDaoSetHelperAdapterContract {
             FlexInvestmentPoolAdapterContract flexFundingPool = FlexInvestmentPoolAdapterContract(
                     dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_POOL_ADAPT)
                 );
-            flexFundingPool.createParticipantMembership(
+            flexFundingPool.createInvestorMembership(
                 dao,
                 name,
                 varifyType,
@@ -116,20 +116,13 @@ contract FlexDaoSetHelperAdapterContract {
                 tokenId
             );
 
-            // FlexDaoSetAdapterContract daosetContract = FlexDaoSetAdapterContract(
-            //         dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER)
-            //     );
-            // address[] memory whitelist = daosetContract.getInvestorWhitelist(
-            //     proposalId
-            // );
-
             if (whitelist.length > 0) {
                 FlexInvestmentPoolAdapterContract fundingPoolAdapt = FlexInvestmentPoolAdapterContract(
                         dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_POOL_ADAPT)
                     );
                 fundingPoolAdapt.clearInvestorWhitelist(dao, name);
                 for (uint8 i = 0; i < whitelist.length; i++) {
-                    flexFundingPool.registerParticipantWhiteList(
+                    flexFundingPool.registerInvestorWhiteList(
                         dao,
                         name,
                         whitelist[i]
@@ -151,15 +144,15 @@ contract FlexDaoSetHelperAdapterContract {
             "!access"
         );
         dao.setConfiguration(
-            DaoHelper.FLEX_VOTING_ELIGIBILITY_TYPE,
-            uint256Args[0] //  eligibilityType
+            DaoHelper.FLEX_VOTING_ASSET_TYPE,
+            uint256Args[0] //  votingAssetType
         );
         dao.setAddressConfiguration(
-            DaoHelper.FLEX_VOTING_ELIGIBILITY_TOKEN_ADDRESS,
+            DaoHelper.FLEX_VOTING_ASSET_TOKEN_ADDRESS,
             tokenAddress
         );
         dao.setConfiguration(
-            DaoHelper.VINTAGE_VOTING_ELIGIBILITY_TOKEN_ID,
+            DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ID,
             uint256Args[1] // tokenID
         );
         dao.setConfiguration(
@@ -242,11 +235,7 @@ contract FlexDaoSetHelperAdapterContract {
             DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE,
             flexDaoProposerMembershipVarifyType
         );
-        // FlexDaoSetAdapterContract daosetContract = FlexDaoSetAdapterContract(
-        //     dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER)
-        // );
-        // address[] memory _whitelist = daosetContract
-        //     .getProposerMembershipWhitelist(proposalId);
+       
         if (_whitelist.length > 0) {
             FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
                 dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
@@ -262,7 +251,7 @@ contract FlexDaoSetHelperAdapterContract {
         DaoRegistry dao,
         uint256[9] calldata uint256Args,
         address[2] calldata addressArgs,
-        address[] calldata pollsterMembershipWhitelist
+        address[] calldata pollvoterMembershipWhitelist
     ) external {
         require(
             msg.sender ==
@@ -286,44 +275,44 @@ contract FlexDaoSetHelperAdapterContract {
             uint256Args[3] //flexDaoPollingQuorum
         );
         dao.setConfiguration(
-            DaoHelper.FLEX_POLL_VOTING_ELIGIBILITY_TYPE,
-            uint256Args[4] //flexDaoPollingEligibilityType
+            DaoHelper.FLEX_POLL_VOTING_ASSET_TYPE,
+            uint256Args[4] //flexDaoPollingVotingAssetType
         );
         dao.setConfiguration(
-            DaoHelper.FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ID,
+            DaoHelper.FLEX_POLL_VOTING_ASSET_TOKEN_ID,
             uint256Args[5] //tokenId
         );
         dao.setAddressConfiguration(
-            DaoHelper.FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ADDRESS,
+            DaoHelper.FLEX_POLL_VOTING_ASSET_TOKEN_ADDRESS,
             addressArgs[0] //tokenAddress
         );
 
         dao.setConfiguration(
-            DaoHelper.FLEX_POLLSTER_MEMBERSHIP_TYPE,
-            uint256Args[6] //flexDaoPollsterMembershipVarifyType
+            DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TYPE,
+            uint256Args[6] //flexDaoPollvoterMembershipVarifyType
         );
         dao.setConfiguration(
-            DaoHelper.FLEX_POLLSTER_MEMBERSHIP_MIN_HOLDING,
-            uint256Args[7] //flexDaoPollsterMembershipMinHolding
+            DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_MIN_HOLDING,
+            uint256Args[7] //flexDaoPollvoterMembershipMinHolding
         );
         dao.setAddressConfiguration(
-            DaoHelper.FLEX_POLLSTER_MEMBERSHIP_TOKEN_ADDRESS,
-            addressArgs[1] //flexDaoPollsterMembershipTokenAddress
+            DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TOKEN_ADDRESS,
+            addressArgs[1] //flexDaoPollvoterMembershipTokenAddress
         );
         dao.setConfiguration(
-            DaoHelper.FLEX_POLLSTER_MEMBERSHIP_TOKENID,
-            uint256Args[8] //flexDaoPollsterMembershipTokenId
+            DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TOKENID,
+            uint256Args[8] //flexDaoPollvoterMembershipTokenId
         );
 
-        if (pollsterMembershipWhitelist.length > 0) {
+        if (pollvoterMembershipWhitelist.length > 0) {
             FlexPollingVotingContract flexPollingVoting = FlexPollingVotingContract(
                     dao.getAdapterAddress(DaoHelper.FLEX_POLLING_VOTING_ADAPT)
                 );
-            flexPollingVoting.clearPollsterWhiteList(dao);
-            for (uint8 i = 0; i < pollsterMembershipWhitelist.length; i++) {
-                flexPollingVoting.registerPollsterWhiteList(
+            flexPollingVoting.clearPollVoterWhiteList(dao);
+            for (uint8 i = 0; i < pollvoterMembershipWhitelist.length; i++) {
+                flexPollingVoting.registerPollVoterWhiteList(
                     dao,
-                    pollsterMembershipWhitelist[i]
+                    pollvoterMembershipWhitelist[i]
                 );
             }
         }

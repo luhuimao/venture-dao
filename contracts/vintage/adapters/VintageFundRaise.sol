@@ -371,13 +371,6 @@ contract VintageFundRaiseAdapterContract is
                 proposalInfo.priorityDeposite.amount
             );
         }
-
-        //20 set participant capacity
-        // setParticipantCap(
-        //     dao,
-        //     proposalInfo.participantCap.enable,
-        //     proposalInfo.participantCap.capacity
-        // );
     }
 
     function setFundAmount(
@@ -495,18 +488,6 @@ contract VintageFundRaiseAdapterContract is
             uint256Args[5] //    proposalInfo.timesInfo.refundDuration
         );
     }
-
-    // function setParticipantCap(
-    //     DaoRegistry dao,
-    //     bool enable,
-    //     uint256 capacity
-    // ) internal {
-    //     dao.setConfiguration(
-    //         DaoHelper.MAX_PARTICIPANTS_ENABLE,
-    //         enable == true ? 1 : 0
-    //     );
-    //     dao.setConfiguration(DaoHelper.MAX_PARTICIPANTS, capacity);
-    // }
 
     function setPriorityDeposit(
         DaoRegistry dao,
