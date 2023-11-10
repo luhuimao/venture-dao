@@ -208,9 +208,6 @@ contract VintageVotingContract is
         require(block.timestamp < vote.stopTime, "voting ended");
 
         require(vote.votes[msg.sender] == 0, "member has already voted");
-        // FundingPoolExtension fundingpool = FundingPoolExtension(
-        //     dao.getExtensionAddress(DaoHelper.FUNDINGPOOL_EXT)
-        // );
 
         uint128 votingWeight = GovernanceHelper.getVintageVotingWeight(
             dao,

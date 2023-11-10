@@ -107,9 +107,9 @@ contract FlexInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
     /*
      * PUBLIC VARIABLES
      */
-    bytes32[] public fundingProposals;
+    bytes32[] public investmentProposals;
     // tokenAddress => availability
-    mapping(bytes32 => bool) public availableFundingProposals;
+    mapping(bytes32 => bool) public availableInvestmentProposals;
     // proposalId => memberAddress => checkpointNum => Checkpoint
     mapping(bytes32 => mapping(address => mapping(uint32 => Checkpoint)))
         public checkpoints;
@@ -248,16 +248,10 @@ contract FlexInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
     function registerPotentialNewInvestmentProposal(
         bytes32 proposalId
     ) external hasExtensionAccess(AclFlag.REGISTER_NEW_TOKEN) {
-        // require(DaoHelper.isNotReservedAddress(token), "reservedToken");
-        // require(!availableInternalTokens[token], "internalToken");
-        // require(
-        //     fundingProposals.length <= maxExternalTokens,
-        //     "exceeds the maximum tokens allowed"
-        // );
 
-        if (!availableFundingProposals[proposalId]) {
-            availableFundingProposals[proposalId] = true;
-            fundingProposals.push(proposalId);
+        if (!availableInvestmentProposals[proposalId]) {
+            availableInvestmentProposals[proposalId] = true;
+            investmentProposals.push(proposalId);
         }
     }
 
@@ -280,7 +274,7 @@ contract FlexInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         address member,
         uint256 amount
     ) public payable hasExtensionAccess(AclFlag.ADD_TO_BALANCE) {
-        require(availableFundingProposals[proposalId], "unknown proposalId");
+        require(availableInvestmentProposals[proposalId], "unknown proposalId");
         uint256 newAmount = balanceOf(proposalId, member) + amount;
         uint256 newTotalAmount = balanceOf(proposalId, DaoHelper.TOTAL) +
             amount;
@@ -479,7 +473,7 @@ contract FlexInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         uint256 amount
     ) internal {
         bool isValidProposalId = false;
-        if (availableFundingProposals[proposalId]) {
+        if (availableInvestmentProposals[proposalId]) {
             require(
                 amount < type(uint160).max,
                 "token amount exceeds the maximum limit"

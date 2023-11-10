@@ -241,8 +241,8 @@ contract FlexInvestmentPoolAdapterContract is
         uint256 minDepositAmount;
         uint256 maxDepositAmount;
         address token;
-        address fundingToken;
-        uint256 maxFundingAmount;
+        address investmentToken;
+        uint256 maxInvestmentAmount;
         uint256 investorsAmount;
     }
 
@@ -276,7 +276,7 @@ contract FlexInvestmentPoolAdapterContract is
 
         IFlexFunding.ProposalStatus state = vars
             .flexFundingHelper
-            .getFundingState(dao, proposalId);
+            .getInvestmentState(dao, proposalId);
 
         if (state != IFlexFunding.ProposalStatus.IN_FUND_RAISE_PROGRESS)
             revert NotInFundRaise();
@@ -295,7 +295,7 @@ contract FlexInvestmentPoolAdapterContract is
             dao,
             proposalId
         );
-        vars.maxFundingAmount = vars.flexFundingHelper.getMaxFundingAmount(
+        vars.maxInvestmentAmount = vars.flexFundingHelper.getMaxInvestmentAmount(
             dao,
             proposalId
         );
@@ -314,23 +314,23 @@ contract FlexInvestmentPoolAdapterContract is
 
         if (
             vars.fundRaiseType == IFlexFunding.FundRaiseType.FCSF &&
-            vars.maxFundingAmount > 0
+            vars.maxInvestmentAmount > 0
         ) {
             if (
                 balanceOf(dao, proposalId, DaoHelper.TOTAL) + amount >
-                vars.maxFundingAmount
+                vars.maxInvestmentAmount
             ) revert ExceedMaxFundingAmount();
         }
-        vars.fundingToken = vars.flexFundingHelper.getFundingToken(
+        vars.investmentToken = vars.flexFundingHelper.getInvestmentToken(
             dao,
             proposalId
         );
-        IERC20(vars.fundingToken).transferFrom(
+        IERC20(vars.investmentToken).transferFrom(
             msg.sender,
             address(this),
             amount
         );
-        IERC20(vars.fundingToken).safeTransfer(
+        IERC20(vars.investmentToken).safeTransfer(
             dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT),
             amount
         );
@@ -368,7 +368,7 @@ contract FlexInvestmentPoolAdapterContract is
         vars.flexFunding = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
-        vars.maxFund = vars.flexFundingHelper.getMaxFundingAmount(
+        vars.maxFund = vars.flexFundingHelper.getMaxInvestmentAmount(
             dao,
             proposalId
         );
@@ -385,7 +385,7 @@ contract FlexInvestmentPoolAdapterContract is
                 .fundingpool
                 .getInvestorsByProposalId(proposalId);
             vars.extraFund = 0;
-            vars.tokenAddr = vars.flexFundingHelper.getFundingToken(
+            vars.tokenAddr = vars.flexFundingHelper.getInvestmentToken(
                 dao,
                 proposalId
             );

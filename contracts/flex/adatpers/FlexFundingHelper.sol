@@ -6,7 +6,7 @@ import "./FlexFunding.sol";
 import "./interfaces/IFlexFunding.sol";
 
 contract FlexFundingHelperAdapterContract {
-    function getMaxFundingAmount(
+    function getMaxInvestmentAmount(
         DaoRegistry dao,
         bytes32 proposalId
     ) external view returns (uint256) {
@@ -65,7 +65,7 @@ contract FlexFundingHelperAdapterContract {
         return fundRaiseInfo.fundRaiseType;
     }
 
-    function getFundingToken(
+    function getInvestmentToken(
         DaoRegistry dao,
         bytes32 proposalId
     ) external view returns (address) {
@@ -110,7 +110,7 @@ contract FlexFundingHelperAdapterContract {
         );
     }
 
-    function getFundingState(
+    function getInvestmentState(
         DaoRegistry dao,
         bytes32 proposalId
     ) external view returns (IFlexFunding.ProposalStatus) {
