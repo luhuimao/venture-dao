@@ -45,7 +45,8 @@ async function main() {
     // await deploy();
     // await summonVintageDao();
     // await submitVintageDaosetProposal();
-    await getVintageDaosetProposal();
+    // await getVintageDaosetProposal();
+    await getFlexAllGovernor();
     // await getVintageNewFundProposalInfo();
     // await getFlexInvestors();
     // await getFlexFundingProposalInfo();
@@ -2136,6 +2137,12 @@ const getVintageGovernorAllocation=async()=>{
     const vintageDaoSetAdapterContract = (await hre.ethers.getContractFactory("VintageRaiserAllocationAdapter")).attach("0x8be919827A25ed95072e7364161206e458D034D3");;
 
 }
+
+const getFlexAllGovernor = async () => {
+    const stewardManagementContract = (await hre.ethers.getContractFactory("StewardManagementContract")).attach("0xa04013491650f8777af094379A884F4327C99554");;
+    const governors = await stewardManagementContract.getAllSteward("0xde9486e6a30cab42972b5bf561c00139ed138012");
+    console.log(governors);
+ }
 
 
 main()
