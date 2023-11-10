@@ -2252,8 +2252,8 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr1, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr1, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr1, this.genesis_raiser2.address);
-        let allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr1);
-        let allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllRaiserWeightByProposalId(this.daoAddr1, proposalId);
+        let allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr1);
+        let allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllGovernorWeightByProposalId(this.daoAddr1, proposalId);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -2271,8 +2271,8 @@ describe("voting....", () => {
         await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr1, proposalId, 1);
         await this.testtoken1.connect(this.genesis_raiser2).transfer(this.user2.address, hre.ethers.utils.parseEther("90"));
 
-        allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllRaiserWeightByProposalId(this.daoAddr1, proposalId);
-        allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr1);
+        allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllGovernorWeightByProposalId(this.daoAddr1, proposalId);
+        allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr1);
 
         console.log(`
         allWeights ${allWeights}
@@ -2332,7 +2332,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr2, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr2, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr2, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr2);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr2);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -2401,7 +2401,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr3, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr3, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr3, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr3);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr3);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -2467,7 +2467,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr4, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr4, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr4, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr4);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr4);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -2524,7 +2524,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr5, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr5, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr5, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr5);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr5);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -2587,7 +2587,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr6, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr6, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr6, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr6);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr6);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -2667,7 +2667,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr7, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr7, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr7, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr7);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr7);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -2746,7 +2746,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr8, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr8, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr8, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr8);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr8);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -2822,7 +2822,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr9, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr9, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr9, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr9);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr9);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -2891,7 +2891,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr10, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr10, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr10, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr10);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr10);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -2970,7 +2970,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr11, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr11, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr11, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr11);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr11);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3047,7 +3047,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr12, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr12, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr12, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr12);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr12);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -3122,7 +3122,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr13, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr13, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr13, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr13);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr13);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -3191,7 +3191,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr14, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr14, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr14, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr14);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr14);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3249,7 +3249,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr15, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr15, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr15, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr15);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr15);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3318,7 +3318,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr16, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr16, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr16, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr16);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr16);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3406,7 +3406,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr17, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr17, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr17, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr17);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr17);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -3492,7 +3492,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr18, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr18, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr18, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr18);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr18);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -3571,7 +3571,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr19, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr19, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr19, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr19);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr19);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3640,7 +3640,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr20, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr20, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr20, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr20);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr20);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3719,7 +3719,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr21, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr21, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr21, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr21);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr21);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3795,7 +3795,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr22, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr22, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr22, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr22);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr22);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -3870,7 +3870,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr23, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr23, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr23, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr23);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr23);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -3939,7 +3939,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr24, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr24, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr24, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr24);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr24);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3997,7 +3997,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr25, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr25, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr25, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr25);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr25);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -4066,7 +4066,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr26, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr26, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr26, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr26);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr26);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -4154,7 +4154,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr27, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr27, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr27, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr27);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr27);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -4240,7 +4240,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr28, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr28, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr28, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr28);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr28);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -4319,7 +4319,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr29, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr29, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr29, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr29);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr29);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -4388,8 +4388,8 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr30, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr30, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr30, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr30);
-        let allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllRaiserWeightByProposalId(this.daoAddr30, proposalId);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr30);
+        let allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllGovernorWeightByProposalId(this.daoAddr30, proposalId);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -4410,7 +4410,7 @@ describe("voting....", () => {
 
         const allVoteWeight = parseInt(votingWeight1) + parseInt(votingWeight2) + parseInt(votingWeight3);
         const yesnb = parseInt(votingWeight1) + parseInt(votingWeight3) - parseInt(votingWeight2);
-        allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllRaiserWeightByProposalId(this.daoAddr30, proposalId);
+        allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllGovernorWeightByProposalId(this.daoAddr30, proposalId);
 
         console.log(`
         allVoteWeight ${allVoteWeight}
