@@ -16,7 +16,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
 
-contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
+contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -659,7 +659,7 @@ contract VintageDaoSetAdapterContract is RaiserGuard, Reimbursable {
             if (len > 0) {
                 VintageRaiserManagementContract raiserManagementAdapt = VintageRaiserManagementContract(
                         dao.getAdapterAddress(
-                            DaoHelper.VINTAGE_RAISER_MANAGEMENT
+                            DaoHelper.VINTAGE_GOVERNOR_MANAGEMENT
                         )
                     );
 

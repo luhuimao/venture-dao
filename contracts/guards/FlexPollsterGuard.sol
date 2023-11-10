@@ -32,8 +32,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-abstract contract FlexPollsterGuard {
-    modifier onlyPollster(DaoRegistry dao) {
+abstract contract FlexPollVoterGuard {
+    modifier onlyPollVoter(DaoRegistry dao) {
         if (dao.getConfiguration(DaoHelper.FLEX_INVESTMENT_TYPE) == 1) {
             //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
             if (
@@ -98,7 +98,7 @@ abstract contract FlexPollsterGuard {
                     );
                 require(
                     flexPollingVoting.isPollVoterWhiteList(dao, msg.sender),
-                    "not in pollster whitelist"
+                    "not in pollvoter whitelist"
                 );
             }
         }

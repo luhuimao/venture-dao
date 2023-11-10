@@ -632,7 +632,7 @@ contract VintageFundingPoolAdapterContract is
         return fundingpool.balanceOf(address(DaoHelper.DAOSQUARE_TREASURY));
     }
 
-    function raiserBalance(DaoRegistry dao) public view returns (uint256) {
+    function governorBalance(DaoRegistry dao) public view returns (uint256) {
         VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
         );

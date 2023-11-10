@@ -38,7 +38,7 @@ SOFTWARE.
 
 contract VintageVotingContract is
     IVintageVoting,
-    RaiserGuard,
+    GovernorGuard,
     AdapterGuard,
     Reimbursable
 {
@@ -290,16 +290,13 @@ contract VintageVotingContract is
         );
         // 0. - (YES + NO) / Total > X%
         // 1. - YES + NO > X
-
-        // uint128 allRaisersWeight = getAllRaiserWeight(dao);
-
-        uint128 allRaisersWeight = GovernanceHelper
+        uint128 allGovernorsWeight = GovernanceHelper
             .getVintageAllGovernorVotingWeightByProposalId(dao, proposalId);
         // rule out any failed quorums
         uint256 allVotes = vote.nbYes + vote.nbNo;
 
         if (vintageQuorumType == 0) {
-            uint256 minVotes = (allRaisersWeight *
+            uint256 minVotes = (allGovernorsWeight *
                 dao.getConfiguration(DaoHelper.QUORUM)) / 100;
 
             unchecked {
@@ -347,14 +344,14 @@ contract VintageVotingContract is
         }
     }
 
-    function getAllRaiserWeight(DaoRegistry dao) public view returns (uint128) {
-        uint128 allGPsWeight = GovernanceHelper.getAllVintageRaiserVotingWeight(
+    function getAllGovernorWeight(DaoRegistry dao) public view returns (uint128) {
+        uint128 allGPsWeight = GovernanceHelper.getAllVintageGovernorVotingWeight(
             dao
         );
         return allGPsWeight;
     }
 
-    function getAllRaiserWeightByProposalId(
+    function getAllGovernorWeightByProposalId(
         DaoRegistry dao,
         bytes32 proposalId
     ) public view returns (uint128) {

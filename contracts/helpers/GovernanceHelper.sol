@@ -52,34 +52,34 @@ library GovernanceHelper {
         DaoRegistry dao,
         bytes32 proposalId
     ) internal view returns (uint128) {
-        address[] memory allRaisers = dao.getAllSteward();
-        uint128 allRaiserweight;
+        address[] memory allGovernors = dao.getAllSteward();
+        uint128 allGovernorweight;
         VintageVotingContract vintageVotingAdapt = VintageVotingContract(
             dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
-        for (uint8 i = 0; i < allRaisers.length; i++) {
+        for (uint8 i = 0; i < allGovernors.length; i++) {
             if (
-                vintageVotingAdapt.checkIfVoted(dao, proposalId, allRaisers[i])
+                vintageVotingAdapt.checkIfVoted(dao, proposalId, allGovernors[i])
             ) {
-                allRaiserweight += vintageVotingAdapt.voteWeights(
+                allGovernorweight += vintageVotingAdapt.voteWeights(
                     address(dao),
                     proposalId,
-                    allRaisers[i]
+                    allGovernors[i]
                 );
             } else {
-                allRaiserweight += getVintageVotingWeight(dao, allRaisers[i]);
+                allGovernorweight += getVintageVotingWeight(dao, allGovernors[i]);
             }
         }
-        return allRaiserweight;
+        return allGovernorweight;
     }
 
-    function getAllVintageRaiserVotingWeight(
+    function getAllVintageGovernorVotingWeight(
         DaoRegistry dao
     ) internal view returns (uint128) {
-        address[] memory allRaisers = dao.getAllSteward();
+        address[] memory allGovernors = dao.getAllSteward();
         uint128 allStewardweight;
-        for (uint8 i = 0; i < allRaisers.length; i++) {
-            allStewardweight += getVintageVotingWeight(dao, allRaisers[i]);
+        for (uint8 i = 0; i < allGovernors.length; i++) {
+            allStewardweight += getVintageVotingWeight(dao, allGovernors[i]);
         }
         return allStewardweight;
     }

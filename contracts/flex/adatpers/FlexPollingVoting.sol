@@ -42,7 +42,7 @@ contract FlexPollingVotingContract is
     MemberGuard,
     AdapterGuard,
     Reimbursable,
-    FlexPollsterGuard
+    FlexPollVoterGuard
 {
     using EnumerableSet for EnumerableSet.AddressSet;
 
@@ -131,7 +131,7 @@ contract FlexPollingVotingContract is
         DaoRegistry dao,
         bytes32 proposalId,
         uint256 voteValue
-    ) external onlyPollster(dao) reimbursable(dao) {
+    ) external onlyPollVoter(dao) reimbursable(dao) {
         require(
             dao.getProposalFlag(proposalId, DaoRegistry.ProposalFlag.SPONSORED),
             "the proposal has not been sponsored yet"

@@ -48,7 +48,7 @@ SOFTWARE.
 contract VintageFundingAdapterContract is
     IVintageInvestment,
     AdapterGuard,
-    RaiserGuard,
+    GovernorGuard,
     Reimbursable
 {
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;

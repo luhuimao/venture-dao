@@ -97,26 +97,26 @@ library DaoHelper {
     bytes32 internal constant VINTAGE_INVESTOR_MEMBERSHIP_TOKENID =
         keccak256("VINTAGE_INVESTOR_MEMBERSHIP_TOKENID");
 
-    //Vintage dao raiser mambership
+    //Vintage dao governor mambership
     bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_ENABLE =
-        keccak256("VINTAGE_RAISER_MEMBERSHIP_ENABLE");
+        keccak256("VINTAGE_GOVERNOR_MEMBERSHIP_ENABLE");
     bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_TYPE =
-        keccak256("VINTAGE_RAISER_MEMBERSHIP_TYPE");
+        keccak256("VINTAGE_GOVERNOR_MEMBERSHIP_TYPE");
     bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_MIN_HOLDING =
-        keccak256("VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING");
+        keccak256("VINTAGE_GOVERNOR_MEMBERSHIP_MIN_HOLDING");
     bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_MIN_DEPOSIT =
-        keccak256("VINTAGE_RAISER_MEMBERSHIP_MIN_DEPOSIT");
+        keccak256("VINTAGE_GOVERNOR_MEMBERSHIP_MIN_DEPOSIT");
     bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS =
-        keccak256("VINTAGE_RAISER_MEMBERSHIP_TOKEN_ADDRESS");
+        keccak256("VINTAGE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS");
     bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_TOKENID =
-        keccak256("VINTAGE_RAISER_MEMBERSHIP_TOKENID");
+        keccak256("VINTAGE_GOVERNOR_MEMBERSHIP_TOKENID");
 
     bytes32 internal constant VINTAGE_VOTING_ASSET_TYPE =
-        keccak256("VINTAGE_VOTING_ELIGIBILITY_TYPE");
+        keccak256("VINTAGE_VOTING_ASSET_TYPE");
     bytes32 internal constant VINTAGE_VOTING_ASSET_TOKEN_ADDRESS =
-        keccak256("VINTAGE_VOTING_ELIGIBILITY_TOKEN_ADDRESS");
+        keccak256("VINTAGE_VOTING_ASSET_TOKEN_ADDRESS");
     bytes32 internal constant VINTAGE_VOTING_ASSET_TOKEN_ID =
-        keccak256("VINTAGE_VOTING_ELIGIBILITY_TOKEN_ID");
+        keccak256("VINTAGE_VOTING_ASSET_TOKEN_ID");
     bytes32 internal constant VINTAGE_VOTING_WEIGHTED_TYPE =
         keccak256("VINTAGE_VOTING_WEIGHTED_TYPE");
     bytes32 internal constant VINTAGE_VOTING_SUPPORT_TYPE =
@@ -157,25 +157,25 @@ library DaoHelper {
     *********************************/
     // flex setting
     bytes32 internal constant FLEX_VOTING_ASSET_TYPE =
-        keccak256("FLEX_VOTING_ELIGIBILITY_TYPE");
+        keccak256("FLEX_VOTING_ASSET_TYPE");
 
     bytes32 internal constant FLEX_VOTING_ASSET_TOKEN_ID =
-        keccak256("FLEX_VOTING_ELIGIBILITY_TOKEN_ID");
+        keccak256("FLEX_VOTING_ASSET_TOKEN_ID");
 
     bytes32 internal constant FLEX_VOTING_ASSET_TOKEN_ADDRESS =
-        keccak256("FLEX_VOTING_ELIGIBILITY_TOKEN_ADDRESS");
+        keccak256("FLEX_VOTING_ASSET_TOKEN_ADDRESS");
 
     bytes32 internal constant FLEX_VOTING_WEIGHTED_TYPE =
         keccak256("FLEX_VOTING_WEIGHTED_TYPE");
 
     bytes32 internal constant FLEX_POLL_VOTING_ASSET_TYPE =
-        keccak256("FLEX_POLL_VOTING_ELIGIBILITY_TYPE");
+        keccak256("FLEX_POLL_VOTING_ASSET_TYPE");
 
     bytes32 internal constant FLEX_POLL_VOTING_ASSET_TOKEN_ID =
-        keccak256("FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ID");
+        keccak256("FLEX_POLL_VOTING_ASSET_TOKEN_ID");
 
     bytes32 internal constant FLEX_POLL_VOTING_ASSET_TOKEN_ADDRESS =
-        keccak256("FLEX_POLL_VOTING_ELIGIBILITY_TOKEN_ADDRESS");
+        keccak256("FLEX_POLL_VOTING_ASSET_TOKEN_ADDRESS");
 
     bytes32 internal constant FLEX_POLL_VOTING_WEIGHTED_TYPE =
         keccak256("FLEX_POLL_VOTING_WEIGHTED_TYPE");
@@ -203,15 +203,15 @@ library DaoHelper {
         keccak256("FLEX_PRIORITY_DEPOSIT_PERIOD");
     // ---investor membership
     bytes32 internal constant FLEX_INVESTOR_MEMBERSHIP_ENABLE =
-        keccak256("FLEX_PARTICIPANT_MEMBERSHIP_ENABLE");
+        keccak256("FLEX_INVESTOR_MEMBERSHIP_ENABLE");
     bytes32 internal constant FLEX_INVESTOR_TYPE =
-        keccak256("FLEX_PARTICIPANT_TYPE");
+        keccak256("FLEX_INVESTOR_TYPE");
     bytes32 internal constant FLEX_INVESTOR_MIN_HOLDING =
-        keccak256("FLEX_PARTICIPANT_MIN_HOLDING");
+        keccak256("FLEX_INVESTOR_MIN_HOLDING");
     bytes32 internal constant FLEX_INVESTOR_TOKEN_ADDRESS =
-        keccak256("FLEX_PARTICIPANT_TOKEN_ADDRESS");
+        keccak256("FLEX_INVESTOR_TOKEN_ADDRESS");
     bytes32 internal constant FLEX_INVESTOR_TOKENID =
-        keccak256("FLEX_PARTICIPANT_TOKENID");
+        keccak256("FLEX_INVESTOR_TOKENID");
     // -----polling
     bytes32 internal constant FLEX_POLLING_VOTING_PERIOD =
         keccak256("FLEX_POLLING_VOTING_PERIOD");
@@ -223,15 +223,15 @@ library DaoHelper {
         keccak256("FLEX_POLLING_QUORUM");
     bytes32 internal constant FLEX_POLLING_PROPOSAL_EXECUTIONPEERIOD =
         keccak256("FLEX_POLLING_PROPOSAL_EXECUTIONPEERIOD");
-    //-----pollster membership
+    //-----pollvoter membership
     bytes32 internal constant FLEX_POLLVOTER_MEMBERSHIP_TYPE =
-        keccak256("FLEX_POLLSTER_MEMBERSHIP_TYPE");
+        keccak256("FLEX_POLLVOTER_MEMBERSHIP_TYPE");
     bytes32 internal constant FLEX_POLLVOTER_MEMBERSHIP_MIN_HOLDING =
-        keccak256("FLEX_POLLSTER_MEMBERSHIP_MIN_HOLDING");
+        keccak256("FLEX_POLLVOTER_MEMBERSHIP_MIN_HOLDING");
     bytes32 internal constant FLEX_POLLVOTER_MEMBERSHIP_TOKEN_ADDRESS =
-        keccak256("FLEX_POLLSTER_MEMBERSHIP_TOKEN_ADDRESS");
+        keccak256("FLEX_POLLVOTER_MEMBERSHIP_TOKEN_ADDRESS");
     bytes32 internal constant FLEX_POLLVOTER_MEMBERSHIP_TOKENID =
-        keccak256("FLEX_POLLSTER_MEMBERSHIP_TOKENID");
+        keccak256("FLEX_POLLVOTER_MEMBERSHIP_TOKENID");
 
     bytes32 internal constant FLEX_INVESTMENT_TYPE =
         keccak256("FLEX_FUNDING_TYPE");
@@ -275,8 +275,8 @@ library DaoHelper {
     *********************************/
     //PPM
     bytes32 internal constant MAX_INVESTORS_ENABLE =
-        keccak256("MAX_PARTICIPANTS_ENABLE");
-    bytes32 internal constant MAX_INVESTORS = keccak256("MAX_PARTICIPANTS");
+        keccak256("MAX_INVESTORS_ENABLE");
+    bytes32 internal constant MAX_INVESTORS = keccak256("MAX_INVESTORS");
     bytes32 internal constant RETURN_DURATION = keccak256("RETURN_DURATION");
     bytes32 internal constant DAO_SQUARE_ADDRESS =
         keccak256("DAO_SQUARE_ADDRESS");
@@ -332,7 +332,7 @@ library DaoHelper {
         keccak256("vintage-funding-pool-adatper");
     bytes32 internal constant VINTAGE_VOTING_ADAPT =
         keccak256("vintage-voting");
-    bytes32 internal constant VINTAGE_RAISER_MANAGEMENT =
+    bytes32 internal constant VINTAGE_GOVERNOR_MANAGEMENT =
         keccak256("vintage-raiser-management");
 
     bytes32 internal constant VINTAGE_FUNDING_ADAPTER =

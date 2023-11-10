@@ -46,7 +46,7 @@ SOFTWARE.
 contract FlexInvestmentPoolAdapterContract is
     AdapterGuard,
     MemberGuard,
-    FlexParticipantGuard,
+    FlexInvestorGuard,
     Reimbursable
 {
     using SafeERC20 for IERC20;

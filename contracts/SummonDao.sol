@@ -66,7 +66,7 @@ contract SummonDao {
         uint256 quorumType; // 0. - (YES + NO) / Total > X%  1. - YES + NO > X
     }
 
-    struct flexDaoPollsterMembershipInfo {
+    struct flexDaoPollVoterMembershipInfo {
         uint8 varifyType;
         uint256 minHolding;
         address tokenAddress;
@@ -118,7 +118,7 @@ contract SummonDao {
         flexDaoPriorityMembershipInfo _flexDaoPriorityMembershipInfo;
         flexDaoStewardMembershipInfo _flexDaoStewardMembershipInfo;
         flexDaoVotingInfo _flexDaoVotingInfo;
-        flexDaoPollsterMembershipInfo _flexDaoPollsterMembershipInfo;
+        flexDaoPollVoterMembershipInfo _flexDaoPollVoterMembershipInfo;
         flexDaoPollingInfo _flexDaoPollingInfo;
         flexDaoProposerMembershipInfo _flexDaoProposerMembershipInfo;
         flexDaoInfo _flexDaoInfo;
@@ -322,8 +322,8 @@ contract SummonDao {
     function summonFlexDao7(
         bool[2] memory booleanParams,
         uint256[10] memory uint256Params,
-        address flexDaoPollsterMembershipTokenAddress,
-        address[] calldata flexDaoPollsterMembershipWhiteList,
+        address flexDaoPollVoterMembershipTokenAddress,
+        address[] calldata flexDaoPollVoterMembershipWhiteList,
         address newDaoAddr,
         address flexDaoPollingtokenAddress
     ) external returns (bool) {
@@ -335,9 +335,9 @@ contract SummonDao {
         //  uint256Params[3] flexDaoPollingquorum
         //  uint256Params[4] flexDaoPollingVotingAssetType
         //  uint256Params[5] flexDaoPollingtokenID
-        //  uint256Params[6] flexDaoPollsterMembershipVarifyType
-        //  uint256Params[7] flexDaoPollsterMembershipMinHolding
-        //  uint256Params[8] flexDaoPollsterMembershipTokenId
+        //  uint256Params[6] flexDaoPollVoterMembershipVarifyType
+        //  uint256Params[7] flexDaoPollVoterMembershipMinHolding
+        //  uint256Params[8] flexDaoPollVoterMembershipTokenId
         //  uint256Params[9] maxInvestorsAmount
 
         DaoRegistry dao = DaoRegistry(newDaoAddr);
@@ -356,13 +356,13 @@ contract SummonDao {
                 uint256Params[5],
                 flexDaoPollingtokenAddress
             );
-            configFlexDaoPollsterMembership(
+            configFlexDaoPollVoterMembership(
                 dao,
                 uint256Params[6],
                 uint256Params[7],
-                flexDaoPollsterMembershipTokenAddress,
+                flexDaoPollVoterMembershipTokenAddress,
                 uint256Params[8],
-                flexDaoPollsterMembershipWhiteList
+                flexDaoPollVoterMembershipWhiteList
             );
         }
 
@@ -576,13 +576,13 @@ contract SummonDao {
         stewardAlloc.setAllocation(dao, account, value);
     }
 
-    function configFlexDaoPollsterMembership(
+    function configFlexDaoPollVoterMembership(
         DaoRegistry dao,
-        uint256 flexDaoPollsterMembershipVarifyType,
-        uint256 flexDaoPollsterMembershipMinHolding,
-        address flexDaoPollsterMembershipTokenAddress,
-        uint256 flexDaoPollsterMembershipTokenId,
-        address[] calldata flexDaoPollsterMembershipWhiteList
+        uint256 flexDaoPollVoterMembershipVarifyType,
+        uint256 flexDaoPollVoterMembershipMinHolding,
+        address flexDaoPollVoterMembershipTokenAddress,
+        uint256 flexDaoPollVoterMembershipTokenId,
+        address[] calldata flexDaoPollVoterMembershipWhiteList
     ) internal {
         // 0- ERC2O
         // 1- ERC721
@@ -590,33 +590,33 @@ contract SummonDao {
         // 3- Whitelist
         dao.setConfiguration(
             DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TYPE,
-            flexDaoPollsterMembershipVarifyType
+            flexDaoPollVoterMembershipVarifyType
         );
 
         if (
-            flexDaoPollsterMembershipVarifyType == 0 ||
-            flexDaoPollsterMembershipVarifyType == 1 ||
-            flexDaoPollsterMembershipVarifyType == 2
+            flexDaoPollVoterMembershipVarifyType == 0 ||
+            flexDaoPollVoterMembershipVarifyType == 1 ||
+            flexDaoPollVoterMembershipVarifyType == 2
         ) {
             dao.setConfiguration(
                 DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_MIN_HOLDING,
-                flexDaoPollsterMembershipMinHolding
+                flexDaoPollVoterMembershipMinHolding
             );
             dao.setAddressConfiguration(
                 DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TOKEN_ADDRESS,
-                flexDaoPollsterMembershipTokenAddress
+                flexDaoPollVoterMembershipTokenAddress
             );
         }
-        if (flexDaoPollsterMembershipVarifyType == 2) {
+        if (flexDaoPollVoterMembershipVarifyType == 2) {
             dao.setConfiguration(
                 DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TOKENID,
-                flexDaoPollsterMembershipTokenId
+                flexDaoPollVoterMembershipTokenId
             );
         }
-        if (flexDaoPollsterMembershipVarifyType == 3) {
-            registerFlexDaoPollsterMembershipWhiteList(
+        if (flexDaoPollVoterMembershipVarifyType == 3) {
+            registerFlexDaoPollVoterMembershipWhiteList(
                 dao,
-                flexDaoPollsterMembershipWhiteList
+                flexDaoPollVoterMembershipWhiteList
             );
         }
     }
@@ -667,22 +667,22 @@ contract SummonDao {
             );
     }
 
-    function registerFlexDaoPollsterMembershipWhiteList(
+    function registerFlexDaoPollVoterMembershipWhiteList(
         DaoRegistry dao,
-        address[] calldata flexDaoPollsterMembershipWhiteList
+        address[] calldata flexDaoPollVoterMembershipWhiteList
     ) internal {
-        if (flexDaoPollsterMembershipWhiteList.length > 0) {
+        if (flexDaoPollVoterMembershipWhiteList.length > 0) {
             FlexPollingVotingContract flexPollingVoting = FlexPollingVotingContract(
                     dao.getAdapterAddress(DaoHelper.FLEX_POLLING_VOTING_ADAPT)
                 );
             for (
                 uint8 i = 0;
-                i < flexDaoPollsterMembershipWhiteList.length;
+                i < flexDaoPollVoterMembershipWhiteList.length;
                 i++
             ) {
                 flexPollingVoting.registerPollVoterWhiteList(
                     dao,
-                    flexDaoPollsterMembershipWhiteList[i]
+                    flexDaoPollVoterMembershipWhiteList[i]
                 );
             }
         }
@@ -987,9 +987,9 @@ contract SummonDao {
             params._flexDaoPollingInfo.quorum,
             params._flexDaoPollingInfo.votingAssetType,
             params._flexDaoPollingInfo.tokenID,
-            params._flexDaoPollsterMembershipInfo.varifyType,
-            params._flexDaoPollsterMembershipInfo.minHolding,
-            params._flexDaoPollsterMembershipInfo.tokenId,
+            params._flexDaoPollVoterMembershipInfo.varifyType,
+            params._flexDaoPollVoterMembershipInfo.minHolding,
+            params._flexDaoPollVoterMembershipInfo.tokenId,
             params._flexDaoInvestorCapInfo.maxInvestorsAmount
         ];
 
@@ -1002,8 +1002,8 @@ contract SummonDao {
             "summonFlexDao7(bool[2],uint256[10],address,address[],address,address)",
             booleanParams,
             uint256Params,
-            params._flexDaoPollsterMembershipInfo.tokenAddress,
-            params._flexDaoPollsterMembershipInfo.whiteList,
+            params._flexDaoPollVoterMembershipInfo.tokenAddress,
+            params._flexDaoPollVoterMembershipInfo.whiteList,
             vars.newDaoAddr,
             params._flexDaoPollingInfo.tokenAddress
         );

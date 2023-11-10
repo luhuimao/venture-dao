@@ -35,7 +35,7 @@ contract SummonVintageDao {
         address[] whiteList;
     }
 
-    struct VintageRaiserMembership {
+    struct VintageGovernorMembership {
         bool enable;
         uint8 varifyType;
         uint256 minAmount;
@@ -65,9 +65,9 @@ contract SummonVintageDao {
         DaoFactory.Adapter[] adapters1;
         VintageInvestorCapInfo investorCap;
         VintageBackerMembership backerMembership;
-        VintageRaiserMembership raiserMembership;
+        VintageGovernorMembership governorMembership;
         VintageVotingInfo votingInfo;
-        address[] genesisRaisers;
+        address[] genesisGovernors;
         uint256[] allocations;
     }
 
@@ -152,12 +152,12 @@ contract SummonVintageDao {
         return true;
     }
 
-    // config raiser Membership
+    // config governor Membership
     function summonVintageDao5(
         bool vintageDaoStewardMembershipEnable,
         uint256[3] memory uint256Params,
         address vintageDaoStewardMembershipTokenAddress,
-        address[] calldata vintageDaoRaiserMembershipWhitelist,
+        address[] calldata vintageDaoGovernorMembershipWhitelist,
         address newDaoAddr
     ) external returns (bool) {
         // uint256Params[0] vintageDaoStewardMembershipVarifyType
@@ -166,7 +166,7 @@ contract SummonVintageDao {
         DaoRegistry dao = DaoRegistry(newDaoAddr);
         require(address(this) == msg.sender);
 
-        //config raiser Membership
+        //config governor Membership
         if (vintageDaoStewardMembershipEnable) {
             dao.setConfiguration(DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_ENABLE, 1);
             dao.setConfiguration(
@@ -205,21 +205,21 @@ contract SummonVintageDao {
 
             if (
                 uint256Params[0] == 3 &&
-                vintageDaoRaiserMembershipWhitelist.length > 0
+                vintageDaoGovernorMembershipWhitelist.length > 0
             ) {
                 VintageRaiserManagementContract raiserManagementAdapt = VintageRaiserManagementContract(
                         dao.getAdapterAddress(
-                            DaoHelper.VINTAGE_RAISER_MANAGEMENT
+                            DaoHelper.VINTAGE_GOVERNOR_MANAGEMENT
                         )
                     );
                 for (
                     uint8 i = 0;
-                    i < vintageDaoRaiserMembershipWhitelist.length;
+                    i < vintageDaoGovernorMembershipWhitelist.length;
                     i++
                 ) {
                     raiserManagementAdapt.registerGovernorWhiteList(
                         dao,
-                        vintageDaoRaiserMembershipWhitelist[i]
+                        vintageDaoGovernorMembershipWhitelist[i]
                     );
                 }
             }
@@ -271,11 +271,11 @@ contract SummonVintageDao {
         return true;
     }
 
-    //config genesis raiser
+    //config genesis governor
     function summonVintageDao7(
         address newDaoAddr,
         uint256 votingAssetType,
-        address[] calldata genesisRaisers,
+        address[] calldata genesisGovernors,
         uint256[] calldata allcationValues
     ) external returns (bool) {
         DaoRegistry newDao = DaoRegistry(newDaoAddr);
@@ -291,14 +291,14 @@ contract SummonVintageDao {
                 newDao.daoCreator(),
                 allcationValues[0]
             );
-        if (genesisRaisers.length > 0) {
-            for (uint8 i = 0; i < genesisRaisers.length; i++) {
-                newDao.potentialNewMember(genesisRaisers[i]);
+        if (genesisGovernors.length > 0) {
+            for (uint8 i = 0; i < genesisGovernors.length; i++) {
+                newDao.potentialNewMember(genesisGovernors[i]);
                 if (votingAssetType == 3)
                     setAllocation(
                         raiserAlloc,
                         newDao,
-                        genesisRaisers[i],
+                        genesisGovernors[i],
                         allcationValues[i + 1]
                     );
             }
@@ -481,16 +481,16 @@ contract SummonVintageDao {
         );
 
         uint256[3] memory uint256SummonVintageDao5Params = [
-            params.raiserMembership.varifyType,
-            params.raiserMembership.minAmount,
-            params.raiserMembership.tokenId
+            params.governorMembership.varifyType,
+            params.governorMembership.minAmount,
+            params.governorMembership.tokenId
         ];
         vars.summonVintageDao5Payload = abi.encodeWithSignature(
             "summonVintageDao5(bool,uint256[3],address,address[],address)",
-            params.raiserMembership.enable,
+            params.governorMembership.enable,
             uint256SummonVintageDao5Params,
-            params.raiserMembership.tokenAddress,
-            params.raiserMembership.whiteList,
+            params.governorMembership.tokenAddress,
+            params.governorMembership.whiteList,
             vars.newDaoAddr
         );
 
@@ -516,7 +516,7 @@ contract SummonVintageDao {
             "summonVintageDao7(address,uint256,address[],uint256[])",
             vars.newDaoAddr,
             params.votingInfo.votingAssetType,
-            params.genesisRaisers,
+            params.genesisGovernors,
             params.allocations
         );
 
@@ -580,7 +580,7 @@ contract SummonVintageDao {
         // newDao.removeMember(address(this));
 
         VintageRaiserManagementContract raiserManagementAdapt = VintageRaiserManagementContract(
-                newDao.getAdapterAddress(DaoHelper.VINTAGE_RAISER_MANAGEMENT)
+                newDao.getAdapterAddress(DaoHelper.VINTAGE_GOVERNOR_MANAGEMENT)
             );
         raiserManagementAdapt.quit(newDao);
     }

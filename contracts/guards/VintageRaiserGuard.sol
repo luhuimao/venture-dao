@@ -32,8 +32,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-abstract contract VintageRaiserGuard {
-    modifier onlyRaiser(DaoRegistry dao, address account) {
+abstract contract VintageGovernorGuard {
+    modifier onlyGovernor(DaoRegistry dao, address account) {
         if (
             dao.getConfiguration(DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_ENABLE) ==
             1
@@ -73,12 +73,12 @@ abstract contract VintageRaiserGuard {
             if (varifyType == 3) {
                 VintageRaiserManagementContract vintageStewardManagement = VintageRaiserManagementContract(
                         dao.getAdapterAddress(
-                            DaoHelper.VINTAGE_RAISER_MANAGEMENT
+                            DaoHelper.VINTAGE_GOVERNOR_MANAGEMENT
                         )
                     );
                 require(
                     vintageStewardManagement.isGovernorWhiteList(dao, account),
-                    "not in raiser whitelist"
+                    "not in governor whitelist"
                 );
             }
         }

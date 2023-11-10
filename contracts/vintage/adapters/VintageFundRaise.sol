@@ -49,7 +49,7 @@ SOFTWARE.
 contract VintageFundRaiseAdapterContract is
     IVintageFundRaise,
     AdapterGuard,
-    RaiserGuard,
+    GovernorGuard,
     Reimbursable
 {
     using EnumerableSet for EnumerableSet.AddressSet;
