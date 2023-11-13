@@ -880,7 +880,7 @@ describe("Summon A Flex Dao", () => {
         await USDT.transfer(this.investor1.address, hre.ethers.utils.parseEther("100000"));
         // await expectRevert(flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("10")), "revert");
 
-        const exactmaxFundingAmount = await this.flexFundingHelperAdapterContract.getMaxFundingAmount(dao.address, proposalId);
+        const exactmaxFundingAmount = await this.flexFundingHelperAdapterContract.getMaxInvestmentAmount(dao.address, proposalId);
         console.log(`
         maxFundingAmount $${hre.ethers.utils.formatEther(exactmaxFundingAmount)}
         `);
@@ -10944,7 +10944,7 @@ describe("free in...", () => {
         await USDT.transfer(this.genesis_steward1.address, hre.ethers.utils.parseEther("100000"));
         await USDT.transfer(this.genesis_steward2.address, hre.ethers.utils.parseEther("100000"));
 
-        const exactmaxFundingAmount = await this.flexFundingHelperAdapterContract.getMaxFundingAmount(dao.address, proposalId);
+        const exactmaxFundingAmount = await this.flexFundingHelperAdapterContract.getMaxInvestmentAmount(dao.address, proposalId);
         console.log(`
         maxFundingAmount $${hre.ethers.utils.formatEther(exactmaxFundingAmount)}
         `);
@@ -11578,7 +11578,7 @@ describe("participant cap...", () => {
         await USDT.transfer(this.genesis_steward2.address, hre.ethers.utils.parseEther("100000"));
         await USDT.transfer(this.user1.address, hre.ethers.utils.parseEther("100000"));
 
-        const exactmaxFundingAmount = await this.flexFundingHelperAdapterContract.getMaxFundingAmount(dao.address, proposalId);
+        const exactmaxFundingAmount = await this.flexFundingHelperAdapterContract.getMaxInvestmentAmount(dao.address, proposalId);
         console.log(`
         maxFundingAmount ${hre.ethers.utils.formatEther(exactmaxFundingAmount)}
             `);
