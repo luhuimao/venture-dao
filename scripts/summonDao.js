@@ -46,7 +46,8 @@ async function main() {
     // await summonVintageDao();
     // await submitVintageDaosetProposal();
     // await getVintageDaosetProposal();
-    await getFlexAllGovernor();
+    // await getFlexAllGovernor();
+    await getFlexDaosetVotingProposalInfo();
     // await getVintageNewFundProposalInfo();
     // await getFlexInvestors();
     // await getFlexFundingProposalInfo();
@@ -2144,6 +2145,16 @@ const getFlexAllGovernor = async () => {
     console.log(governors);
  }
 
+
+const getFlexDaosetVotingProposalInfo = async () => { 
+    const flexDaoSetVotingAdapterContract = (await hre.ethers.getContractFactory("FlexDaoSetVotingAdapterContract")).attach("0x29c54c97e894ffaf5773c57A9a49108FAC34802f");;
+    const proposal = await flexDaoSetVotingAdapterContract.votingProposals(
+        "0xc21ba671b7b97ab7dFAd8Ea46b5E493De5e67355",
+        "0x6b5e493de5e67355566f74696e67202331000000000000000000000000000000"
+    );
+
+    console.log(proposal);
+}
 
 main()
     .then(() => process.exit(0))
