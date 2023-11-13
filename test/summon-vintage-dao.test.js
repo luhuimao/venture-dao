@@ -859,14 +859,14 @@ describe("verify raiser membership...", () => {
         console.log(`
         user1 test erc20token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         `);
-        await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr1, this.user1.address, 0), "revert");
+        await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr1, this.user1.address, 0), "revert");
 
         await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
         tt1user1Bal = await this.testtoken1.balanceOf(this.user1.address);
         console.log(`
         user1 test token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         `);
-        await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr1, this.user1.address, 0);
+        await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr1, this.user1.address, 0);
     });
 
     it("verify raiser erc721 memberhsip...", async () => {
@@ -875,7 +875,7 @@ describe("verify raiser membership...", () => {
         user2 NFT balance ${gp1NFTBal}
         `);
 
-        await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr2, this.user2.address, 0), "revert");
+        await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr2, this.user2.address, 0), "revert");
 
         console.log(`mint NFT...`);
         await this.testERC721.mintPixel(this.user2.address, 1, 1);
@@ -886,7 +886,7 @@ describe("verify raiser membership...", () => {
         user2 NFT balance ${gp1NFTBal}
         `);
 
-        await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr2, this.user2.address, 0);
+        await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr2, this.user2.address, 0);
     });
 
     it("verify raiser erc1155 memberhsip...", async () => {
@@ -896,7 +896,7 @@ describe("verify raiser membership...", () => {
         user2 ERC1155 balance ${gp1NFTBal}
         `);
 
-        await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr3, this.user2.address, 0), "revert");
+        await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr3, this.user2.address, 0), "revert");
 
         console.log(`mint ERC1155 to user2...`);
         await this.testERC1155.mint(this.user2.address, 1, 2, hexToBytes(toHex(2233)));
@@ -907,17 +907,17 @@ describe("verify raiser membership...", () => {
         user2 NFT balance ${gp1NFTBal}
         `);
 
-        await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr3, this.user2.address, 0);
+        await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr3, this.user2.address, 0);
     });
 
     it("verify raiser whitelist memberhsip...", async () => {
-        await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr4, this.gp2.address, 0), "revert");
-        await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr4, this.gp1.address, 0);
+        await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr4, this.gp2.address, 0), "revert");
+        await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr4, this.gp1.address, 0);
     });
 
     it("verify raiser deposit memberhsip...", async () => {
-        await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr4, this.gp2.address, 0), "revert");
-        await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr4, this.gp1.address, 0);
+        await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr4, this.gp2.address, 0), "revert");
+        await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr4, this.gp1.address, 0);
     });
 });
 
@@ -2231,7 +2231,7 @@ describe("voting....", () => {
         console.log(`
         user1 test erc20token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         `);
-        await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr1, this.user1.address, 0), "revert");
+        await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr1, this.user1.address, 0), "revert");
 
         await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
         await this.testtoken1.transfer(this.genesis_raiser1.address, hre.ethers.utils.parseEther("100"));
@@ -2243,7 +2243,7 @@ describe("voting....", () => {
         user1 test token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         user1 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr1, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr1, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -2252,8 +2252,8 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr1, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr1, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr1, this.genesis_raiser2.address);
-        let allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr1);
-        let allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllRaiserWeightByProposalId(this.daoAddr1, proposalId);
+        let allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr1);
+        let allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllGovernorWeightByProposalId(this.daoAddr1, proposalId);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -2271,8 +2271,8 @@ describe("voting....", () => {
         await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr1, proposalId, 1);
         await this.testtoken1.connect(this.genesis_raiser2).transfer(this.user2.address, hre.ethers.utils.parseEther("90"));
 
-        allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllRaiserWeightByProposalId(this.daoAddr1, proposalId);
-        allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr1);
+        allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllGovernorWeightByProposalId(this.daoAddr1, proposalId);
+        allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr1);
 
         console.log(`
         allWeights ${allWeights}
@@ -2305,7 +2305,7 @@ describe("voting....", () => {
         console.log(`
         user2 test erc721token bal ${tt1user1Bal}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr2, this.user1.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr2, this.user1.address), "revert");
 
         // await this.testERC721.mintPixel(this.user2.address, 0, 0);
         // await this.testERC721.mintPixel(this.user2.address, 0, 1);
@@ -2323,7 +2323,7 @@ describe("voting....", () => {
         user2 test token bal ${tt1user1Bal}
         user2 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr2, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr2, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -2332,7 +2332,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr2, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr2, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr2, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr2);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr2);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -2378,7 +2378,7 @@ describe("voting....", () => {
         console.log(`
         investor1 test erc20token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr3, this.user1.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr3, this.user1.address), "revert");
 
         await this.testERC1155.mint(this.investor1.address, 1, 2, hexToBytes(toHex(2233)));
         await this.testERC1155.mint(this.genesis_raiser1.address, 1, 2, hexToBytes(toHex(2233)));
@@ -2392,7 +2392,7 @@ describe("voting....", () => {
         investor1 is Raiser ${isRaiser}
         investor1 test token bal ${tt1user1Bal}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr3, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr3, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -2401,7 +2401,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr3, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr3, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr3, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr3);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr3);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -2446,7 +2446,7 @@ describe("voting....", () => {
         console.log(`
         investor2 test erc20token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr4, this.user1.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr4, this.user1.address), "revert");
 
         // await this.testtoken1.transfer(this.investor2.address, hre.ethers.utils.parseEther("100"));
         // await this.testtoken1.transfer(this.genesis_raiser1.address, hre.ethers.utils.parseEther("100"));
@@ -2458,7 +2458,7 @@ describe("voting....", () => {
         investor2 test token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         investor2 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr4, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr4, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -2467,7 +2467,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr4, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr4, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr4, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr4);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr4);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -2508,14 +2508,14 @@ describe("voting....", () => {
     });
 
     it("eligibility deposit,voting power log2, quorum, support percentage...", async () => {
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr5, this.gp2.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr5, this.gp2.address), "revert");
 
         let isRaiser = await this.dao5Contract.isMember(this.user1.address);
 
         console.log(`
         user1 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr5, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr5, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -2524,7 +2524,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr5, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr5, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr5, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr5);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr5);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -2566,7 +2566,7 @@ describe("voting....", () => {
         console.log(`
         user1 test erc20token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr6, this.user1.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr6, this.user1.address), "revert");
 
         // await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
         // await this.testtoken1.transfer(this.genesis_raiser1.address, hre.ethers.utils.parseEther("100"));
@@ -2578,7 +2578,7 @@ describe("voting....", () => {
         user1 test token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         user2 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr6, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr6, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -2587,7 +2587,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr6, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr6, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr6, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr6);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr6);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -2640,7 +2640,7 @@ describe("voting....", () => {
         console.log(`
         user1 test erc721token bal ${tt1user1Bal}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr7, this.user2.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr7, this.user2.address), "revert");
 
         // await this.testERC721.mintPixel(this.user2.address, 1, 2);
         // await this.testERC721.mintPixel(this.user2.address, 1, 3);
@@ -2658,7 +2658,7 @@ describe("voting....", () => {
         user2 test token bal ${tt1user1Bal}
         user2 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr7, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr7, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -2667,7 +2667,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr7, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr7, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr7, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr7);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr7);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -2723,7 +2723,7 @@ describe("voting....", () => {
         console.log(`
         user1 test testERC1155 bal ${tt1user1Bal}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr8, this.investor1.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr8, this.investor1.address), "revert");
 
         // await this.testERC1155.mint(this.investor1.address, 1, 2, hexToBytes(toHex(2233)));
         await this.testERC1155.mint(this.genesis_raiser1.address, 1, 2, hexToBytes(toHex(2233)));
@@ -2737,7 +2737,7 @@ describe("voting....", () => {
         user1 is Raiser ${isRaiser}
         user1 testERC1155 bal ${tt1user1Bal}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr8, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr8, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -2746,7 +2746,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr8, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr8, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr8, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr8);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr8);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -2801,7 +2801,7 @@ describe("voting....", () => {
         console.log(`
         user1 test erc20token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr9, this.investor2.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr9, this.investor2.address), "revert");
 
         // await this.testtoken1.transfer(this.investor2.address, hre.ethers.utils.parseEther("100"));
         await this.testtoken1.transfer(this.genesis_raiser1.address, hre.ethers.utils.parseEther("100"));
@@ -2813,7 +2813,7 @@ describe("voting....", () => {
         user1 test token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         user1 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr9, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr9, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -2822,7 +2822,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr9, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr9, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr9, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr9);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr9);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -2871,14 +2871,14 @@ describe("voting....", () => {
     });
 
     it("eligibility deposit,voting power log2, quorum, support integer...", async () => {
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr10, this.user1.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr10, this.user1.address), "revert");
 
         let isRaiser = await this.dao5Contract.isMember(this.user1.address);
 
         console.log(`
         gp1 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr10, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr10, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -2891,7 +2891,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr10, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr10, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr10, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr10);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr10);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -2958,7 +2958,7 @@ describe("voting....", () => {
         user1 test token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         user2 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr11, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr11, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -2970,7 +2970,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr11, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr11, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr11, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr11);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr11);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3017,7 +3017,7 @@ describe("voting....", () => {
         console.log(`
         user1 test erc721token bal ${tt1user1Bal}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr12, this.user1.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr12, this.user1.address), "revert");
 
         // await this.testERC721.mintPixel(this.user2.address, 3, 0);
         // await this.testERC721.mintPixel(this.user2.address, 3, 1);
@@ -3035,7 +3035,7 @@ describe("voting....", () => {
         user2 test token bal ${tt1user1Bal}
         user2 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr12, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr12, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -3047,7 +3047,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr12, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr12, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr12, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr12);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr12);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -3096,7 +3096,7 @@ describe("voting....", () => {
         console.log(`
         funding_proposer1 test erc20token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr13, this.user1.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr13, this.user1.address), "revert");
 
         // await this.testERC1155.mint(this.funding_proposer1.address, 1, 2, hexToBytes(toHex(2233)));
         await this.testERC1155.mint(this.genesis_raiser1.address, 1, 2, hexToBytes(toHex(2233)));
@@ -3110,7 +3110,7 @@ describe("voting....", () => {
         funding_proposer1 is Raiser ${isRaiser}
         funding_proposer1 test token bal ${tt1user1Bal}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr13, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr13, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -3122,7 +3122,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr13, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr13, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr13, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr13);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr13);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -3170,7 +3170,7 @@ describe("voting....", () => {
         console.log(`
         funding_proposer2_whitelist test erc20token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr14, this.user1.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr14, this.user1.address), "revert");
 
         // await this.testtoken1.transfer(this.funding_proposer2_whitelist.address, hre.ethers.utils.parseEther("100"));
         // await this.testtoken1.transfer(this.genesis_raiser1.address, hre.ethers.utils.parseEther("100"));
@@ -3182,7 +3182,7 @@ describe("voting....", () => {
         user1 test token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         user1 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr14, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr14, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -3191,7 +3191,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr14, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr14, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr14, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr14);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr14);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3229,14 +3229,14 @@ describe("voting....", () => {
     });
 
     it("eligibility deposit,voting power quantity, quorum, support percentage...", async () => {
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr15, this.gp2.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr15, this.gp2.address), "revert");
 
         let isRaiser = await this.dao5Contract.isMember(this.user1.address);
 
         console.log(`
         gp1 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr15, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr15, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -3249,7 +3249,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr15, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr15, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr15, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr15);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr15);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3293,7 +3293,7 @@ describe("voting....", () => {
         console.log(`
         user1 test erc20token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr6, this.user1.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr6, this.user1.address), "revert");
 
         // await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
         // await this.testtoken1.transfer(this.genesis_raiser1.address, hre.ethers.utils.parseEther("100"));
@@ -3305,7 +3305,7 @@ describe("voting....", () => {
         user1 test token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         user2 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr16, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr16, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -3318,7 +3318,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr16, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr16, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr16, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr16);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr16);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3374,7 +3374,7 @@ describe("voting....", () => {
         console.log(`
         user1 test erc721token bal ${tt1user1Bal}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr7, this.user2.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr7, this.user2.address), "revert");
 
         // await this.testERC721.mintPixel(this.funding_proposer2_whitelist.address, 3, 0);
         // await this.testERC721.mintPixel(this.funding_proposer2_whitelist.address, 3, 1);
@@ -3392,7 +3392,7 @@ describe("voting....", () => {
         funding_proposer2_whitelist test token bal ${tt1user1Bal}
         funding_proposer2_whitelist is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr17, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr17, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -3406,7 +3406,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr17, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr17, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr17, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr17);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr17);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -3465,7 +3465,7 @@ describe("voting....", () => {
         console.log(`
         investor1 test testERC1155 bal ${tt1user1Bal}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr8, this.investor1.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr8, this.investor1.address), "revert");
 
         // await this.testERC1155.mint(this.investor1.address, 1, 2, hexToBytes(toHex(2233)));
         await this.testERC1155.mint(this.genesis_raiser1.address, 1, 2, hexToBytes(toHex(2233)));
@@ -3479,7 +3479,7 @@ describe("voting....", () => {
         investor1 is Raiser ${isRaiser}
         investor1 test token bal ${tt1user1Bal}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr18, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr18, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -3492,7 +3492,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr18, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr18, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr18, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr18);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr18);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -3550,7 +3550,7 @@ describe("voting....", () => {
         console.log(`
         investor2 test erc20token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr9, this.investor2.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr9, this.investor2.address), "revert");
 
         await this.testtoken1.transfer(this.investor2.address, hre.ethers.utils.parseEther("100"));
         await this.testtoken1.transfer(this.genesis_raiser1.address, hre.ethers.utils.parseEther("100"));
@@ -3562,7 +3562,7 @@ describe("voting....", () => {
         investor2 test token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         investor2 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr19, this.investor2.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr19, this.investor2.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -3571,7 +3571,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr19, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr19, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr19, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr19);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr19);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3620,14 +3620,14 @@ describe("voting....", () => {
     });
 
     it("eligibility deposit,voting power quantity, quorum, support integer...", async () => {
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr20, this.gp2.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr20, this.gp2.address), "revert");
 
         let isRaiser = await this.dao5Contract.isMember(this.user1.address);
 
         console.log(`
         gp1 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr20, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr20, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -3640,7 +3640,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr20, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr20, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr20, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr20);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr20);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3707,7 +3707,7 @@ describe("voting....", () => {
         user1 test token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         user2 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr21, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr21, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -3719,7 +3719,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr21, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr21, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr21, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr21);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr21);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3765,7 +3765,7 @@ describe("voting....", () => {
         console.log(`
         user2 test erc721token bal ${tt1user1Bal}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr22, this.investor1.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr22, this.investor1.address), "revert");
 
         // await this.testERC721.mintPixel(this.user2.address, 3, 0);
         // await this.testERC721.mintPixel(this.user2.address, 3, 1);
@@ -3783,7 +3783,7 @@ describe("voting....", () => {
         user2 test token bal ${tt1user1Bal}
         user2 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr22, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr22, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -3795,7 +3795,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr22, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr22, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr22, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr22);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr22);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -3844,7 +3844,7 @@ describe("voting....", () => {
         console.log(`
         funding_proposer1 test erc20token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr23, this.funding_proposer1.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr23, this.funding_proposer1.address), "revert");
 
         // await this.testERC1155.mint(this.funding_proposer1.address, 1, 2, hexToBytes(toHex(2233)));
         // await this.testERC1155.mint(this.genesis_raiser1.address, 1, 2, hexToBytes(toHex(2233)));
@@ -3858,7 +3858,7 @@ describe("voting....", () => {
         funding_proposer1 is Raiser ${isRaiser}
         funding_proposer1 test token bal ${tt1user1Bal}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr23, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr23, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -3870,7 +3870,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr23, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr23, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr23, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr23);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr23);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -3918,7 +3918,7 @@ describe("voting....", () => {
         console.log(`
         funding_proposer2_whitelist test erc20token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr4, this.funding_proposer2_whitelist.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr4, this.funding_proposer2_whitelist.address), "revert");
 
         await this.testtoken1.transfer(this.funding_proposer2_whitelist.address, hre.ethers.utils.parseEther("100"));
         await this.testtoken1.transfer(this.genesis_raiser1.address, hre.ethers.utils.parseEther("100"));
@@ -3930,7 +3930,7 @@ describe("voting....", () => {
         funding_proposer2_whitelist test token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         funding_proposer2_whitelist is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr24, this.funding_proposer2_whitelist.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr24, this.funding_proposer2_whitelist.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -3939,7 +3939,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr24, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr24, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr24, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr24);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr24);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -3977,14 +3977,14 @@ describe("voting....", () => {
     });
 
     it("eligibility deposit,voting power 1 voter 1 vote, quorum, support percentage...", async () => {
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr5, this.gp2.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr5, this.gp2.address), "revert");
 
         let isRaiser = await this.dao5Contract.isMember(this.user1.address);
 
         console.log(`
         user1 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr25, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr25, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -3997,7 +3997,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr25, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr25, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr25, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr25);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr25);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -4041,7 +4041,7 @@ describe("voting....", () => {
         console.log(`
         user1 test erc20token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr6, this.user1.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr6, this.user1.address), "revert");
 
         await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
         await this.testtoken1.transfer(this.genesis_raiser1.address, hre.ethers.utils.parseEther("100"));
@@ -4053,7 +4053,7 @@ describe("voting....", () => {
         user1 test token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         user2 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr26, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr26, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -4066,7 +4066,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr26, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr26, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr26, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr26);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr26);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -4122,7 +4122,7 @@ describe("voting....", () => {
         console.log(`
         funding_proposer2_whitelist test erc721token bal ${tt1user1Bal}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr7, this.user2.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr7, this.user2.address), "revert");
 
         // await this.testERC721.mintPixel(this.funding_proposer2_whitelist.address, 3, 0);
         // await this.testERC721.mintPixel(this.funding_proposer2_whitelist.address, 3, 1);
@@ -4140,7 +4140,7 @@ describe("voting....", () => {
         funding_proposer2_whitelist test token bal ${tt1user1Bal}
         funding_proposer2_whitelist is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr27, this.funding_proposer2_whitelist.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr27, this.funding_proposer2_whitelist.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -4154,7 +4154,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr27, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr27, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr27, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr27);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr27);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -4213,7 +4213,7 @@ describe("voting....", () => {
         console.log(`
         investor1 test testERC1155 bal ${tt1user1Bal}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr8, this.investor1.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr8, this.investor1.address), "revert");
 
         // await this.testERC1155.mint(this.investor1.address, 1, 2, hexToBytes(toHex(2233)));
         // await this.testERC1155.mint(this.genesis_raiser1.address, 1, 2, hexToBytes(toHex(2233)));
@@ -4227,7 +4227,7 @@ describe("voting....", () => {
         investor1 is Raiser ${isRaiser}
         investor1 test token bal ${tt1user1Bal}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr28, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr28, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -4240,7 +4240,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr28, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr28, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr28, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr28);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr28);
 
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
@@ -4298,7 +4298,7 @@ describe("voting....", () => {
         console.log(`
         investor2 test erc20token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         `);
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr9, this.investor2.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr9, this.investor2.address), "revert");
 
         await this.testtoken1.transfer(this.investor2.address, hre.ethers.utils.parseEther("100"));
         await this.testtoken1.transfer(this.genesis_raiser1.address, hre.ethers.utils.parseEther("100"));
@@ -4310,7 +4310,7 @@ describe("voting....", () => {
         investor2 test token bal ${hre.ethers.utils.formatEther(tt1user1Bal)}
         investor2 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr29, this.investor2.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr29, this.investor2.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -4319,7 +4319,7 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr29, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr29, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr29, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr29);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr29);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -4368,14 +4368,14 @@ describe("voting....", () => {
     });
 
     it("eligibility deposit,voting power 1 voter 1 vote, quorum, support integer...", async () => {
-        // await expectRevert(this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr30, this.gp2.address), "revert");
+        // await expectRevert(this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr30, this.gp2.address), "revert");
 
         let isRaiser = await this.dao5Contract.isMember(this.user1.address);
 
         console.log(`
         gp1 is Raiser ${isRaiser}
         `);
-        const tx = await this.vintageRaiserManagementContract.submitRaiserInProposal(this.daoAddr30, this.user1.address, 0);
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(this.daoAddr30, this.user1.address, 0);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
@@ -4388,8 +4388,8 @@ describe("voting....", () => {
         const votingWeight1 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr30, this.owner.address);
         const votingWeight2 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr30, this.genesis_raiser1.address);
         const votingWeight3 = await this.vintageVotingAdapterContract.getVotingWeight(this.daoAddr30, this.genesis_raiser2.address);
-        const allWeights = await this.vintageVotingAdapterContract.getAllRaiserWeight(this.daoAddr30);
-        let allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllRaiserWeightByProposalId(this.daoAddr30, proposalId);
+        const allWeights = await this.vintageVotingAdapterContract.getAllGovernorWeight(this.daoAddr30);
+        let allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllGovernorWeightByProposalId(this.daoAddr30, proposalId);
         console.log(`
         proposal ${proposalId} state ${proposalInfo.state}
         start voting...
@@ -4410,7 +4410,7 @@ describe("voting....", () => {
 
         const allVoteWeight = parseInt(votingWeight1) + parseInt(votingWeight2) + parseInt(votingWeight3);
         const yesnb = parseInt(votingWeight1) + parseInt(votingWeight3) - parseInt(votingWeight2);
-        allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllRaiserWeightByProposalId(this.daoAddr30, proposalId);
+        allWeightsByProposalId = await this.vintageVotingAdapterContract.getAllGovernorWeightByProposalId(this.daoAddr30, proposalId);
 
         console.log(`
         allVoteWeight ${allVoteWeight}
@@ -10006,7 +10006,7 @@ describe("raiser allocations...", () => {
         const allocation = 100;
         const raiserMangementContract = this.vintageRaiserManagementContract;
         const daoAddr = this.daoAddr1;
-        const tx = await raiserMangementContract.submitRaiserInProposal(daoAddr, this.user1.address, allocation);
+        const tx = await raiserMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, allocation);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         console.log(`
@@ -13792,17 +13792,17 @@ describe("daoset proposal...", () => {
     it("create daoset participant cap proposal...", async () => {
         const enable = true;
         const cap = 5;
-        const tx = await this.vintageDaoSetAdapterContract.submitParticipantCapProposal(this.daoAddr1, enable, cap);
+        const tx = await this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap);
 
         const rel = await tx.wait();
 
         const proposalId = rel.events[rel.events.length - 1].args.proposalId
-        const proposal = await this.vintageDaoSetAdapterContract.participantCapProposals(
+        const proposal = await this.vintageDaoSetAdapterContract.investorCapProposals(
             this.daoAddr1,
             proposalId);
 
         console.log(proposal);
-        await expectRevert(this.vintageDaoSetAdapterContract.submitParticipantCapProposal(this.daoAddr1, enable, cap), "revert");
+        await expectRevert(this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap), "revert");
 
 
         const vintageFundingAdapterContract = this.vintageFundingAdapterContract;
@@ -13901,7 +13901,7 @@ describe("daoset proposal...", () => {
         await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr1, proposalId, 1);
         await this.vintageVotingAdapterContract.submitVote(this.daoAddr1, proposalId, 1);
 
-        let ProposalInfo = await this.vintageDaoSetAdapterContract.participantCapProposals(this.daoAddr1, proposalId);
+        let ProposalInfo = await this.vintageDaoSetAdapterContract.investorCapProposals(this.daoAddr1, proposalId);
         let stopVoteTime = ProposalInfo.stopVoteTime;
 
         if (parseInt(stopVoteTime) > blocktimestamp) {
@@ -13914,9 +13914,9 @@ describe("daoset proposal...", () => {
         state ${voteRel.state}  nbYes ${voteRel.nbYes}  nbNo ${voteRel.nbNo}
         process proposal...
         `);
-        await this.vintageDaoSetAdapterContract.processParticipantCapProposal(this.daoAddr1, proposalId);
+        await this.vintageDaoSetAdapterContract.processInvestorCapProposal(this.daoAddr1, proposalId);
 
-        ProposalInfo = await this.vintageDaoSetAdapterContract.participantCapProposals(this.daoAddr1, proposalId);
+        ProposalInfo = await this.vintageDaoSetAdapterContract.investorCapProposals(this.daoAddr1, proposalId);
 
         console.log(`
         executed...
@@ -13983,7 +13983,7 @@ describe("daoset proposal...", () => {
         fund State ${fundState}
         submit daoset proposal...
         `);
-        await expectRevert(this.vintageDaoSetAdapterContract.submitParticipantCapProposal(this.daoAddr1, enable, cap), "revert");
+        await expectRevert(this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap), "revert");
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
@@ -14019,7 +14019,7 @@ describe("daoset proposal...", () => {
         blocktimestamp ${blocktimestamp}
         `)
 
-        await this.vintageDaoSetAdapterContract.submitParticipantCapProposal(this.daoAddr1, enable, cap);
+        await this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap);
         console.log(`
         dao set proposal created...
         `);

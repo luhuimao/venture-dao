@@ -18,7 +18,7 @@ contract FlexDaoSetPollingAdapterContract {
     mapping(address => mapping(bytes32 => FlexDaosetLibrary.PollForInvestmentProposalDetails))
         public pollForInvestmentProposals;
 
-    mapping(bytes32 => EnumerableSet.AddressSet) pollsterMembershipWhiteLists;
+    mapping(bytes32 => EnumerableSet.AddressSet) pollvoterMembershipWhiteLists;
 
     function submitPollForInvestmentProposal(
         FlexDaosetLibrary.PollForInvestmentParams calldata params
@@ -48,16 +48,16 @@ contract FlexDaoSetPollingAdapterContract {
         pollForInvestmentProposals[address(params.dao)][
             proposalId
         ] = FlexDaosetLibrary.PollForInvestmentProposalDetails(
-            params.pollsterMembership.varifyType,
-            params.pollsterMembership.minHolding,
-            params.pollsterMembership.tokenAddress,
-            params.pollsterMembership.tokenId,
+            params.pollvoterMembership.varifyType,
+            params.pollvoterMembership.minHolding,
+            params.pollvoterMembership.tokenAddress,
+            params.pollvoterMembership.tokenId,
             FlexDaosetLibrary.flexDaoPollingInfo(
                 params.pollingInfo.votingPeriod,
                 params.pollingInfo.votingPower,
                 params.pollingInfo.superMajority,
                 params.pollingInfo.quorum,
-                params.pollingInfo.eligibilityType,
+                params.pollingInfo.votingAssetType,
                 params.pollingInfo.tokenAddress,
                 params.pollingInfo.tokenID,
                 params.pollingInfo.supportType,
@@ -69,14 +69,14 @@ contract FlexDaoSetPollingAdapterContract {
             FlexDaosetLibrary.ProposalState.Voting
         );
 
-        if (params.pollsterMembership.whiteList.length > 0) {
+        if (params.pollvoterMembership.whiteList.length > 0) {
             for (
                 uint8 i = 0;
-                i < params.pollsterMembership.whiteList.length;
+                i < params.pollvoterMembership.whiteList.length;
                 i++
             ) {
-                pollsterMembershipWhiteLists[proposalId].add(
-                    params.pollsterMembership.whiteList[i]
+                pollvoterMembershipWhiteLists[proposalId].add(
+                    params.pollvoterMembership.whiteList[i]
                 );
             }
         }
@@ -150,14 +150,14 @@ contract FlexDaoSetPollingAdapterContract {
                 proposal.pollingInfo.votingPower,
                 proposal.pollingInfo.superMajority,
                 proposal.pollingInfo.quorum,
-                proposal.pollingInfo.eligibilityType,
+                proposal.pollingInfo.votingAssetType,
                 proposal.pollingInfo.tokenID,
                 proposal.varifyType,
                 proposal.minHolding,
                 proposal.tokenId
             ],
             [proposal.pollingInfo.tokenAddress, proposal.tokenAddress],
-            pollsterMembershipWhiteLists[proposalId].values()
+            pollvoterMembershipWhiteLists[proposalId].values()
         );
     }
 
@@ -179,23 +179,14 @@ contract FlexDaoSetPollingAdapterContract {
             uint256 nbNo
         ) = votingContract.voteResult(dao, proposalId);
         uint128 allWeight = GovernanceHelper
-            .getAllStewardVotingWeightByProposalId(dao, proposalId);
-        // emit ProposalProcessed(
-        //     address(dao),
-        //     proposalId,
-        //     uint256(vs),
-        //     allWeight,
-        //     nbYes,
-        //     nbNo
-        // );
-
-        // return votingContract.voteResult(dao, proposalId);
+            .getAllFlexGovernorVotingWeightByProposalId(dao, proposalId);
+       
         return (vs, nbYes, nbNo, allWeight);
     }
 
     function getWhitelist(
         bytes32 proposalId
     ) external view returns (address[] memory) {
-        return pollsterMembershipWhiteLists[proposalId].values();
+        return pollvoterMembershipWhiteLists[proposalId].values();
     }
 }

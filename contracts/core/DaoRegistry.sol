@@ -94,7 +94,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         INCREASE_NEW_FUND_ID,
         INCREASE_GOVENOR_IN_ID,
         INCREASE_GOVENOR_OUT_ID,
-        INCREASE_PARTICIPANT_CAP_ID,
+        INCREASE_INVESTOR_CAP_ID,
         INCREASE_GOVERNOR_MEMBERSHIP_ID,
         INCREASE_INVESTOR_MEMBERSHIP_ID,
         INCREASE_VOTING_ID,
@@ -184,7 +184,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     Counters.Counter private _newFundProposalIds;
     Counters.Counter private _govenorInIds;
     Counters.Counter private _govenorOutIds;
-    Counters.Counter private _ParticipantCapProposalIds;
+    Counters.Counter private _InvestorCapProposalIds;
     Counters.Counter private _governorMembershipProposalIds;
     Counters.Counter private _investorMembershipProposalIds;
     Counters.Counter private _votingProposalIds;
@@ -534,11 +534,11 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         _govenorOutIds.increment();
     }
 
-    function increaseParticipantCapId()
+    function increaseInvestorCapId()
         external
-        hasAccess(this, AclFlag.INCREASE_PARTICIPANT_CAP_ID)
+        hasAccess(this, AclFlag.INCREASE_INVESTOR_CAP_ID)
     {
-        _ParticipantCapProposalIds.increment();
+        _InvestorCapProposalIds.increment();
     }
 
     function increaseGovernorMembershipId()
@@ -952,8 +952,8 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         return _newFundProposalIds.current();
     }
 
-    function getCurrentParticipantCapProposalId()external view returns (uint256){
-        return _ParticipantCapProposalIds.current();
+    function getCurrentInvestorCapProposalId()external view returns (uint256){
+        return _InvestorCapProposalIds.current();
     }
 
     function getCurrentGovernorMembershipProposalId()external view returns (uint256){

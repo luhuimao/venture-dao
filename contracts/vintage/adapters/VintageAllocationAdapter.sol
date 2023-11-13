@@ -85,7 +85,7 @@ contract VintageAllocationAdapterContract is AdapterGuard {
         // emit ConfigureDao(gpAllocationBonusRadio, riceStakeAllocationRadio);
     }
 
-    function getFundingRewards(
+    function getInvestmentRewards(
         DaoRegistry dao,
         address recipient,
         uint256 tokenAmount
@@ -126,7 +126,7 @@ contract VintageAllocationAdapterContract is AdapterGuard {
         uint256 oldAllowance;
         uint256 newAllowance;
         uint8 i;
-        uint256 fundingRewards;
+        uint256 investmentRewards;
         uint256 proposerBonus;
         uint256 tokenAmount;
         uint256 vestingStartTIme;
@@ -228,19 +228,19 @@ contract VintageAllocationAdapterContract is AdapterGuard {
 
         if (allInvestors.length > 0) {
             for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
-                vars.fundingRewards = getFundingRewards(
+                vars.investmentRewards = getInvestmentRewards(
                     dao,
                     allInvestors[vars.i],
                     vars.tokenAmount -
                         vars.returnTokenManagementFee -
                         vars.proposerBonus
                 );
-                //bug fixed: fillter fundingRewards > 0 ;20220614
-                if (vars.fundingRewards > 0) {
+                //bug fixed: fillter investmentRewards > 0 ;20220614
+                if (vars.investmentRewards > 0) {
                     vestingInfos[address(dao)][proposalId][
                         allInvestors[vars.i]
-                    ] = VestingInfo(vars.fundingRewards, false);
-                    vars.totalReward += vars.fundingRewards;
+                    ] = VestingInfo(vars.investmentRewards, false);
+                    vars.totalReward += vars.investmentRewards;
                 }
             }
         }

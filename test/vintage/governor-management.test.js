@@ -374,7 +374,7 @@ describe("raiser allocations...", () => {
 
     it("remove governor...", async () => {
 
-        const tx = await this.vintageRaiserManagementContract.submitSteWardOutProposal(
+        const tx = await this.vintageRaiserManagementContract.submitGovernorOutProposal(
             this.daoAddr,
             this.genesis_raiser1.address
         );
@@ -411,6 +411,26 @@ describe("raiser allocations...", () => {
         alloctionValue ${alloctionValue}
         `);
 
-    })
+    });
 
+    it("governor quit...", async()=>{
+        let alloctionValue = await this.vintageRaiserAllocationAdapterContract.getAllocation(
+            this.daoAddr,
+            this.genesis_raiser2.address
+        );
+        console.log(`
+        alloctionValue ${alloctionValue}
+        governor quit...
+        `);
+        await this.vintageRaiserManagementContract.connect(this.genesis_raiser2).quit(this.daoAddr);
+
+        alloctionValue = await this.vintageRaiserAllocationAdapterContract.getAllocation(
+            this.daoAddr,
+            this.genesis_raiser2.address
+        );
+        console.log(`
+        alloctionValue ${alloctionValue}
+        governor quited...
+        `);
+    });
 });

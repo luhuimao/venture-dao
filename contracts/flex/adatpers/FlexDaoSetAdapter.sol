@@ -20,20 +20,18 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
 
-contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
+contract FlexDaoSetAdapterContract is GovernorGuard, Reimbursable, MemberGuard {
     using EnumerableSet for EnumerableSet.AddressSet;
     // using EnumerableSet for EnumerableSet.UintSet;
 
-    mapping(address => bytes32) public ongoingParticipantCapProposal;
+    mapping(address => bytes32) public ongoingInvestorCapProposal;
     mapping(address => bytes32) public ongoingGovernorMembershipProposal;
     mapping(address => bytes32) public ongoingInvstorMembershipProposal;
-    // mapping(address => bytes32) public ongoingVotingProposal;
     mapping(address => bytes32) public ongoingFeesProposal;
     mapping(address => bytes32) public ongoingProposerMembershipProposal;
-    // mapping(address => bytes32) public ongoingPollForInvestmentProposal;
 
-    mapping(address => mapping(bytes32 => FlexDaosetLibrary.ParticipantCapProposalDetails))
-        public participantCapProposals;
+    mapping(address => mapping(bytes32 => FlexDaosetLibrary.InvestorCapProposalDetails))
+        public investorCapProposals;
 
     mapping(address => mapping(bytes32 => FlexDaosetLibrary.GovernorMembershipProposalDetails))
         public governorMembershipProposals;
@@ -41,22 +39,15 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
     mapping(address => mapping(bytes32 => FlexDaosetLibrary.InvestorMembershipProposalDetails))
         public investorMembershipProposals;
 
-    // mapping(address => mapping(bytes32 => FlexDaosetLibrary.VotingProposalDetails))
-    //     public votingProposals;
-
     mapping(address => mapping(bytes32 => FlexDaosetLibrary.FeeProposalDetails))
         public feesProposals;
     mapping(address => mapping(bytes32 => FlexDaosetLibrary.ProposerMembershipProposalDetails))
         public proposerMembershipProposals;
-    // mapping(address => mapping(bytes32 => FlexDaosetLibrary.PollForInvestmentProposalDetails))
-    //     public pollForInvestmentProposals;
 
     mapping(bytes32 => EnumerableSet.AddressSet) governorMembershipWhitelists;
     mapping(bytes32 => EnumerableSet.AddressSet) investorMembershipWhiteLists;
     mapping(bytes32 => EnumerableSet.AddressSet) proposerMembershipWhiteLists;
-    mapping(bytes32 => EnumerableSet.AddressSet) pollsterMembershipWhiteLists;
-    // mapping(bytes32 => EnumerableSet.UintSet) votingAllocations;
-    // mapping(bytes32 => EnumerableSet.AddressSet) votingGovernors;
+    mapping(bytes32 => EnumerableSet.AddressSet) pollvoterMembershipWhiteLists;
 
     event ProposalCreated(
         address daoAddr,
@@ -78,50 +69,50 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
         FlexFundingAdapterContract funding = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
-        StewardManagementContract steward = StewardManagementContract(
+        StewardManagementContract governor = StewardManagementContract(
             dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_MANAGEMENT)
         );
 
-        if (funding.allDone(dao) && steward.allDone(dao)) return true;
+        if (funding.allDone(dao) && governor.allDone(dao)) return true;
         return false;
     }
 
-    function submitParticipantCapProposal(
+    function submitInvestorCapProposal(
         DaoRegistry dao,
         bool enable,
         uint256 cap
     ) external onlyMember(dao) reimbursable(dao) {
         require(
-            ongoingParticipantCapProposal[address(dao)] == bytes32(0),
+            ongoingInvestorCapProposal[address(dao)] == bytes32(0),
             "!submit"
         );
         require(unDoneProposalsCheck(dao), "unDone Proposals");
-        dao.increaseParticipantCapId();
+        dao.increaseInvestorCapId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
                 bytes8(uint64(uint160(address(dao)))),
-                "Participant Cap #",
-                Strings.toString(dao.getCurrentParticipantCapProposalId())
+                "Invstor Cap #",
+                Strings.toString(dao.getCurrentInvestorCapProposalId())
             )
         );
 
-        participantCapProposals[address(dao)][proposalId] = FlexDaosetLibrary
-            .ParticipantCapProposalDetails(
+        investorCapProposals[address(dao)][proposalId] = FlexDaosetLibrary
+            .InvestorCapProposalDetails(
                 enable,
                 cap,
                 block.timestamp,
                 block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD),
                 FlexDaosetLibrary.ProposalState.Voting
             );
-        ongoingParticipantCapProposal[address(dao)] = proposalId;
+        ongoingInvestorCapProposal[address(dao)] = proposalId;
 
         setProposal(dao, proposalId);
 
         emit ProposalCreated(
             address(dao),
             proposalId,
-            FlexDaosetLibrary.ProposalType.PARTICIPANT_CAP
+            FlexDaosetLibrary.ProposalType.INVESTOR_CAP
         );
     }
 
@@ -382,12 +373,12 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
         // );
     }
 
-    function processParticipantCapProposal(
+    function processInvestorCapProposal(
         DaoRegistry dao,
         bytes32 proposalId
     ) external reimbursable(dao) {
-        FlexDaosetLibrary.ParticipantCapProposalDetails
-            storage proposal = participantCapProposals[address(dao)][
+        FlexDaosetLibrary.InvestorCapProposalDetails
+            storage proposal = investorCapProposals[address(dao)][
                 proposalId
             ];
 
@@ -397,7 +388,7 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
         );
 
         if (voteResult == IFlexVoting.VotingState.PASS) {
-            setParticipantCap(dao, proposal);
+            setInvestorCap(dao, proposal);
             proposal.state = FlexDaosetLibrary.ProposalState.Done;
         } else if (
             voteResult == IFlexVoting.VotingState.NOT_PASS ||
@@ -408,20 +399,7 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
             revert FlexDaosetLibrary.VOTING_NOT_FINISH();
         }
 
-        ongoingParticipantCapProposal[address(dao)] = bytes32(0);
-
-        // uint128 allWeight = GovernanceHelper
-        //     .getAllStewardVotingWeightByProposalId(dao, proposalId);
-
-        // emit ProposalProcessed(
-        //     address(dao),
-        //     proposalId,
-        //     proposal.state,
-        //     uint256(voteResult),
-        //     allWeight,
-        //     nbYes,
-        //     nbNo
-        // );
+        ongoingInvestorCapProposal[address(dao)] = bytes32(0);
     }
 
     function processGovernorMembershipProposal(
@@ -432,10 +410,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
             storage proposal = governorMembershipProposals[address(dao)][
                 proposalId
             ];
-
-        // IFlexVoting.VotingState voteResult;
-        // uint256 nbYes;
-        // uint256 nbNo;
 
         (IFlexVoting.VotingState voteResult, , ) = processProposal(
             dao,
@@ -455,18 +429,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
         }
 
         ongoingGovernorMembershipProposal[address(dao)] = bytes32(0);
-
-        // uint128 allGPsWeight = GovernanceHelper
-        //     .getAllStewardVotingWeightByProposalId(dao, proposalId);
-        // emit ProposalProcessed(
-        //     address(dao),
-        //     proposalId,
-        //     proposal.state,
-        //     uint256(voteResult),
-        //     allGPsWeight,
-        //     nbYes,
-        //     nbNo
-        // );
     }
 
     function processInvestorMembershipProposal(
@@ -477,10 +439,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
             storage proposal = investorMembershipProposals[address(dao)][
                 proposalId
             ];
-
-        // IFlexVoting.VotingState voteResult;
-        // uint256 nbYes;
-        // uint256 nbNo;
 
         (IFlexVoting.VotingState voteResult, , ) = processProposal(
             dao,
@@ -500,18 +458,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
         }
 
         ongoingInvstorMembershipProposal[address(dao)] = bytes32(0);
-
-        // uint128 allGPsWeight = GovernanceHelper
-        //     .getAllStewardVotingWeightByProposalId(dao, proposalId);
-        // emit ProposalProcessed(
-        //     address(dao),
-        //     proposalId,
-        //     proposal.state,
-        //     uint256(voteResult),
-        //     allGPsWeight,
-        //     nbYes,
-        //     nbNo
-        // );
     }
 
     function processVotingProposal(
@@ -545,10 +491,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
             address(dao)
         ][proposalId];
 
-        // IFlexVoting.VotingState voteResult;
-        // uint256 nbYes;
-        // uint256 nbNo;
-
         (IFlexVoting.VotingState voteResult, , ) = processProposal(
             dao,
             proposalId
@@ -567,18 +509,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
         }
 
         ongoingFeesProposal[address(dao)] = bytes32(0);
-
-        // uint128 allWeight = GovernanceHelper
-        //     .getAllStewardVotingWeightByProposalId(dao, proposalId);
-        // emit ProposalProcessed(
-        //     address(dao),
-        //     proposalId,
-        //     proposal.state,
-        //     uint256(voteResult),
-        //     allWeight,
-        //     nbYes,
-        //     nbNo
-        // );
     }
 
     function processProposerMembershipProposal(
@@ -608,18 +538,6 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
         }
 
         ongoingProposerMembershipProposal[address(dao)] = bytes32(0);
-
-        // uint128 allWeight = GovernanceHelper
-        //     .getAllStewardVotingWeightByProposalId(dao, proposalId);
-        // emit ProposalProcessed(
-        //     address(dao),
-        //     proposalId,
-        //     proposal.state,
-        //     uint256(voteResult),
-        //     allWeight,
-        //     nbYes,
-        //     nbNo
-        // );
     }
 
     function processPollForInvestmentProposal(
@@ -663,7 +581,7 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
             uint256 nbNo
         ) = votingContract.voteResult(dao, proposalId);
         uint128 allWeight = GovernanceHelper
-            .getAllStewardVotingWeightByProposalId(dao, proposalId);
+            .getAllFlexGovernorVotingWeightByProposalId(dao, proposalId);
         emit ProposalProcessed(
             address(dao),
             proposalId,
@@ -673,18 +591,17 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
             nbNo
         );
 
-        // return votingContract.voteResult(dao, proposalId);
         return (vs, nbYes, nbNo);
     }
 
-    function setParticipantCap(
+    function setInvestorCap(
         DaoRegistry dao,
-        FlexDaosetLibrary.ParticipantCapProposalDetails storage proposal
+        FlexDaosetLibrary.InvestorCapProposalDetails storage proposal
     ) internal {
         FlexDaoSetHelperAdapterContract daosetHelper = FlexDaoSetHelperAdapterContract(
                 dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
             );
-        daosetHelper.setParticipantCap(dao, proposal.enable, proposal.cap);
+        daosetHelper.setInvestorCap(dao, proposal.enable, proposal.cap);
     }
 
     function setGovernorMembership(
@@ -769,7 +686,7 @@ contract FlexDaoSetAdapterContract is RaiserGuard, Reimbursable, MemberGuard {
                 dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_VOTING_ADAPTER)
             );
         if (
-            ongoingParticipantCapProposal[address(dao)] != bytes32(0) ||
+            ongoingInvestorCapProposal[address(dao)] != bytes32(0) ||
             ongoingGovernorMembershipProposal[address(dao)] != bytes32(0) ||
             ongoingInvstorMembershipProposal[address(dao)] != bytes32(0) ||
             votingDaoset.ongoingVotingProposal(address(dao)) != bytes32(0) ||

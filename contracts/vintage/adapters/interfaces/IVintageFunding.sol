@@ -75,7 +75,7 @@ interface IVintageInvestment {
         uint256 proposalStartVotingTimestamp;
         uint256 proposalEndVotingTimestamp;
         uint256 proposalExecuteTimestamp;
-        uint256 fundingAmount;
+        uint256 investmentAmount;
         uint256 returnTokenAmount;
     }
 

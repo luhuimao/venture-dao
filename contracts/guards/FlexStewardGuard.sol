@@ -35,19 +35,19 @@ SOFTWARE.
 abstract contract FlexStewardGuard {
     modifier onlySteward(DaoRegistry dao, address account) {
         if (
-            dao.getConfiguration(DaoHelper.FLEX_STEWARD_MEMBERSHIP_ENABLE) == 1
+            dao.getConfiguration(DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_ENABLE) == 1
         ) {
             uint256 varifyType = dao.getConfiguration(
-                DaoHelper.FLEX_STEWARD_MEMBERSHIP_TYPE
+                DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_TYPE
             );
             uint256 minHolding = dao.getConfiguration(
-                DaoHelper.FLEX_STEWARD_MEMBERSHIP_MINI_HOLDING
+                DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_MINI_HOLDING
             );
             uint256 tokenId = dao.getConfiguration(
-                DaoHelper.FLEX_STEWARD_MEMBERSHIP_TOKEN_ID
+                DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_TOKEN_ID
             );
             address tokenAddress = dao.getAddressConfiguration(
-                DaoHelper.FLEX_STEWARD_MEMBERSHIP_TOKEN_ADDRESS
+                DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS
             );
             //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
             if (varifyType == 0) {
@@ -74,7 +74,7 @@ abstract contract FlexStewardGuard {
                         dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_MANAGEMENT)
                     );
                 require(
-                    flexStewardManagement.isStewardWhiteList(dao, account),
+                    flexStewardManagement.isGovernorWhiteList(dao, account),
                     "not in steward whitelist"
                 );
             }

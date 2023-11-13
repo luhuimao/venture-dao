@@ -56,8 +56,8 @@ contract FlexDaoSetVotingAdapterContract {
                     params.support,
                     params.quorum
                 ),
-                FlexDaosetLibrary.VotingEligibilityInfo(
-                    params.eligibilityType,
+                FlexDaosetLibrary.VotingAssetInfo(
+                    params.votingAssetType,
                     params.tokenAddress,
                     params.tokenID,
                     params.votingWeightedType
@@ -142,11 +142,11 @@ contract FlexDaoSetVotingAdapterContract {
             );
         daosetHelper.setVoting(
             dao,
-            proposal.eligibilityInfo.tokenAddress,
+            proposal.votingAssetInfo.tokenAddress,
             [
-                proposal.eligibilityInfo.eligibilityType,
-                proposal.eligibilityInfo.tokenID,
-                proposal.eligibilityInfo.votingWeightedType,
+                proposal.votingAssetInfo.votingAssetType,
+                proposal.votingAssetInfo.tokenID,
+                proposal.votingAssetInfo.votingWeightedType,
                 proposal.supportInfo.supportType,
                 proposal.supportInfo.quorumType,
                 proposal.supportInfo.quorum,
@@ -176,7 +176,7 @@ contract FlexDaoSetVotingAdapterContract {
             uint256 nbNo
         ) = votingContract.voteResult(dao, proposalId);
         uint128 allWeight = GovernanceHelper
-            .getAllStewardVotingWeightByProposalId(dao, proposalId);
+            .getAllFlexGovernorVotingWeightByProposalId(dao, proposalId);
 
         return (vs, nbYes, nbNo, allWeight);
     }

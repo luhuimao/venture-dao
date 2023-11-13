@@ -424,7 +424,7 @@ describe("governor management...", () => {
         const daoAddr = this.flexDirectdaoAddress;
 
         const tx = await stewardMangementContract.
-        submitSteWardOutProposal(daoAddr, this.genesis_steward1.address);
+        submitGovernorOutProposal(daoAddr, this.genesis_steward1.address);
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
         let allocValue = await this.flexStewardAllocation.getAllocation(daoAddr, this.genesis_steward1.address);
@@ -452,6 +452,22 @@ describe("governor management...", () => {
         executed...
         allocValue ${allocValue}
 
+        `);
+    });
+
+    it("governor quit...", async () => { 
+        const daoAddr = this.flexDirectdaoAddress;
+        let allocValue = await this.flexStewardAllocation.getAllocation(daoAddr, this.genesis_steward2.address);
+        console.log(`
+        allocValue ${allocValue}
+        `);
+
+        await this.flexStewardMangement.connect(this.genesis_steward2).quit(daoAddr);
+
+        allocValue = await this.flexStewardAllocation.getAllocation(daoAddr, this.genesis_steward2.address);
+        console.log(`
+        quited...
+        allocValue ${allocValue}
         `);
     });
 

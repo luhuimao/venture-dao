@@ -88,7 +88,7 @@ contract VintageDistributeAdatperContract {
 
     function subFromFundPool(
         DaoRegistry dao,
-        uint256 fundingAmount,
+        uint256 investmentAmount,
         uint256 protocolFee,
         uint256 managementFee,
         uint256 proposerFundReward
@@ -103,7 +103,7 @@ contract VintageDistributeAdatperContract {
             );
         fundingpoolExt.subtractAllFromBalance(
             fundingpoolExt.getFundRaisingTokenAddress(),
-            fundingAmount + protocolFee + managementFee + proposerFundReward
+            investmentAmount + protocolFee + managementFee + proposerFundReward
         );
     }
 }

@@ -49,7 +49,7 @@ SOFTWARE.
 contract VintageFundRaiseAdapterContract is
     IVintageFundRaise,
     AdapterGuard,
-    RaiserGuard,
+    GovernorGuard,
     Reimbursable
 {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -295,10 +295,9 @@ contract VintageFundRaiseAdapterContract is
         } else {
             revert VOTING_NOT_FINISH();
         }
-        // uint128 allGPsWeight = GovernanceHelper.getAllRaiserVotingWeight(dao);
 
         uint128 allGPsWeight = GovernanceHelper
-            .getVintageAllRaiserVotingWeightByProposalId(dao, proposalId);
+            .getVintageAllGovernorVotingWeightByProposalId(dao, proposalId);
 
         emit proposalExecuted(
             address(dao),
@@ -372,13 +371,6 @@ contract VintageFundRaiseAdapterContract is
                 proposalInfo.priorityDeposite.amount
             );
         }
-
-        //20 set participant capacity
-        // setParticipantCap(
-        //     dao,
-        //     proposalInfo.participantCap.enable,
-        //     proposalInfo.participantCap.capacity
-        // );
     }
 
     function setFundAmount(
@@ -496,18 +488,6 @@ contract VintageFundRaiseAdapterContract is
             uint256Args[5] //    proposalInfo.timesInfo.refundDuration
         );
     }
-
-    // function setParticipantCap(
-    //     DaoRegistry dao,
-    //     bool enable,
-    //     uint256 capacity
-    // ) internal {
-    //     dao.setConfiguration(
-    //         DaoHelper.MAX_PARTICIPANTS_ENABLE,
-    //         enable == true ? 1 : 0
-    //     );
-    //     dao.setConfiguration(DaoHelper.MAX_PARTICIPANTS, capacity);
-    // }
 
     function setPriorityDeposit(
         DaoRegistry dao,

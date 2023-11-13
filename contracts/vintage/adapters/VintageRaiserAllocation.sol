@@ -17,7 +17,7 @@ contract VintageRaiserAllocationAdapter {
                 msg.sender ==
                 dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER) ||
                 msg.sender ==
-                dao.getAdapterAddress(DaoHelper.VINTAGE_RAISER_MANAGEMENT),
+                dao.getAdapterAddress(DaoHelper.VINTAGE_GOVERNOR_MANAGEMENT),
             "!Access"
         );
         allocations[address(dao)][account] = value;

@@ -4,7 +4,7 @@ import "../../helpers/DaoHelper.sol";
 // SPDX-License-Identifier: MIT
 
 library FlexDaosetLibrary {
-    struct ParticipantCapProposalDetails {
+    struct InvestorCapProposalDetails {
         bool enable;
         uint256 cap;
         uint256 creationTime;
@@ -37,7 +37,7 @@ library FlexDaosetLibrary {
 
     struct VotingProposalDetails {
         VotingSupportInfo supportInfo;
-        VotingEligibilityInfo eligibilityInfo;
+        VotingAssetInfo votingAssetInfo;
         VotingTimeInfo timeInfo;
         VotingAllocation allocations;
         ProposalState state;
@@ -79,7 +79,7 @@ library FlexDaosetLibrary {
         uint8 votingPower;
         uint256 superMajority;
         uint256 quorum;
-        uint256 eligibilityType; //0. erc20 1.erc721 2.erc1155 3.allocation
+        uint256 votingAssetType; //0. erc20 1.erc721 2.erc1155 3.allocation
         address tokenAddress;
         uint256 tokenID;
         uint256 supportType; // 0. YES - NO > X
@@ -88,11 +88,11 @@ library FlexDaosetLibrary {
 
     struct PollForInvestmentParams {
         DaoRegistry dao;
-        flexDaoPollsterMembershipInfo pollsterMembership;
+        FlexDaoPollVoterMembershipInfo pollvoterMembership;
         flexDaoPollingInfo pollingInfo;
     }
 
-    struct flexDaoPollsterMembershipInfo {
+    struct FlexDaoPollVoterMembershipInfo {
         uint8 varifyType;
         uint256 minHolding;
         address tokenAddress;
@@ -118,8 +118,8 @@ library FlexDaosetLibrary {
         uint256[] allocs;
     }
 
-    struct VotingEligibilityInfo {
-        uint256 eligibilityType;
+    struct VotingAssetInfo {
+        uint256 votingAssetType;
         address tokenAddress;
         uint256 tokenID;
         uint256 votingWeightedType;
@@ -127,7 +127,7 @@ library FlexDaosetLibrary {
 
     struct VotingParams {
         DaoRegistry dao;
-        uint256 eligibilityType;
+        uint256 votingAssetType;
         address tokenAddress;
         uint256 tokenID;
         uint256 votingWeightedType;
@@ -180,7 +180,7 @@ library FlexDaosetLibrary {
     }
 
     enum ProposalType {
-        PARTICIPANT_CAP,
+        INVESTOR_CAP,
         GOVERNOR_MEMBERSHIP,
         INVESTOR_MEMBERSHIP,
         VOTING,

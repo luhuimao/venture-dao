@@ -50,7 +50,7 @@ contract VintageFundingPoolAdapterContract is
     mapping(address => DaoHelper.FundRaiseState) public daoFundRaisingStates;
     uint256 public protocolFee = (3 * 1e18) / 1000; // 0.3%
     mapping(address => EnumerableSet.AddressSet) investorMembershipWhiteList;
-    mapping(address => mapping(uint256 => EnumerableSet.AddressSet)) fundParticipants;
+    mapping(address => mapping(uint256 => EnumerableSet.AddressSet)) fundInvestors;
 
     mapping(address => mapping(bytes32 => uint256))
         public freeINPriorityDeposits; // dao=>new fund proposalid => amount
@@ -247,7 +247,7 @@ contract VintageFundingPoolAdapterContract is
             uint256 fundRoundCounter = fundRaiseContract.createdFundCounter(
                 address(dao)
             );
-            _removeFundParticipant(dao, msg.sender, fundRoundCounter);
+            _removeFundInvestor(dao, msg.sender, fundRoundCounter);
         }
         if (
             fundRaiseContract.isPriorityDepositer(
@@ -395,19 +395,19 @@ contract VintageFundingPoolAdapterContract is
         vars.fundingpool = VintageFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
         );
-        // max participant check
+        // max investor check
         vars.fundRaiseContract = VintageFundRaiseAdapterContract(
             dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
         );
         vars.fundRounds = vars.fundRaiseContract.createdFundCounter(
             address(dao)
         );
-        // participant cap
+        // investor cap
         if (
-            dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS_ENABLE) == 1 &&
-            fundParticipants[address(dao)][vars.fundRounds].length() >=
-            dao.getConfiguration(DaoHelper.MAX_PARTICIPANTS) &&
-            !fundParticipants[address(dao)][vars.fundRounds].contains(
+            dao.getConfiguration(DaoHelper.MAX_INVESTORS_ENABLE) == 1 &&
+            fundInvestors[address(dao)][vars.fundRounds].length() >=
+            dao.getConfiguration(DaoHelper.MAX_INVESTORS) &&
+            !fundInvestors[address(dao)][vars.fundRounds].contains(
                 msg.sender
             )
         ) revert MAX_PATICIPANT_AMOUNT_REACH();
@@ -423,7 +423,7 @@ contract VintageFundingPoolAdapterContract is
             amount
         );
         vars.fundingpool.addToBalance(msg.sender, amount);
-        _addFundParticipant(dao, msg.sender, vars.fundRounds);
+        _addFundInvestor(dao, msg.sender, vars.fundRounds);
 
         if (
             vars.fundRaiseContract.isPriorityDepositer(
@@ -598,21 +598,21 @@ contract VintageFundingPoolAdapterContract is
         }
     }
 
-    function _addFundParticipant(
+    function _addFundInvestor(
         DaoRegistry dao,
         address account,
         uint256 fundRound
     ) internal {
-        if (!fundParticipants[address(dao)][fundRound].contains(account))
-            fundParticipants[address(dao)][fundRound].add(account);
+        if (!fundInvestors[address(dao)][fundRound].contains(account))
+            fundInvestors[address(dao)][fundRound].add(account);
     }
 
-    function _removeFundParticipant(
+    function _removeFundInvestor(
         DaoRegistry dao,
         address account,
         uint256 fundRound
     ) internal {
-        fundParticipants[address(dao)][fundRound].remove(account);
+        fundInvestors[address(dao)][fundRound].remove(account);
     }
 
     function balanceOf(
@@ -632,7 +632,7 @@ contract VintageFundingPoolAdapterContract is
         return fundingpool.balanceOf(address(DaoHelper.DAOSQUARE_TREASURY));
     }
 
-    function raiserBalance(DaoRegistry dao) public view returns (uint256) {
+    function governorBalance(DaoRegistry dao) public view returns (uint256) {
         VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
         );
@@ -702,6 +702,6 @@ contract VintageFundingPoolAdapterContract is
         DaoRegistry dao,
         uint256 fundRound
     ) external view returns (address[] memory) {
-        return fundParticipants[address(dao)][fundRound].values();
+        return fundInvestors[address(dao)][fundRound].values();
     }
 }
