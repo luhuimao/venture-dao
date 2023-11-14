@@ -42,15 +42,10 @@ const deploySummonContract = async () => {
 
 async function main() {
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
-    await deploy();
+    // await deploy();
     // await summonVintageDao();
     // await submitVintageDaosetProposal();
     // await getVintageDaosetProposal();
-<<<<<<< HEAD
-    // await getFlexAllGovernor();
-    await getFlexDaosetVotingProposalInfo();
-=======
->>>>>>> optimize-contract-names
     // await getVintageNewFundProposalInfo();
     // await getFlexInvestors();
     // await getFlexFundingProposalInfo();
@@ -63,6 +58,7 @@ async function main() {
     // await getVintageSetApproveAmount();
     // await fetchBathETHBalance();
     // await isVintageRedemptPeriod();
+    await getVintageEscrowTokenInfo();
     // await getVintageNewFundProposalInfo();
     // await getvintageFundingReturnTokenApprovedAmount(
     //     "0x82d1f2b12c1b35cf06d5d3f9559c75c3d3a47c89",
@@ -1554,10 +1550,10 @@ const deploy = async () => {
     // await vintageFundingPoolAdapterHelperContract.deployed();
     // console.log("vintageFundingPoolAdapterHelperContract deployed address:", vintageFundingPoolAdapterHelperContract.address);
 
-    const VintageDaoSetAdapterContract = await hre.ethers.getContractFactory("VintageDaoSetAdapterContract");
-    const vintageDaoSetAdapterContract = await VintageDaoSetAdapterContract.deploy();
-    await vintageDaoSetAdapterContract.deployed();
-    console.log("vintageDaoSetAdapterContract deployed address:", vintageDaoSetAdapterContract.address);
+    // const VintageDaoSetAdapterContract = await hre.ethers.getContractFactory("VintageDaoSetAdapterContract");
+    // const vintageDaoSetAdapterContract = await VintageDaoSetAdapterContract.deploy();
+    // await vintageDaoSetAdapterContract.deployed();
+    // console.log("vintageDaoSetAdapterContract deployed address:", vintageDaoSetAdapterContract.address);
 }
 
 
@@ -1739,12 +1735,12 @@ const fetchBathETHBalance = async () => {
 
 const isVintageRedemptPeriod = async () => {
     const vintageFundingPoolAdapterContract = (await hre.ethers.getContractFactory("VintageFundingPoolAdapterContract")).
-    attach("0x8000a70fFb137c58206af6235e47B00019013A4E");
+    attach("0x6F0643bc2Fc62103f24DF49876d35Fab5FfE7208");
 
     const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).
-    attach("0xdcb43810495cad427966026cbbd176e425610e1f");
-    const isRedemptPeriod = await vintageFundingPoolAdapterContract.ifInRedemptionPeriod("0x5dE1dD4E11f982f39C7CcA9C9C33C1A7786EE183", 1698817094);
-    const fundRaiseState = await vintageFundingPoolAdapterContract.daoFundRaisingStates("0x5dE1dD4E11f982f39C7CcA9C9C33C1A7786EE183");
+    attach("0x60408e7a5f578261a492a70115502d5160f18cb5");
+    const isRedemptPeriod = await vintageFundingPoolAdapterContract.ifInRedemptionPeriod("0x60408e7a5f578261a492a70115502d5160f18cb5", 1699936876);
+    const fundRaiseState = await vintageFundingPoolAdapterContract.daoFundRaisingStates("0x60408e7a5f578261a492a70115502d5160f18cb5");
     const managementFee = await daoContract.getConfiguration("0x6f5ff8cd0c079fce916efdce457af51f719825bd5f50c63a2fe9b019a67939b8");
     console.log(isRedemptPeriod);
     console.log(fundRaiseState);
@@ -2150,18 +2146,29 @@ const getFlexAllGovernor = async () => {
 
 
 const getFlexDaosetVotingProposalInfo = async () => { 
-<<<<<<< HEAD
-    const flexDaoSetVotingAdapterContract = (await hre.ethers.getContractFactory("FlexDaoSetVotingAdapterContract")).attach("0x29c54c97e894ffaf5773c57A9a49108FAC34802f");;
-=======
     const flexDaoSetVotingAdapterContract = (await hre.ethers.
         getContractFactory("FlexDaoSetVotingAdapterContract")).attach("0x29c54c97e894ffaf5773c57A9a49108FAC34802f");;
->>>>>>> optimize-contract-names
     const proposal = await flexDaoSetVotingAdapterContract.votingProposals(
         "0xc21ba671b7b97ab7dFAd8Ea46b5E493De5e67355",
         "0x6b5e493de5e67355566f74696e67202331000000000000000000000000000000"
     );
 
     console.log(proposal);
+}
+
+
+const getVintageEscrowTokenInfo=async()=>{
+    const vintageInvestmentPaybackTokenAdapterContract = (await hre.ethers.
+        getContractFactory("VintageInvestmentPaybackTokenAdapterContract")).attach("0xd24CF3E7f05Cc5D244D6aa4e85551361Cb046f93");
+    const approvedAmount = await vintageInvestmentPaybackTokenAdapterContract.approvedInfos("0x60408e7a5f578261a492a70115502d5160f18cb5",
+        "0x15502d5160f18cb5496e766573746d656e742331000000000000000000000000",
+        "0x9ac9c636404c8d46d9eb966d7179983ba5a3941a",
+        "0x47ac6a76383661f64a880f6eab189f9a7e327b59"
+        );
+
+        console.log(`
+        approvedAmount ${approvedAmount}
+        `);
 }
 
 main()
