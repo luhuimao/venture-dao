@@ -89,7 +89,10 @@ contract VintageFundRaiseAdapterContract is
             vars.daosetAdapt.isProposalAllDone(address(params.dao)),
             "DaoSet Proposal Undone"
         );
-
+        vars.investmentContract = VintageFundingAdapterContract(params.dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_ADAPTER));
+        require(vars.investmentContract.getQueueLength(params.dao) <= 0 &&
+            vars.investmentContract.ongoingProposal(address(params.dao)) == bytes32(0), 
+            "Undone Investment Proposal");
         vars.lastFundEndTime = params.dao.getConfiguration(
             DaoHelper.FUND_END_TIME
         );

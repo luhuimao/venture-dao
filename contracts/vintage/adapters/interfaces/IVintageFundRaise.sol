@@ -6,6 +6,7 @@ import "../../../core/DaoRegistry.sol";
 import "./IVintageVoting.sol";
 import "../VintageFundingPoolAdapter.sol";
 import "../VintageDaoSetAdapter.sol";
+import "../VintageFundingAdapter.sol";
 
 
 /**
@@ -106,6 +107,7 @@ interface IVintageFundRaise {
         uint256 protocolFeeRatio;
         VintageFundingPoolAdapterContract investmentPoolAdapt;
         VintageDaoSetAdapterContract daosetAdapt;
+        VintageFundingAdapterContract investmentContract;
     }
 
     struct ProposalParams {
