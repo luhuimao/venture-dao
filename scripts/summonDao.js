@@ -42,7 +42,7 @@ const deploySummonContract = async () => {
 
 async function main() {
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
-    // await deploy();
+    await deploy();
     // await summonVintageDao();
     // await submitVintageDaosetProposal();
     // await getVintageDaosetProposal();
@@ -58,7 +58,7 @@ async function main() {
     // await getVintageSetApproveAmount();
     // await fetchBathETHBalance();
     // await isVintageRedemptPeriod();
-    await getVintageEscrowTokenInfo();
+    // await getVintageEscrowTokenInfo();
     // await getVintageNewFundProposalInfo();
     // await getvintageFundingReturnTokenApprovedAmount(
     //     "0x82d1f2b12c1b35cf06d5d3f9559c75c3d3a47c89",
@@ -1451,10 +1451,10 @@ const deploy = async () => {
     // await bentoBoxV1.deployed();
     // console.log("bentoBoxV1 deployed address:", bentoBoxV1.address);
 
-    // const VintageFundRaiseAdapterContract = await hre.ethers.getContractFactory("VintageFundRaiseAdapterContract");
-    // const vintageFundRaiseAdapterContract = await VintageFundRaiseAdapterContract.deploy();
-    // await vintageFundRaiseAdapterContract.deployed();
-    // console.log("vintageFundRaiseAdapterContract deployed address:", vintageFundRaiseAdapterContract.address);
+    const VintageFundRaiseAdapterContract = await hre.ethers.getContractFactory("VintageFundRaiseAdapterContract");
+    const vintageFundRaiseAdapterContract = await VintageFundRaiseAdapterContract.deploy();
+    await vintageFundRaiseAdapterContract.deployed();
+    console.log("vintageFundRaiseAdapterContract deployed address:", vintageFundRaiseAdapterContract.address);
 
     // const VintageVotingContract = await hre.ethers.getContractFactory("VintageVotingContract");
     // const vintageVotingContract = await VintageVotingContract.deploy();
