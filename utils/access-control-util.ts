@@ -42,6 +42,20 @@ export const daoAccessFlagsMap: Record<string, string> = {
 
 export const daoAccessFlags: Array<string> = Object.values(daoAccessFlagsMap);
 
+export const collectiveFundingPoolExtensionAclFlagsMap: Record<string, string> = {
+  ADD_TO_BALANCE: "ADD_TO_BALANCE",
+  SUB_FROM_BALANCE: "SUB_FROM_BALANCE",
+  INTERNAL_TRANSFER: "INTERNAL_TRANSFER",
+  WITHDRAW: "WITHDRAW",
+  REGISTER_NEW_TOKEN: "REGISTER_NEW_TOKEN",
+  REGISTER_NEW_INTERNAL_TOKEN: "REGISTER_NEW_INTERNAL_TOKEN",
+  UPDATE_TOKEN: "UPDATE_TOKEN",
+};
+
+export const collectiveFundingPoolExtensionAclFlags: Array<string> = Object.values(
+  collectiveFundingPoolExtensionAclFlagsMap
+);
+
 export const flexFundingPoolExtensionAclFlagsMap: Record<string, string> = {
   ADD_TO_BALANCE: "ADD_TO_BALANCE",
   SUB_FROM_BALANCE: "SUB_FROM_BALANCE",
@@ -199,6 +213,18 @@ export const parseSelectedFlags = (
       }
       throw Error(`Invalid ${moduleName} Access Flag: ${flag}`);
     }, {});
+};
+
+export const entryCollectiveFundingPool = (
+  contractAddress: string,
+  selectedAcls: SelectedACLs
+): ACLValue => {
+  return getEnabledExtensionFlags(
+    collectiveFundingPoolExtensionAclFlags,
+    extensionsIdsMap.COLLECTIVE_FUNDING_POOL_EXT,
+    contractAddress,
+    selectedAcls
+  );
 };
 
 export const entryVintageFundingPool = (

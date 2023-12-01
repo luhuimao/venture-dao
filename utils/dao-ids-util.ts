@@ -12,6 +12,13 @@
 
 /** Adapters */
 export const adaptersIdsMap: Record<string, string> = {
+  /*******************collective**********************/
+  SUMMON_COLLECTIVE_DAO: "summon-collecgtive-dao",
+  COLLECTIVE_GOVERNOR_MANAGEMENT: "collective-governor-management-adapter",
+  COLLECTIVE_DAO_SET_ADAPTER: "collective-daoset-adapter",
+  COLLECTIVE_FUNDING_ADAPTER: "collective-fundning-adapter",
+  /*******************collective end**********************/
+
   /*******************vintage**********************/
   SUMMON_VINTAGE_DAO: "summon-vintage-dao",
   VINTAGE_FUNDING_POOL_ADAPTER: "vintage-funding-pool-adatper",
@@ -97,6 +104,7 @@ export const adaptersIdsMap: Record<string, string> = {
 
 /** Extensions */
 export const extensionsIdsMap: Record<string, string> = {
+  COLLECTIVE_FUNDING_POOL_EXT: "collective-funding-pool-ext",
   FLEX_FUNDING_POOL_EXT: "flex-funding-pool-ext",
   VINTAGE_FUNDING_POOL_EXT: "vintage-funding-pool-ext",
   BANK_EXT: "bank",

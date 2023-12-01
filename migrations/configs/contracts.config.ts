@@ -1,4 +1,5 @@
 import {
+  collectiveFundingPoolExtensionAclFlagsMap,
   flexFundingPoolExtensionAclFlagsMap,
   vintageFundingPoolExtensionAclFlagsMap,
   daoAccessFlagsMap,
@@ -12,6 +13,7 @@ import {
   vestingExtensionAclFlagsMap,
   entryFlexFundingPool,
   entryVintageFundingPool,
+  entryCollectiveFundingPool,
   entryBank,
   entryRiceStaking,
   entryFundingPool,
@@ -356,6 +358,21 @@ export const contracts: Array<ContractConfig> = [
     generatesExtensionId: extensionsIdsMap.FUNDING_POOL_EXT,
   },
   {
+    id: "collective-funding-pool-factory",
+    name: "CollectiveFundingPoolFactory",
+    alias: "collectiveFundingPoolFactory",
+    path: "../../contracts/flex/extensions/CollectiveFundingPoolFactory",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Factory,
+    acls: {
+      dao: [],
+      extensions: {},
+    },
+    deploymentArgs: ["daoAddress"],
+    generatesExtensionId: extensionsIdsMap.COLLECTIVE_FUNDING_POOL_EXT,
+  },
+  {
     id: "flex-funding-pool-factory",
     name: "FlexFundingPoolFactory",
     alias: "flexFundingPoolFactory",
@@ -499,6 +516,20 @@ export const contracts: Array<ContractConfig> = [
   /**
    * Extensions
    */
+  {
+    id: extensionsIdsMap.COLLECTIVE_FUNDING_POOL_EXT,
+    name: "CollectiveInvestmentPoolExtension",
+    alias: "collectiveInvestmentPoolExtension",
+    path: "../../contracts/vintage/extensions/CollectiveInvestmentPoolExtension",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Extension,
+    buildAclFlag: entryCollectiveFundingPool,
+    acls: {
+      dao: [],
+      extensions: {},
+    },
+  },
   {
     id: extensionsIdsMap.VINTAGE_FUNDING_POOL_EXT,
     name: "VintageFundingPoolExtension",
@@ -1232,6 +1263,83 @@ export const contracts: Array<ContractConfig> = [
     },
   },
   /*****************************************************flex end*******************************************************/
+  /*****************************************************collective*******************************************************/
+  {
+    id: adaptersIdsMap.SUMMON_COLLECTIVE_DAO,
+    name: "SummonCollectiveDao",
+    alias: "summonCollectiveDao",
+    path: "../../contracts/adapters/SummonCollectiveDao",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.REMOVE_MEMBER],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.COLLECTIVE_GOVERNOR_MANAGEMENT,
+    name: "ColletiveGovernorManagementContract",
+    alias: "colletiveGovernorManagementContract",
+    path: "../../contracts/adapters/ColletiveGovernorManagementContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.NEW_MEMBER,
+        daoAccessFlagsMap.REMOVE_MEMBER,
+        daoAccessFlagsMap.INCREASE_GOVENOR_IN_ID,
+        daoAccessFlagsMap.INCREASE_GOVENOR_OUT_ID
+      ],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.COLLECTIVE_DAO_SET_ADAPTER,
+    name: "ColletiveDaoSetProposalContract",
+    alias: "colletiveDaoSetProposalContract",
+    path: "../../contracts/adapters/ColletiveDaoSetProposalContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.INCREASE_INVESTOR_CAP_ID,
+        daoAccessFlagsMap.INCREASE_GOVERNOR_MEMBERSHIP_ID,
+        daoAccessFlagsMap.INCREASE_INVESTOR_MEMBERSHIP_ID,
+        daoAccessFlagsMap.INCREASE_FEE_ID,
+        daoAccessFlagsMap.INCREASE_PROPOSER_MEMBERSHIP
+      ],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.COLLECTIVE_FUNDING_ADAPTER,
+    name: "ColletiveFundingProposalContract",
+    alias: "colletiveFundingProposalContract",
+    path: "../../contracts/adapters/ColletiveFundingProposalContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_VOTE_TYPE, daoAccessFlagsMap.INCREASE_FUNDING_ID],
+      extensions: {
+        [extensionsIdsMap.COLLECTIVE_FUNDING_POOL_EXT]: [
+          collectiveFundingPoolExtensionAclFlagsMap.REGISTER_NEW_TOKEN,
+          collectiveFundingPoolExtensionAclFlagsMap.WITHDRAW,
+          collectiveFundingPoolExtensionAclFlagsMap.SUB_FROM_BALANCE
+        ],
+      },
+    },
+  },
+  /*****************************************************collective end*******************************************************/
+
   {
     id: adaptersIdsMap.VESTING,
     name: "FuroVesting",

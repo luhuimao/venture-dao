@@ -39,7 +39,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract ColletiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
+contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
     using Address for address payable;
     using SafeERC20 for IERC20;
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -57,30 +57,23 @@ contract ColletiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         UPDATE_TOKEN
     }
 
-    modifier noProposal() {
-        require(dao.lockedAt() < block.number, "proposal lock");
-        _;
-    }
+    // modifier noProposal() {
+    //     require(dao.lockedAt() < block.number, "proposal lock");
+    //     _;
+    // }
 
     /// @dev - Events for Bank
-    event NewBalance(bytes32 proposalId, address member, uint160 amount);
+    event NewBalance(address member, uint160 amount);
 
-    event Withdraw(
-        bytes32 proposalId,
-        address account,
-        address tokenAddr,
-        uint160 amount
-    );
+    event Withdraw(address account, address tokenAddr, uint160 amount);
 
     event WithdrawTo(
-        bytes32 proposalId,
         address accountFrom,
         address accountTo,
         address tokenAddr,
         uint160 amount
     );
     event WithdrawToFromAll(
-        bytes32 proposalId,
         address accountTo,
         address tokenAddr,
         uint160 amount
@@ -96,30 +89,28 @@ contract ColletiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         uint160 amount;
     }
 
-    struct InvestorMembership {
-        string name;
-        uint8 varifyType;
-        uint256 minHolding;
-        address tokenAddress;
-        uint256 tokenId;
-        address[] whiteList;
-    }
+    // struct InvestorMembership {
+    //     string name;
+    //     uint8 varifyType;
+    //     uint256 minHolding;
+    //     address tokenAddress;
+    //     uint256 tokenId;
+    //     address[] whiteList;
+    // }
     /*
      * PUBLIC VARIABLES
      */
-    bytes32[] public investmentProposals;
+    // bytes32[] public investmentProposals;
     // tokenAddress => availability
-    mapping(bytes32 => bool) public availableInvestmentProposals;
-    // proposalId => memberAddress => checkpointNum => Checkpoint
-    mapping(bytes32 => mapping(address => mapping(uint32 => Checkpoint)))
-        public checkpoints;
-    // proposalId => memberAddress => numCheckpoints
-    mapping(bytes32 => mapping(address => uint32)) public numCheckpoints;
-    mapping(string => InvestorMembership) public investorMemberships;
+    // memberAddress => checkpointNum => Checkpoint
+    mapping(address => mapping(uint32 => Checkpoint)) public checkpoints;
+    //memberAddress => numCheckpoints
+    mapping(address => uint32) public numCheckpoints;
+    // mapping(string => InvestorMembership) public investorMemberships;
     /*
      * PRIVATE VARIABLES
      */
-    mapping(bytes32 => EnumerableSet.AddressSet) private investors;
+    EnumerableSet.AddressSet investors;
 
     /// @notice Clonable contract must have an empty constructor
     constructor() {}
@@ -168,35 +159,33 @@ contract ColletiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
     }
 
     function withdraw(
-        bytes32 proposalId,
         address member,
         address tokenAddr,
         uint256 amount
     ) external hasExtensionAccess(AclFlag.WITHDRAW) {
         require(
-            balanceOf(proposalId, member) >= amount,
+            balanceOf(member) >= amount,
             "flex funding pool::withdraw::not enough funds"
         );
-        subtractFromBalance(proposalId, member, amount);
+        subtractFromBalance(member, amount);
 
         IERC20(tokenAddr).safeTransfer(member, amount);
 
         //slither-disable-next-line reentrancy-events
-        emit Withdraw(proposalId, member, tokenAddr, uint160(amount));
+        emit Withdraw(member, tokenAddr, uint160(amount));
     }
 
     function withdrawTo(
-        bytes32 proposalId,
         address memberFrom,
         address payable memberTo,
         address tokenAddr,
         uint256 amount
     ) external hasExtensionAccess(AclFlag.WITHDRAW) {
         require(
-            balanceOf(proposalId, memberFrom) >= amount,
+            balanceOf(memberFrom) >= amount,
             "flex funding pool::withdraw::not enough funds"
         );
-        subtractFromBalance(proposalId, memberFrom, amount);
+        subtractFromBalance(memberFrom, amount);
         if (tokenAddr == DaoHelper.ETH_TOKEN) {
             memberTo.sendValue(amount);
         } else {
@@ -204,23 +193,16 @@ contract ColletiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         }
 
         //slither-disable-next-line reentrancy-events
-        emit WithdrawTo(
-            proposalId,
-            memberFrom,
-            memberTo,
-            tokenAddr,
-            uint160(amount)
-        );
+        emit WithdrawTo(memberFrom, memberTo, tokenAddr, uint160(amount));
     }
 
     function withdrawFromAll(
-        bytes32 proposalId,
         address toAddress,
         address tokenAddr,
         uint256 amount
     ) external hasExtensionAccess(AclFlag.WITHDRAW) {
         require(
-            balanceOf(proposalId, DaoHelper.TOTAL) >= amount,
+            balanceOf(DaoHelper.TOTAL) >= amount,
             "flex funding pool::withdraw::not enough funds"
         );
         // address[] memory tem = investors[proposalId].values();
@@ -228,32 +210,12 @@ contract ColletiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         IERC20(tokenAddr).safeTransfer(toAddress, amount);
 
         //slither-disable-next-line reentrancy-events
-        emit WithdrawToFromAll(
-            proposalId,
-            toAddress,
-            tokenAddr,
-            uint160(amount)
-        );
+        emit WithdrawToFromAll(toAddress, tokenAddr, uint160(amount));
     }
 
     /*
      * BANK
      */
-
-    /**
-     * @notice Registers a potential new token in the bank
-     * @dev Cannot be a reserved token or an available internal token
-     * @param proposalId The address of the token
-     */
-    function registerPotentialNewInvestmentProposal(
-        bytes32 proposalId
-    ) external hasExtensionAccess(AclFlag.REGISTER_NEW_TOKEN) {
-
-        if (!availableInvestmentProposals[proposalId]) {
-            availableInvestmentProposals[proposalId] = true;
-            investmentProposals.push(proposalId);
-        }
-    }
 
     /**
      * Public read-only functions
@@ -265,87 +227,77 @@ contract ColletiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
 
     /**
      * @notice Adds to a member's balance of a given token
-     * @param proposalId The new balance
      * @param member The member whose balance will be updated
      * @param amount The token to update
      */
     function addToBalance(
-        bytes32 proposalId,
         address member,
         uint256 amount
     ) public payable hasExtensionAccess(AclFlag.ADD_TO_BALANCE) {
-        require(availableInvestmentProposals[proposalId], "unknown proposalId");
-        uint256 newAmount = balanceOf(proposalId, member) + amount;
-        uint256 newTotalAmount = balanceOf(proposalId, DaoHelper.TOTAL) +
-            amount;
+        uint256 newAmount = balanceOf(member) + amount;
+        uint256 newTotalAmount = balanceOf(DaoHelper.TOTAL) + amount;
 
-        _createNewAmountCheckpoint(proposalId, member, newAmount);
-        _createNewAmountCheckpoint(proposalId, DaoHelper.TOTAL, newTotalAmount);
+        _createNewAmountCheckpoint(member, newAmount);
+        _createNewAmountCheckpoint(DaoHelper.TOTAL, newTotalAmount);
 
-        _newInvestor(proposalId, member);
+        _newInvestor(member);
     }
 
     /**
      * @notice Remove from a member's balance of a given token
      * @param member The member whose balance will be updated
-     * @param proposalId The token to update
      * @param amount The new balance
      */
     function subtractFromBalance(
-        bytes32 proposalId,
         address member,
         uint256 amount
     ) public hasExtensionAccess(AclFlag.SUB_FROM_BALANCE) {
-        uint256 newAmount = balanceOf(proposalId, member) - amount;
-        uint256 newTotalAmount = balanceOf(proposalId, DaoHelper.TOTAL) -
-            amount;
+        uint256 newAmount = balanceOf(member) - amount;
+        uint256 newTotalAmount = balanceOf(DaoHelper.TOTAL) - amount;
 
-        _createNewAmountCheckpoint(proposalId, member, newAmount);
-        if (balanceOf(proposalId, member) <= 0)
-            _removeInvestor(proposalId, member);
-        _createNewAmountCheckpoint(proposalId, DaoHelper.TOTAL, newTotalAmount);
+        _createNewAmountCheckpoint(member, newAmount);
+        if (balanceOf(member) <= 0) _removeInvestor(member);
+        _createNewAmountCheckpoint(DaoHelper.TOTAL, newTotalAmount);
     }
 
     function substractFromAll(
-        bytes32 proposalId,
         uint256 amount
     ) external hasExtensionAccess(AclFlag.SUB_FROM_BALANCE) {
-        address[] memory tem = investors[proposalId].values();
-        uint256 poolBalance = balanceOf(proposalId, DaoHelper.TOTAL);
+        address[] memory tem = investors.values();
+        uint256 poolBalance = balanceOf(DaoHelper.TOTAL);
         for (uint8 i = 0; i < tem.length; i++) {
             address investorAddr = tem[i];
-            if (balanceOf(proposalId, investorAddr) > 0) {
+            if (balanceOf(investorAddr) > 0) {
                 subtractFromBalance(
-                    proposalId,
                     investorAddr,
-                    (amount * balanceOf(proposalId, investorAddr)) / poolBalance
+                    (amount * balanceOf(investorAddr)) / poolBalance
                 );
             }
         }
     }
 
-    function createInvestorMembership(
-        string calldata name,
-        uint8 varifyType,
-        uint256 miniHolding,
-        address token,
-        uint256 tokenId,
-        address[] calldata whiteList
-    ) external onlyMember(dao) {
-        if (
-            keccak256(bytes(name)) ==
-            keccak256(bytes(investorMemberships[name].name))
-        ) revert("name already token");
+    // function createInvestorMembership(
+    //     string calldata name,
+    //     uint8 varifyType,
+    //     uint256 miniHolding,
+    //     address token,
+    //     uint256 tokenId,
+    //     address[] calldata whiteList
+    // ) external onlyMember(dao) {
+    //     if (
+    //         keccak256(bytes(name)) ==
+    //         keccak256(bytes(investorMemberships[name].name))
+    //     ) revert("name already token");
 
-        investorMemberships[name] = InvestorMembership(
-            name,
-            varifyType,
-            miniHolding,
-            token,
-            tokenId,
-            whiteList
-        );
-    }
+    //     investorMemberships[name] = InvestorMembership(
+    //         name,
+    //         varifyType,
+    //         miniHolding,
+    //         token,
+    //         tokenId,
+    //         whiteList
+    //     );
+    // }
 
     /**
      * @notice Make an internal token transfer
@@ -354,45 +306,36 @@ contract ColletiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
      * @param amount The new amount to transfer
      */
     function internalTransfer(
-        bytes32 proposalId,
         address from,
         address to,
         uint256 amount
     ) external hasExtensionAccess(AclFlag.INTERNAL_TRANSFER) {
-        uint256 newAmount = balanceOf(proposalId, from) - amount;
-        uint256 newAmount2 = balanceOf(proposalId, to) + amount;
+        uint256 newAmount = balanceOf(from) - amount;
+        uint256 newAmount2 = balanceOf(to) + amount;
 
-        _createNewAmountCheckpoint(proposalId, from, newAmount);
-        _createNewAmountCheckpoint(proposalId, to, newAmount2);
+        _createNewAmountCheckpoint(from, newAmount);
+        _createNewAmountCheckpoint(to, newAmount2);
     }
 
     /**
      * @notice Returns an member's balance of a given token
-     * @param proposalId The proposalId to look up
      * @param member The address to look up
      * @return The amount in account's tokenAddr balance
      */
-    function balanceOf(
-        bytes32 proposalId,
-        address member
-    ) public view returns (uint160) {
-        uint32 nCheckpoints = numCheckpoints[proposalId][member];
+    function balanceOf(address member) public view returns (uint160) {
+        uint32 nCheckpoints = numCheckpoints[member];
         return
-            nCheckpoints > 0
-                ? checkpoints[proposalId][member][nCheckpoints - 1].amount
-                : 0;
+            nCheckpoints > 0 ? checkpoints[member][nCheckpoints - 1].amount : 0;
     }
 
     /**
      * @notice Determine the prior number of votes for an account as of a block number
      * @dev Block number must be a finalized block or else this function will revert to prevent misinformation.
-     * @param proposalId The proposalId of the account to check
      * @param account The address of the account to check
      * @param blockNumber The block number to get the vote balance at
      * @return The number of votes the account had as of the given block
      */
     function getPriorAmount(
-        bytes32 proposalId,
         address account,
         uint256 blockNumber
     ) external view returns (uint256) {
@@ -401,21 +344,18 @@ contract ColletiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
             "Uni::getPriorAmount: not yet determined"
         );
 
-        uint32 nCheckpoints = numCheckpoints[proposalId][account];
+        uint32 nCheckpoints = numCheckpoints[account];
         if (nCheckpoints == 0) {
             return 0;
         }
 
         // First check most recent balance
-        if (
-            checkpoints[proposalId][account][nCheckpoints - 1].fromBlock <=
-            blockNumber
-        ) {
-            return checkpoints[proposalId][account][nCheckpoints - 1].amount;
+        if (checkpoints[account][nCheckpoints - 1].fromBlock <= blockNumber) {
+            return checkpoints[account][nCheckpoints - 1].amount;
         }
 
         // Next check implicit zero balance
-        if (checkpoints[proposalId][account][0].fromBlock > blockNumber) {
+        if (checkpoints[account][0].fromBlock > blockNumber) {
             return 0;
         }
 
@@ -423,7 +363,7 @@ contract ColletiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         uint32 upper = nCheckpoints - 1;
         while (upper > lower) {
             uint32 center = upper - (upper - lower) / 2; // ceil, avoiding overflow
-            Checkpoint memory cp = checkpoints[proposalId][account][center];
+            Checkpoint memory cp = checkpoints[account][center];
             if (cp.fromBlock == blockNumber) {
                 return cp.amount;
             } else if (cp.fromBlock < blockNumber) {
@@ -432,7 +372,7 @@ contract ColletiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
                 upper = center - 1;
             }
         }
-        return checkpoints[proposalId][account][lower].amount;
+        return checkpoints[account][lower].amount;
     }
 
     function supportsInterface(
@@ -463,81 +403,66 @@ contract ColletiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
     /**
      * @notice Creates a new amount checkpoint for a token of a certain member
      * @dev Reverts if the amount is greater than 2**64-1
-     * @param proposalId The member whose checkpoints will be added to
      * @param member The member whose checkpoints will be added to
      * @param amount The amount to be written into the new checkpoint
      */
     function _createNewAmountCheckpoint(
-        bytes32 proposalId,
         address member,
         uint256 amount
     ) internal {
-        bool isValidProposalId = false;
-        if (availableInvestmentProposals[proposalId]) {
-            require(
-                amount < type(uint160).max,
-                "token amount exceeds the maximum limit"
-            );
-            isValidProposalId = true;
-        }
+        require(
+            amount < type(uint160).max,
+            "token amount exceeds the maximum limit"
+        );
+
         uint160 newAmount = uint160(amount);
 
-        require(isValidProposalId, "proposalId not registered");
-
-        uint32 nCheckpoints = numCheckpoints[proposalId][member];
+        uint32 nCheckpoints = numCheckpoints[member];
         if (
             // The only condition that we should allow the amount update
             // is when the block.number exactly matches the fromBlock value.
             // Anything different from that should generate a new checkpoint.
             //slither-disable-next-line incorrect-equality
             nCheckpoints > 0 &&
-            checkpoints[proposalId][member][nCheckpoints - 1].fromBlock ==
-            block.number
+            checkpoints[member][nCheckpoints - 1].fromBlock == block.number
         ) {
-            checkpoints[proposalId][member][nCheckpoints - 1]
-                .amount = newAmount;
+            checkpoints[member][nCheckpoints - 1].amount = newAmount;
         } else {
-            checkpoints[proposalId][member][nCheckpoints] = Checkpoint(
+            checkpoints[member][nCheckpoints] = Checkpoint(
                 uint96(block.number),
                 newAmount
             );
-            numCheckpoints[proposalId][member] = nCheckpoints + 1;
+            numCheckpoints[member] = nCheckpoints + 1;
         }
         //slither-disable-next-line reentrancy-events
-        emit NewBalance(proposalId, member, newAmount);
+        emit NewBalance(member, newAmount);
     }
 
-    function isInvestor(
-        bytes32 proposalId,
-        address investorAddr
-    ) external view returns (bool) {
-        return investors[proposalId].contains(investorAddr);
+    function isInvestor(address investorAddr) external view returns (bool) {
+        return investors.contains(investorAddr);
     }
 
-    function _newInvestor(bytes32 proposalId, address investorAddr) internal {
+    function _newInvestor(address investorAddr) internal {
         require(
             investorAddr != address(0x0),
             "FundingPool::_newInvestor::invalid investor address"
         );
-        if (!investors[proposalId].contains(investorAddr)) {
-            investors[proposalId].add(investorAddr);
+        if (!investors.contains(investorAddr)) {
+            investors.add(investorAddr);
         }
     }
 
-    function _removeInvestor(
-        bytes32 proposalId,
-        address investorAddr
-    ) internal {
+    function _removeInvestor(address investorAddr) internal {
         require(
             investorAddr != address(0x0),
             "FundingPool::_removeInvestor::invalid investorAddr address"
         );
-        investors[proposalId].remove(investorAddr);
+        investors.remove(investorAddr);
     }
 
-    function getInvestorsByProposalId(
-        bytes32 proposalId
-    ) external view returns (address[] memory) {
-        return investors[proposalId].values();
-    }
+    // function getInvestorsByProposalId(
+    //     bytes32 proposalId
+    // ) external view returns (address[] memory) {
+    //     return investors[proposalId].values();
+    // }
 }

@@ -2,20 +2,18 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 
 import "../../core/DaoRegistry.sol";
+import "./interfaces/ICollectiveVoting.sol";
+import "./CollectiveDaoSetProposalAdapter.sol";
 import "../../helpers/DaoHelper.sol";
 import "../../helpers/GovernanceHelper.sol";
 import "../../utils/TypeConver.sol";
-import "./FlexVoting.sol";
-import "./interfaces/IFlexVoting.sol";
-import "./FlexStewardAllocation.sol";
-import "./FlexDaoSetAdapter.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "../../guards/FlexStewardGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
 
-contract ColletiveGovernorInProposalContract is
+contract ColletiveGovernorManagementContract is
     Reimbursable,
     MemberGuard,
     FlexStewardGuard
@@ -38,7 +36,8 @@ contract ColletiveGovernorInProposalContract is
     struct ProposalDetails {
         bytes32 id;
         address account;
-        uint256 allocation;
+        address tokenAddress;
+        uint256 depositAmount;
         uint256 creationTime;
         uint256 stopVoteTime;
         ProposalState state;
@@ -69,60 +68,25 @@ contract ColletiveGovernorInProposalContract is
     mapping(address => EnumerableSet.AddressSet) governorWhiteList;
     mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
 
-    function registerGovernorWhiteList(
-        DaoRegistry dao,
-        address account
-    ) external {
-        require(
-            msg.sender ==
-                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER) ||
-                dao.isMember(msg.sender),
-            "!access"
-        );
-        if (!governorWhiteList[address(dao)].contains(account)) {
-            governorWhiteList[address(dao)].add(account);
-        }
-    }
-
-    function clearGovernorWhitelist(DaoRegistry dao) external {
-        require(
-            msg.sender ==
-                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER),
-            "!access"
-        );
-        uint256 len = governorWhiteList[address(dao)].values().length;
-        address[] memory tem;
-        tem = governorWhiteList[address(dao)].values();
-        if (len > 0) {
-            for (uint8 i = 0; i < len; i++) {
-                governorWhiteList[address(dao)].remove(tem[i]);
-            }
-        }
-    }
-
     function daosetProposalCheck(DaoRegistry dao) internal view returns (bool) {
-        FlexDaoSetAdapterContract daoset = FlexDaoSetAdapterContract(
-            dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER)
-        );
-        return daoset.isProposalAllDone(dao);
+        ColletiveDaoSetProposalContract daoset = ColletiveDaoSetProposalContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
+            );
+        // return daoset.isProposalAllDone(dao);
+        return true;
     }
 
     function submitGovernorInProposal(
         DaoRegistry dao,
         address applicant,
-        uint256 allocation
-    )
-        external
-        reimbursable(dao)
-        onlyMember(dao)
-        onlySteward(dao, applicant)
-        returns (bytes32)
-    {
-        require(!dao.isMember(applicant), "applicant is strward already");
-        require(
-            DaoHelper.isNotReservedAddress(applicant),
-            "applicant is reserved address"
-        );
+        address tokenAddress,
+        uint256 depositAmount
+    ) external reimbursable(dao) onlyMember(dao) returns (bytes32) {
+        require(!dao.isMember(applicant), "Is Governor already");
+        // require(
+        //     DaoHelper.isNotReservedAddress(applicant),
+        //     "applicant is reserved address"
+        // );
         require(daosetProposalCheck(dao), "UnDone Daoset Proposal");
         dao.increaseGovenorInId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
@@ -141,7 +105,8 @@ contract ColletiveGovernorInProposalContract is
             dao,
             proposalId,
             applicant,
-            allocation,
+            tokenAddress,
+            depositAmount,
             startVoteTime,
             stopVoteTime
         );
@@ -163,7 +128,7 @@ contract ColletiveGovernorInProposalContract is
         DaoRegistry dao,
         address applicant
     ) external onlyMember(dao) reimbursable(dao) returns (bytes32) {
-        require(dao.isMember(applicant), "applicant isnt governor");
+        require(dao.isMember(applicant), "Applicant Isnt Governor");
         dao.increaseGovenorOutId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -211,12 +176,7 @@ contract ColletiveGovernorInProposalContract is
         IFlexVoting flexVotingContract = IFlexVoting(
             dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
         );
-        // address sponsoredBy = flexVotingContract.getSenderAddress(
-        //     dao,
-        //     address(this),
-        //     data,
-        //     msg.sender
-        // );
+
         dao.sponsorProposal(
             proposalId,
             dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
@@ -232,7 +192,8 @@ contract ColletiveGovernorInProposalContract is
         DaoRegistry dao,
         bytes32 proposalId,
         address applicant,
-        uint256 allocation,
+        address tokenAddress,
+        uint256 depositAmount,
         uint256 startVoteTime,
         uint256 stopVoteTime
     ) internal {
@@ -241,7 +202,8 @@ contract ColletiveGovernorInProposalContract is
         proposals[dao][proposalId] = ProposalDetails(
             proposalId,
             applicant,
-            allocation,
+            tokenAddress,
+            depositAmount,
             startVoteTime,
             stopVoteTime,
             ProposalState.Voting,
@@ -263,6 +225,7 @@ contract ColletiveGovernorInProposalContract is
         proposals[dao][proposalId] = ProposalDetails(
             proposalId,
             applicant,
+            address(0x0),
             0,
             startVoteTime,
             stopVoteTime,
@@ -286,16 +249,19 @@ contract ColletiveGovernorInProposalContract is
             ),
             "proposal already processed"
         );
-        IFlexVoting flexVotingContract = IFlexVoting(
-            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
+        ICollectiveVoting collectiveVotingContract = ICollectiveVoting(
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPT)
         );
 
-        require(address(flexVotingContract) != address(0), "adapter not found");
+        require(
+            address(collectiveVotingContract) != address(0),
+            "adapter not found"
+        );
 
-        IFlexVoting.VotingState voteResult;
+        ICollectiveVoting.VotingState voteResult;
         uint256 nbYes;
         uint256 nbNo;
-        (voteResult, nbYes, nbNo) = flexVotingContract.voteResult(
+        (voteResult, nbYes, nbNo) = collectiveVotingContract.voteResult(
             dao,
             proposalId
         );
@@ -304,45 +270,22 @@ contract ColletiveGovernorInProposalContract is
 
         dao.processProposal(proposalId);
 
-        if (voteResult == IFlexVoting.VotingState.PASS) {
+        if (voteResult == ICollectiveVoting.VotingState.PASS) {
             proposal.state = ProposalState.Executing;
             address applicant = proposal.account;
 
             if (proposal.pType == ProposalType.GOVERNOR_IN) {
                 dao.potentialNewMember(applicant);
-                if (
-                    dao.getConfiguration(
-                        DaoHelper.FLEX_VOTING_ASSET_TYPE
-                    ) == 3
-                ) {
-                    FlexStewardAllocationAdapter governorAlloc = FlexStewardAllocationAdapter(
-                            dao.getAdapterAddress(
-                                DaoHelper.FLEX_STEWARD_ALLOCATION_ADAPT
-                            )
-                        );
-                    governorAlloc.setAllocation(
-                        dao,
-                        proposal.account,
-                        proposal.allocation
-                    );
-                }
             }
 
             if (proposal.pType == ProposalType.GOVERNOR_OUT) {
                 dao.removeMember(applicant);
-                FlexStewardAllocationAdapter governorAlloc = FlexStewardAllocationAdapter(
-                        dao.getAdapterAddress(
-                            DaoHelper.FLEX_STEWARD_ALLOCATION_ADAPT
-                        )
-                    );
-                // remove governor set allocation to 0
-                governorAlloc.setAllocation(dao, proposal.account, 0);
             }
 
             proposal.state = ProposalState.Done;
         } else if (
-            voteResult == IFlexVoting.VotingState.NOT_PASS ||
-            voteResult == IFlexVoting.VotingState.TIE
+            voteResult == ICollectiveVoting.VotingState.NOT_PASS ||
+            voteResult == ICollectiveVoting.VotingState.TIE
         ) {
             proposal.state = ProposalState.Failed;
         } else {
@@ -365,27 +308,46 @@ contract ColletiveGovernorInProposalContract is
     function quit(DaoRegistry dao) external onlyMember(dao) {
         require(dao.daoCreator() != msg.sender, "dao summonor cant quit");
         dao.removeMember(msg.sender);
-        FlexStewardAllocationAdapter governorAlloc = FlexStewardAllocationAdapter(
-                dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_ALLOCATION_ADAPT)
-            );
-        // remove governor set allocation to 0
-        governorAlloc.setAllocation(dao, msg.sender, 0);
     }
 
-    function isGovernorWhiteList(
+    function registerGovernorWhiteList(
         DaoRegistry dao,
         address account
-    ) external view returns (bool) {
-        return governorWhiteList[address(dao)].contains(account);
+    ) external {
+        require(
+            // msg.sender ==
+            //     dao.getAdapterAddress(
+            //         DaoHelper.COLLECTIVE_DAO_SET_HELPER_ADAPTER
+            //     ) ||
+            DaoHelper.isInCreationModeAndHasAccess(dao),
+            "!access"
+        );
+        if (!governorWhiteList[address(dao)].contains(account)) {
+            governorWhiteList[address(dao)].add(account);
+        }
     }
 
-    function getGovernorWhitelist(
+    function clearGovernorWhitelist(DaoRegistry dao) external {
+        require(
+            msg.sender ==
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_DAO_SET_HELPER_ADAPTER
+                ),
+            "!access"
+        );
+        uint256 len = governorWhiteList[address(dao)].values().length;
+        address[] memory tem;
+        tem = governorWhiteList[address(dao)].values();
+        if (len > 0) {
+            for (uint8 i = 0; i < len; i++) {
+                governorWhiteList[address(dao)].remove(tem[i]);
+            }
+        }
+    }
+
+    function getGovernorAmount(
         DaoRegistry dao
-    ) external view returns (address[] memory) {
-        return governorWhiteList[address(dao)].values();
-    }
-
-    function getGovernorAmount(DaoRegistry dao) external view returns (uint256) {
+    ) external view returns (uint256) {
         return DaoHelper.getActiveMemberNb(dao);
     }
 
@@ -397,5 +359,11 @@ contract ColletiveGovernorInProposalContract is
 
     function allDone(DaoRegistry dao) external view returns (bool) {
         return unDoneProposals[address(dao)].length() > 0 ? false : true;
+    }
+
+    function getGovernorWhitelist(
+        address daoAddr
+    ) external view returns (address[] memory) {
+        return governorWhiteList[daoAddr].values();
     }
 }

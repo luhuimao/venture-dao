@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import "../../core/DaoRegistry.sol";
 import "../../core/CloneFactory.sol";
 import "../../extensions/IFactory.sol";
-import "./ColletiveFundingPool.sol";
+import "./CollectiveFundingPool.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**
@@ -32,7 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-contract ColletiveFundingPoolFactory is IFactory, CloneFactory, ReentrancyGuard {
+contract CollectiveFundingPoolFactory is IFactory, CloneFactory, ReentrancyGuard {
     address public identityAddress;
 
     event ColletiveFundingPoolCreated(address daoAddress, address extensionAddress);
@@ -55,7 +55,7 @@ contract ColletiveFundingPoolFactory is IFactory, CloneFactory, ReentrancyGuard 
         require(dao != address(0x0), "invalid dao addr");
         address extensionAddr = _createClone(identityAddress);
         _extensions[dao] = extensionAddr;
-        ColletiveInvestmentPoolExtension flexfundingpool = ColletiveInvestmentPoolExtension(
+        CollectiveInvestmentPoolExtension flexfundingpool = CollectiveInvestmentPoolExtension(
             extensionAddr
         );
 

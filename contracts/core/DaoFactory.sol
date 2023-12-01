@@ -97,11 +97,9 @@ contract DaoFactory is CloneFactory {
      * @return The address of a DAO, given its name.
      * @param daoName Name of the DAO to be searched.
      */
-    function getDaoAddress(string calldata daoName)
-        external
-        view
-        returns (address)
-    {
+    function getDaoAddress(
+        string calldata daoName
+    ) external view returns (address) {
         // return addresses[keccak256(abi.encode(daoName))];
         return addresses[TypeConver.bytesToBytes32(abi.encodePacked(daoName))];
     }
@@ -114,9 +112,10 @@ contract DaoFactory is CloneFactory {
      * @param dao DaoRegistry to have adapters added to.
      * @param adapters Adapter structs to be added to the DAO.
      */
-    function addAdapters(DaoRegistry dao, Adapter[] calldata adapters)
-        external
-    {
+    function addAdapters(
+        DaoRegistry dao,
+        Adapter[] calldata adapters
+    ) external {
         require(dao.isMember(msg.sender), "not member");
         //Registring Adapters
         require(
@@ -124,15 +123,18 @@ contract DaoFactory is CloneFactory {
             "this DAO has already been setup"
         );
         console.log("addAdapters");
-        for (uint256 i = 0; i < adapters.length; i++) {
-            //slither-disable-next-line calls-loop
-            dao.replaceAdapter(
-                adapters[i].id,
-                adapters[i].addr,
-                adapters[i].flags,
-                new bytes32[](0),
-                new uint256[](0)
-            );
+        if (adapters.length > 0) {
+            for (uint256 i = 0; i < adapters.length; i++) {
+                //slither-disable-next-line calls-loop
+                dao.replaceAdapter(
+                    adapters[i].id,
+                    adapters[i].addr,
+                    adapters[i].flags,
+                    new bytes32[](0),
+                    new uint256[](0)
+                );
+            }
+            console.log("adapter added");
         }
     }
 
@@ -156,13 +158,15 @@ contract DaoFactory is CloneFactory {
             "this DAO has already been setup"
         );
 
-        for (uint256 i = 0; i < adapters.length; i++) {
-            //slither-disable-next-line calls-loop
-            dao.setAclToExtensionForAdapter(
-                extension,
-                adapters[i].addr,
-                adapters[i].flags
-            );
+        if (adapters.length > 0) {
+            for (uint256 i = 0; i < adapters.length; i++) {
+                //slither-disable-next-line calls-loop
+                dao.setAclToExtensionForAdapter(
+                    extension,
+                    adapters[i].addr,
+                    adapters[i].flags
+                );
+            }
         }
     }
 

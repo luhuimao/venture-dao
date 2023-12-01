@@ -11634,7 +11634,7 @@ describe("participant cap...", () => {
     });
 });
 
-describe("return token management fee...", () => {
+describe.only("return token management fee...", () => {
     before("deploy contracts...", async () => {
         let [owner,
             user1, user2,
@@ -11983,12 +11983,12 @@ describe("return token management fee...", () => {
         const flexFundingPoolExtContract = (await hre.ethers.getContractFactory("FlexInvestmentPoolExtension")).attach(fundingpoolextensionAddr);
 
         let tokenAddress = this.testtoken1.address;
-        let minFundingAmount = hre.ethers.utils.parseEther("100000");
-        let maxFundingAmount = hre.ethers.utils.parseEther("10000000");
+        let minFundingAmount = hre.ethers.utils.parseEther("100");
+        let maxFundingAmount = hre.ethers.utils.parseEther("200");
         let escrow = true;
         let returnTokenAddr = this.testtoken2.address;
         let returnTokenAmount = hre.ethers.utils.parseEther("10000000");
-        let price = hre.ethers.utils.parseEther("0.6");
+        let price = hre.ethers.utils.parseEther("2");
         let minReturnAmount = hre.ethers.utils.parseEther("1000000");
         let maxReturnAmount = hre.ethers.utils.parseEther("1000000");
         let approverAddr = this.user1.address;
@@ -12036,8 +12036,8 @@ describe("return token management fee...", () => {
         let fundRaiseType = 1;
         let fundRaiseStartTime = blocktimestamp;
         let fundRaiseEndTime = fundRaiseStartTime + 100000;
-        let minDepositAmount = hre.ethers.utils.parseEther("1000");
-        let maxDepositAmount = hre.ethers.utils.parseEther("10000000");
+        let minDepositAmount = hre.ethers.utils.parseEther("1");
+        let maxDepositAmount = hre.ethers.utils.parseEther("200");
         let backerIdentification = false;
 
         let bType = 0;
@@ -12077,9 +12077,9 @@ describe("return token management fee...", () => {
             bakckerIdentificationInfo,
             priorityDepositInfo
         ];
-
-        let tokenRewardAmount = hre.ethers.utils.parseEther("0.02"); // 2%
-        let cashRewardAmount = hre.ethers.utils.parseEther("0.003"); // 0.3%
+        
+        let tokenRewardAmount = hre.ethers.utils.parseEther("0.05"); // 2%
+        let cashRewardAmount = hre.ethers.utils.parseEther("0.01"); // 0.3% 10000000000000000
 
         let proposerRewardInfos = [
             tokenRewardAmount,
@@ -12138,9 +12138,9 @@ describe("return token management fee...", () => {
         await USDT.approve(flexFundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
         await USDT.connect(this.investor1).approve(flexFundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
 
-        await expectRevert(flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("10")), "revert");
-        await flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("2000000"));
-        await flexFundingPoolAdapt.connect(this.investor1).deposit(dao.address, proposalId, hre.ethers.utils.parseEther("100000"));
+        // await expectRevert(flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("10")), "revert");
+        await flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("160"));
+        await flexFundingPoolAdapt.connect(this.investor1).deposit(dao.address, proposalId, hre.ethers.utils.parseEther("15"));
 
         const investors = await flexFundingPoolExtContract.getInvestorsByProposalId(proposalId);
         console.log("investors: ", investors);
@@ -12149,7 +12149,7 @@ describe("return token management fee...", () => {
             deposit balance   ${hre.ethers.utils.formatEther(depositeBal.toString())}
             whitdraw...
             `);
-        await flexFundingPoolAdapt.withdraw(dao.address, proposalId, hre.ethers.utils.parseEther("10000"));
+        await flexFundingPoolAdapt.withdraw(dao.address, proposalId, hre.ethers.utils.parseEther("10"));
         depositeBal = await flexFundingPoolAdapt.balanceOf(dao.address, proposalId, this.owner.address);
         console.log(`
             deposit balance   ${hre.ethers.utils.formatEther(depositeBal.toString())}

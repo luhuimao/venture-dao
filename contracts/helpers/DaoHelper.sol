@@ -1,5 +1,5 @@
 pragma solidity ^0.8.0;
-import "../extensions/bank/Bank.sol";
+// import "../extensions/bank/Bank.sol";
 // import "../extensions/gpdao/GPDao.sol";
 import "../flex/extensions/FlexFundingPool.sol";
 import "../core/DaoRegistry.sol";
@@ -111,6 +111,7 @@ library DaoHelper {
     bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_TOKENID =
         keccak256("VINTAGE_GOVERNOR_MEMBERSHIP_TOKENID");
 
+    // vintage dao voting config
     bytes32 internal constant VINTAGE_VOTING_ASSET_TYPE =
         keccak256("VINTAGE_VOTING_ASSET_TYPE");
     bytes32 internal constant VINTAGE_VOTING_ASSET_TOKEN_ADDRESS =
@@ -273,6 +274,48 @@ library DaoHelper {
     /* ********************************
     FLEX SETTING 
     *********************************/
+
+    /*********************************
+    COLLECTIVE SETTING 
+    *********************************/
+    bytes32 internal constant COLLECTIVE_VOTING_ASSET_TYPE =
+        keccak256("COLLECTIVE_VOTING_ASSET_TYPE");
+    bytes32 internal constant COLLECTIVE_VOTING_WEIGHTED_TYPE =
+        keccak256("COLLECTIVE_VOTING_WEIGHTED_TYPE");
+    bytes32 internal constant COLLECTIVE_VOTING_SUPPORT_TYPE =
+        keccak256("COLLECTIVE_VOTING_SUPPORT_TYPE");
+    bytes32 internal constant COLLECTIVE_VOTING_QUORUM_TYPE =
+        keccak256("COLLECTIVE_VOTING_QUORUM_TYPE");
+    bytes32 internal constant COLLECTIVE_PROPOSER_PAYBACK_TOKEN_REWARD_AMOUNT =
+        keccak256("COLLECTIVE_PROPOSER_PAYBACK_TOKEN_REWARD_AMOUNT");
+    bytes32 internal constant COLLECTIVE_PROPOSER_INVEST_TOKEN_REWARD_AMOUNT =
+        keccak256("COLLECTIVE_PROPOSER_INVEST_TOKEN_REWARD_AMOUNT");
+    bytes32 internal constant COLLECTIVE_MANAGEMENT_FEE_AMOUNT =
+        keccak256("COLLECTIVE_MANAGEMENT_FEE_AMOUNT");
+    bytes32 internal constant COLLECTIVE_VOTING_EXECUTE_PERIOD =
+        keccak256("COLLECTIVE_VOTING_EXECUTE_PERIOD");
+    bytes32 internal constant COLLECTIVE_VOTING_GRACE_PERIOD =
+        keccak256("COLLECTIVE_VOTING_GRACE_PERIOD");
+    bytes32 internal constant COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ID =
+        keccak256("COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ID");
+    bytes32 internal constant COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS =
+        keccak256("COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS");
+    bytes32 internal constant COLLECTIVE_GOVERNOR_MEMBERSHIP_ENABLE =
+        keccak256("COLLECTIVE_GOVERNOR_MEMBERSHIP_ENABLE");
+    bytes32 internal constant COLLECTIVE_GOVERNOR_MEMBERSHIP_MINI_HOLDING =
+        keccak256("COLLECTIVE_GOVERNOR_MEMBERSHIP_MINI_HOLDING");
+    bytes32 internal constant COLLECTIVE_GOVERNOR_MEMBERSHIP_TYPE =
+        keccak256("COLLECTIVE_GOVERNOR_MEMBERSHIP_TYPE");
+    bytes32 internal constant COLLECTIVE_MANAGEMENT_FEE_RECEIVE_ADDRESS =
+        keccak256("COLLECTIVE_MANAGEMENT_FEE_RECEIVE_ADDRESS");
+
+    bytes32 internal constant COLLECTIVE_REDEMPT_FEE_AMOUNT =
+        keccak256("COLLECTIVE_REDEMPT_FEE_AMOUNT");
+
+    /*********************************
+    COLLECTIVE SETTING 
+    *********************************/
+
     //PPM
     bytes32 internal constant MAX_INVESTORS_ENABLE =
         keccak256("MAX_INVESTORS_ENABLE");
@@ -397,6 +440,23 @@ library DaoHelper {
 
     //---------------------------------flex---------------------------------
 
+    //---------------------------------collectivbe---------------------------------
+    bytes32 internal constant COLLECTIVE_VOTING_ADAPT =
+        keccak256("collective-voting-adapter");
+    bytes32 internal constant COLLECTIVE_DAO_SET_ADAPTER =
+        keccak256("collective-daoset-adapter");
+
+    bytes32 internal constant COLLECTIVE_INVESTMENT_POOL_EXT =
+        keccak256("collective-funding-pool-ext");
+
+    bytes32 internal constant COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPT =
+        keccak256("collective-governor-management-adapter");
+
+    bytes32 internal constant COLLECTIVE_DAO_SET_HELPER_ADAPTER =
+        keccak256("collective-daoset-helper-adapter");
+
+    //---------------------------------collective---------------------------------
+
     bytes32 internal constant FUND_RAISE = keccak256("fund-raise");
     bytes32 internal constant VESTWING = keccak256("vesting");
     bytes32 internal constant BEN_TO_BOX = keccak256("ben-to-box");
@@ -513,47 +573,47 @@ library DaoHelper {
         return dao.getAllSteward();
     }
 
-    function totalTokens(BankExtension bank) internal view returns (uint256) {
-        return memberTokens(bank, TOTAL) - memberTokens(bank, GUILD); //GUILD is accounted for twice otherwise
-    }
+    // function totalTokens(BankExtension bank) internal view returns (uint256) {
+    //     return memberTokens(bank, TOTAL) - memberTokens(bank, GUILD); //GUILD is accounted for twice otherwise
+    // }
 
     /**
      * @notice calculates the total number of units.
      */
-    function priorTotalTokens(
-        BankExtension bank,
-        uint256 at
-    ) internal view returns (uint256) {
-        return
-            priorMemberTokens(bank, TOTAL, at) -
-            priorMemberTokens(bank, GUILD, at);
-    }
+    // function priorTotalTokens(
+    //     BankExtension bank,
+    //     uint256 at
+    // ) internal view returns (uint256) {
+    //     return
+    //         priorMemberTokens(bank, TOTAL, at) -
+    //         priorMemberTokens(bank, GUILD, at);
+    // }
 
-    function memberTokens(
-        BankExtension bank,
-        address member
-    ) internal view returns (uint256) {
-        return
-            bank.balanceOf(member, UNITS) +
-            bank.balanceOf(member, LOCKED_UNITS) +
-            bank.balanceOf(member, LOOT) +
-            bank.balanceOf(member, LOCKED_LOOT);
-    }
+    // function memberTokens(
+    //     BankExtension bank,
+    //     address member
+    // ) internal view returns (uint256) {
+    //     return
+    //         bank.balanceOf(member, UNITS) +
+    //         bank.balanceOf(member, LOCKED_UNITS) +
+    //         bank.balanceOf(member, LOOT) +
+    //         bank.balanceOf(member, LOCKED_LOOT);
+    // }
 
     /**
      * @notice calculates the total number of units.
      */
-    function priorMemberTokens(
-        BankExtension bank,
-        address member,
-        uint256 at
-    ) internal view returns (uint256) {
-        return
-            bank.getPriorAmount(member, UNITS, at) +
-            bank.getPriorAmount(member, LOCKED_UNITS, at) +
-            bank.getPriorAmount(member, LOOT, at) +
-            bank.getPriorAmount(member, LOCKED_LOOT, at);
-    }
+    // function priorMemberTokens(
+    //     BankExtension bank,
+    //     address member,
+    //     uint256 at
+    // ) internal view returns (uint256) {
+    //     return
+    //         bank.getPriorAmount(member, UNITS, at) +
+    //         bank.getPriorAmount(member, LOCKED_UNITS, at) +
+    //         bank.getPriorAmount(member, LOOT, at) +
+    //         bank.getPriorAmount(member, LOCKED_LOOT, at);
+    // }
 
     //helper
     function getFlag(uint256 flags, uint256 flag) internal pure returns (bool) {
@@ -667,8 +727,8 @@ library DaoHelper {
         bytes32 proposalId
     ) internal view returns (uint256) {
         FlexInvestmentPoolExtension flexFungdingPoolExt = FlexInvestmentPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
-        );
+                dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
+            );
         address[] memory investors = flexFungdingPoolExt
             .getInvestorsByProposalId(proposalId);
 

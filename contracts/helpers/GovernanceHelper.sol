@@ -4,10 +4,10 @@ pragma solidity ^0.8.0;
 
 import "../helpers/DaoHelper.sol";
 import "../core/DaoRegistry.sol";
-import "../extensions/bank/Bank.sol";
+// import "../extensions/bank/Bank.sol";
 // import "../extensions/fundingpool/FundingPool.sol";
 // import "../extensions/gpdao/GPDao.sol";
-import "../extensions/token/erc20/ERC20TokenExtension.sol";
+// import "../extensions/token/erc20/ERC20TokenExtension.sol";
 import "../vintage/extensions/fundingpool/VintageFundingPool.sol";
 import "../vintage/adapters/VintageFundingAdapter.sol";
 import "../vintage/adapters/VintageFundRaise.sol";
