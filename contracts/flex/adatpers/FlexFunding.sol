@@ -353,9 +353,9 @@ contract FlexFundingAdapterContract is
             (vars.voteResult, , ) = vars.flexVoting.voteResult(dao, proposalId);
             if (vars.voteResult == IFlexVoting.VotingState.PASS) {
                 proposal.state = ProposalStatus.IN_FUND_RAISE_PROGRESS;
-                vars.flexInvestmentPoolExt.registerPotentialNewInvestmentProposal(
-                    proposalId
-                );
+                vars
+                    .flexInvestmentPoolExt
+                    .registerPotentialNewInvestmentProposal(proposalId);
             } else {
                 proposal.state = ProposalStatus.FAILED;
             }
@@ -394,12 +394,12 @@ contract FlexFundingAdapterContract is
 
                 if (proposal.investmentInfo.escrow) {
                     // calculate && update payback token amount
-                    proposal.investmentInfo.paybackTokenAmount =
-                        ((vars.poolBalance -
-                            vars.protocolFee -
-                            vars.managementFee -
-                            vars.proposerReward) / proposal.investmentInfo.price) *
-                        RETRUN_TOKEN_AMOUNT_PRECISION;
+                    proposal.investmentInfo.paybackTokenAmount = (((vars
+                        .poolBalance -
+                        vars.protocolFee -
+                        vars.managementFee -
+                        vars.proposerReward) * RETRUN_TOKEN_AMOUNT_PRECISION) /
+                        proposal.investmentInfo.price);
                     vars.paybackTokenAmount = proposal
                         .investmentInfo
                         .paybackTokenAmount;
@@ -519,7 +519,9 @@ contract FlexFundingAdapterContract is
     ) external reimbursable(dao) {
         ProposalInfo storage proposal = Proposals[address(dao)][proposalId];
         FlexInvestmentPaybackTokenAdapterContract flexInvestmentPaybackTokenAdapt = FlexInvestmentPaybackTokenAdapterContract(
-                dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_PAYBACI_TOKEN_ADAPT)
+                dao.getAdapterAddress(
+                    DaoHelper.FLEX_INVESTMENT_PAYBACI_TOKEN_ADAPT
+                )
             );
         flexInvestmentPaybackTokenAdapt.withdrawInvestmentPaybackToken(
             dao,
@@ -555,7 +557,9 @@ contract FlexFundingAdapterContract is
         bytes32 proposalId
     ) internal returns (bool) {
         FlexInvestmentPaybackTokenAdapterContract flexInvestmentPaybackTokenAdapt = FlexInvestmentPaybackTokenAdapterContract(
-                dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_PAYBACI_TOKEN_ADAPT)
+                dao.getAdapterAddress(
+                    DaoHelper.FLEX_INVESTMENT_PAYBACI_TOKEN_ADAPT
+                )
             );
         return
             flexInvestmentPaybackTokenAdapt.escrowInvestmentPaybackToken(
