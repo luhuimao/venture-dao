@@ -28,7 +28,6 @@ contract SummonDao {
     }
 
     struct flexDaoPaticipantMembershipInfo {
-        string name;
         uint8 varifyType;
         uint256 minHolding;
         address tokenAddress;
@@ -461,7 +460,6 @@ contract SummonDao {
     //config investor membership
     function summonFlexDao9(
         bool flexDaoInvestorMembetshipEnable,
-        string calldata flexDaoPaticipantMembershipName,
         uint256 flexDaoPaticipantMembershipVarifyType,
         uint256 flexDaoPaticipantMembershipMinHolding,
         uint256 flexDaoPaticipantMembershipTokenId,
@@ -474,13 +472,9 @@ contract SummonDao {
 
         //config investor membership
         if (flexDaoInvestorMembetshipEnable) {
-            dao.setConfiguration(
-                DaoHelper.FLEX_INVESTOR_MEMBERSHIP_ENABLE,
-                1
-            );
+            dao.setConfiguration(DaoHelper.FLEX_INVESTOR_MEMBERSHIP_ENABLE, 1);
             registerFlexDaoInvestorMembership(
                 dao,
-                flexDaoPaticipantMembershipName,
                 flexDaoPaticipantMembershipVarifyType,
                 flexDaoPaticipantMembershipMinHolding,
                 flexDaoPaticipantMembershipTokenId,
@@ -489,7 +483,6 @@ contract SummonDao {
             if (flexDaoPaticipantMembershipVarifyType == 3) {
                 registerFlexDaoInvestorMembershipWhitelist(
                     dao,
-                    flexDaoPaticipantMembershipName,
                     flexDaoPaticipantMembershipWhiteList
                 );
             }
@@ -690,28 +683,31 @@ contract SummonDao {
 
     function registerFlexDaoInvestorMembership(
         DaoRegistry dao,
-        string calldata flexDaoPaticipantMembershipName,
         uint256 flexDaoPaticipantMembershipVarifyType,
         uint256 flexDaoPaticipantMembershipMinHolding,
         uint256 flexDaoPaticipantMembershipTokenId,
         address flexDaoPaticipantMembershipTokenAddress
     ) internal {
-        FlexInvestmentPoolAdapterContract flexFundingPool = FlexInvestmentPoolAdapterContract(
-                dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_POOL_ADAPT)
-            );
-        flexFundingPool.createInvestorMembership(
-            dao,
-            flexDaoPaticipantMembershipName,
-            uint8(flexDaoPaticipantMembershipVarifyType),
-            flexDaoPaticipantMembershipMinHolding,
-            flexDaoPaticipantMembershipTokenAddress,
+        dao.setConfiguration(
+            DaoHelper.FLEX_INVESTOR_MEMBERSHIP_TYPE,
+            flexDaoPaticipantMembershipVarifyType
+        );
+        dao.setConfiguration(
+            DaoHelper.FLEX_INVESTOR_MEMBERSHIP_MIN_HOLDING,
+            flexDaoPaticipantMembershipMinHolding
+        );
+        dao.setConfiguration(
+            DaoHelper.FLEX_INVESTOR_MEMBERSHIP_TOKENID,
             flexDaoPaticipantMembershipTokenId
+        );
+        dao.setAddressConfiguration(
+            DaoHelper.FLEX_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS,
+            flexDaoPaticipantMembershipTokenAddress
         );
     }
 
     function registerFlexDaoInvestorMembershipWhitelist(
         DaoRegistry dao,
-        string calldata name,
         address[] calldata _whitelist
     ) internal {
         if (_whitelist.length > 0) {
@@ -719,11 +715,7 @@ contract SummonDao {
                     dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_POOL_ADAPT)
                 );
             for (uint8 i = 0; i < _whitelist.length; i++) {
-                flexFundingPool.registerInvestorWhiteList(
-                    dao,
-                    name,
-                    _whitelist[i]
-                );
+                flexFundingPool.registerInvestorWhiteList(dao, _whitelist[i]);
             }
         }
     }
@@ -1029,9 +1021,8 @@ contract SummonDao {
         );
 
         vars.summonFlexDao9Payload = abi.encodeWithSignature(
-            "summonFlexDao9(bool,string,uint256,uint256,uint256,address,address[],address)",
+            "summonFlexDao9(bool,uint256,uint256,uint256,address,address[],address)",
             params.flexDaoInvestorMembetshipEnable,
-            params._flexDaoPaticipantMembershipInfos.name,
             params._flexDaoPaticipantMembershipInfos.varifyType,
             params._flexDaoPaticipantMembershipInfos.minHolding,
             params._flexDaoPaticipantMembershipInfos.tokenId,

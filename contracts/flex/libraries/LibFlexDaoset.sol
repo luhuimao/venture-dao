@@ -25,7 +25,6 @@ library FlexDaosetLibrary {
 
     struct InvestorMembershipProposalDetails {
         bool enable;
-        string name;
         uint8 varifyType;
         uint256 minAmount;
         address tokenAddress;
@@ -154,7 +153,6 @@ library FlexDaosetLibrary {
     struct InvestorMembershipParams {
         DaoRegistry dao;
         bool enable;
-        string name;
         uint8 varifyType;
         uint256 minAmount;
         address tokenAddress;

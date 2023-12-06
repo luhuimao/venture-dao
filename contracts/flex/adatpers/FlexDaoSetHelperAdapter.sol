@@ -65,7 +65,6 @@ contract FlexDaoSetHelperAdapterContract {
                 tokenId
             );
 
-
             if (whitelist.length > 0) {
                 StewardManagementContract governorContract = StewardManagementContract(
                         dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_MANAGEMENT)
@@ -73,7 +72,10 @@ contract FlexDaoSetHelperAdapterContract {
 
                 governorContract.clearGovernorWhitelist(dao);
                 for (uint8 i = 0; i < whitelist.length; i++) {
-                    governorContract.registerGovernorWhiteList(dao, whitelist[i]);
+                    governorContract.registerGovernorWhiteList(
+                        dao,
+                        whitelist[i]
+                    );
                 }
             }
         }
@@ -83,7 +85,6 @@ contract FlexDaoSetHelperAdapterContract {
         DaoRegistry dao,
         bool enable,
         uint8 varifyType,
-        string calldata name,
         uint256 minAmount,
         address tokenAddress,
         uint256 tokenId,
@@ -107,24 +108,41 @@ contract FlexDaoSetHelperAdapterContract {
             FlexInvestmentPoolAdapterContract flexFundingPool = FlexInvestmentPoolAdapterContract(
                     dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_POOL_ADAPT)
                 );
-            flexFundingPool.createInvestorMembership(
-                dao,
-                name,
-                varifyType,
-                minAmount,
-                tokenAddress,
+            // flexFundingPool.createInvestorMembership(
+            //     dao,
+            //     varifyType,
+            //     minAmount,
+            //     tokenAddress,
+            //     tokenId
+            // );
+
+            dao.setConfiguration(
+                DaoHelper.FLEX_INVESTOR_MEMBERSHIP_TYPE,
+                varifyType
+            );
+            dao.setConfiguration(
+                DaoHelper.FLEX_INVESTOR_MEMBERSHIP_MIN_HOLDING,
+                minAmount
+            );
+            dao.setConfiguration(
+                DaoHelper.FLEX_INVESTOR_MEMBERSHIP_TOKENID,
                 tokenId
+            );
+            dao.setAddressConfiguration(
+                DaoHelper.FLEX_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS,
+                tokenAddress
             );
 
             if (whitelist.length > 0) {
                 FlexInvestmentPoolAdapterContract fundingPoolAdapt = FlexInvestmentPoolAdapterContract(
-                        dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_POOL_ADAPT)
+                        dao.getAdapterAddress(
+                            DaoHelper.FLEX_INVESTMENT_POOL_ADAPT
+                        )
                     );
-                fundingPoolAdapt.clearInvestorWhitelist(dao, name);
+                fundingPoolAdapt.clearInvestorWhitelist(dao);
                 for (uint8 i = 0; i < whitelist.length; i++) {
                     flexFundingPool.registerInvestorWhiteList(
                         dao,
-                        name,
                         whitelist[i]
                     );
                 }
@@ -140,7 +158,8 @@ contract FlexDaoSetHelperAdapterContract {
         uint256[] calldata allocations
     ) external {
         require(
-            msg.sender == dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_VOTING_ADAPTER),
+            msg.sender ==
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_VOTING_ADAPTER),
             "!access"
         );
         dao.setConfiguration(
@@ -235,7 +254,7 @@ contract FlexDaoSetHelperAdapterContract {
             DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE,
             flexDaoProposerMembershipVarifyType
         );
-       
+
         if (_whitelist.length > 0) {
             FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
                 dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)

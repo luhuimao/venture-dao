@@ -205,14 +205,14 @@ library DaoHelper {
     // ---investor membership
     bytes32 internal constant FLEX_INVESTOR_MEMBERSHIP_ENABLE =
         keccak256("FLEX_INVESTOR_MEMBERSHIP_ENABLE");
-    bytes32 internal constant FLEX_INVESTOR_TYPE =
-        keccak256("FLEX_INVESTOR_TYPE");
-    bytes32 internal constant FLEX_INVESTOR_MIN_HOLDING =
-        keccak256("FLEX_INVESTOR_MIN_HOLDING");
-    bytes32 internal constant FLEX_INVESTOR_TOKEN_ADDRESS =
-        keccak256("FLEX_INVESTOR_TOKEN_ADDRESS");
-    bytes32 internal constant FLEX_INVESTOR_TOKENID =
-        keccak256("FLEX_INVESTOR_TOKENID");
+    bytes32 internal constant FLEX_INVESTOR_MEMBERSHIP_TYPE =
+        keccak256("FLEX_INVESTOR_MEMBERSHIP_TYPE");
+    bytes32 internal constant FLEX_INVESTOR_MEMBERSHIP_MIN_HOLDING =
+        keccak256("FLEX_INVESTOR_MEMBERSHIP_MIN_HOLDING");
+    bytes32 internal constant FLEX_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS =
+        keccak256("FLEX_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS");
+    bytes32 internal constant FLEX_INVESTOR_MEMBERSHIP_TOKENID =
+        keccak256("FLEX_INVESTOR_MEMBERSHIP_TOKENID");
     // -----polling
     bytes32 internal constant FLEX_POLLING_VOTING_PERIOD =
         keccak256("FLEX_POLLING_VOTING_PERIOD");
