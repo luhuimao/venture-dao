@@ -175,107 +175,107 @@ describe("daoset proposal...", () => {
 
         const creator = this.owner.address;
         const enalbeAdapters = [{
-                id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
-                addr: this.flexVesting.address,
-                flags: 0
-            },
-            {
-                id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
-                addr: this.flexERC721.address,
-                flags: 0
-            },
-            {
-                id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
-                addr: this.flexAllocationAdapterContract.address,
-                flags: 0
-            },
-            {
-                id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
-                addr: this.flexFundingPoolAdapterContract.address,
-                flags: 0
-            },
-            {
-                id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
-                addr: this.flexVotingContract.address,
-                flags: 258
-            },
-            {
-                id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
-                addr: this.flexPollingVotingContract.address,
-                flags: 258
-            },
-            {
-                id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
-                addr: this.flexFundingAdapterContract.address,
-                flags: 770
-            },
-            {
-                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-                addr: this.bentoBoxV1.address,
-                flags: 0
-            },
-            // {
-            //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-            //     addr: this.managing.address,
-            //     flags: 59
-            // },
-            {
-                id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
-                addr: this.flexStewardMangement.address,
-                flags: 6338
-            },
-            {
-                id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
-                addr: this.flexStewardAllocation.address,
-                flags: 0
-            },
-            {
-                id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
-                addr: this.flexFundingReturnTokenAdapterContract.address,
-                flags: 0
-            },
-            {
-                id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
-                addr: this.flexFreeInEscrowFundAdapterContract.address,
-                flags: 0
-            },
-            {
-                id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
-                addr: this.flexFundingHelperAdapterContract.address,
-                flags: 0
-            },
-            {
-                id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-                addr: this.flexDaoSetAdapterContract.address,
-                flags: 778242
-            },
-            {
-                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-                addr: this.flexDaoSetHelperAdapterContract.address,
-                flags: 8
-            },
-            {
-                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
-                addr: this.flexDaoSetPollingAdapterContract.address,
-                flags: 262146
-            },
-            {
-                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
-                addr: this.flexDaoSetVotingAdapterContract.address,
-                flags: 65538
-            }
+            id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
+            addr: this.flexVesting.address,
+            flags: 0
+        },
+        {
+            id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
+            addr: this.flexERC721.address,
+            flags: 0
+        },
+        {
+            id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
+            addr: this.flexAllocationAdapterContract.address,
+            flags: 0
+        },
+        {
+            id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
+            addr: this.flexFundingPoolAdapterContract.address,
+            flags: 0
+        },
+        {
+            id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
+            addr: this.flexVotingContract.address,
+            flags: 258
+        },
+        {
+            id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
+            addr: this.flexPollingVotingContract.address,
+            flags: 258
+        },
+        {
+            id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
+            addr: this.flexFundingAdapterContract.address,
+            flags: 770
+        },
+        {
+            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+            addr: this.bentoBoxV1.address,
+            flags: 0
+        },
+        // {
+        //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
+        //     addr: this.managing.address,
+        //     flags: 59
+        // },
+        {
+            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
+            addr: this.flexStewardMangement.address,
+            flags: 6338
+        },
+        {
+            id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
+            addr: this.flexStewardAllocation.address,
+            flags: 0
+        },
+        {
+            id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
+            addr: this.flexFundingReturnTokenAdapterContract.address,
+            flags: 0
+        },
+        {
+            id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
+            addr: this.flexFreeInEscrowFundAdapterContract.address,
+            flags: 0
+        },
+        {
+            id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
+            addr: this.flexFundingHelperAdapterContract.address,
+            flags: 0
+        },
+        {
+            id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            addr: this.flexDaoSetAdapterContract.address,
+            flags: 778242
+        },
+        {
+            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
+            addr: this.flexDaoSetHelperAdapterContract.address,
+            flags: 8
+        },
+        {
+            id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
+            addr: this.flexDaoSetPollingAdapterContract.address,
+            flags: 262146
+        },
+        {
+            id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
+            addr: this.flexDaoSetVotingAdapterContract.address,
+            flags: 65538
+        }
 
         ];
         const adapters1 = [{
-                id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
-                addr: this.flexFundingPoolAdapterContract.address, //FlexFundingPoolAdapterContract
-                flags: 75
-            },
-            {
-                id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
-                addr: this.flexFundingAdapterContract.address, //FlexFundingAdapterContract
-                flags: 26
-            }
+            id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+            addr: this.flexFundingPoolAdapterContract.address, //FlexFundingPoolAdapterContract
+            flags: 75
+        },
+        {
+            id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+            addr: this.flexFundingAdapterContract.address, //FlexFundingAdapterContract
+            flags: 26
+        }
         ];
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
@@ -287,7 +287,6 @@ describe("daoset proposal...", () => {
         const flexDaoParticipantMembershipEnalbe = true;
 
         const flexDaoParticipantsMemberships = [
-            "participantmembershipInfo01", // string name;
             0, // uint8 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -424,15 +423,17 @@ describe("daoset proposal...", () => {
         let currentflexDaoPollsterMembershipTokenId = await daoContract
             .getConfiguration("0x5b0d0dc46f84f7703b74bcc9981b23b0ddbcdc040dd1c5c313bc64f7ab01ba88");
         let currentPollsterWhitelist = await
-        this.flexPollingVotingContract.
-        getWhitelist(daoAddr);
+            this.flexPollingVotingContract.
+                getWhitelist(daoAddr);
+
+        let proposalmembershipEnable = await daoContract.getConfiguration("0x2073e6ba5c75026b006fdd165596d94b89cada2e00d8e44a99d422de8ea467e0");
 
         console.log(`
             new dao address ${daoAddr}
             new dao name ${toUtf8(daoName)}
             pollingToken ${pollingToken}
             flexPollingVoteWeight ${flexPollingVoteWeight}
-
+            proposalmembershipEnable ${proposalmembershipEnable}
             currentflexDaoPollingVotingPeriod ${currentflexDaoPollingVotingPeriod}
             currentflexDaoPollingVotingPower ${currentflexDaoPollingVotingPower}
             currentflexDaoPollingSuperMajority ${currentflexDaoPollingSuperMajority}
@@ -476,10 +477,10 @@ describe("daoset proposal...", () => {
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
         let proposal = await this.flexDaoSetAdapterContract.
-        investorCapProposals(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            investorCapProposals(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
 
         let currentParticipantCap = await this.daoContract
             .getConfiguration("0xaf0b46df030af159303b75690e740674df8434270d3b7248b0280f3d63a2dd8b");
@@ -520,16 +521,16 @@ describe("daoset proposal...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processInvestorCapProposal(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            processInvestorCapProposal(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
 
         proposal = await this.flexDaoSetAdapterContract.
-        investorCapProposals(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            investorCapProposals(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
         currentParticipantEnable = await this.daoContract
             .getConfiguration("0x0a71373d28d4b40b0bb46f8d58468f2e51292d10cf26715a0e3d8624b60c8a42");
         currentParticipantCap = await this.daoContract
@@ -569,10 +570,10 @@ describe("daoset proposal...", () => {
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
         let proposal = await this.flexDaoSetAdapterContract.
-        governorMembershipProposals(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            governorMembershipProposals(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
 
         let currentvarifyType = await this.daoContract
             .getConfiguration("0x84580f9d926113d2c801e908a914b652340b3d8527c171bcea8d1868e92a507c");
@@ -628,16 +629,16 @@ describe("daoset proposal...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processGovernorMembershipProposal(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            processGovernorMembershipProposal(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
 
         proposal = await this.flexDaoSetAdapterContract.
-        governorMembershipProposals(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            governorMembershipProposals(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
         currentvarifyType = await this.daoContract
             .getConfiguration("0x84580f9d926113d2c801e908a914b652340b3d8527c171bcea8d1868e92a507c");
         currentEnable = await this.daoContract
@@ -667,10 +668,9 @@ describe("daoset proposal...", () => {
         `);
     });
 
-    it("submit investor membership cap dao set proposal...", async () => {
+    it("submit investor membership dao set proposal...", async () => {
         const enable = true;
         const varifyType = 1;
-        const name = "investormembership-1";
         const minAmount = 4;
         const tokenAddress = this.testtoken1.address;
         const tokenId = 2;
@@ -678,13 +678,13 @@ describe("daoset proposal...", () => {
         const params = [
             this.flexDirectdaoAddress,
             enable,
-            name,
             varifyType,
             minAmount,
             tokenAddress,
             tokenId,
             whiteList
         ];
+
         const tx = await this.flexDaoSetAdapterContract
             .submitInvestorMembershipProposal(
                 params
@@ -694,26 +694,30 @@ describe("daoset proposal...", () => {
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
         let proposal = await this.flexDaoSetAdapterContract.
-        investorMembershipProposals(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
-
+            investorMembershipProposals(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
         let currentvarifyType = await this.daoContract
             .getConfiguration("0x80140cd7e0b1d935bee578a67a41547c82987de8e7d6b3827d411b738110258b");
         let currentEnable = await this.daoContract
             .getConfiguration("0x96b394ec661f77cbb65c26efb1a3308a7405b2ad904ca7bd203e7a1c35737249");
 
-        let investorMembershipData = await this.flexFundingPoolAdapterContract
-            .getInvestorMembershipInfo(
-                this.flexDirectdaoAddress,
-                name
-            );
+
         let investorMemberhsipWhitelistdata =
             await this.flexFundingPoolAdapterContract.getParticipanWhitelist(
-                this.flexDirectdaoAddress,
-                name
+                this.flexDirectdaoAddress
             );
+        let investorMembershipDatavarifyType = await this.daoContract
+            .getConfiguration(sha3("FLEX_INVESTOR_MEMBERSHIP_TYPE"));
+        let investorMembershipDataminHolding = await this.daoContract
+            .getConfiguration(sha3("FLEX_INVESTOR_MEMBERSHIP_MIN_HOLDING"));
+        let investorMembershipDatatokenId = await this.daoContract
+            .getConfiguration(sha3("FLEX_INVESTOR_MEMBERSHIP_TOKENID"));
+        let investorMembershipDatatokenAddress = await this.daoContract
+            .getAddressConfiguration(sha3("FLEX_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS"));
+
+
 
         console.log(`
         created...
@@ -726,10 +730,10 @@ describe("daoset proposal...", () => {
         state ${proposal.state}
         currentEnable ${currentEnable}
         currentvarifyType ${currentvarifyType}
-        varifyType  ${investorMembershipData.varifyType}
-        minHolding  ${investorMembershipData.minHolding}
-        tokenAddress  ${investorMembershipData.tokenAddress}
-        tokenId  ${investorMembershipData.tokenId}     
+        varifyType  ${investorMembershipDatavarifyType}
+        minHolding  ${investorMembershipDataminHolding}
+        tokenAddress  ${investorMembershipDatatokenAddress}
+        tokenId  ${investorMembershipDatatokenId}     
         investorMemberhsipWhitelistdata ${investorMemberhsipWhitelistdata}
         voting...
        `);
@@ -759,41 +763,49 @@ describe("daoset proposal...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processInvestorMembershipProposal(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            processInvestorMembershipProposal(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
 
         proposal = await this.flexDaoSetAdapterContract.
-        investorMembershipProposals(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            investorMembershipProposals(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
         currentvarifyType = await this.daoContract
             .getConfiguration("0x84580f9d926113d2c801e908a914b652340b3d8527c171bcea8d1868e92a507c");
         currentEnable = await this.daoContract
             .getConfiguration("0x71ecc01da16acc23ab0eca549b0aaa7659ae183a220304fe5072243bc984fd79");
 
-        investorMembershipData = await this.flexFundingPoolAdapterContract
-            .getInvestorMembershipInfo(
-                this.flexDirectdaoAddress,
-                name
-            );
+        // investorMembershipData = await this.flexFundingPoolAdapterContract
+        //     .getInvestorMembershipInfo(
+        //         this.flexDirectdaoAddress,
+        //         name
+        //     );
         investorMemberhsipWhitelistdata =
             await this.flexFundingPoolAdapterContract.getParticipanWhitelist(
-                this.flexDirectdaoAddress,
-                name
+                this.flexDirectdaoAddress
             );
         expect(varifyType == currentvarifyType, true);
+
+        investorMembershipDatavarifyType = await this.daoContract
+            .getConfiguration(sha3("FLEX_INVESTOR_MEMBERSHIP_TYPE"));
+        investorMembershipDataminHolding = await this.daoContract
+            .getConfiguration(sha3("FLEX_INVESTOR_MEMBERSHIP_MIN_HOLDING"));
+        investorMembershipDatatokenId = await this.daoContract
+            .getConfiguration(sha3("FLEX_INVESTOR_MEMBERSHIP_TOKENID"));
+        investorMembershipDatatokenAddress = await this.daoContract
+            .getAddressConfiguration(sha3("FLEX_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS"));
         console.log(`
         executed...
         state ${proposal.state}
         currentvarifyType ${currentvarifyType}
         currentEnable ${currentEnable}
-        varifyType  ${investorMembershipData.varifyType}
-        minHolding  ${investorMembershipData.minHolding}
-        tokenAddress  ${investorMembershipData.tokenAddress}
-        tokenId  ${investorMembershipData.tokenId}
+        varifyType  ${investorMembershipDatavarifyType}
+        minHolding  ${investorMembershipDataminHolding}
+        tokenAddress  ${investorMembershipDatatokenAddress}
+        tokenId  ${investorMembershipDatatokenId}
         investorMemberhsipWhitelistdata ${investorMemberhsipWhitelistdata}
         `);
     });
@@ -839,10 +851,10 @@ describe("daoset proposal...", () => {
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
         let proposal = await this.flexDaoSetVotingAdapterContract.
-        votingProposals(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            votingProposals(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
 
         let currenteligibilityType = await this.daoContract
             .getConfiguration("0x5b1db2a99ea07a11cfaecd49105623ca4735b50f1788d96b1bac788d36a5bcb2");
@@ -868,11 +880,11 @@ describe("daoset proposal...", () => {
             getAllocation(this.flexDirectdaoAddress,
                 this.owner.address);
         let alloc1 = await this.flexStewardAllocation.
-        getAllocation(this.flexDirectdaoAddress,
-            this.genesis_steward1.address);
+            getAllocation(this.flexDirectdaoAddress,
+                this.genesis_steward1.address);
         let alloc2 = await this.flexStewardAllocation.
-        getAllocation(this.flexDirectdaoAddress,
-            this.genesis_steward2.address);
+            getAllocation(this.flexDirectdaoAddress,
+                this.genesis_steward2.address);
 
         console.log(`
         created...
@@ -919,16 +931,16 @@ describe("daoset proposal...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processVotingProposal(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            processVotingProposal(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
 
         proposal = await this.flexDaoSetVotingAdapterContract.
-        votingProposals(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            votingProposals(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
 
         currenteligibilityType = await this.daoContract
             .getConfiguration("0x5b1db2a99ea07a11cfaecd49105623ca4735b50f1788d96b1bac788d36a5bcb2");
@@ -953,11 +965,11 @@ describe("daoset proposal...", () => {
             getAllocation(this.flexDirectdaoAddress,
                 this.owner.address);
         alloc1 = await this.flexStewardAllocation.
-        getAllocation(this.flexDirectdaoAddress,
-            this.genesis_steward1.address);
+            getAllocation(this.flexDirectdaoAddress,
+                this.genesis_steward1.address);
         alloc2 = await this.flexStewardAllocation.
-        getAllocation(this.flexDirectdaoAddress,
-            this.genesis_steward2.address);
+            getAllocation(this.flexDirectdaoAddress,
+                this.genesis_steward2.address);
 
         console.log(`
         executed...
@@ -993,10 +1005,10 @@ describe("daoset proposal...", () => {
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
         let proposal = await this.flexDaoSetAdapterContract.
-        feesProposals(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            feesProposals(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
 
         let currentManagementFee = await this.daoContract
             .getConfiguration("0x64c49ee5084f4940c312104c41603e43791b03dad28152afd6eadb5b960a8a87");
@@ -1040,15 +1052,15 @@ describe("daoset proposal...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processFeesProposal(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            processFeesProposal(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
         proposal = await this.flexDaoSetAdapterContract.
-        feesProposals(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            feesProposals(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
 
         currentManagementFee = await this.daoContract
             .getConfiguration("0x64c49ee5084f4940c312104c41603e43791b03dad28152afd6eadb5b960a8a87");
@@ -1096,13 +1108,13 @@ describe("daoset proposal...", () => {
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
         let proposal = await this.flexDaoSetAdapterContract.
-        proposerMembershipProposals(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            proposerMembershipProposals(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
 
         const pWhitelist = await this.flexDaoSetAdapterContract.
-        getProposerMembershipWhitelist(proposalId);
+            getProposerMembershipWhitelist(proposalId);
 
         let currentProposerMembershipMinHolding = await this.daoContract
             .getConfiguration("0xf6d5f030b79ca78dad001b87a49239ec96be97e62d13501da94c9a392700509e");
@@ -1113,8 +1125,8 @@ describe("daoset proposal...", () => {
         let currentProposerMembershipTokenAddress = await this.daoContract
             .getAddressConfiguration("0x30091caaedd0994beeeeb3b7b5734296263687ae0126aaf79e5e0f8e5c1706b2");
         let currentProposerWhitelist = await
-        this.flexFundingAdapterContract.
-        getProposerWhitelist(this.flexDirectdaoAddress);
+            this.flexFundingAdapterContract.
+                getProposerWhitelist(this.flexDirectdaoAddress);
 
         console.log(`
         created...
@@ -1152,15 +1164,15 @@ describe("daoset proposal...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processProposerMembershipProposal(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            processProposerMembershipProposal(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
         proposal = await this.flexDaoSetAdapterContract.
-        proposerMembershipProposals(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            proposerMembershipProposals(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
 
         currentProposerMembershipMinHolding = await this.daoContract
             .getConfiguration("0xf6d5f030b79ca78dad001b87a49239ec96be97e62d13501da94c9a392700509e");
@@ -1171,8 +1183,8 @@ describe("daoset proposal...", () => {
         currentProposerMembershipTokenAddress = await this.daoContract
             .getAddressConfiguration("0x30091caaedd0994beeeeb3b7b5734296263687ae0126aaf79e5e0f8e5c1706b2");
         currentProposerWhitelist = await
-        this.flexFundingAdapterContract.
-        getProposerWhitelist(this.flexDirectdaoAddress);
+            this.flexFundingAdapterContract.
+                getProposerWhitelist(this.flexDirectdaoAddress);
 
         console.log(`
         executed...
@@ -1237,13 +1249,13 @@ describe("daoset proposal...", () => {
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
         let proposal = await this.flexDaoSetPollingAdapterContract.
-        pollForInvestmentProposals(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            pollForInvestmentProposals(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
 
         const pWhitelist = await this.flexDaoSetAdapterContract.
-        getProposerMembershipWhitelist(proposalId);
+            getProposerMembershipWhitelist(proposalId);
 
         let currentflexDaoPollingVotingPeriod = await this.daoContract
             .getConfiguration("0xee63cc82ca6990a4cc5fa3ca10d8a5281ae1758a8d8f22892c4badb7cacd111e");
@@ -1268,8 +1280,8 @@ describe("daoset proposal...", () => {
         let currentflexDaoPollsterMembershipTokenId = await this.daoContract
             .getConfiguration("0x5b0d0dc46f84f7703b74bcc9981b23b0ddbcdc040dd1c5c313bc64f7ab01ba88");
         let currentPollsterWhitelist = await
-        this.flexPollingVotingContract.
-        getWhitelist(this.flexDirectdaoAddress);
+            this.flexPollingVotingContract.
+                getWhitelist(this.flexDirectdaoAddress);
 
         console.log(`
         created...
@@ -1314,15 +1326,15 @@ describe("daoset proposal...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processPollForInvestmentProposal(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            processPollForInvestmentProposal(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
         proposal = await this.flexDaoSetPollingAdapterContract.
-        pollForInvestmentProposals(
-            this.flexDirectdaoAddress,
-            proposalId
-        );
+            pollForInvestmentProposals(
+                this.flexDirectdaoAddress,
+                proposalId
+            );
 
         currentflexDaoPollingVotingPeriod = await this.daoContract
             .getConfiguration("0xee63cc82ca6990a4cc5fa3ca10d8a5281ae1758a8d8f22892c4badb7cacd111e");
@@ -1347,8 +1359,8 @@ describe("daoset proposal...", () => {
         currentflexDaoPollsterMembershipTokenId = await this.daoContract
             .getConfiguration("0x5b0d0dc46f84f7703b74bcc9981b23b0ddbcdc040dd1c5c313bc64f7ab01ba88");
         currentPollsterWhitelist = await
-        this.flexPollingVotingContract.
-        getWhitelist(this.flexDirectdaoAddress);
+            this.flexPollingVotingContract.
+                getWhitelist(this.flexDirectdaoAddress);
 
         console.log(`
         executed...
@@ -1463,107 +1475,107 @@ describe("submit daoset proposal during other poposal in progress...", () => {
 
         const creator = this.owner.address;
         const enalbeAdapters = [{
-                id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
-                addr: this.flexVesting.address,
-                flags: 0
-            },
-            {
-                id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
-                addr: this.flexERC721.address,
-                flags: 0
-            },
-            {
-                id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
-                addr: this.flexAllocationAdapterContract.address,
-                flags: 0
-            },
-            {
-                id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
-                addr: this.flexFundingPoolAdapterContract.address,
-                flags: 0
-            },
-            {
-                id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
-                addr: this.flexVotingContract.address,
-                flags: 258
-            },
-            {
-                id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
-                addr: this.flexPollingVotingContract.address,
-                flags: 258
-            },
-            {
-                id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
-                addr: this.flexFundingAdapterContract.address,
-                flags: 770
-            },
-            {
-                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-                addr: this.bentoBoxV1.address,
-                flags: 0
-            },
-            // {
-            //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-            //     addr: this.managing.address,
-            //     flags: 59
-            // },
-            {
-                id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
-                addr: this.flexStewardMangement.address,
-                flags: 6338
-            },
-            {
-                id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
-                addr: this.flexStewardAllocation.address,
-                flags: 0
-            },
-            {
-                id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
-                addr: this.flexFundingReturnTokenAdapterContract.address,
-                flags: 0
-            },
-            {
-                id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
-                addr: this.flexFreeInEscrowFundAdapterContract.address,
-                flags: 0
-            },
-            {
-                id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
-                addr: this.flexFundingHelperAdapterContract.address,
-                flags: 0
-            },
-            {
-                id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-                addr: this.flexDaoSetAdapterContract.address,
-                flags: 778242
-            },
-            {
-                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-                addr: this.flexDaoSetHelperAdapterContract.address,
-                flags: 8
-            },
-            {
-                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
-                addr: this.flexDaoSetPollingAdapterContract.address,
-                flags: 262146
-            },
-            {
-                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
-                addr: this.flexDaoSetVotingAdapterContract.address,
-                flags: 65538
-            }
+            id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
+            addr: this.flexVesting.address,
+            flags: 0
+        },
+        {
+            id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
+            addr: this.flexERC721.address,
+            flags: 0
+        },
+        {
+            id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
+            addr: this.flexAllocationAdapterContract.address,
+            flags: 0
+        },
+        {
+            id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
+            addr: this.flexFundingPoolAdapterContract.address,
+            flags: 0
+        },
+        {
+            id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
+            addr: this.flexVotingContract.address,
+            flags: 258
+        },
+        {
+            id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
+            addr: this.flexPollingVotingContract.address,
+            flags: 258
+        },
+        {
+            id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
+            addr: this.flexFundingAdapterContract.address,
+            flags: 770
+        },
+        {
+            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+            addr: this.bentoBoxV1.address,
+            flags: 0
+        },
+        // {
+        //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
+        //     addr: this.managing.address,
+        //     flags: 59
+        // },
+        {
+            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
+            addr: this.flexStewardMangement.address,
+            flags: 6338
+        },
+        {
+            id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
+            addr: this.flexStewardAllocation.address,
+            flags: 0
+        },
+        {
+            id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
+            addr: this.flexFundingReturnTokenAdapterContract.address,
+            flags: 0
+        },
+        {
+            id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
+            addr: this.flexFreeInEscrowFundAdapterContract.address,
+            flags: 0
+        },
+        {
+            id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
+            addr: this.flexFundingHelperAdapterContract.address,
+            flags: 0
+        },
+        {
+            id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            addr: this.flexDaoSetAdapterContract.address,
+            flags: 778242
+        },
+        {
+            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
+            addr: this.flexDaoSetHelperAdapterContract.address,
+            flags: 8
+        },
+        {
+            id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
+            addr: this.flexDaoSetPollingAdapterContract.address,
+            flags: 262146
+        },
+        {
+            id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
+            addr: this.flexDaoSetVotingAdapterContract.address,
+            flags: 65538
+        }
 
         ];
         const adapters1 = [{
-                id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
-                addr: this.flexFundingPoolAdapterContract.address, //FlexFundingPoolAdapterContract
-                flags: 75
-            },
-            {
-                id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
-                addr: this.flexFundingAdapterContract.address, //FlexFundingAdapterContract
-                flags: 26
-            }
+            id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+            addr: this.flexFundingPoolAdapterContract.address, //FlexFundingPoolAdapterContract
+            flags: 75
+        },
+        {
+            id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+            addr: this.flexFundingAdapterContract.address, //FlexFundingAdapterContract
+            flags: 26
+        }
         ];
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
@@ -1575,7 +1587,6 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const flexDaoParticipantMembershipEnalbe = true;
 
         const flexDaoParticipantsMemberships = [
-            "participantmembershipInfo01", // string name;
             0, // uint8 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -1715,8 +1726,8 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         let currentflexDaoPollsterMembershipTokenId = await daoContract
             .getConfiguration("0x5b0d0dc46f84f7703b74bcc9981b23b0ddbcdc040dd1c5c313bc64f7ab01ba88");
         let currentPollsterWhitelist = await
-        this.flexPollingVotingContract.
-        getWhitelist(daoAddr);
+            this.flexPollingVotingContract.
+                getWhitelist(daoAddr);
 
         console.log(`
             new dao address ${daoAddr}
@@ -1769,7 +1780,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         console.log(`
         stewardInProposalId ${proposalId}
         currentfundingId ${currentfundingId}
-        currentgovenorinId ${currentgovenorinId}
+        currentgovenorInId ${currentgovenorinId}
         currentgovenoroutId ${currentgovenoroutId} 
         currentnewfundId ${currentnewfundId}
         `);
@@ -1781,7 +1792,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
                 this.flexDirectdaoAddress,
                 enableParticipantCap,
                 cap), "revert");
-
+        console.log(222);
         // const result1 = await tx1.wait();
         // const proposalId1 = result1.events[result.events.length - 1].args.proposalId;
 
@@ -1820,10 +1831,10 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const proposalId1 = result1.events[result.events.length - 1].args.proposalId;
 
         let proposal = await this.flexDaoSetAdapterContract.
-        investorCapProposals(
-            this.flexDirectdaoAddress,
-            proposalId1
-        );
+            investorCapProposals(
+                this.flexDirectdaoAddress,
+                proposalId1
+            );
 
         await this.flexVotingContract.submitVote(
             this.flexDirectdaoAddress,
@@ -1839,10 +1850,10 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processInvestorCapProposal(
-            this.flexDirectdaoAddress,
-            proposalId1
-        );
+            processInvestorCapProposal(
+                this.flexDirectdaoAddress,
+                proposalId1
+            );
     });
 
     it("varify undone proposal - governor memberhsip...", async () => {
@@ -1919,10 +1930,10 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const proposalId1 = result1.events[result.events.length - 1].args.proposalId;
 
         let proposal = await this.flexDaoSetAdapterContract.
-        governorMembershipProposals(
-            this.flexDirectdaoAddress,
-            proposalId1
-        );
+            governorMembershipProposals(
+                this.flexDirectdaoAddress,
+                proposalId1
+            );
 
         await this.flexVotingContract.submitVote(
             this.flexDirectdaoAddress,
@@ -1938,10 +1949,10 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processGovernorMembershipProposal(
-            this.flexDirectdaoAddress,
-            proposalId1
-        );
+            processGovernorMembershipProposal(
+                this.flexDirectdaoAddress,
+                proposalId1
+            );
     });
 
     it("varify undone proposal - investor memberhsip...", async () => {
@@ -1966,7 +1977,6 @@ describe("submit daoset proposal during other poposal in progress...", () => {
 
         const enable = true;
         const varifyType = 1;
-        const name = "investormembership-1";
         const minAmount = 4;
         const tokenAddress = this.testtoken1.address;
         const tokenId = 2;
@@ -1974,7 +1984,6 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const params = [
             this.flexDirectdaoAddress,
             enable,
-            name,
             varifyType,
             minAmount,
             tokenAddress,
@@ -2020,10 +2029,10 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const proposalId1 = result1.events[result.events.length - 1].args.proposalId;
 
         let proposal = await this.flexDaoSetAdapterContract.
-        investorMembershipProposals(
-            this.flexDirectdaoAddress,
-            proposalId1
-        );
+            investorMembershipProposals(
+                this.flexDirectdaoAddress,
+                proposalId1
+            );
 
         await this.flexVotingContract.submitVote(
             this.flexDirectdaoAddress,
@@ -2039,10 +2048,10 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processInvestorMembershipProposal(
-            this.flexDirectdaoAddress,
-            proposalId1
-        );
+            processInvestorMembershipProposal(
+                this.flexDirectdaoAddress,
+                proposalId1
+            );
     });
 
     it("varify undone proposal - voting...", async () => {
@@ -2133,13 +2142,13 @@ describe("submit daoset proposal during other poposal in progress...", () => {
 
         const result1 = await tx1.wait();
         const proposalId1 = result1.events[result.events.length - 1].
-        args.proposalId;
+            args.proposalId;
 
         let proposal = await this.flexDaoSetVotingAdapterContract.
-        votingProposals(
-            this.flexDirectdaoAddress,
-            proposalId1
-        );
+            votingProposals(
+                this.flexDirectdaoAddress,
+                proposalId1
+            );
 
         await this.flexVotingContract.submitVote(
             this.flexDirectdaoAddress,
@@ -2155,10 +2164,10 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processVotingProposal(
-            this.flexDirectdaoAddress,
-            proposalId1
-        );
+            processVotingProposal(
+                this.flexDirectdaoAddress,
+                proposalId1
+            );
     });
 
     it("varify undone proposal - fees...", async () => {
@@ -2228,13 +2237,13 @@ describe("submit daoset proposal during other poposal in progress...", () => {
 
         const result1 = await tx1.wait();
         const proposalId1 = result1.events[result.events.length - 1].
-        args.proposalId;
+            args.proposalId;
 
         let proposal = await this.flexDaoSetAdapterContract.
-        feesProposals(
-            this.flexDirectdaoAddress,
-            proposalId1
-        );
+            feesProposals(
+                this.flexDirectdaoAddress,
+                proposalId1
+            );
 
         await this.flexVotingContract.submitVote(
             this.flexDirectdaoAddress,
@@ -2250,10 +2259,10 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processFeesProposal(
-            this.flexDirectdaoAddress,
-            proposalId1
-        );
+            processFeesProposal(
+                this.flexDirectdaoAddress,
+                proposalId1
+            );
     });
 
     it("varify undone proposal - proposer membership...", async () => {
@@ -2333,13 +2342,13 @@ describe("submit daoset proposal during other poposal in progress...", () => {
 
         const result1 = await tx1.wait();
         const proposalId1 = result1.events[result.events.length - 1].
-        args.proposalId;
+            args.proposalId;
 
         let proposal = await this.flexDaoSetAdapterContract.
-        proposerMembershipProposals(
-            this.flexDirectdaoAddress,
-            proposalId1
-        );
+            proposerMembershipProposals(
+                this.flexDirectdaoAddress,
+                proposalId1
+            );
 
         await this.flexVotingContract.submitVote(
             this.flexDirectdaoAddress,
@@ -2355,10 +2364,10 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processProposerMembershipProposal(
-            this.flexDirectdaoAddress,
-            proposalId1
-        );
+            processProposerMembershipProposal(
+                this.flexDirectdaoAddress,
+                proposalId1
+            );
     });
 
     it("varify undone proposal - poll for investment...", async () => {
@@ -2460,13 +2469,13 @@ describe("submit daoset proposal during other poposal in progress...", () => {
 
         const result1 = await tx1.wait();
         const proposalId1 = result1.events[result.events.length - 1].
-        args.proposalId;
+            args.proposalId;
 
         let proposal = await this.flexDaoSetPollingAdapterContract.
-        pollForInvestmentProposals(
-            this.flexDirectdaoAddress,
-            proposalId1
-        );
+            pollForInvestmentProposals(
+                this.flexDirectdaoAddress,
+                proposalId1
+            );
 
         await this.flexVotingContract.submitVote(
             this.flexDirectdaoAddress,
@@ -2482,9 +2491,9 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         }
 
         await this.flexDaoSetAdapterContract.
-        processPollForInvestmentProposal(
-            this.flexDirectdaoAddress,
-            proposalId1
-        );
+            processPollForInvestmentProposal(
+                this.flexDirectdaoAddress,
+                proposalId1
+            );
     });
 });

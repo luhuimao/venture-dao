@@ -286,7 +286,6 @@ describe("governor management...", () => {
         const flexDaoParticipantMembershipEnalbe = true;
 
         const flexDaoParticipantsMemberships = [
-            "participantmembershipInfo01", // string name;
             0, // uint8 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;

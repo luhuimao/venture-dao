@@ -42,9 +42,10 @@ const deploySummonContract = async () => {
 
 async function main() {
     // await getVintageManagementFee();
-    await getAdapterAddress();
+    // await getAdapterAddress();
+    // await getDaoConfig();
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
-    // await deploy();
+    await deploy();
     // await summonVintageDao();
     // await submitVintageDaosetProposal();
     // await getVintageDaosetProposal();
@@ -1355,10 +1356,10 @@ const deploy = async () => {
     // await flexFundingAdapterContract.deployed();
     // console.log("flexFundingAdapterContract deployed address:", flexFundingAdapterContract.address);
 
-    // const FlexInvestmentPoolAdapterContract = await hre.ethers.getContractFactory("FlexInvestmentPoolAdapterContract");
-    // const flexInvestmentPoolAdapterContract = await FlexInvestmentPoolAdapterContract.deploy();
-    // await flexInvestmentPoolAdapterContract.deployed();
-    // console.log("flexInvestmentPoolAdapterContract deployed address:", flexInvestmentPoolAdapterContract.address);
+    const FlexInvestmentPoolAdapterContract = await hre.ethers.getContractFactory("FlexInvestmentPoolAdapterContract");
+    const flexInvestmentPoolAdapterContract = await FlexInvestmentPoolAdapterContract.deploy();
+    await flexInvestmentPoolAdapterContract.deployed();
+    console.log("flexInvestmentPoolAdapterContract deployed address:", flexInvestmentPoolAdapterContract.address);
 
     // const FlexPollingVotingContract = await hre.ethers.getContractFactory("FlexPollingVotingContract");
     // const flexPollingVotingContract = await FlexPollingVotingContract.deploy();
@@ -1453,10 +1454,10 @@ const deploy = async () => {
     // await bentoBoxV1.deployed();
     // console.log("bentoBoxV1 deployed address:", bentoBoxV1.address);
 
-    const VintageFundRaiseAdapterContract = await hre.ethers.getContractFactory("VintageFundRaiseAdapterContract");
-    const vintageFundRaiseAdapterContract = await VintageFundRaiseAdapterContract.deploy();
-    await vintageFundRaiseAdapterContract.deployed();
-    console.log("vintageFundRaiseAdapterContract deployed address:", vintageFundRaiseAdapterContract.address);
+    // const VintageFundRaiseAdapterContract = await hre.ethers.getContractFactory("VintageFundRaiseAdapterContract");
+    // const vintageFundRaiseAdapterContract = await VintageFundRaiseAdapterContract.deploy();
+    // await vintageFundRaiseAdapterContract.deployed();
+    // console.log("vintageFundRaiseAdapterContract deployed address:", vintageFundRaiseAdapterContract.address);
 
     // const VintageVotingContract = await hre.ethers.getContractFactory("VintageVotingContract");
     // const vintageVotingContract = await VintageVotingContract.deploy();
@@ -2190,10 +2191,20 @@ const getVintageManagementFee = async () => {
 
 const getAdapterAddress = async () => {
     const daoContrct = (await hre.ethers.
-        getContractFactory("DaoRegistry")).attach("0x807d3f5f0cbae3daa5282348f9b3591ab74be2a2");
+        getContractFactory("DaoRegistry")).attach("0x5eF6891115DeF555f4245326621ecfAC53fBcc7f");
 
-    const adapterAddr = await daoContrct.getAdapterAddress("0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a");
+        
+    const adapterAddr = await daoContrct.getAdapterAddress("0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda");
     console.log(adapterAddr);
+}
+
+const getDaoConfig = async () => {
+    const daoContrct = (await hre.ethers.
+        getContractFactory("DaoRegistry")).attach("0x5eF6891115DeF555f4245326621ecfAC53fBcc7f");
+
+    const config = await daoContrct.getConfiguration("0x2073e6ba5c75026b006fdd165596d94b89cada2e00d8e44a99d422de8ea467e0");
+
+    console.log(config);
 }
 
 main()
