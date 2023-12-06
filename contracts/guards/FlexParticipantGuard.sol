@@ -33,50 +33,50 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 abstract contract FlexInvestorGuard {
-    modifier onlyInvestor(DaoRegistry dao, string calldata name) {
+    modifier onlyInvestor(DaoRegistry dao) {
         if (
-            dao.getConfiguration(
-                DaoHelper.FLEX_INVESTOR_MEMBERSHIP_ENABLE
-            ) == 1
+            dao.getConfiguration(DaoHelper.FLEX_INVESTOR_MEMBERSHIP_ENABLE) == 1
         ) {
             FlexInvestmentPoolAdapterContract flexFundingPoolAdapt = FlexInvestmentPoolAdapterContract(
                     dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_POOL_ADAPT)
                 );
-            (
-                bool created,
-                uint8 varifyType,
-                uint256 minHolding,
-                address tokenAddress,
-                uint256 tokenId
-            ) = flexFundingPoolAdapt.getInvestorMembershipInfo(dao, name);
+
+            uint256 varifyType = dao.getConfiguration(
+                DaoHelper.FLEX_INVESTOR_MEMBERSHIP_TYPE
+            );
+            uint256 minHolding = dao.getConfiguration(
+                DaoHelper.FLEX_INVESTOR_MEMBERSHIP_MIN_HOLDING
+            );
+            uint256 tokenId = dao.getConfiguration(
+                DaoHelper.FLEX_INVESTOR_MEMBERSHIP_TOKENID
+            );
+            address tokenAddress = dao.getAddressConfiguration(
+                DaoHelper.FLEX_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS
+            );
             //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
-            if (varifyType == 0 && created == true) {
+            if (varifyType == 0) {
                 require(
                     IERC20(tokenAddress).balanceOf(msg.sender) >= minHolding,
-                    "dont meet min erc20 token holding requirment"
+                    "<investor membership erc20 token mini holding"
                 );
             }
-            if (varifyType == 1 && created == true) {
+            if (varifyType == 1) {
                 require(
                     IERC721(tokenAddress).balanceOf(msg.sender) >= minHolding,
-                    "dont meet min erc721 token holding requirment"
+                    "<investor membership erc721 token mini holding"
                 );
             }
-            if (varifyType == 2 && created == true) {
+            if (varifyType == 2) {
                 require(
                     IERC1155(tokenAddress).balanceOf(msg.sender, tokenId) >=
                         minHolding,
-                    "dont meet min erc1155 token holding requirment"
+                    "<investor membership erc1155 token mini holding"
                 );
             }
-            if (varifyType == 3 && created == true) {
+            if (varifyType == 3) {
                 require(
-                    flexFundingPoolAdapt.isInvestorWhiteList(
-                        dao,
-                        name,
-                        msg.sender
-                    ),
-                    "not in investor whitelist"
+                    flexFundingPoolAdapt.isInvestorWhiteList(dao, msg.sender),
+                    "!investor membership whitelist"
                 );
             }
         }

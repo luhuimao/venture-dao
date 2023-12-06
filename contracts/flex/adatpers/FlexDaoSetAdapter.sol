@@ -196,7 +196,6 @@ contract FlexDaoSetAdapterContract is GovernorGuard, Reimbursable, MemberGuard {
             proposalId
         ] = FlexDaosetLibrary.InvestorMembershipProposalDetails(
             params.enable,
-            params.name,
             params.varifyType,
             params.minAmount,
             params.tokenAddress,
@@ -635,7 +634,6 @@ contract FlexDaoSetAdapterContract is GovernorGuard, Reimbursable, MemberGuard {
             dao,
             proposal.enable,
             proposal.varifyType,
-            proposal.name,
             proposal.minAmount,
             proposal.tokenAddress,
             proposal.tokenId,
