@@ -72,8 +72,8 @@ contract ColletiveGovernorManagementContract is
         ColletiveDaoSetProposalContract daoset = ColletiveDaoSetProposalContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
             );
-        // return daoset.isProposalAllDone(dao);
-        return true;
+        return daoset.isProposalAllDone(dao);
+        // return true;
     }
 
     function submitGovernorInProposal(
@@ -83,10 +83,7 @@ contract ColletiveGovernorManagementContract is
         uint256 depositAmount
     ) external reimbursable(dao) onlyMember(dao) returns (bytes32) {
         require(!dao.isMember(applicant), "Is Governor already");
-        // require(
-        //     DaoHelper.isNotReservedAddress(applicant),
-        //     "applicant is reserved address"
-        // );
+
         require(daosetProposalCheck(dao), "UnDone Daoset Proposal");
         dao.increaseGovenorInId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
@@ -173,15 +170,19 @@ contract ColletiveGovernorManagementContract is
         bytes32 proposalId,
         bytes memory data
     ) internal {
-        IFlexVoting flexVotingContract = IFlexVoting(
-            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
+        ICollectiveVoting collectiveVotingContract = ICollectiveVoting(
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPT)
         );
 
         dao.sponsorProposal(
             proposalId,
-            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPT)
         );
-        flexVotingContract.startNewVotingForProposal(dao, proposalId, data);
+        collectiveVotingContract.startNewVotingForProposal(
+            dao,
+            proposalId,
+            data
+        );
     }
 
     /**
@@ -266,7 +267,7 @@ contract ColletiveGovernorManagementContract is
             proposalId
         );
         uint128 allWeight = GovernanceHelper
-            .getAllFlexGovernorVotingWeightByProposalId(dao, proposalId);
+            .getAllCollectiveGovernorVotingWeight(dao);
 
         dao.processProposal(proposalId);
 

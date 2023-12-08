@@ -50,7 +50,7 @@ abstract contract MemberGuard {
     }
 
     function _onlyMember(DaoRegistry dao, address _addr) internal view {
-        require(isActiveMember(dao, _addr), "onlySteward");
+        require(isActiveMember(dao, _addr), "onlyGovernor");
     }
 
     function isActiveMember(

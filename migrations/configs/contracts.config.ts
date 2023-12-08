@@ -1338,6 +1338,43 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
+  {
+    id: adaptersIdsMap.COLLECTIVE_VOTING_ADAPTER,
+    name: "CollectiveVotingContract",
+    alias: "collectiveVotingContract",
+    path: "../../contracts/adapters/CollectiveVotingContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [daoAccessFlagsMap.SUBMIT_PROPOSAL, daoAccessFlagsMap.SET_VOTE_TYPE],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.COLLECTIVE_FUNDING_POOL_ADAPTER,
+    name: "ColletiveFundingPoolContract",
+    alias: "colletiveFundingPoolContract",
+    path: "../../contracts/adapters/ColletiveFundingPoolContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SET_CONFIGURATION,
+      ],
+      extensions: {
+        [extensionsIdsMap.COLLECTIVE_FUNDING_POOL_EXT]: [
+          collectiveFundingPoolExtensionAclFlagsMap.WITHDRAW,
+          collectiveFundingPoolExtensionAclFlagsMap.DISTRIBUTE_FUNDS,
+          collectiveFundingPoolExtensionAclFlagsMap.SUB_FROM_BALANCE,
+          collectiveFundingPoolExtensionAclFlagsMap.ADD_TO_BALANCE,
+          collectiveFundingPoolExtensionAclFlagsMap.UPDATE_TOKEN,
+        ],
+      },
+    },
+  },
   /*****************************************************collective end*******************************************************/
 
   {

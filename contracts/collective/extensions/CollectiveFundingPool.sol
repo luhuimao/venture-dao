@@ -50,17 +50,20 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
     enum AclFlag {
         ADD_TO_BALANCE,
         SUB_FROM_BALANCE,
-        INTERNAL_TRANSFER,
         WITHDRAW,
         REGISTER_NEW_TOKEN,
-        REGISTER_NEW_INTERNAL_TOKEN,
-        UPDATE_TOKEN
+        DISTRIBUTE_FUNDS,
+        SET_SNAP_FUNDS,
+        SET_PROJECT_SNAP_FUNDS,
+        SET_PROJECT_SNAP_RICE,
+        UNLOCK_PROJECT_TOKEN,
+        GET_REWARDS,
+        NOTIFY_REWARD_AMOUNT,
+        RECOVER_ERC20,
+        SET_REWARDS_DURATION,
+        SET_RICE_ADDRESS,
+        UPDATE_GP_BALANCE
     }
-
-    // modifier noProposal() {
-    //     require(dao.lockedAt() < block.number, "proposal lock");
-    //     _;
-    // }
 
     /// @dev - Events for Bank
     event NewBalance(address member, uint160 amount);
@@ -79,34 +82,71 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         uint160 amount
     );
 
+    event RewardAdded(uint256 reward);
+    event Staked(address indexed user, uint256 amount);
+    event Withdrawn(address indexed user, uint256 amount);
+    event RewardPaid(address indexed user, uint256 reward);
+    event RewardsDurationUpdated(uint256 newDuration);
+    event Recovered(address token, uint256 amount);
+    event NewBalance(address member, address tokenAddr, uint128 amount);
+
+    event Withdraw(address account, address tokenAddr, uint128 amount);
+
+    event DistributeFund(
+        address distributeTo,
+        address tokenAddr,
+        uint256 amount
+    );
+
+    event ManagementFeeCharged(
+        uint256 chargedTime,
+        address lpAddress,
+        uint256 amount
+    );
+
+    event RedeptionFeeCharged(
+        uint256 chargedTime,
+        address lpAddress,
+        uint256 amount
+    );
+
     /*
      * STRUCTURES
      */
 
+    struct FundRaise {
+        DaoHelper.FundRaiseState state;
+    }
+
     struct Checkpoint {
         // A checkpoint for marking number of votes from a given block
         uint96 fromBlock;
-        uint160 amount;
+        uint128 amount;
     }
 
-    // struct InvestorMembership {
-    //     string name;
-    //     uint8 varifyType;
-    //     uint256 minHolding;
-    //     address tokenAddress;
-    //     uint256 tokenId;
-    //     address[] whiteList;
-    // }
     /*
      * PUBLIC VARIABLES
      */
-    // bytes32[] public investmentProposals;
-    // tokenAddress => availability
-    // memberAddress => checkpointNum => Checkpoint
-    mapping(address => mapping(uint32 => Checkpoint)) public checkpoints;
-    //memberAddress => numCheckpoints
-    mapping(address => uint32) public numCheckpoints;
-    // mapping(string => InvestorMembership) public investorMemberships;
+
+    mapping(address => bool) public availableTokens;
+    // tokenAddress => memberAddress => checkpointNum => Checkpoint
+    mapping(address => mapping(address => mapping(uint32 => Checkpoint)))
+        public checkpoints;
+    // tokenAddress => memberAddress => numCheckpoints
+    mapping(address => mapping(address => uint32)) public numCheckpoints;
+
+    // tokenAddress => treasuryAddress => checkpointNum => Checkpoint
+    mapping(address => mapping(address => mapping(uint32 => Checkpoint)))
+        public feeCheckpoints;
+
+    mapping(address => uint256) public userRewardPerTokenPaid;
+    mapping(address => uint256) public rewards;
+
+    mapping(address => FundRaise) public fundRaises;
+    // lpAddress => chargedManagementFee
+    mapping(address => uint256) public lpChargedManagementFees;
+    mapping(address => uint256) public lastLPChargedManagentFeeTime;
+
     /*
      * PRIVATE VARIABLES
      */
@@ -142,20 +182,6 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         require(_dao.isMember(creator), "flex funding pool::not member");
         dao = _dao;
         initialized = true;
-
-        // availableInternalTokens[DaoHelper.UNITS] = true;
-        // internalTokens.push(DaoHelper.UNITS);
-
-        // availableInternalTokens[DaoHelper.MEMBER_COUNT] = true;
-        // internalTokens.push(DaoHelper.MEMBER_COUNT);
-        // uint256 nbMembers = _dao.getNbMembers();
-        // for (uint256 i = 0; i < nbMembers; i++) {
-        //     //slither-disable-next-line calls-loop
-        //     addToBalance(_dao.getMemberAddress(i), DaoHelper.MEMBER_COUNT, 1);
-        // }
-
-        // _createNewAmountCheckpoint(creator, DaoHelper.UNITS, 1);
-        // _createNewAmountCheckpoint(DaoHelper.TOTAL, DaoHelper.UNITS, 1);
     }
 
     function withdraw(
@@ -167,7 +193,7 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
             balanceOf(member) >= amount,
             "flex funding pool::withdraw::not enough funds"
         );
-        subtractFromBalance(member, amount);
+        subtractFromBalance(member, tokenAddr, amount);
 
         IERC20(tokenAddr).safeTransfer(member, amount);
 
@@ -185,7 +211,7 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
             balanceOf(memberFrom) >= amount,
             "flex funding pool::withdraw::not enough funds"
         );
-        subtractFromBalance(memberFrom, amount);
+        subtractFromBalance(memberFrom, tokenAddr, amount);
         if (tokenAddr == DaoHelper.ETH_TOKEN) {
             memberTo.sendValue(amount);
         } else {
@@ -213,6 +239,25 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         emit WithdrawToFromAll(toAddress, tokenAddr, uint160(amount));
     }
 
+    function distributeFunds(
+        address recipientAddr,
+        address tokenAddr,
+        uint256 amount
+    ) external hasExtensionAccess(AclFlag.DISTRIBUTE_FUNDS) {
+        require(amount > 0, "FundingPool::distributeFunds::amount must > 0");
+        uint256 exactAmount = amount;
+        // require(
+        //     IERC20(tokenAddr).balanceOf(address(this)) >= amount,
+        //     "FundingPool::distributeFunds::insufficient fund"
+        // );
+        if (amount > IERC20(tokenAddr).balanceOf(address(this))) {
+            exactAmount = IERC20(tokenAddr).balanceOf(address(this));
+        }
+        IERC20(tokenAddr).safeTransfer(recipientAddr, exactAmount);
+
+        emit DistributeFund(recipientAddr, tokenAddr, exactAmount);
+    }
+
     /*
      * BANK
      */
@@ -227,20 +272,36 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
 
     /**
      * @notice Adds to a member's balance of a given token
-     * @param member The member whose balance will be updated
+     * @param depositer The member whose balance will be updated
      * @param amount The token to update
      */
     function addToBalance(
-        address member,
+        address depositer,
         uint256 amount
-    ) public payable hasExtensionAccess(AclFlag.ADD_TO_BALANCE) {
-        uint256 newAmount = balanceOf(member) + amount;
-        uint256 newTotalAmount = balanceOf(DaoHelper.TOTAL) + amount;
+    ) public hasExtensionAccess(AclFlag.ADD_TO_BALANCE) {
+        address fundTokenAddr = getFundRaisingTokenAddress();
+        _newInvestor(depositer);
+        IERC20 erc20 = IERC20(fundTokenAddr);
+        uint256 oldBal = balanceOf(depositer);
+        uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL));
+        uint256 validTotalFunds = balanceOf(
+            address(DaoHelper.DAOSQUARE_TREASURY)
+        );
+        if (dao.isMember(depositer)) {
+            _createNewAmountCheckpoint(
+                address(DaoHelper.GP_POOL),
+                fundTokenAddr,
+                totalGPFunds + amount
+            );
+        }
+        _createNewAmountCheckpoint(depositer, fundTokenAddr, oldBal + amount);
 
-        _createNewAmountCheckpoint(member, newAmount);
-        _createNewAmountCheckpoint(DaoHelper.TOTAL, newTotalAmount);
-
-        _newInvestor(member);
+        _createNewAmountCheckpoint(
+            address(DaoHelper.DAOSQUARE_TREASURY),
+            fundTokenAddr,
+            validTotalFunds + amount
+        );
+        erc20.transferFrom(msg.sender, address(this), amount);
     }
 
     /**
@@ -250,82 +311,72 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
      */
     function subtractFromBalance(
         address member,
+        address token,
         uint256 amount
     ) public hasExtensionAccess(AclFlag.SUB_FROM_BALANCE) {
+        require(
+            balanceOf(member) >= amount &&
+                balanceOf(DaoHelper.DAOSQUARE_TREASURY) >= amount,
+            "FundingPool::subtractFromBalance::Insufficient Fund"
+        );
         uint256 newAmount = balanceOf(member) - amount;
-        uint256 newTotalAmount = balanceOf(DaoHelper.TOTAL) - amount;
-
-        _createNewAmountCheckpoint(member, newAmount);
-        if (balanceOf(member) <= 0) _removeInvestor(member);
-        _createNewAmountCheckpoint(DaoHelper.TOTAL, newTotalAmount);
+        uint256 newTotalFund = balanceOf(DaoHelper.DAOSQUARE_TREASURY) - amount;
+        _createNewAmountCheckpoint(
+            DaoHelper.DAOSQUARE_TREASURY,
+            token,
+            newTotalFund
+        );
+        if (dao.isMember(member)) {
+            uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL));
+            uint256 newGPFunds;
+            unchecked {
+                newGPFunds = totalGPFunds - amount;
+            }
+            _createNewAmountCheckpoint(
+                address(DaoHelper.GP_POOL),
+                token,
+                newGPFunds
+            );
+        }
+        if (newAmount <= 0) {
+            _removeInvestor(member);
+        }
+        _createNewAmountCheckpoint(member, token, newAmount);
     }
 
-    function substractFromAll(
+    function subtractAllFromBalance(
+        address token,
         uint256 amount
-    ) external hasExtensionAccess(AclFlag.SUB_FROM_BALANCE) {
+    ) public hasExtensionAccess(AclFlag.SUB_FROM_BALANCE) {
+        uint256 treasuryBalance = balanceOf(
+            address(DaoHelper.DAOSQUARE_TREASURY)
+        );
         address[] memory tem = investors.values();
-        uint256 poolBalance = balanceOf(DaoHelper.TOTAL);
         for (uint8 i = 0; i < tem.length; i++) {
             address investorAddr = tem[i];
             if (balanceOf(investorAddr) > 0) {
                 subtractFromBalance(
                     investorAddr,
-                    (amount * balanceOf(investorAddr)) / poolBalance
+                    token,
+                    (amount * balanceOf(investorAddr)) / treasuryBalance
                 );
             }
         }
     }
 
-    // function createInvestorMembership(
-    //     string calldata name,
-    //     uint8 varifyType,
-    //     uint256 miniHolding,
-    //     address token,
-    //     uint256 tokenId,
-    //     address[] calldata whiteList
-    // ) external onlyMember(dao) {
-    //     if (
-    //         keccak256(bytes(name)) ==
-    //         keccak256(bytes(investorMemberships[name].name))
-    //     ) revert("name already token");
-
-    //     investorMemberships[name] = InvestorMembership(
-    //         name,
-    //         varifyType,
-    //         miniHolding,
-    //         token,
-    //         tokenId,
-    //         whiteList
-    //     );
-    // }
-
-    /**
-     * @notice Make an internal token transfer
-     * @param from The member who is sending tokens
-     * @param to The member who is receiving tokens
-     * @param amount The new amount to transfer
-     */
-    function internalTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) external hasExtensionAccess(AclFlag.INTERNAL_TRANSFER) {
-        uint256 newAmount = balanceOf(from) - amount;
-        uint256 newAmount2 = balanceOf(to) + amount;
-
-        _createNewAmountCheckpoint(from, newAmount);
-        _createNewAmountCheckpoint(to, newAmount2);
-    }
-
     /**
      * @notice Returns an member's balance of a given token
-     * @param member The address to look up
+     * @param investorAddr The address to look up
      * @return The amount in account's tokenAddr balance
      */
-    function balanceOf(address member) public view returns (uint160) {
-        uint32 nCheckpoints = numCheckpoints[member];
+    function balanceOf(address investorAddr) public view returns (uint256) {
+        address fundTokenaddr = getFundRaisingTokenAddress();
+        uint32 nCheckpoints = numCheckpoints[fundTokenaddr][investorAddr];
         return
-            nCheckpoints > 0 ? checkpoints[member][nCheckpoints - 1].amount : 0;
+            nCheckpoints > 0
+                ? checkpoints[fundTokenaddr][investorAddr][nCheckpoints - 1]
+                    .amount
+                : 0;
     }
 
     /**
@@ -337,25 +388,29 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
      */
     function getPriorAmount(
         address account,
+        address tokenAddr,
         uint256 blockNumber
-    ) external view returns (uint256) {
+    ) external view returns (uint128) {
         require(
             blockNumber < block.number,
             "Uni::getPriorAmount: not yet determined"
         );
 
-        uint32 nCheckpoints = numCheckpoints[account];
+        uint32 nCheckpoints = numCheckpoints[tokenAddr][account];
         if (nCheckpoints == 0) {
             return 0;
         }
 
         // First check most recent balance
-        if (checkpoints[account][nCheckpoints - 1].fromBlock <= blockNumber) {
-            return checkpoints[account][nCheckpoints - 1].amount;
+        if (
+            checkpoints[tokenAddr][account][nCheckpoints - 1].fromBlock <=
+            blockNumber
+        ) {
+            return checkpoints[tokenAddr][account][nCheckpoints - 1].amount;
         }
 
         // Next check implicit zero balance
-        if (checkpoints[account][0].fromBlock > blockNumber) {
+        if (checkpoints[tokenAddr][account][0].fromBlock > blockNumber) {
             return 0;
         }
 
@@ -363,7 +418,7 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         uint32 upper = nCheckpoints - 1;
         while (upper > lower) {
             uint32 center = upper - (upper - lower) / 2; // ceil, avoiding overflow
-            Checkpoint memory cp = checkpoints[account][center];
+            Checkpoint memory cp = checkpoints[tokenAddr][account][center];
             if (cp.fromBlock == blockNumber) {
                 return cp.amount;
             } else if (cp.fromBlock < blockNumber) {
@@ -372,7 +427,7 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
                 upper = center - 1;
             }
         }
-        return checkpoints[account][lower].amount;
+        return checkpoints[tokenAddr][account][lower].amount;
     }
 
     function supportsInterface(
@@ -384,7 +439,7 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
             this.addToBalance.selector == interfaceId ||
             this.getPriorAmount.selector == interfaceId ||
             this.balanceOf.selector == interfaceId ||
-            this.internalTransfer.selector == interfaceId ||
+            // this.internalTransfer.selector == interfaceId ||
             // this.nbInternalTokens.selector == interfaceId ||
             // this.getInternalToken.selector == interfaceId ||
             // this.getTokens.selector == interfaceId ||
@@ -408,34 +463,40 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
      */
     function _createNewAmountCheckpoint(
         address member,
+        address token,
         uint256 amount
     ) internal {
-        require(
-            amount < type(uint160).max,
-            "token amount exceeds the maximum limit"
-        );
+        // bool isValidToken = false;
+        // if (token != address(0x0)) {
+        //     require(
+        //         amount < type(uint128).max,
+        //         "token amount exceeds the maximum limit for external tokens"
+        //     );
+        //     isValidToken = true;
+        // }
+        uint128 newAmount = uint128(amount);
+        // require(isValidToken, "token not registered");
 
-        uint160 newAmount = uint160(amount);
-
-        uint32 nCheckpoints = numCheckpoints[member];
+        uint32 nCheckpoints = numCheckpoints[token][member];
         if (
             // The only condition that we should allow the amount update
             // is when the block.number exactly matches the fromBlock value.
             // Anything different from that should generate a new checkpoint.
             //slither-disable-next-line incorrect-equality
             nCheckpoints > 0 &&
-            checkpoints[member][nCheckpoints - 1].fromBlock == block.number
+            checkpoints[token][member][nCheckpoints - 1].fromBlock ==
+            block.number
         ) {
-            checkpoints[member][nCheckpoints - 1].amount = newAmount;
+            checkpoints[token][member][nCheckpoints - 1].amount = newAmount;
         } else {
-            checkpoints[member][nCheckpoints] = Checkpoint(
+            checkpoints[token][member][nCheckpoints] = Checkpoint(
                 uint96(block.number),
                 newAmount
             );
-            numCheckpoints[member] = nCheckpoints + 1;
+            numCheckpoints[token][member] = nCheckpoints + 1;
         }
         //slither-disable-next-line reentrancy-events
-        emit NewBalance(member, newAmount);
+        emit NewBalance(member, token, newAmount);
     }
 
     function isInvestor(address investorAddr) external view returns (bool) {
@@ -460,9 +521,10 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         investors.remove(investorAddr);
     }
 
-    // function getInvestorsByProposalId(
-    //     bytes32 proposalId
-    // ) external view returns (address[] memory) {
-    //     return investors[proposalId].values();
-    // }
+    function getFundRaisingTokenAddress() public view returns (address) {
+        return
+            dao.getAddressConfiguration(
+                DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+            );
+    }
 }

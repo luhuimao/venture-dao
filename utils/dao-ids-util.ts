@@ -17,6 +17,8 @@ export const adaptersIdsMap: Record<string, string> = {
   COLLECTIVE_GOVERNOR_MANAGEMENT: "collective-governor-management-adapter",
   COLLECTIVE_DAO_SET_ADAPTER: "collective-daoset-adapter",
   COLLECTIVE_FUNDING_ADAPTER: "collective-fundning-adapter",
+  COLLECTIVE_VOTING_ADAPTER: "collective-voting-adapter",
+  COLLECTIVE_FUNDING_POOL_ADAPTER: "collective-funding-pool-adapter",
   /*******************collective end**********************/
 
   /*******************vintage**********************/

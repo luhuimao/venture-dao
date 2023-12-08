@@ -142,7 +142,7 @@ contract CollectiveVotingContract is
         address memberAddr = dao.getAddressIfDelegated(msg.sender);
 
         require(vote.votes[memberAddr] == 0, "member has already voted");
-        uint128 votingWeight = GovernanceHelper.getFlexVotingWeight(
+        uint128 votingWeight = GovernanceHelper.getCollectiveVotingWeight(
             dao,
             msg.sender
         );
@@ -273,16 +273,7 @@ contract CollectiveVotingContract is
     function getAllGovernorWeight(
         DaoRegistry dao
     ) public view returns (uint128) {
-        uint128 allWeight = GovernanceHelper.getAllFlexGovernorVotingWeight(dao);
-        return allWeight;
-    }
-
-    function getAllGovernorWeightByProposalId(
-        DaoRegistry dao,
-        bytes32 proposalId
-    ) public view returns (uint128) {
-        uint128 allWeight = GovernanceHelper
-            .getAllFlexGovernorVotingWeightByProposalId(dao, proposalId);
+        uint128 allWeight = GovernanceHelper.getAllCollectiveGovernorVotingWeight(dao);
         return allWeight;
     }
 
@@ -290,6 +281,6 @@ contract CollectiveVotingContract is
         DaoRegistry dao,
         address account
     ) public view returns (uint128) {
-        return GovernanceHelper.getFlexVotingWeight(dao, account);
+        return GovernanceHelper.getCollectiveVotingWeight(dao, account);
     }
 }

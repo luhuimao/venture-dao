@@ -48,7 +48,7 @@ contract SummonCollectiveDao {
         string name;
         address creator;
         uint256 redemptionFee;
-        uint256 collectiveDaoManagementfee;
+        // uint256 collectiveDaoManagementfee;
         address managementFeeAddress;
         uint256 proposerInvestTokenReward;
         uint256 proposerPaybackTokenReward;
@@ -218,7 +218,7 @@ contract SummonCollectiveDao {
     function summonCollectiveDao6(
         address newDaoAddr,
         uint256 redemptFee,
-        uint256 collectiveDaoManagementfee,
+        // uint256 collectiveDaoManagementfee,
         address managementFeeAddress,
         uint256 proposerInvestTokenReward,
         uint256 proposerPaybackTokenReward
@@ -226,10 +226,10 @@ contract SummonCollectiveDao {
         DaoRegistry newDao = DaoRegistry(newDaoAddr);
         require(address(this) == msg.sender);
 
-        newDao.setConfiguration(
-            DaoHelper.COLLECTIVE_MANAGEMENT_FEE_AMOUNT,
-            collectiveDaoManagementfee
-        );
+        // newDao.setConfiguration(
+        //     DaoHelper.COLLECTIVE_MANAGEMENT_FEE_AMOUNT,
+        //     collectiveDaoManagementfee
+        // );
 
         newDao.setConfiguration(
             DaoHelper.COLLECTIVE_REDEMPT_FEE_AMOUNT,
@@ -268,7 +268,6 @@ contract SummonCollectiveDao {
     }
 
     //config governor membership
-
     function summonCollectiveDao8(
         address newDaoAddr,
         uint256 vType,
@@ -328,6 +327,33 @@ contract SummonCollectiveDao {
                 }
             }
         }
+
+        return true;
+    }
+
+    //registerGenesisGovernors
+    function summonCollectiveDao9(
+        address newDaoAddr,
+        address[] calldata genesisGovernors
+    ) external returns (bool) {
+        DaoRegistry newDao = DaoRegistry(newDaoAddr);
+        require(address(this) == msg.sender);
+        registerGenesisGovernors(newDao, genesisGovernors);
+        return true;
+    }
+
+    function summonCollectiveDao10(address newDaoAddr) external returns (bool) {
+        DaoRegistry dao = DaoRegistry(newDaoAddr);
+
+        //remove summondaoContract && DaoFacConctract from dao member list
+        dao.removeMember(dao.daoFactory());
+        dao.finalizeDao();
+        ColletiveGovernorManagementContract governorContract = ColletiveGovernorManagementContract(
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPT
+                )
+            );
+        governorContract.quit(dao);
         return true;
     }
 
@@ -336,7 +362,7 @@ contract SummonCollectiveDao {
         bytes callData;
     }
 
-    function multiCall(Call[7] memory calls) public {
+    function multiCall(Call[9] memory calls) public {
         // console.log("caller:", msg.sender);
         for (uint256 i = 0; i < calls.length; i++) {
             (bool success, ) = calls[i].target.call(calls[i].callData);
@@ -362,10 +388,12 @@ contract SummonCollectiveDao {
         bytes summonCollectiveDao6Payload;
         bytes summonCollectiveDao7Payload;
         bytes summonCollectiveDao8Payload;
+        bytes summonCollectiveDao9Payload;
+        bytes summonCollectiveDao10Payload;
         bool success;
         bytes ret;
         address newDaoAddr;
-        Call[7] calls;
+        Call[9] calls;
     }
 
     function summonFlexDao(
@@ -437,10 +465,10 @@ contract SummonCollectiveDao {
         );
 
         vars.summonCollectiveDao6Payload = abi.encodeWithSignature(
-            "summonCollectiveDao6(address,uint256,uint256,address,uint256,uint256)",
+            "summonCollectiveDao6(address,uint256,address,uint256,uint256)",
             vars.newDaoAddr,
             params.collectiveDaoInfo.redemptionFee,
-            params.collectiveDaoInfo.collectiveDaoManagementfee,
+            // params.collectiveDaoInfo.collectiveDaoManagementfee,
             params.collectiveDaoInfo.managementFeeAddress,
             params.collectiveDaoInfo.proposerInvestTokenReward,
             params.collectiveDaoInfo.proposerPaybackTokenReward
@@ -464,6 +492,15 @@ contract SummonCollectiveDao {
             params.governorMembership.whiteList
         );
 
+        vars.summonCollectiveDao9Payload = abi.encodeWithSignature(
+            "summonCollectiveDao9(address,address[])",
+            vars.newDaoAddr,
+            params.collectiveDaoInfo.collectiveDaoGenesisGovernor
+        );
+        vars.summonCollectiveDao10Payload = abi.encodeWithSignature(
+            "summonCollectiveDao10(address)",
+            vars.newDaoAddr
+        );
         vars.calls[0] = Call(address(this), vars.summonCollectiveDao2Payload);
         vars.calls[1] = Call(address(this), vars.summonCollectiveDao3Payload);
         vars.calls[2] = Call(address(this), vars.summonCollectiveDao4Payload);
@@ -471,6 +508,8 @@ contract SummonCollectiveDao {
         vars.calls[4] = Call(address(this), vars.summonCollectiveDao6Payload);
         vars.calls[5] = Call(address(this), vars.summonCollectiveDao7Payload);
         vars.calls[6] = Call(address(this), vars.summonCollectiveDao8Payload);
+        vars.calls[7] = Call(address(this), vars.summonCollectiveDao9Payload);
+        vars.calls[8] = Call(address(this), vars.summonCollectiveDao10Payload);
 
         multiCall(vars.calls);
 
@@ -482,6 +521,17 @@ contract SummonCollectiveDao {
     ) private pure returns (address addr) {
         assembly {
             addr := mload(add(bys, 32))
+        }
+    }
+
+    function registerGenesisGovernors(
+        DaoRegistry dao,
+        address[] calldata genesisGovernors
+    ) internal {
+        if (genesisGovernors.length > 0) {
+            for (uint8 i = 0; i < genesisGovernors.length; i++) {
+                dao.potentialNewMember(genesisGovernors[i]);
+            }
         }
     }
 }

@@ -446,8 +446,8 @@ library DaoHelper {
     bytes32 internal constant COLLECTIVE_DAO_SET_ADAPTER =
         keccak256("collective-daoset-adapter");
 
-    bytes32 internal constant COLLECTIVE_INVESTMENT_POOL_EXT =
-        keccak256("collective-funding-pool-ext");
+    bytes32 internal constant COLLECTIVE_INVESTMENT_POOL_ADAPTER =
+        keccak256("collective-funding-pool-adapter");
 
     bytes32 internal constant COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPT =
         keccak256("collective-governor-management-adapter");
@@ -456,7 +456,6 @@ library DaoHelper {
         keccak256("collective-daoset-helper-adapter");
 
     //---------------------------------collective---------------------------------
-
     bytes32 internal constant FUND_RAISE = keccak256("fund-raise");
     bytes32 internal constant VESTWING = keccak256("vesting");
     bytes32 internal constant BEN_TO_BOX = keccak256("ben-to-box");
@@ -524,6 +523,15 @@ library DaoHelper {
     /* 
     flex extensions **************************************************************************************************
      */
+
+    /*
+    collective extensions **************************************************************************************************
+    */
+    bytes32 internal constant COLLECTIVE_INVESTMENT_POOL_EXT =
+        keccak256("collective-funding-pool-ext");
+    /*
+    collective extensions **************************************************************************************************
+    */
 
     bytes32 internal constant BANK = keccak256("bank");
     bytes32 internal constant RICE_STAKING_EXT = keccak256("rice-staking-ext");
