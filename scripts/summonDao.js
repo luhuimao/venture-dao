@@ -45,7 +45,9 @@ async function main() {
     // await getAdapterAddress();
     // await getDaoConfig();
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
-    await deploy();
+    // await deploy();
+
+    await getFlexdaoInvestorWhitelist();
     // await summonVintageDao();
     // await submitVintageDaosetProposal();
     // await getVintageDaosetProposal();
@@ -2193,7 +2195,7 @@ const getAdapterAddress = async () => {
     const daoContrct = (await hre.ethers.
         getContractFactory("DaoRegistry")).attach("0x5eF6891115DeF555f4245326621ecfAC53fBcc7f");
 
-        
+
     const adapterAddr = await daoContrct.getAdapterAddress("0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda");
     console.log(adapterAddr);
 }
@@ -2205,6 +2207,13 @@ const getDaoConfig = async () => {
     const config = await daoContrct.getConfiguration("0x2073e6ba5c75026b006fdd165596d94b89cada2e00d8e44a99d422de8ea467e0");
 
     console.log(config);
+}
+
+const getFlexdaoInvestorWhitelist = async () => {
+    const flexInvestomentPoolContrct = (await hre.ethers.
+        getContractFactory("FlexInvestmentPoolAdapterContract")).attach("0x2b4897ce0a178bf100bb1510b699850e3c46fdab");
+    const rel = await flexInvestomentPoolContrct.getParticipanWhitelist("0x2b4897ce0a178bf100bb1510b699850e3c46fdab");
+    console.log(rel);
 }
 
 main()
