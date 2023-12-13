@@ -42,7 +42,7 @@ const deploySummonContract = async () => {
 
 async function main() {
     // await getVintageManagementFee();
-    // await getAdapterAddress();
+    await getAdapterAddress();
     // await getDaoConfig();
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
     // await getVintageVestAmount();
@@ -54,7 +54,7 @@ async function main() {
     // await getVintageDaosetProposal();
     // await getVintageNewFundProposalInfo();
     // await getFlexInvestors();
-    await getFlexFundingProposalInfo();
+    // await getFlexFundingProposalInfo();
     // await summonFlexDao();
     // await getFlexPollingVotingWeight();
     // await createFlexFundingProposal("0x540431fa5403edd1716b6443c7b0b7ca6ae2def6");
@@ -2237,21 +2237,21 @@ const getVintageManagementFee = async () => {
 
 const getAdapterAddress = async () => {
     const daoContrct = (await hre.ethers.
-        getContractFactory("DaoRegistry")).attach("0x5eF6891115DeF555f4245326621ecfAC53fBcc7f");
+        getContractFactory("DaoRegistry")).attach("0x8e44a67e4dcc71b5a953505d13baa28107faed12");
 
 
-    const adapterAddr = await daoContrct.getAdapterAddress("0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda");
+    const adapterAddr = await daoContrct.getAdapterAddress("0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c");
     console.log(adapterAddr);
 }
 
-const getDaoConfig = async () => {
-    const daoContrct = (await hre.ethers.
-        getContractFactory("DaoRegistry")).attach("0x5eF6891115DeF555f4245326621ecfAC53fBcc7f");
+// const getDaoConfig = async () => {
+//     const daoContrct = (await hre.ethers.
+//         getContractFactory("DaoRegistry")).attach("0x5eF6891115DeF555f4245326621ecfAC53fBcc7f");
 
-    const config = await daoContrct.getConfiguration("0x2073e6ba5c75026b006fdd165596d94b89cada2e00d8e44a99d422de8ea467e0");
+//     const config = await daoContrct.getConfiguration("0x2073e6ba5c75026b006fdd165596d94b89cada2e00d8e44a99d422de8ea467e0");
 
-    console.log(config);
-}
+//     console.log(config);
+// }
 
 main()
     .then(() => process.exit(0))

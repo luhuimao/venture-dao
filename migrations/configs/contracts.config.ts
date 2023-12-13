@@ -1375,6 +1375,24 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
+  {
+    id: adaptersIdsMap.COLLECTIVE_FUND_RAISE_ADAPTER,
+    name: "ColletiveFundRaiseProposalContract",
+    alias: "colletiveFundRaiseProposalContract",
+    path: "../../contracts/adapters/ColletiveFundRaiseProposalContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.SET_CONFIGURATION,
+        daoAccessFlagsMap.INCREASE_NEW_FUND_ID
+      ],
+      extensions: {
+      },
+    },
+  },
   /*****************************************************collective end*******************************************************/
 
   {

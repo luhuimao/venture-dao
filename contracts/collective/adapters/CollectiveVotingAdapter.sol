@@ -36,7 +36,7 @@ SOFTWARE.
  */
 
 contract CollectiveVotingContract is
-    IFlexVoting,
+    ICollectiveVoting,
     MemberGuard,
     AdapterGuard,
     Reimbursable

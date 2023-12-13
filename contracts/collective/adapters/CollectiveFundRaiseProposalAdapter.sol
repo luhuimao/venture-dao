@@ -62,12 +62,14 @@ contract ColletiveFundRaiseProposalContract is
                 params.fundInfo.maxDeposit
             ),
             PriorityDepositorInfo(
+                params.priorityDepositor.enable,
                 params.priorityDepositor.valifyType,
                 params.priorityDepositor.tokenAddress,
                 params.priorityDepositor.tokenId,
                 params.priorityDepositor.miniHolding,
                 params.priorityDepositor.whitelist
             ),
+            params.fundRaiseType,
             ProposalState.Voting
         );
 
@@ -81,6 +83,8 @@ contract ColletiveFundRaiseProposalContract is
                     params.priorityDepositor.whitelist[i]
                 );
         }
+
+        emit ProposalCreated(address(params.dao), vars.proposalId);
         return true;
     }
 
@@ -90,13 +94,11 @@ contract ColletiveFundRaiseProposalContract is
     ) external reimbursable(dao) {
         ProcessProposalLocalVars memory vars;
 
-        ProposalDetails storage proposalDetails = proposals[address(dao)][
-            proposalId
-        ];
+        ProposalDetails storage proposalDetails = proposals[dao][proposalId];
         dao.processProposal(proposalId);
-        vars.investmentPoolAdapt = ColletiveFundingPoolContract(
-            dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER)
-        );
+        // vars.investmentPoolAdapt = ColletiveFundingPoolContract(
+        //     dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER)
+        // );
         vars.votingContract = CollectiveVotingContract(
             dao.votingAdapter(proposalId)
         );
@@ -112,14 +114,10 @@ contract ColletiveFundRaiseProposalContract is
         if (vars.voteResult == ICollectiveVoting.VotingState.PASS) {
             proposalDetails.state = ProposalState.Executing;
             // set dao configuration
-            // setFundRaiseConfiguration(dao, proposalDetails);
+            setFundRaiseConfiguration(dao, proposalDetails);
 
             //reset fund raise state
-            // vars.investmentPoolAdapt.resetFundRaiseState(dao);
             proposalDetails.state = ProposalState.Done;
-
-            // fundsCounter += 1;
-            // createdFundCounter[address(dao)] += 1;
         } else if (
             vars.voteResult == ICollectiveVoting.VotingState.NOT_PASS ||
             vars.voteResult == ICollectiveVoting.VotingState.TIE
@@ -141,5 +139,126 @@ contract ColletiveFundRaiseProposalContract is
             vars.nbNo,
             uint256(vars.voteResult)
         );
+    }
+
+    function setFundRaiseConfiguration(
+        DaoRegistry dao,
+        ProposalDetails memory proposalInfo
+    ) internal {
+        dao.setConfiguration(
+            DaoHelper.COLLECTIVE_FUNDRAISE_STYLE,
+            proposalInfo.fundRaiseType
+        );
+        setFundAmount(
+            dao,
+            [
+                proposalInfo.fundInfo.miniTarget,
+                proposalInfo.fundInfo.maxCap,
+                proposalInfo.fundInfo.miniDeposit,
+                proposalInfo.fundInfo.maxDeposit
+            ]
+        );
+
+        setFundTimes(
+            dao,
+            [proposalInfo.timeInfo.startTime, proposalInfo.timeInfo.endTime]
+        );
+
+        dao.setAddressConfiguration(
+            DaoHelper.FUND_RAISING_CURRENCY_ADDRESS,
+            proposalInfo.fundInfo.tokenAddress //  proposalInfo.acceptTokenAddr
+        );
+
+        //20 set priority deposit
+        if (proposalInfo.priorityDepositor.enable) {
+            setPriorityDeposit(
+                dao,
+                proposalInfo.priorityDepositor.valifyType,
+                proposalInfo.priorityDepositor.tokenAddress,
+                proposalInfo.priorityDepositor.tokenId,
+                proposalInfo.priorityDepositor.miniHolding
+            );
+        }
+    }
+
+    function setFundAmount(
+        DaoRegistry dao,
+        uint256[4] memory uint256Args
+    ) internal {
+        //1 fundRaiseTarget
+        dao.setConfiguration(
+            DaoHelper.FUND_RAISING_TARGET,
+            uint256Args[0] // proposalInfo.fundRaiseTarget
+        );
+        //2 fundRaiseMaxAmount
+        dao.setConfiguration(
+            DaoHelper.FUND_RAISING_MAX,
+            uint256Args[1] //     proposalInfo.fundRaiseMaxAmount
+        );
+
+        //3 lpMinDepositAmount
+        dao.setConfiguration(
+            DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP,
+            uint256Args[2] // proposalInfo.lpMinDepositAmount
+        );
+        //4 lpMaxDepositAmount
+        dao.setConfiguration(
+            DaoHelper.FUND_RAISING_MAX_INVESTMENT_AMOUNT_OF_LP,
+            uint256Args[3] //  proposalInfo.lpMaxDepositAmount
+        );
+    }
+
+    function setFundTimes(
+        DaoRegistry dao,
+        uint256[2] memory uint256Args
+    ) internal {
+        //1 fundRaiseStartTime
+        dao.setConfiguration(
+            DaoHelper.FUND_RAISING_WINDOW_BEGIN,
+            uint256Args[0] // proposalInfo.timesInfo.fundRaiseStartTime
+        );
+        //2 fundRaiseEndTime
+        dao.setConfiguration(
+            DaoHelper.FUND_RAISING_WINDOW_END,
+            uint256Args[1] //  proposalInfo.timesInfo.fundRaiseEndTime
+        );
+    }
+
+    function setPriorityDeposit(
+        DaoRegistry dao,
+        uint8 vtype,
+        address token,
+        uint256 tokenId,
+        uint256 amount
+    ) internal {
+        dao.setConfiguration(DaoHelper.COLLECTIVE_PRIORITY_DEPOSITE_ENABLE, 1);
+
+        dao.setConfiguration(
+            DaoHelper.COLLECTIVE_PRIORITY_DEPOSITE_TYPE,
+            vtype
+        );
+
+        dao.setConfiguration(
+            DaoHelper.COLLECTIVE_PRIORITY_DEPOSITE_TOKENID,
+            tokenId
+        );
+        dao.setConfiguration(
+            DaoHelper.COLLECTIVE_PRIORITY_DEPOSITE_AMOUNT,
+            amount
+        );
+        dao.setAddressConfiguration(
+            DaoHelper.COLLECTIVE_PRIORITY_DEPOSITE_TOKEN_ADDRESS,
+            token
+        );
+    }
+
+    function setPriorityDepositeWhiteList(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        address[] calldata whitelist
+    ) internal {
+        for (uint8 i = 0; i < whitelist.length; i++) {
+            priorityDepositorWhitelist[dao][proposalId].add(whitelist[i]);
+        }
     }
 }

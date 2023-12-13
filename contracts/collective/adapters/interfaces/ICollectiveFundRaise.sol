@@ -10,6 +10,7 @@ interface ICollectiveFundRaise {
         FundRaiseTimeInfo timeInfo;
         FundInfo fundInfo;
         PriorityDepositorInfo priorityDepositor;
+        uint8 fundRaiseType;
         ProposalState state;
     }
 
@@ -27,6 +28,7 @@ interface ICollectiveFundRaise {
     }
 
     struct PriorityDepositorInfo {
+        bool enable;
         uint8 valifyType;
         address tokenAddress;
         uint256 tokenId;
@@ -36,6 +38,7 @@ interface ICollectiveFundRaise {
 
     struct ProposalParams {
         DaoRegistry dao;
+        uint8 fundRaiseType; // 0 FCFS 1 Free In
         FundInfo fundInfo;
         FundRaiseTimeInfo timeInfo;
         PriorityDepositorInfo priorityDepositor;
@@ -57,9 +60,9 @@ interface ICollectiveFundRaise {
         ColletiveFundingPoolContract investmentPoolAdapt;
         CollectiveVotingContract votingContract;
         ICollectiveVoting.VotingState voteResult;
-        uint128 nbYes;
-        uint128 nbNo;
-        uint128 allVotingWeight;
+        uint256 nbYes;
+        uint256 nbNo;
+        uint256 allVotingWeight;
         ProposalDetails proposalInfo;
     }
 
@@ -73,9 +76,9 @@ interface ICollectiveFundRaise {
         address daoAddr,
         bytes32 proposalId,
         ProposalState state,
-        uint128 allVotingWeight,
-        uint128 nbYes,
-        uint128 nbNo,
+        uint256 allVotingWeight,
+        uint256 nbYes,
+        uint256 nbNo,
         uint256 voteResult
     );
 }

@@ -128,7 +128,7 @@ module.exports = {
         process.env.TEST_PRIVATE_KEY4,
         process.env.TEST_PRIVATE_KEY5
       ],
-    },
+    }
     // polygon: {
     //   url: 'https://polygon.llamarpc.com',
     //   accounts: [

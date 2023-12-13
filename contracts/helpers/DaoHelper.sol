@@ -312,6 +312,19 @@ library DaoHelper {
     bytes32 internal constant COLLECTIVE_REDEMPT_FEE_AMOUNT =
         keccak256("COLLECTIVE_REDEMPT_FEE_AMOUNT");
 
+    bytes32 internal constant COLLECTIVE_PRIORITY_DEPOSITE_ENABLE =
+        keccak256("COLLECTIVE_PRIORITY_DEPOSITE_ENABLE");
+    bytes32 internal constant COLLECTIVE_PRIORITY_DEPOSITE_TYPE =
+        keccak256("COLLECTIVE_PRIORITY_DEPOSITE_TYPE");
+    bytes32 internal constant COLLECTIVE_PRIORITY_DEPOSITE_TOKEN_ADDRESS =
+        keccak256("COLLECTIVE_PRIORITY_DEPOSITE_TOKEN_ADDRESS");
+    bytes32 internal constant COLLECTIVE_PRIORITY_DEPOSITE_TOKENID =
+        keccak256("COLLECTIVE_PRIORITY_DEPOSITE_TOKENID");
+    bytes32 internal constant COLLECTIVE_PRIORITY_DEPOSITE_AMOUNT =
+        keccak256("COLLECTIVE_PRIORITY_DEPOSITE_AMOUNT");
+    bytes32 internal constant COLLECTIVE_FUNDRAISE_STYLE =
+        keccak256("COLLECTIVE_FUNDRAISE_STYLE");
+
     /*********************************
     COLLECTIVE SETTING 
     *********************************/
@@ -440,7 +453,7 @@ library DaoHelper {
 
     //---------------------------------flex---------------------------------
 
-    //---------------------------------collectivbe---------------------------------
+    //---------------------------------collective---------------------------------
     bytes32 internal constant COLLECTIVE_VOTING_ADAPT =
         keccak256("collective-voting-adapter");
     bytes32 internal constant COLLECTIVE_DAO_SET_ADAPTER =
@@ -448,13 +461,13 @@ library DaoHelper {
 
     bytes32 internal constant COLLECTIVE_INVESTMENT_POOL_ADAPTER =
         keccak256("collective-funding-pool-adapter");
-
     bytes32 internal constant COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPT =
         keccak256("collective-governor-management-adapter");
 
     bytes32 internal constant COLLECTIVE_DAO_SET_HELPER_ADAPTER =
         keccak256("collective-daoset-helper-adapter");
-
+    bytes32 internal constant COLLECTIVE_FUND_RAISE_ADAPTER =
+        keccak256("collective-fund-raise-adapter");
     //---------------------------------collective---------------------------------
     bytes32 internal constant FUND_RAISE = keccak256("fund-raise");
     bytes32 internal constant VESTWING = keccak256("vesting");
