@@ -14,6 +14,7 @@ contract ColletiveFundRaiseProposalContract is
     MemberGuard
 {
     using EnumerableSet for EnumerableSet.AddressSet;
+    using EnumerableSet for EnumerableSet.Bytes32Set;
 
     mapping(DaoRegistry => mapping(bytes32 => EnumerableSet.AddressSet)) priorityDepositorWhitelist;
     mapping(DaoRegistry => mapping(bytes32 => ProposalDetails))
@@ -70,7 +71,10 @@ contract ColletiveFundRaiseProposalContract is
                 params.priorityDepositor.whitelist
             ),
             params.fundRaiseType,
-            ProposalState.Voting
+            ProposalState.Voting,
+            block.timestamp,
+            block.timestamp +
+                params.dao.getConfiguration(DaoHelper.VOTING_PERIOD)
         );
 
         if (params.priorityDepositor.whitelist.length > 0) {
@@ -83,6 +87,21 @@ contract ColletiveFundRaiseProposalContract is
                     params.priorityDepositor.whitelist[i]
                 );
         }
+        params.dao.submitProposal(vars.proposalId);
+
+        params.dao.sponsorProposal(
+            vars.proposalId,
+            params.dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPT)
+        );
+        ICollectiveVoting collectiveVotingContract = ICollectiveVoting(
+            params.dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPT)
+        );
+        collectiveVotingContract.startNewVotingForProposal(
+            params.dao,
+            vars.proposalId,
+            bytes("")
+        );
+        unDoneProposals[address(params.dao)].add(vars.proposalId);
 
         emit ProposalCreated(address(params.dao), vars.proposalId);
         return true;
@@ -260,5 +279,12 @@ contract ColletiveFundRaiseProposalContract is
         for (uint8 i = 0; i < whitelist.length; i++) {
             priorityDepositorWhitelist[dao][proposalId].add(whitelist[i]);
         }
+    }
+
+    function getPriorityDepositeWhiteList(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external view returns (address[] memory) {
+        return priorityDepositorWhitelist[dao][proposalId].values();
     }
 }

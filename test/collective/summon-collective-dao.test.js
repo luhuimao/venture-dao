@@ -958,7 +958,6 @@ describe("fund raise proposal...", () => {
 
     it("create fund raise proposal...", async () => {
         const dao = this.collectiveDirectdaoAddress;
-
         const tokenAddress = this.testtoken1.address;
         const miniTarget = hre.ethers.utils.parseEther("1000");
         const maxCap = hre.ethers.utils.parseEther("2000");
@@ -1012,6 +1011,402 @@ describe("fund raise proposal...", () => {
             created...
             proposalId ${proposalId}
         `);
+
+        await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        console.log("voted, execute...");
+        let proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(this.collectiveDirectdaoAddress, proposalId);
+        const stopVoteTime = proposalDetail.stopVoteTime;
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+
+        await this.colletiveFundRaiseProposalContract.processProposal(this.collectiveDirectdaoAddress, proposalId);
+        proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(this.collectiveDirectdaoAddress, proposalId);
+
+        console.log(`
+        executed...
+        state ${proposalDetail.state}
+        `);
     });
 
+});
+
+describe("deposit, withdraw...", () => {
+    before("deploy contracts...", async () => {
+        let [
+            owner,
+            user1, user2,
+            investor1, investor2,
+            gp1, gp2,
+            project_team1, project_team2,
+            genesis_steward1, genesis_steward2,
+            funding_proposer1,
+            funding_proposer1_whitelist, funding_proposer2_whitelist,
+            participant_membership_whitelist1, participant_membership_whitelist2,
+            priority_deposit_membership_whitelist1, priority_deposit_membership_whitelist2,
+            pollster_membership_whitelist1, pollster_membership_whitelist2,
+            managementFeeAccount
+        ] = await hre.ethers.getSigners();
+        this.owner = owner;
+        this.user1 = user1;
+        this.user2 = user2;
+        this.investor1 = investor1;
+        this.investor2 = investor2;
+        this.gp1 = gp1;
+        this.gp2 = gp2;
+        this.project_team1 = project_team1;
+        this.project_team2 = project_team2;
+        this.genesis_steward1 = genesis_steward1;
+        this.genesis_steward2 = genesis_steward2;
+        this.funding_proposer1 = funding_proposer1;
+        this.funding_proposer1_whitelist = funding_proposer1_whitelist;
+        this.funding_proposer2_whitelist = funding_proposer2_whitelist;
+        this.participant_membership_whitelist1 = participant_membership_whitelist1;
+        this.participant_membership_whitelist2 = participant_membership_whitelist2;
+        this.priority_deposit_membership_whitelist1 = priority_deposit_membership_whitelist1;
+        this.priority_deposit_membership_whitelist2 = priority_deposit_membership_whitelist2;
+        this.pollster_membership_whitelist1 = pollster_membership_whitelist1;
+        this.pollster_membership_whitelist2 = pollster_membership_whitelist2;
+        this.managementFeeAccount = managementFeeAccount;
+
+        let _daoName = "my_collective_dao1";
+
+        const {
+            dao,
+            factories,
+            adapters,
+            extensions,
+            utilContracts,
+            testContracts
+        } = await deployDefaultDao({
+            owner: this.owner,
+            daoMode: 1, //  Vintage = 0, Flex = 1,   Collective = 2,
+            daoName: _daoName
+        });
+
+        this.daoFactory = factories.daoFactory.instance;
+        this.collectiveFundingPoolFactory = factories.collectiveFundingPoolFactory.instance;
+
+        this.adapters = adapters;
+        this.extensions = extensions;
+        this.dao = dao;
+        this.testContracts = testContracts;
+
+        this.flexFundingPoolExtension = extensions.flexFundingPoolExt.functions;
+
+        this.testtoken1 = testContracts.testToken1.instance;
+        this.testtoken2 = testContracts.testRiceToken.instance;
+        this.flexVesting = adapters.flexVesting.instance;
+        this.flexERC721 = adapters.flexERC721.instance;
+        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
+        this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
+        this.flexVotingContract = adapters.flexVotingContract.instance;
+        this.flexFundingAdapterContract = adapters.flexFundingAdapterContract.instance;
+        this.flexStewardAllocation = adapters.flexStewardAllocation.instance;
+        this.flexStewardMangement = this.adapters.stewardManagementContract.instance;
+        this.flexPollingVotingContract = adapters.flexPollingVotingContract.instance;
+        this.flexFundingReturnTokenAdapterContract = adapters.flexFundingReturnTokenAdapterContract.instance;
+        this.flexFreeInEscrowFundAdapterContract = adapters.flexFreeInEscrowFundAdapterContract.instance;
+        this.flexFundingHelperAdapterContract = adapters.flexFundingHelperAdapterContract.instance;
+        this.flexDaoSetAdapterContract = adapters.flexDaoSetAdapterContract.instance;
+        this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
+        this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
+        this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+
+        this.colletiveGovernorManagementContract = adapters.colletiveGovernorManagementContract.instance;
+        this.colletiveDaoSetProposalContract = adapters.colletiveDaoSetProposalContract.instance;
+        this.colletiveFundingProposalContract = adapters.colletiveFundingProposalContract.instance;
+        this.collectiveVotingContract = adapters.collectiveVotingContract.instance;
+        this.colletiveFundingPoolContract = adapters.colletiveFundingPoolContract.instance;
+        this.colletiveFundRaiseProposalContract = adapters.colletiveFundRaiseProposalContract.instance;
+        this.bentoBoxV1 = adapters.bentoBoxV1.instance;
+        // this.managing = this.adapters.managing.instance;
+        this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
+
+        const daoFactoriesAddress = [
+            this.daoFactory.address,
+            this.collectiveFundingPoolFactory.address
+        ];
+        _daoName = "my_collective_dao002";
+
+        const creator = this.owner.address;
+        const enalbeAdapters = [
+            {
+                id: '0xdac6d9ce728ebc92a61253866b4e5a4c73b76ba0aa11e7297a633f6232f54237', //collective-daoset-adapter
+                addr: this.colletiveDaoSetProposalContract.address,
+                flags: 8
+            },
+            {
+                id: '0x1a4f1390baec30049008138e650571a3c4374eba88116bc89dc192f2f9295efe', //collective-governor-management-adapter
+                addr: this.colletiveGovernorManagementContract.address,
+                flags: 6338
+            },
+            {
+                id: '0x907642cbfe4e58ddd14eaa320923fbe4c29721dd0950ae4cb3b2626e292791ae',//collective-voting-adapter
+                addr: this.collectiveVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x8f5b4aabbdb8527d420a29cc90ae207773ad49b73c632c3cfd2f29eb8776f2ea', //FundingPoolAdapterContract
+                addr: this.colletiveFundingPoolContract.address,
+                flags: 8
+            },
+            {
+                id: '0x3a06648a49edffe95b8384794dfe9cf3ab34782fab0130b4c91bfd53f3407e6b', //fund raise
+                addr: this.colletiveFundRaiseProposalContract.address,
+                flags: 1034
+            },
+        ];
+
+        const adapters1 = [
+            {
+                id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
+                addr: this.colletiveFundingPoolContract.address, //collectiveFundingPoolAdapterContract
+                flags: 23
+            },
+        ];
+
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        const collectiveDaoIvestorCapInfo = [
+            true, //bool enable;
+            2 //uint256 maxParticipantsAmount;
+        ];
+
+        const enable = true;
+        const varifyType = 3;
+        const minHolding = 1;
+        const tokenAddress = this.testtoken1.address;
+        const tokenId = 2;
+        const whiteList = [
+            this.user1.address,
+            this.user2.address
+        ];
+
+
+        const collectiveGovernorMembershipInfo = [
+            enable,
+            varifyType,
+            minHolding,
+            tokenAddress,
+            tokenId,
+            whiteList
+        ];
+
+        const votingAssetType = 0; //0. deposit
+        const votingPower = 0; //0. quantity 1. log2 2. 1 voter 1 vote
+        const support = 23;
+        const quorum = 34;
+        const supportType = 0; // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+        const quorumType = 0; // 0. - (YES + NO) / Total > X%  1. - YES + NO > X
+        const votingPeriod = 60;
+        const gracePeriod = 60;
+        const executePeriod = 60;
+
+        const CollectiveDaoVotingInfo = [
+            votingAssetType, //0. deposit
+            votingPower,//0. quantity 1. log2 2. 1 voter 1 vote
+            support,
+            quorum,
+            supportType, // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
+            quorumType, // 0. - (YES + NO) / Total > X%  1. - YES + NO > X
+            votingPeriod,
+            gracePeriod,
+            executePeriod
+        ]
+
+        const name = _daoName;
+        const redemptionFee = hre.ethers.utils.parseEther("0.001"); // 0.2%;
+        // const collectiveDaoManagementfee = hre.ethers.utils.parseEther("0.001"); // 0.2%
+        const managementFeeAddress = this.gp1.address;
+        const proposerInvestTokenReward = hre.ethers.utils.parseEther("0.001"); // 0.2%;
+        const proposerPaybackTokenReward = hre.ethers.utils.parseEther("0.001"); // 0.2%;
+        const collectiveDaoGenesisGovernor = [
+            this.genesis_steward1.address,
+            this.genesis_steward2.address
+        ];
+
+        const CollectiveDaoInfo = [
+            name,
+            creator,
+            redemptionFee,
+            // collectiveDaoManagementfee,
+            managementFeeAddress,
+            proposerInvestTokenReward,
+            proposerPaybackTokenReward,
+            collectiveDaoGenesisGovernor
+        ];
+
+        const collectiveDaoParams = [
+            daoFactoriesAddress,
+            enalbeAdapters,
+            adapters1,
+            collectiveDaoIvestorCapInfo,
+            collectiveGovernorMembershipInfo,
+            CollectiveDaoVotingInfo,
+            CollectiveDaoInfo
+        ];
+
+
+        const {
+            daoAddr,
+            daoName
+        } = await sommonCollectiveDao(this.summonCollectiveDao, this.daoFactory, collectiveDaoParams);
+        const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
+
+        console.log(`
+        new dao address ${daoAddr}
+        new dao name ${toUtf8(daoName)}
+        `)
+
+        this.collectiveDirectdaoAddress = daoAddr;
+        this.daoContract = daoContract;
+        // let allGovernros = await this.colletiveGovernorManagementContract.getAllGovernor(this.collectiveDirectdaoAddress);
+        // console.log("owner addr", this.owner.address);
+        // console.log("genesis1 addr", this.genesis_steward1.address);
+        // console.log("genesis2 addr", this.genesis_steward2.address);
+
+        // console.log(allGovernros);
+    });
+
+    const sommonCollectiveDao = async (summonDaoContract, daoFactoryContract, collectiveDaoParams) => {
+        let tx = await summonDaoContract.summonFlexDao(collectiveDaoParams);
+        let result = await tx.wait();
+        const len = collectiveDaoParams.length;
+        const daoAddr = await daoFactoryContract.getDaoAddress(collectiveDaoParams[len - 1][0]);
+        const daoName = await daoFactoryContract.daos(daoAddr);
+
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
+    };
+
+    it("deposit...", async () => {
+        const dao = this.collectiveDirectdaoAddress;
+        const tokenAddress = this.testtoken1.address;
+        const miniTarget = hre.ethers.utils.parseEther("1000");
+        const maxCap = hre.ethers.utils.parseEther("1500");
+        const miniDeposit = hre.ethers.utils.parseEther("10");
+        const maxDeposit = hre.ethers.utils.parseEther("1000");
+
+        const fundInfo = [
+            tokenAddress,
+            miniTarget,
+            maxCap,
+            miniDeposit,
+            maxDeposit
+        ];
+
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        const startTime = blocktimestamp + 60 * 1;
+        const endTime = startTime + 60 * 60 * 2;
+        const timeInfo = [startTime, endTime];
+
+        const enable = true;
+        const valifyType = 0;
+        const priorityTokenAddress = this.testtoken2.address;
+        const tokenId = 0;
+        const miniHolding = hre.ethers.utils.parseEther("100");
+        const whitelist = [];
+
+        const priorityDepositor = [
+            enable,
+            valifyType,
+            priorityTokenAddress,
+            tokenId,
+            miniHolding,
+            whitelist
+        ];
+
+        const fundRaiseType = 0;
+        const params = [
+            dao,
+            fundRaiseType,
+            fundInfo,
+            timeInfo,
+            priorityDepositor
+        ];
+
+        const tx = await this.colletiveFundRaiseProposalContract.submitProposal(params);
+        const rel = await tx.wait();
+
+        const proposalId = rel.events[rel.events.length - 1].args.proposalId;
+        console.log(`
+            created...
+            proposalId ${proposalId}
+        `);
+
+        await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        console.log("voted, execute...");
+        let proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(this.collectiveDirectdaoAddress, proposalId);
+        const stopVoteTime = proposalDetail.stopVoteTime;
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+
+        await this.colletiveFundRaiseProposalContract.processProposal(this.collectiveDirectdaoAddress, proposalId);
+        proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(this.collectiveDirectdaoAddress, proposalId);
+
+        console.log(`
+        executed...
+        state ${proposalDetail.state}
+        `);
+
+
+        await this.testtoken1.approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
+        await this.testtoken1.connect(this.investor1).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
+        await this.testtoken1.connect(this.investor2).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
+
+        await this.testtoken1.transfer(this.investor1.address, hre.ethers.utils.parseEther("2000"));
+        await this.testtoken1.transfer(this.investor2.address, hre.ethers.utils.parseEther("2000"));
+
+        await expectRevert(this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1")), "revert");
+        await expectRevert(this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1001")), "revert");
+
+        await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1000"));
+        await expectRevert(this.colletiveFundingPoolContract.connect(this.investor1).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("600")), "revert");
+        await this.colletiveFundingPoolContract.connect(this.investor1).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("500"));
+
+        await expectRevert(this.colletiveFundingPoolContract.connect(this.investor2).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100")), "revert");
+
+        let depositBal1 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.owner.address);
+        let depositBal2 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.owner.address);
+        let poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
+        console.log(`
+        depositBal1 ${hre.ethers.utils.formatEther(depositBal1)}
+        depositBal2 ${hre.ethers.utils.formatEther(depositBal2)}
+        poolBal ${hre.ethers.utils.formatEther(poolBal)}
+        `);
+    });
 });

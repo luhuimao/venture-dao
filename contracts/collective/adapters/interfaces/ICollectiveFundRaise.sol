@@ -12,6 +12,8 @@ interface ICollectiveFundRaise {
         PriorityDepositorInfo priorityDepositor;
         uint8 fundRaiseType;
         ProposalState state;
+        uint256 creationTime;
+        uint256 stopVoteTime;
     }
 
     struct FundRaiseTimeInfo {
