@@ -42,9 +42,9 @@ const deploySummonContract = async () => {
 
 async function main() {
     // await getVintageManagementFee();
-    await getFlexEscrowTokenInfo();
+    // await getFlexEscrowTokenInfo();
     // await getAdapterAddress();
-    // await getDaoConfig();
+    await getDaoConfig();
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
     // await deploy();
     // await getFlexdaoInvestorWhitelist();
@@ -2202,9 +2202,9 @@ const getAdapterAddress = async () => {
 
 const getDaoConfig = async () => {
     const daoContrct = (await hre.ethers.
-        getContractFactory("DaoRegistry")).attach("0xcf1b4557f235226565f248f15da00227b0008851");
+        getContractFactory("DaoRegistry")).attach("0x550da0eCd373EC51c614c92f7cEEd875E902A5c8");
 
-    const config = await daoContrct.getConfiguration("0x64c49ee5084f4940c312104c41603e43791b03dad28152afd6eadb5b960a8a87");
+    const config = await daoContrct.getConfiguration("0xb4c601c38beae7eebb719eda3438f59fcbfd4c6dd7d38c00665b6fd5b432df32");
 
     console.log(config);
 }
