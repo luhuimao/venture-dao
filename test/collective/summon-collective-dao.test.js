@@ -1401,12 +1401,50 @@ describe("deposit, withdraw...", () => {
         await expectRevert(this.colletiveFundingPoolContract.connect(this.investor2).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100")), "revert");
 
         let depositBal1 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.owner.address);
-        let depositBal2 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.owner.address);
+        let depositBal2 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.investor1.address);
         let poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
         console.log(`
         depositBal1 ${hre.ethers.utils.formatEther(depositBal1)}
         depositBal2 ${hre.ethers.utils.formatEther(depositBal2)}
         poolBal ${hre.ethers.utils.formatEther(poolBal)}
+        `);
+    });
+
+    it("withdraw...", async () => {
+        let depositBal1 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.owner.address);
+        let depositBal2 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.investor1.address);
+        let poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
+        let allInvestors = await this.colletiveFundingPoolContract.getAllInvestors(this.collectiveDirectdaoAddress);
+        let usdtBal1 = await this.testtoken1.balanceOf(this.owner.address);
+        let usdtBal2 = await this.testtoken1.balanceOf(this.investor1.address);
+
+        console.log(`
+        depositBal1 ${hre.ethers.utils.formatEther(depositBal1)}
+        depositBal2 ${hre.ethers.utils.formatEther(depositBal2)}
+        poolBal ${hre.ethers.utils.formatEther(poolBal)}
+        allInvestors ${allInvestors}
+        usdtBal1 ${hre.ethers.utils.formatEther(usdtBal1)}
+        usdtBal2 ${hre.ethers.utils.formatEther(usdtBal2)}
+        `);
+
+        await this.colletiveFundingPoolContract.connect(this.owner).withdraw(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1000"));
+        // await this.colletiveFundingPoolContract.connect(this.investor1).withdraw(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100"));
+
+
+        depositBal1 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.owner.address);
+        depositBal2 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.investor1.address);
+        poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
+        allInvestors = await this.colletiveFundingPoolContract.getAllInvestors(this.collectiveDirectdaoAddress);
+        usdtBal1 = await this.testtoken1.balanceOf(this.owner.address);
+        usdtBal2 = await this.testtoken1.balanceOf(this.investor1.address);
+
+        console.log(`
+        depositBal1 ${hre.ethers.utils.formatEther(depositBal1)}
+        depositBal2 ${hre.ethers.utils.formatEther(depositBal2)}
+        poolBal ${hre.ethers.utils.formatEther(poolBal)}
+        allInvestors ${allInvestors}
+        usdtBal1 ${hre.ethers.utils.formatEther(usdtBal1)}
+        usdtBal2 ${hre.ethers.utils.formatEther(usdtBal2)}
         `);
     });
 });

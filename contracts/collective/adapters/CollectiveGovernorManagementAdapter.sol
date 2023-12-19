@@ -8,16 +8,12 @@ import "../../helpers/DaoHelper.sol";
 import "../../helpers/GovernanceHelper.sol";
 import "../../utils/TypeConver.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
-import "../../guards/FlexStewardGuard.sol";
+// import "../../guards/FlexStewardGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
 
-contract ColletiveGovernorManagementContract is
-    Reimbursable,
-    MemberGuard,
-    FlexStewardGuard
-{
+contract ColletiveGovernorManagementContract is Reimbursable, MemberGuard {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.Bytes32Set;
 

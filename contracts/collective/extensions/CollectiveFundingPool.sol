@@ -185,20 +185,20 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
     }
 
     function withdraw(
-        address member,
+        address account,
         address tokenAddr,
         uint256 amount
     ) external hasExtensionAccess(AclFlag.WITHDRAW) {
         require(
-            balanceOf(member) >= amount,
+            balanceOf(account) >= amount,
             "flex funding pool::withdraw::not enough funds"
         );
-        subtractFromBalance(member, tokenAddr, amount);
+        // subtractFromBalance(account, tokenAddr, amount);
 
-        IERC20(tokenAddr).safeTransfer(member, amount);
+        IERC20(tokenAddr).safeTransfer(account, amount);
 
         //slither-disable-next-line reentrancy-events
-        emit Withdraw(member, tokenAddr, uint160(amount));
+        emit Withdraw(account, tokenAddr, uint160(amount));
     }
 
     function withdrawTo(
@@ -326,21 +326,21 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
             token,
             newTotalFund
         );
-        if (dao.isMember(member)) {
-            uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL));
-            uint256 newGPFunds;
-            unchecked {
-                newGPFunds = totalGPFunds - amount;
-            }
-            _createNewAmountCheckpoint(
-                address(DaoHelper.GP_POOL),
-                token,
-                newGPFunds
-            );
-        }
-        if (newAmount <= 0) {
-            _removeInvestor(member);
-        }
+        // if (dao.isMember(member)) {
+        //     uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL));
+        //     uint256 newGPFunds;
+        //     unchecked {
+        //         newGPFunds = totalGPFunds - amount;
+        //     }
+        //     _createNewAmountCheckpoint(
+        //         address(DaoHelper.GP_POOL),
+        //         token,
+        //         newGPFunds
+        //     );
+        // }
+        // if (newAmount <= 0) {
+        //     _removeInvestor(member);
+        // }
         _createNewAmountCheckpoint(member, token, newAmount);
     }
 
