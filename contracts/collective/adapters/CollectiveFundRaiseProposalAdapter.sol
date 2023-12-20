@@ -91,10 +91,10 @@ contract ColletiveFundRaiseProposalContract is
 
         params.dao.sponsorProposal(
             vars.proposalId,
-            params.dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPT)
+            params.dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
         );
         ICollectiveVoting collectiveVotingContract = ICollectiveVoting(
-            params.dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPT)
+            params.dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
         );
         collectiveVotingContract.startNewVotingForProposal(
             params.dao,

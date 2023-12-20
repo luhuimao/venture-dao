@@ -527,4 +527,8 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
                 DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
             );
     }
+
+    function totalSupply() public view returns (uint256) {
+        return balanceOf(address(DaoHelper.DAOSQUARE_TREASURY));
+    }
 }

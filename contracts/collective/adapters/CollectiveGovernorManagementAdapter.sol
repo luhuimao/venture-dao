@@ -167,12 +167,12 @@ contract ColletiveGovernorManagementContract is Reimbursable, MemberGuard {
         bytes memory data
     ) internal {
         ICollectiveVoting collectiveVotingContract = ICollectiveVoting(
-            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPT)
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
         );
 
         dao.sponsorProposal(
             proposalId,
-            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPT)
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
         );
         collectiveVotingContract.startNewVotingForProposal(
             dao,
@@ -247,7 +247,7 @@ contract ColletiveGovernorManagementContract is Reimbursable, MemberGuard {
             "proposal already processed"
         );
         ICollectiveVoting collectiveVotingContract = ICollectiveVoting(
-            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPT)
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
         );
 
         require(

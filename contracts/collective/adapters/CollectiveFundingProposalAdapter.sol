@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "./CollectiveDaoSetProposalAdapter.sol";
 import "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "./CollectivePaybackTokenAdapter.sol";
 
 contract ColletiveFundingProposalContract is
     ICollectiveFunding,
@@ -17,8 +18,7 @@ contract ColletiveFundingProposalContract is
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
 
-    mapping(DaoRegistry => mapping(bytes32 => ProposalDetails))
-        public proposals;
+    mapping(address => mapping(bytes32 => ProposalDetails)) public proposals;
 
     mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
     mapping(address => DoubleEndedQueue.Bytes32Deque) public proposalQueue;
@@ -27,6 +27,23 @@ contract ColletiveFundingProposalContract is
         public escrowedPaybackToken;
     // Keeps track of the latest ongoing distribution proposal per DAO to ensure only 1 proposal can be processed at a time.
     mapping(address => bytes32) public ongoingProposal;
+    mapping(address => mapping(bytes32 => mapping(address => uint256)))
+        public escrowPaybackTokens;
+
+    address public protocolAddress =
+        address(0x9ac9c636404C8d46D9eb966d7179983Ba5a3941A);
+
+    modifier onlyDaoFactoryOwner(DaoRegistry dao) {
+        require(msg.sender == DaoHelper.daoFactoryAddress(dao));
+        _;
+    }
+
+    function setProtocolAddress(
+        DaoRegistry dao,
+        address _protocolAddress
+    ) external reimbursable(dao) onlyDaoFactoryOwner(dao) {
+        protocolAddress = _protocolAddress;
+    }
 
     function daosetProposalCheck(DaoRegistry dao) internal view returns (bool) {
         ColletiveDaoSetProposalContract daoset = ColletiveDaoSetProposalContract(
@@ -52,10 +69,11 @@ contract ColletiveFundingProposalContract is
 
         // Saves the state of the proposal.
 
-        proposals[params.dao][vars.proposalId] = ProposalDetails(
+        proposals[address(params.dao)][vars.proposalId] = ProposalDetails(
             FundingInfo(
                 params.fundingInfo.token,
                 params.fundingInfo.fundingAmount,
+                0,
                 params.fundingInfo.receiver
             ),
             EscrowInfo(
@@ -71,7 +89,10 @@ contract ColletiveFundingProposalContract is
                 params.vestingInfo.cliffEndTime,
                 params.vestingInfo.cliffVestingAmount,
                 params.vestingInfo.vestingInterval
-            )
+            ),
+            TimeInfo(0, 0),
+            msg.sender,
+            ProposalState.IN_QUEUE
         );
 
         // Sponsors the proposal.
@@ -104,106 +125,166 @@ contract ColletiveFundingProposalContract is
         // make sure there is no proposal no finalized
         if (vars.ongongingPrposalId != bytes32(0)) {
             require(
-                proposals[address(dao)][vars.ongongingPrposalId].status ==
+                proposals[address(dao)][vars.ongongingPrposalId].state ==
                     ProposalState.DONE ||
-                    proposals[address(dao)][vars.ongongingPrposalId].status ==
+                    proposals[address(dao)][vars.ongongingPrposalId].state ==
                     ProposalState.FAILED,
                 "PrePropsalNotDone"
             );
         }
 
-        vars.investmentPoolAdapt = VintageFundingPoolAdapterContract(
+        vars.investmentPoolAdapt = ColletiveFundingPoolContract(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER)
         );
         vars._propsalStopVotingTimestamp =
             block.timestamp +
             dao.getConfiguration(DaoHelper.VOTING_PERIOD);
         // make sure there is no proposal in progress during redempt duration
-        require(
-            !vars.investmentPoolAdapt.ifInRedemptionPeriod(
-                dao,
-                vars._propsalStopVotingTimestamp +
-                    dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION)
-            ),
-            "HitRedemptePeriod"
-        );
+        // require(
+        //     !vars.investmentPoolAdapt.ifInRedemptionPeriod(
+        //         dao,
+        //         vars._propsalStopVotingTimestamp +
+        //             dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION)
+        //     ),
+        //     "HitRedemptePeriod"
+        // );
 
-        require(
-            proposal.status == ProposalState.IN_QUEUE,
-            "ProposalNotInQueue"
-        );
+        require(proposal.state == ProposalState.IN_QUEUE, "ProposalNotInQueue");
 
         //Removes the proposalId at the beginning of the queue
         proposalQueue[address(dao)].popFront();
-        vars.votingContract = IVintageVoting(
+        vars.votingContract = ICollectiveVoting(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
         );
         //fund inefficient || refund period
         if (
-            vars.investmentPoolAdapt.poolBalance(dao) < proposal.totalAmount ||
+            vars.investmentPoolAdapt.poolBalance(dao) <
+            proposal.fundingInfo.totalAmount ||
             (vars._propsalStopVotingTimestamp +
                 dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION) >
                 dao.getConfiguration(DaoHelper.FUND_END_TIME))
         ) {
             proposal.state = ProposalState.FAILED;
         } else {
-            if (proposal.proposalPaybackTokenInfo.escrow) {
-                //lock project token
-                vars.rel = _lockProjectTeamToken(
+            if (proposal.escrowInfo.escrow) {
+                vars.escorwPaybackTokenSucceed = escrowPaybackToken(
                     dao,
-                    proposal.proposalPaybackTokenInfo.approveOwnerAddr,
-                    proposal.proposalPaybackTokenInfo.paybackToken,
-                    proposal.proposalPaybackTokenInfo.paybackTokenAmount,
+                    proposal.escrowInfo.approver,
+                    proposal.escrowInfo.paybackToken,
+                    proposal.escrowInfo.paybackAmount,
                     proposalId
                 );
                 // lock project token failed
-                if (!vars.rel) {
-                    proposal.status = ProposalState.FAILED;
+                if (!vars.escorwPaybackTokenSucceed) {
+                    proposal.state = ProposalState.FAILED;
                 } else {
-                    projectTeamLockedTokens[address(dao)][proposalId][
-                        proposal.proposalPaybackTokenInfo.approveOwnerAddr
-                    ] = proposal.proposalPaybackTokenInfo.paybackTokenAmount;
+                    escrowPaybackTokens[address(dao)][proposalId][
+                        proposal.escrowInfo.approver
+                    ] = proposal.escrowInfo.paybackAmount;
 
                     // Starts the voting process for the proposal. setting voting start time
                     vars.votingContract.startNewVotingForProposal(
                         dao,
                         proposalId,
-                        block.timestamp,
                         bytes("")
                     );
 
-                    proposal
-                        .proposalTimeInfo
-                        .proposalStartVotingTimestamp = block.timestamp;
-                    proposal.proposalTimeInfo.proposalStopVotingTimestamp = vars
+                    proposal.timeInfo.startVotingTime = block.timestamp;
+                    proposal.timeInfo.stopVotingTime = vars
                         ._propsalStopVotingTimestamp;
 
                     ongoingProposal[address(dao)] = proposalId;
 
-                    proposal.status = ProposalState.IN_VOTING_PROGRESS;
+                    proposal.state = ProposalState.IN_VOTING_PROGRESS;
                 }
             } else {
                 // Starts the voting process for the proposal. setting voting start time
                 vars.votingContract.startNewVotingForProposal(
                     dao,
                     proposalId,
-                    block.timestamp,
                     bytes("")
                 );
 
-                proposal.proposalTimeInfo.proposalStartVotingTimestamp = block
-                    .timestamp;
-                proposal.proposalTimeInfo.proposalStopVotingTimestamp = vars
+                proposal.timeInfo.startVotingTime = block.timestamp;
+                proposal.timeInfo.stopVotingTime = vars
                     ._propsalStopVotingTimestamp;
 
                 ongoingProposal[address(dao)] = proposalId;
 
-                proposal.status = InvestmentLibrary
-                    .ProposalState
-                    .IN_VOTING_PROGRESS;
+                proposal.state = ProposalState.IN_VOTING_PROGRESS;
             }
         }
 
-        emit StartVote(address(dao), proposalId);
+        emit StartVoting(address(dao), proposalId);
+    }
+
+    function escrowPaybackToken(
+        DaoRegistry dao,
+        address approver,
+        address paybackToken,
+        uint256 paybackTokenAmount,
+        bytes32 proposalId
+    ) internal returns (bool) {
+        CollectivePaybackTokenAdapterContract paybackTokenAdapt = CollectivePaybackTokenAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_PAYBACK_TOKEN_ADAPTER
+                )
+            );
+        return
+            paybackTokenAdapt.escrowPaybackToken(
+                paybackTokenAmount,
+                dao,
+                approver,
+                paybackToken,
+                proposalId
+            );
+    }
+
+    function withdrawPaybakcToken(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external reimbursable(dao) {
+        ProposalDetails storage proposal = proposals[address(dao)][proposalId];
+
+        CollectivePaybackTokenAdapterContract paybackTokenAdapt = CollectivePaybackTokenAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_PAYBACK_TOKEN_ADAPTER
+                )
+            );
+        paybackTokenAdapt.withdrawPaybackToken(
+            dao,
+            proposalId,
+            proposal.escrowInfo.paybackToken,
+            msg.sender,
+            proposal.state
+        );
+    }
+
+    function snapShotVestingInfo(DaoRegistry dao, bytes32 proposalId) internal {
+        VintageAllocationAdapterContract allocAda = VintageAllocationAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_ALLOCATION_ADAPTER)
+            );
+        ProposalDetails storage proposal = proposals[address(dao)][proposalId];
+        uint256[6] memory uint256Args = [
+            proposal.escrowInfo.paybackAmount,
+            proposal.vestingInfo.startTime,
+            proposal.vestingInfo.endTime,
+            proposal.vestingInfo.cliffEndTime,
+            proposal.vestingInfo.cliffVestingAmount,
+            proposal.vestingInfo.vestingInterval
+        ];
+        allocAda.allocateProjectToken(
+            dao,
+            proposal.escrowInfo.paybackToken,
+            proposal.proposer,
+            proposalId,
+            uint256Args
+        );
+    }
+
+    function getQueueLength(DaoRegistry dao) public view returns (uint256) {
+        if (!proposalQueue[address(dao)].empty())
+            return proposalQueue[address(dao)].length();
+        else return 0;
     }
 }

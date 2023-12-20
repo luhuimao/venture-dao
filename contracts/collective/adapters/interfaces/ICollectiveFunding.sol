@@ -1,5 +1,8 @@
 pragma solidity ^0.8.0;
 import "../../../core/DaoRegistry.sol";
+import "../CollectiveVotingAdapter.sol";
+import "./ICollectiveVoting.sol";
+import "../CollectiveFundingPoolAdapter.sol";
 
 // SPDX-License-Identifier: MIT
 
@@ -8,12 +11,20 @@ interface ICollectiveFunding {
         FundingInfo fundingInfo;
         EscrowInfo escrowInfo;
         VestingInfo vestingInfo;
+        TimeInfo timeInfo;
+        address proposer;
         ProposalState state;
+    }
+
+    struct TimeInfo {
+        uint256 startVotingTime;
+        uint256 stopVotingTime;
     }
 
     struct FundingInfo {
         address token;
         uint256 fundingAmount;
+        uint256 totalAmount;
         address receiver;
     }
 
@@ -54,7 +65,12 @@ interface ICollectiveFunding {
     }
     struct StartVotingLocalVars {
         bytes32 ongongingPrposalId;
+        uint256 _propsalStopVotingTimestamp;
+        ICollectiveVoting votingContract;
+        ColletiveFundingPoolContract investmentPoolAdapt;
+        bool escorwPaybackTokenSucceed;
     }
     event ProposalCreated(address daoAddr, bytes32 proposalId);
     event ProposalExecuted(address daoAddr, bytes32 proposalId);
+    event StartVoting(address daoAddr, bytes32 proposalId);
 }
