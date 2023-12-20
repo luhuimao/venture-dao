@@ -113,7 +113,7 @@ module.exports = {
     //   ],
     // },
     xdai: {
-      url: 'https://gnosis.blockpi.network/v1/rpc/public',
+      url: 'https://rpc.gnosischain.com',
       accounts: [
         process.env.TEST_PRIVATE_KEY1,
         process.env.TEST_PRIVATE_KEY2,

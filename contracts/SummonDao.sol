@@ -29,6 +29,7 @@ contract SummonDao {
 
     struct flexDaoPaticipantMembershipInfo {
         uint8 varifyType;
+        string name;
         uint256 minHolding;
         address tokenAddress;
         uint256 tokenId;
@@ -44,8 +45,9 @@ contract SummonDao {
         uint256 priorityPeriod;
     }
 
-    struct flexDaoStewardMembershipInfo {
+    struct flexDaoGovernorMembershipInfo {
         bool enable;
+        string name;
         uint256 varifyType;
         uint256 minHolding;
         address tokenAddress;
@@ -67,6 +69,7 @@ contract SummonDao {
 
     struct flexDaoPollVoterMembershipInfo {
         uint8 varifyType;
+        string name;
         uint256 minHolding;
         address tokenAddress;
         uint256 tokenId;
@@ -87,6 +90,7 @@ contract SummonDao {
 
     struct flexDaoProposerMembershipInfo {
         bool proposerMembershipEnable;
+        string name;
         uint8 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
         uint256 minHolding;
         address tokenAddress;
@@ -115,7 +119,7 @@ contract SummonDao {
         flexDaoPaticipantMembershipInfo _flexDaoPaticipantMembershipInfos;
         bool flexDaoPriorityDepositEnalbe;
         flexDaoPriorityMembershipInfo _flexDaoPriorityMembershipInfo;
-        flexDaoStewardMembershipInfo _flexDaoStewardMembershipInfo;
+        flexDaoGovernorMembershipInfo _flexDaoGovernorMembershipInfo;
         flexDaoVotingInfo _flexDaoVotingInfo;
         flexDaoPollVoterMembershipInfo _flexDaoPollVoterMembershipInfo;
         flexDaoPollingInfo _flexDaoPollingInfo;
@@ -320,26 +324,12 @@ contract SummonDao {
     // config polling && Investors CAP
     function summonFlexDao7(
         bool[2] memory booleanParams,
+        string calldata flexPollVoterMembershipName,
         uint256[10] memory uint256Params,
-        address flexDaoPollVoterMembershipTokenAddress,
-        address[] calldata flexDaoPollVoterMembershipWhiteList,
-        address newDaoAddr,
-        address flexDaoPollingtokenAddress
+        address[3] calldata addressParams, //flexDaoPollVoterMembershipTokenAddress,newDaoAddr,flexDaoPollingtokenAddress
+        address[] calldata flexDaoPollVoterMembershipWhiteList
     ) external returns (bool) {
-        //  booleanParams[0] fundingPollEnable,
-        //  booleanParams[1] investorEnable,
-        //  uint256Params[0] flexDaoPollingVotingPeriod
-        //  uint256Params[1] flexDaoPollingVotingPower
-        //  uint256Params[2] flexDaoPollingSuperMajority
-        //  uint256Params[3] flexDaoPollingquorum
-        //  uint256Params[4] flexDaoPollingVotingAssetType
-        //  uint256Params[5] flexDaoPollingtokenID
-        //  uint256Params[6] flexDaoPollVoterMembershipVarifyType
-        //  uint256Params[7] flexDaoPollVoterMembershipMinHolding
-        //  uint256Params[8] flexDaoPollVoterMembershipTokenId
-        //  uint256Params[9] maxInvestorsAmount
-
-        DaoRegistry dao = DaoRegistry(newDaoAddr);
+        DaoRegistry dao = DaoRegistry(addressParams[1]);
         require(address(this) == msg.sender);
 
         //1config polling
@@ -353,14 +343,13 @@ contract SummonDao {
                 uint256Params[3],
                 uint256Params[4],
                 uint256Params[5],
-                flexDaoPollingtokenAddress
+                addressParams[2]
             );
             configFlexDaoPollVoterMembership(
                 dao,
-                uint256Params[6],
-                uint256Params[7],
-                flexDaoPollVoterMembershipTokenAddress,
-                uint256Params[8],
+                flexPollVoterMembershipName,
+                [uint256Params[6], uint256Params[7], uint256Params[8]],
+                addressParams[0],
                 flexDaoPollVoterMembershipWhiteList
             );
         }
@@ -377,25 +366,30 @@ contract SummonDao {
     function summonFlexDao8(
         bool flexDaoStewardMembershipEnable,
         bool flexDaoProposerMembershipEnable,
+        string[2] calldata stringParams, // flexGovernorMembershipName,flexProposerMembershipName
         uint256[6] memory uint256Params,
-        address flexDaoStewardMembershipTokenAddress,
+        address[3] calldata addressParams, //flexDaoStewardMembershipTokenAddress, flexDaoProposerMembershipTokenAddress,newDaoAddr
+        // address flexDaoStewardMembershipTokenAddress,
         address[] calldata flexDaoStewardMembershipWhitelist,
-        address flexDaoProposerMembershipTokenAddress,
-        address[] calldata flexDaoProposerMembershipWhiteList,
-        address newDaoAddr
-    ) external returns (bool) {
-        // uint256Params[0] flexDaoStewardMembershipVarifyType
-        // uint256Params[1] flexDaoStewardMembershipMinHolding
-        // uint256Params[2] flexDaoStewardMembershipInfoTokenId
-        // uint256Params[3] flexDaoProposerMembershipVarifyType
-        // uint256Params[4] flexDaoProposerMembershipTokenId
-        // uint256Params[5] flexDaoProposerMembershipMinHolding
-        DaoRegistry dao = DaoRegistry(newDaoAddr);
+        // address flexDaoProposerMembershipTokenAddress,
+        address[] calldata flexDaoProposerMembershipWhiteList
+    )
+        external
+        returns (
+            // address newDaoAddr
+            bool
+        )
+    {
+        DaoRegistry dao = DaoRegistry(addressParams[2]);
         require(address(this) == msg.sender);
 
         //3config Steward Membership
         if (flexDaoStewardMembershipEnable) {
             dao.setConfiguration(DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_ENABLE, 1);
+            dao.setStringConfiguration(
+                DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_NAME,
+                stringParams[0]
+            );
             dao.setConfiguration(
                 DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_TYPE,
                 uint256Params[0]
@@ -411,7 +405,7 @@ contract SummonDao {
                 );
                 dao.setAddressConfiguration(
                     DaoHelper.FLEX_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS,
-                    flexDaoStewardMembershipTokenAddress
+                    addressParams[0]
                 );
             }
 
@@ -443,12 +437,16 @@ contract SummonDao {
         }
         if (flexDaoProposerMembershipEnable) {
             dao.setConfiguration(DaoHelper.FLEX_PROPOSER_ENABLE, 1);
+            dao.setStringConfiguration(
+                DaoHelper.FLEX_PROPOSER_MEMBERSHIP_NAME,
+                stringParams[1]
+            );
             //4 config proposer membership
             configFlexDaoProposerMembership(
                 dao,
                 uint256Params[3],
                 uint256Params[5],
-                flexDaoProposerMembershipTokenAddress,
+                addressParams[1],
                 uint256Params[4],
                 flexDaoProposerMembershipWhiteList
             );
@@ -460,6 +458,7 @@ contract SummonDao {
     //config investor membership
     function summonFlexDao9(
         bool flexDaoInvestorMembetshipEnable,
+        string calldata name,
         uint256 flexDaoPaticipantMembershipVarifyType,
         uint256 flexDaoPaticipantMembershipMinHolding,
         uint256 flexDaoPaticipantMembershipTokenId,
@@ -475,6 +474,7 @@ contract SummonDao {
             dao.setConfiguration(DaoHelper.FLEX_INVESTOR_MEMBERSHIP_ENABLE, 1);
             registerFlexDaoInvestorMembership(
                 dao,
+                name,
                 flexDaoPaticipantMembershipVarifyType,
                 flexDaoPaticipantMembershipMinHolding,
                 flexDaoPaticipantMembershipTokenId,
@@ -571,10 +571,9 @@ contract SummonDao {
 
     function configFlexDaoPollVoterMembership(
         DaoRegistry dao,
-        uint256 flexDaoPollVoterMembershipVarifyType,
-        uint256 flexDaoPollVoterMembershipMinHolding,
+        string calldata flexPollVoterMembershipName,
+        uint256[3] memory uint256Params, // flexDaoPollVoterMembershipVarifyType,flexDaoPollVoterMembershipMinHolding,flexDaoPollVoterMembershipTokenId
         address flexDaoPollVoterMembershipTokenAddress,
-        uint256 flexDaoPollVoterMembershipTokenId,
         address[] calldata flexDaoPollVoterMembershipWhiteList
     ) internal {
         // 0- ERC2O
@@ -583,30 +582,34 @@ contract SummonDao {
         // 3- Whitelist
         dao.setConfiguration(
             DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TYPE,
-            flexDaoPollVoterMembershipVarifyType
+            uint256Params[0]
+        );
+        dao.setStringConfiguration(
+            DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_NAME,
+            flexPollVoterMembershipName
         );
 
         if (
-            flexDaoPollVoterMembershipVarifyType == 0 ||
-            flexDaoPollVoterMembershipVarifyType == 1 ||
-            flexDaoPollVoterMembershipVarifyType == 2
+            uint256Params[0] == 0 ||
+            uint256Params[0] == 1 ||
+            uint256Params[0] == 2
         ) {
             dao.setConfiguration(
                 DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_MIN_HOLDING,
-                flexDaoPollVoterMembershipMinHolding
+                uint256Params[1]
             );
             dao.setAddressConfiguration(
                 DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TOKEN_ADDRESS,
                 flexDaoPollVoterMembershipTokenAddress
             );
         }
-        if (flexDaoPollVoterMembershipVarifyType == 2) {
+        if (uint256Params[0] == 2) {
             dao.setConfiguration(
                 DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TOKENID,
-                flexDaoPollVoterMembershipTokenId
+                uint256Params[2]
             );
         }
-        if (flexDaoPollVoterMembershipVarifyType == 3) {
+        if (uint256Params[0] == 3) {
             registerFlexDaoPollVoterMembershipWhiteList(
                 dao,
                 flexDaoPollVoterMembershipWhiteList
@@ -683,11 +686,16 @@ contract SummonDao {
 
     function registerFlexDaoInvestorMembership(
         DaoRegistry dao,
+        string calldata name,
         uint256 flexDaoPaticipantMembershipVarifyType,
         uint256 flexDaoPaticipantMembershipMinHolding,
         uint256 flexDaoPaticipantMembershipTokenId,
         address flexDaoPaticipantMembershipTokenAddress
     ) internal {
+        dao.setStringConfiguration(
+            DaoHelper.FLEX_INVESTOR_MEMBERSHIP_NAME,
+            name
+        );
         dao.setConfiguration(
             DaoHelper.FLEX_INVESTOR_MEMBERSHIP_TYPE,
             flexDaoPaticipantMembershipVarifyType
@@ -938,12 +946,6 @@ contract SummonDao {
             vars.newDaoAddr
         );
 
-        // _uint256VoteArgs[0] votingPeriod
-        // _uint256VoteArgs[1] superMajority
-        // _uint256VoteArgs[2] votingAssetType
-        // _uint256VoteArgs[3] quorum
-        // _uint256VoteArgs[4] supportType
-        // _uint256VoteArgs[5] quorumType
         uint256[6] memory uint256VoteParams = [
             params._flexDaoVotingInfo.votingPeriod,
             params._flexDaoVotingInfo.superMajority,
@@ -991,38 +993,48 @@ contract SummonDao {
         ];
 
         vars.summonFlexDao7Payload = abi.encodeWithSignature(
-            "summonFlexDao7(bool[2],uint256[10],address,address[],address,address)",
+            "summonFlexDao7(bool[2],string,uint256[10],address[3],address[])",
             booleanParams,
+            params._flexDaoPollVoterMembershipInfo.name,
             uint256Params,
-            params._flexDaoPollVoterMembershipInfo.tokenAddress,
-            params._flexDaoPollVoterMembershipInfo.whiteList,
-            vars.newDaoAddr,
-            params._flexDaoPollingInfo.tokenAddress
+            [
+                params._flexDaoPollVoterMembershipInfo.tokenAddress,
+                vars.newDaoAddr,
+                params._flexDaoPollingInfo.tokenAddress
+            ],
+            params._flexDaoPollVoterMembershipInfo.whiteList
         );
 
         uint256[6] memory uint256SummonFlexDao8Params = [
-            params._flexDaoStewardMembershipInfo.varifyType,
-            params._flexDaoStewardMembershipInfo.minHolding,
-            params._flexDaoStewardMembershipInfo.tokenId,
+            params._flexDaoGovernorMembershipInfo.varifyType,
+            params._flexDaoGovernorMembershipInfo.minHolding,
+            params._flexDaoGovernorMembershipInfo.tokenId,
             params._flexDaoProposerMembershipInfo.varifyType,
             params._flexDaoProposerMembershipInfo.tokenId,
             params._flexDaoProposerMembershipInfo.minHolding
         ];
         vars.summonFlexDao8Payload = abi.encodeWithSignature(
-            "summonFlexDao8(bool,bool,uint256[6],address,address[],address,address[],address)",
-            params._flexDaoStewardMembershipInfo.enable,
+            "summonFlexDao8(bool,bool,string[2],uint256[6],address[3],address[],address[])",
+            params._flexDaoGovernorMembershipInfo.enable,
             params._flexDaoProposerMembershipInfo.proposerMembershipEnable,
+            [
+                params._flexDaoGovernorMembershipInfo.name,
+                params._flexDaoProposerMembershipInfo.name
+            ],
             uint256SummonFlexDao8Params,
-            params._flexDaoStewardMembershipInfo.tokenAddress,
-            params._flexDaoStewardMembershipInfo.whiteList,
-            params._flexDaoProposerMembershipInfo.tokenAddress,
-            params._flexDaoProposerMembershipInfo.whiteList,
-            vars.newDaoAddr
+            [
+                params._flexDaoGovernorMembershipInfo.tokenAddress,
+                params._flexDaoProposerMembershipInfo.tokenAddress,
+                vars.newDaoAddr
+            ],
+            params._flexDaoGovernorMembershipInfo.whiteList,
+            params._flexDaoProposerMembershipInfo.whiteList
         );
 
         vars.summonFlexDao9Payload = abi.encodeWithSignature(
-            "summonFlexDao9(bool,uint256,uint256,uint256,address,address[],address)",
+            "summonFlexDao9(bool,string,uint256,uint256,uint256,address,address[],address)",
             params.flexDaoInvestorMembetshipEnable,
+            params._flexDaoPaticipantMembershipInfos.name,
             params._flexDaoPaticipantMembershipInfos.varifyType,
             params._flexDaoPaticipantMembershipInfos.minHolding,
             params._flexDaoPaticipantMembershipInfos.tokenId,
@@ -1031,14 +1043,6 @@ contract SummonDao {
             vars.newDaoAddr
         );
 
-        //  bool flexDaoPriorityDepositEnalbe,
-        //         uint256 flexDaoPriorityMembershipVarifyType,
-        //         uint256 flexDaoPriorityMembershipPriorityPeriod,
-        //         uint256 flexDaoPriorityMembershipMinHolding,
-        //         uint256 flexDaoPriorityMembershipTokenId,
-        //         address[] calldata flexDaoPriorityMembershipWhiteList,
-        //         address flexDaoPriorityMembershipTokenAddress,
-        //         address newDaoAddr
         vars.summonFlexDao10Payload = abi.encodeWithSignature(
             "summonFlexDao10(bool,uint256,uint256,uint256,uint256,address[],address,address)",
             params.flexDaoPriorityDepositEnalbe,

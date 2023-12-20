@@ -192,8 +192,6 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     Counters.Counter private _pollForInvestmentProposalIds;
     Counters.Counter private _proposerMembershipPropossalIds;
 
-
-
     /// @notice The map that keeps track of all proposasls submitted to the DAO
     mapping(bytes32 => Proposal) public proposals;
     /// @notice The map that tracks the voting adapter address per proposalId
@@ -209,6 +207,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     /// @notice The map that keeps track of configuration parameters for the DAO and adapters
     mapping(bytes32 => uint256) public mainConfiguration;
     mapping(bytes32 => address) public addressConfiguration;
+    mapping(bytes32 => string) public stringConfiguration;
     // vote types for proposal
     // mapping(bytes32 => VoteType) public proposalVoteTypes;
     uint256 public lockedAt;
@@ -288,6 +287,14 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     ) external hasAccess(this, AclFlag.SET_CONFIGURATION) {
         mainConfiguration[key] = value;
         emit ConfigurationUpdated(key, value);
+    }
+
+      function setStringConfiguration(
+        bytes32 key,
+        string calldata value
+    ) external hasAccess(this, AclFlag.SET_CONFIGURATION) {
+        stringConfiguration[key] = value;
+        // emit ConfigurationUpdated(key, value);
     }
 
     /**
@@ -397,6 +404,12 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         bytes32 key
     ) external view returns (address) {
         return addressConfiguration[key];
+    }
+
+     function getStringConfiguration(
+        bytes32 key
+    ) external view returns (string memory) {
+        return stringConfiguration[key];
     }
 
     /**
@@ -562,27 +575,26 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         _votingProposalIds.increment();
     }
 
-     function increaseFeesId()
+    function increaseFeesId()
         external
         hasAccess(this, AclFlag.INCREASE_FEE_ID)
     {
         _feesProposalIds.increment();
     }
 
-     function increasePollForInvestmentId()
+    function increasePollForInvestmentId()
         external
         hasAccess(this, AclFlag.INCREASE_POLL_FOR_INVESTMENT_ID)
     {
         _pollForInvestmentProposalIds.increment();
     }
 
-     function increaseProposerMembershipId()
+    function increaseProposerMembershipId()
         external
         hasAccess(this, AclFlag.INCREASE_PROPOSER_MEMBERSHIP)
     {
         _proposerMembershipPropossalIds.increment();
     }
-
 
     /**
      * @notice Looks up if there is an extension of a given address
@@ -948,38 +960,57 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         return _govenorOutIds.current();
     }
 
-    function getCurrentFundEstablishmentProposalId() external view returns (uint256) {
+    function getCurrentFundEstablishmentProposalId()
+        external
+        view
+        returns (uint256)
+    {
         return _newFundProposalIds.current();
     }
 
-    function getCurrentInvestorCapProposalId()external view returns (uint256){
+    function getCurrentInvestorCapProposalId() external view returns (uint256) {
         return _InvestorCapProposalIds.current();
     }
 
-    function getCurrentGovernorMembershipProposalId()external view returns (uint256){
+    function getCurrentGovernorMembershipProposalId()
+        external
+        view
+        returns (uint256)
+    {
         return _governorMembershipProposalIds.current();
     }
 
-    function getCurrentInvestorMembershipProposalId()external view returns (uint256){
-        return _investorMembershipProposalIds.current();   
+    function getCurrentInvestorMembershipProposalId()
+        external
+        view
+        returns (uint256)
+    {
+        return _investorMembershipProposalIds.current();
     }
 
-    function getCurrentVotingProposalId()external view returns (uint256){
+    function getCurrentVotingProposalId() external view returns (uint256) {
         return _votingProposalIds.current();
     }
 
-     function getCurrentFeeProposalId()external view returns (uint256){
+    function getCurrentFeeProposalId() external view returns (uint256) {
         return _feesProposalIds.current();
     }
 
-     function getCurrentPollForInvestorProposalId()external view returns (uint256){
+    function getCurrentPollForInvestorProposalId()
+        external
+        view
+        returns (uint256)
+    {
         return _pollForInvestmentProposalIds.current();
     }
 
-     function getCurrentProposerMembershipProposalId()external view returns (uint256){
+    function getCurrentProposerMembershipProposalId()
+        external
+        view
+        returns (uint256)
+    {
         return _proposerMembershipPropossalIds.current();
     }
-
 
     /**
      * @notice Creates a new delegate checkpoint of a certain member

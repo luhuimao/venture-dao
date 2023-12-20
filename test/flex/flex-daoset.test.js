@@ -289,6 +289,7 @@ describe("daoset proposal...", () => {
 
         const flexDaoParticipantsMemberships = [
             0, // uint8 varifyType;
+            "flexDaoParticipantsMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -297,6 +298,7 @@ describe("daoset proposal...", () => {
 
         const flexDaoStewardMembershipInfo = [
             1, // bool enable;
+            "flexDaoStewardMembershipName",
             0, // uint256 varifyType;0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -318,6 +320,7 @@ describe("daoset proposal...", () => {
 
         const flexDaoPollsterMembershipInfo = [
             0, // uint8 varifyType;
+            "flexDaoPollsterMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -338,6 +341,7 @@ describe("daoset proposal...", () => {
 
         const flexDaoProposerMembershipInfo = [
             true,
+            "flexDaoProposerMembershipName",
             3, // uint8 varifyType;
             0, // uint256 minHolding;
             ZERO_ADDRESS, // address tokenAddress;
@@ -1591,6 +1595,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
 
         const flexDaoParticipantsMemberships = [
             0, // uint8 varifyType;
+            "flexDaoParticipantsMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -1599,6 +1604,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
 
         const flexDaoStewardMembershipInfo = [
             1, // bool enable;
+            "flexDaoStewardMembershipName",
             3, // uint256 varifyType;0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -1623,6 +1629,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
 
         const flexDaoPollsterMembershipInfo = [
             0, // uint8 varifyType;
+            "flexDaoPollsterMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -1643,6 +1650,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
 
         const flexDaoProposerMembershipInfo = [
             true,
+            "flexDaoProposerMembershipName",
             3, // uint8 varifyType;
             0, // uint256 minHolding;
             ZERO_ADDRESS, // address tokenAddress;

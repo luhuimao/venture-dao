@@ -84,7 +84,8 @@ library DaoHelper {
     //investor membership
     bytes32 internal constant VINTAGE_INVESTOR_MEMBERSHIP_ENABLE =
         keccak256("VINTAGE_INVESTOR_MEMBERSHIP_ENABLE");
-
+    bytes32 internal constant VINTAGE_INVESTOR_MEMBERSHIP_NAME =
+        keccak256("VINTAGE_INVESTOR_MEMBERSHIP_NAME");
     bytes32 internal constant VINTAGE_INVESTOR_MEMBERSHIP_TYPE =
         keccak256("VINTAGE_INVESTOR_MEMBERSHIP_TYPE");
 
@@ -102,6 +103,8 @@ library DaoHelper {
         keccak256("VINTAGE_GOVERNOR_MEMBERSHIP_ENABLE");
     bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_TYPE =
         keccak256("VINTAGE_GOVERNOR_MEMBERSHIP_TYPE");
+    bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_NAME =
+        keccak256("VINTAGE_GOVERNOR_MEMBERSHIP_NAME");
     bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_MIN_HOLDING =
         keccak256("VINTAGE_GOVERNOR_MEMBERSHIP_MIN_HOLDING");
     bytes32 internal constant VINTAGE_GOVERNOR_MEMBERSHIP_MIN_DEPOSIT =
@@ -206,6 +209,8 @@ library DaoHelper {
         keccak256("FLEX_INVESTOR_MEMBERSHIP_ENABLE");
     bytes32 internal constant FLEX_INVESTOR_MEMBERSHIP_TYPE =
         keccak256("FLEX_INVESTOR_MEMBERSHIP_TYPE");
+    bytes32 internal constant FLEX_INVESTOR_MEMBERSHIP_NAME =
+        keccak256("FLEX_INVESTOR_MEMBERSHIP_NAME");
     bytes32 internal constant FLEX_INVESTOR_MEMBERSHIP_MIN_HOLDING =
         keccak256("FLEX_INVESTOR_MEMBERSHIP_MIN_HOLDING");
     bytes32 internal constant FLEX_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS =
@@ -226,6 +231,8 @@ library DaoHelper {
     //-----pollvoter membership
     bytes32 internal constant FLEX_POLLVOTER_MEMBERSHIP_TYPE =
         keccak256("FLEX_POLLVOTER_MEMBERSHIP_TYPE");
+    bytes32 internal constant FLEX_POLLVOTER_MEMBERSHIP_NAME =
+        keccak256("FLEX_POLLVOTER_MEMBERSHIP_NAME");
     bytes32 internal constant FLEX_POLLVOTER_MEMBERSHIP_MIN_HOLDING =
         keccak256("FLEX_POLLVOTER_MEMBERSHIP_MIN_HOLDING");
     bytes32 internal constant FLEX_POLLVOTER_MEMBERSHIP_TOKEN_ADDRESS =
@@ -238,6 +245,8 @@ library DaoHelper {
     // -----flex steward membership setting
     bytes32 internal constant FLEX_GOVERNOR_MEMBERSHIP_ENABLE =
         keccak256("FLEX_STEWARD_MEMBERSHIP_ENABLE");
+    bytes32 internal constant FLEX_GOVERNOR_MEMBERSHIP_NAME =
+        keccak256("FLEX_GOVERNOR_MEMBERSHIP_NAME");
     bytes32 internal constant FLEX_GOVERNOR_MEMBERSHIP_TYPE =
         keccak256("FLEX_STEWARD_MEMBERSHIP_TYPE");
     bytes32 internal constant FLEX_GOVERNOR_MEMBERSHIP_MINI_HOLDING =
@@ -262,6 +271,8 @@ library DaoHelper {
     // -----flex proposer requirment setting
     bytes32 internal constant FLEX_PROPOSER_ENABLE =
         keccak256("FLEX_PROPOSER_ENABLE");
+    bytes32 internal constant FLEX_PROPOSER_MEMBERSHIP_NAME =
+        keccak256("FLEX_PROPOSER_MEMBERSHIP_NAME");
     bytes32 internal constant FLEX_PROPOSER_IDENTIFICATION_TYPE =
         keccak256("FLEX_PROPOSER_IDENTIFICATION_TYPE");
     bytes32 internal constant FLEX_PROPOSER_TOKEN_ADDRESS =
@@ -667,8 +678,8 @@ library DaoHelper {
         bytes32 proposalId
     ) internal view returns (uint256) {
         FlexInvestmentPoolExtension flexFungdingPoolExt = FlexInvestmentPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
-        );
+                dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
+            );
         address[] memory investors = flexFungdingPoolExt
             .getInvestorsByProposalId(proposalId);
 

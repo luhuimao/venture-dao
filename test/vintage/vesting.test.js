@@ -300,6 +300,7 @@ describe("vesting...", () => {
         this.testERC721 = erc721;
         const vintageDaoBackerMembershipInfo1 = [
             1, // bool enable;
+            "vintageDaoBackerMembershipInfo1",
             0, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -314,6 +315,7 @@ describe("vesting...", () => {
         //erc20
         const vintageDaoRaiserMembershipInfo1 = [
             1, // bool enable;
+            "vintageDaoRaiserMembershipInfo1",
             0, // uint256 varifyType;erc20
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
