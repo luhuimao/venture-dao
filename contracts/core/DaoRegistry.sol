@@ -170,7 +170,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
 
     // delegate key => member address mapping
     mapping(address => address) public memberAddressesByDelegatedKey;
-    EnumerableSet.AddressSet stewards;
+    EnumerableSet.AddressSet governors;
 
     // memberAddress => checkpointNum => DelegateCheckpoint
     mapping(address => mapping(uint32 => DelegateCheckpoint)) checkpoints;
@@ -319,10 +319,10 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         address memberAddress
     ) public hasAccess(this, AclFlag.NEW_MEMBER) {
         require(memberAddress != address(0x0), "invalid member address");
-        if (!stewards.contains(memberAddress)) {
-            stewards.add(memberAddress);
+        if (!governors.contains(memberAddress)) {
+            governors.add(memberAddress);
         }
-        stewards.add(memberAddress);
+        governors.add(memberAddress);
         Member storage member = members[memberAddress];
         if (!DaoHelper.getFlag(member.flags, uint8(MemberFlag.EXISTS))) {
             require(
@@ -346,8 +346,8 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         address memberAddress
     ) public hasAccess(this, AclFlag.REMOVE_MEMBER) {
         require(memberAddress != address(0x0), "invalid member address");
-        if (stewards.contains(memberAddress)) {
-            stewards.remove(memberAddress);
+        if (governors.contains(memberAddress)) {
+            governors.remove(memberAddress);
         }
         Member storage member = members[memberAddress];
         if (DaoHelper.getFlag(member.flags, uint8(MemberFlag.EXISTS))) {
@@ -944,8 +944,8 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         return checkpoints[memberAddr][lower].delegateKey;
     }
 
-    function getAllSteward() external view returns (address[] memory) {
-        return stewards.values();
+    function getAllGovernor() external view returns (address[] memory) {
+        return governors.values();
     }
 
     function getCurrentInvestmentProposalId() external view returns (uint256) {

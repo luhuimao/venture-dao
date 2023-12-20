@@ -521,7 +521,7 @@ library DaoHelper {
     function getAllActiveMember(
         DaoRegistry dao
     ) internal view returns (address[] memory) {
-        return dao.getAllSteward();
+        return dao.getAllGovernor();
     }
 
     function totalTokens(BankExtension bank) internal view returns (uint256) {

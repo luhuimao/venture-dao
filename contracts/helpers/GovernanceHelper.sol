@@ -52,7 +52,7 @@ library GovernanceHelper {
         DaoRegistry dao,
         bytes32 proposalId
     ) internal view returns (uint128) {
-        address[] memory allGovernors = dao.getAllSteward();
+        address[] memory allGovernors = dao.getAllGovernor();
         uint128 allGovernorweight;
         VintageVotingContract vintageVotingAdapt = VintageVotingContract(
             dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
@@ -76,7 +76,7 @@ library GovernanceHelper {
     function getAllVintageGovernorVotingWeight(
         DaoRegistry dao
     ) internal view returns (uint128) {
-        address[] memory allGovernors = dao.getAllSteward();
+        address[] memory allGovernors = dao.getAllGovernor();
         uint128 allStewardweight;
         for (uint8 i = 0; i < allGovernors.length; i++) {
             allStewardweight += getVintageVotingWeight(dao, allGovernors[i]);
