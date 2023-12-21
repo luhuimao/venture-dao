@@ -30,7 +30,9 @@ contract ColletiveFundingPoolContract is Reimbursable {
     error MAX_PATICIPANT_AMOUNT_REACH();
 
     mapping(address => EnumerableSet.AddressSet) fundInvestors;
-    mapping(address => FundState) fundState;
+    mapping(address => FundState) public fundState;
+
+    uint256 public protocolFee = (3 * 1e18) / 1000; // 0.3%
 
     struct DepostLocalVars {
         uint256 maxDepositAmount;
@@ -45,6 +47,18 @@ contract ColletiveFundingPoolContract is Reimbursable {
         IN_PROGRESS,
         DONE,
         FAILED
+    }
+    modifier onlyDaoFactoryOwner(DaoRegistry dao) {
+        require(msg.sender == DaoHelper.daoFactoryAddress(dao));
+        _;
+    }
+
+    function setProtocolFee(
+        DaoRegistry dao,
+        uint256 feeProtocol
+    ) external reimbursable(dao) onlyDaoFactoryOwner(dao) {
+        require(feeProtocol < 1e18 && feeProtocol > 0);
+        protocolFee = feeProtocol;
     }
 
     function withdraw(
@@ -182,6 +196,15 @@ contract ColletiveFundingPoolContract is Reimbursable {
         fundInvestors[address(dao)].remove(account);
     }
 
+    function resetFundRaiseState(DaoRegistry dao) external {
+        require(
+            msg.sender ==
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER),
+            "Access deny"
+        );
+        fundState[address(dao)] = FundState.IN_PROGRESS;
+    }
+
     function processFundRaise(DaoRegistry dao) public returns (bool) {
         uint256 fundRaiseTarget = dao.getConfiguration(
             DaoHelper.FUND_RAISING_TARGET
@@ -215,15 +238,6 @@ contract ColletiveFundingPoolContract is Reimbursable {
             );
         }
         return true;
-    }
-
-    function resetFundRaiseState(DaoRegistry dao) external {
-        require(
-            msg.sender ==
-                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER),
-            "FundingPoolAdapter::resetFundRaiseState::Access deny"
-        );
-        fundState[address(dao)] = FundState.IN_PROGRESS;
     }
 
     function balanceOf(

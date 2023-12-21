@@ -1393,6 +1393,34 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
+  {
+    id: adaptersIdsMap.COLLECTIVE_PAYBACK_TOKEN_ADAPTER,
+    name: "CollectivePaybackTokenAdapterContract",
+    alias: "collectivePaybackTokenAdapterContract",
+    path: "../../contracts/adapters/CollectivePaybackTokenAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.COLLECTIVE_ALLOCATION_ADAPTER,
+    name: "CollectiveAllocationAdapterContract",
+    alias: "collectiveAllocationAdapterContract",
+    path: "../../contracts/adapters/CollectiveAllocationAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
   /*****************************************************collective end*******************************************************/
 
   {

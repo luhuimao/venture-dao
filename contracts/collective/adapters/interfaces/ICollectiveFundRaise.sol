@@ -4,6 +4,7 @@ import "../../../core/DaoRegistry.sol";
 import "../CollectiveDaoSetProposalAdapter.sol";
 import "../CollectiveVotingAdapter.sol";
 import "../CollectiveFundingPoolAdapter.sol";
+import "../CollectiveFundingProposalAdapter.sol";
 
 interface ICollectiveFundRaise {
     struct ProposalDetails {
@@ -56,6 +57,11 @@ interface ICollectiveFundRaise {
     struct SubmitProposalLocalVars {
         ColletiveDaoSetProposalContract daosetAdapt;
         bytes32 proposalId;
+        ColletiveFundingProposalContract investmentContract;
+        ColletiveFundingPoolContract investmentPoolAdapt;
+        uint256 lastFundEndTime;
+        uint256 refundDuration;
+        uint256 protocolFeeRatio;
     }
 
     struct ProcessProposalLocalVars {
@@ -83,4 +89,7 @@ interface ICollectiveFundRaise {
         uint256 nbNo,
         uint256 voteResult
     );
+
+    error LAST_NEW_FUND_PROPOSAL_NOT_FINISH();
+    error INVALID_PARAM();
 }

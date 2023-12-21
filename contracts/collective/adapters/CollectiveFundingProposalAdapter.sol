@@ -55,6 +55,20 @@ contract ColletiveFundingProposalContract is
     function submitProposal(
         ProposalParams calldata params
     ) external reimbursable(params.dao) onlyMember(params.dao) returns (bool) {
+        ColletiveFundingPoolContract investmentPoolAdapt = ColletiveFundingPoolContract(
+                params.dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+                )
+            );
+        investmentPoolAdapt.processFundRaise(params.dao);
+        require(
+            investmentPoolAdapt.fundState(address(params.dao)) ==
+                ColletiveFundingPoolContract.FundState.DONE &&
+                block.timestamp >
+                params.dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END),
+            "Only can submit proposal in investing period"
+        );
+
         params.dao.increaseInvestmentId();
         SubmitProposalLocalVars memory vars;
         vars.proposalId = TypeConver.bytesToBytes32(
@@ -98,13 +112,14 @@ contract ColletiveFundingProposalContract is
         // Sponsors the proposal.
         params.dao.sponsorProposal(
             vars.proposalId,
-            params.dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
+            params.dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
         );
 
         //Inserts proposal at the end of the queue.
         proposalQueue[address(params.dao)].pushBack(vars.proposalId);
 
         emit ProposalCreated(address(params.dao), vars.proposalId);
+        return true;
     }
 
     function startVotingProcess(

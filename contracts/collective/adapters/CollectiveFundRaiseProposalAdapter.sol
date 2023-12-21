@@ -19,8 +19,8 @@ contract ColletiveFundRaiseProposalContract is
     mapping(DaoRegistry => mapping(bytes32 => EnumerableSet.AddressSet)) priorityDepositorWhitelist;
     mapping(DaoRegistry => mapping(bytes32 => ProposalDetails))
         public proposals;
-
     mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
+    mapping(address => bytes32) public lastProposalIds;
 
     function daosetProposalCheck(DaoRegistry dao) internal view returns (bool) {
         ColletiveDaoSetProposalContract daoset = ColletiveDaoSetProposalContract(
@@ -32,7 +32,18 @@ contract ColletiveFundRaiseProposalContract is
     function submitProposal(
         ProposalParams calldata params
     ) external reimbursable(params.dao) onlyMember(params.dao) returns (bool) {
+        if (
+            lastProposalIds[address(params.dao)] != bytes32(0x0) &&
+            (proposals[params.dao][lastProposalIds[address(params.dao)]]
+                .state ==
+                ProposalState.Voting ||
+                proposals[params.dao][lastProposalIds[address(params.dao)]]
+                    .state ==
+                ProposalState.Executing)
+        ) revert LAST_NEW_FUND_PROPOSAL_NOT_FINISH();
+
         SubmitProposalLocalVars memory vars;
+
         vars.daosetAdapt = ColletiveDaoSetProposalContract(
             params.dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
         );
@@ -40,6 +51,58 @@ contract ColletiveFundRaiseProposalContract is
             vars.daosetAdapt.isProposalAllDone(params.dao),
             "DaoSet Proposal Undone"
         );
+
+        vars.investmentContract = ColletiveFundingProposalContract(
+            params.dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
+        );
+        require(
+            vars.investmentContract.getQueueLength(params.dao) <= 0 &&
+                vars.investmentContract.ongoingProposal(address(params.dao)) ==
+                bytes32(0),
+            "Undone Investment Proposal"
+        );
+        vars.lastFundEndTime = params.dao.getConfiguration(
+            DaoHelper.FUND_END_TIME
+        );
+        vars.refundDuration = params.dao.getConfiguration(
+            DaoHelper.RETURN_DURATION
+        );
+        vars.investmentPoolAdapt = ColletiveFundingPoolContract(
+            params.dao.getAdapterAddress(
+                DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+            )
+        );
+        require(
+            vars.investmentPoolAdapt.poolBalance(params.dao) <= 0,
+            "!clear fund"
+        );
+        //fund state check
+        require(
+            vars.investmentPoolAdapt.fundState(address(params.dao)) ==
+                ColletiveFundingPoolContract.FundState.NOT_STARTED ||
+                vars.investmentPoolAdapt.fundState(address(params.dao)) ==
+                ColletiveFundingPoolContract.FundState.FAILED ||
+                (vars.investmentPoolAdapt.fundState(address(params.dao)) ==
+                    ColletiveFundingPoolContract.FundState.DONE &&
+                    block.timestamp >
+                    vars.lastFundEndTime + vars.refundDuration),
+            "not now"
+        );
+
+        // params check
+        vars.protocolFeeRatio = vars.investmentPoolAdapt.protocolFee();
+        if (
+            params.fundInfo.miniTarget <= 0 ||
+            (params.fundInfo.maxCap > 0 &&
+                params.fundInfo.maxCap < params.fundInfo.miniTarget) ||
+            params.fundInfo.miniDeposit < 0 ||
+            (params.fundInfo.maxDeposit > 0 &&
+                params.fundInfo.maxDeposit <= params.fundInfo.miniDeposit) ||
+            params.timeInfo.startTime < block.timestamp ||
+            params.timeInfo.endTime < params.timeInfo.startTime
+        ) {
+            revert INVALID_PARAM();
+        }
         params.dao.increaseFundEstablishmentId();
         vars.proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -102,7 +165,7 @@ contract ColletiveFundRaiseProposalContract is
             bytes("")
         );
         unDoneProposals[address(params.dao)].add(vars.proposalId);
-
+        lastProposalIds[address(params.dao)] = vars.proposalId;
         emit ProposalCreated(address(params.dao), vars.proposalId);
         return true;
     }
@@ -115,9 +178,9 @@ contract ColletiveFundRaiseProposalContract is
 
         ProposalDetails storage proposalDetails = proposals[dao][proposalId];
         dao.processProposal(proposalId);
-        // vars.investmentPoolAdapt = ColletiveFundingPoolContract(
-        //     dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER)
-        // );
+        vars.investmentPoolAdapt = ColletiveFundingPoolContract(
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER)
+        );
         vars.votingContract = CollectiveVotingContract(
             dao.votingAdapter(proposalId)
         );
@@ -136,6 +199,7 @@ contract ColletiveFundRaiseProposalContract is
             setFundRaiseConfiguration(dao, proposalDetails);
 
             //reset fund raise state
+            vars.investmentPoolAdapt.resetFundRaiseState(dao);
             proposalDetails.state = ProposalState.Done;
         } else if (
             vars.voteResult == ICollectiveVoting.VotingState.NOT_PASS ||

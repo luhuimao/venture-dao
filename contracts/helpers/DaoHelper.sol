@@ -472,7 +472,7 @@ library DaoHelper {
     bytes32 internal constant COLLECTIVE_ALLOCATION_ADAPTER =
         keccak256("collective-allocation-adapter");
     bytes32 internal constant COLLECTIVE_PAYBACK_TOKEN_ADAPTER =
-        keccak256("collective-payback-adapter");
+        keccak256("collective-payback-token-adapter");
     bytes32 internal constant COLLECTIVE_VESTING_ADAPTER =
         keccak256("collective-vesting-adapter");
     //---------------------------------collective---------------------------------

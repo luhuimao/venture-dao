@@ -20,6 +20,8 @@ export const adaptersIdsMap: Record<string, string> = {
   COLLECTIVE_VOTING_ADAPTER: "collective-voting-adapter",
   COLLECTIVE_FUNDING_POOL_ADAPTER: "collective-funding-pool-adapter",
   COLLECTIVE_FUND_RAISE_ADAPTER: "collective-fund-raise-adapter",
+  COLLECTIVE_PAYBACK_TOKEN_ADAPTER: "collective-payback-token-adapter",
+  COLLECTIVE_ALLOCATION_ADAPTER: "collective-allocation-adapter",
   /*******************collective end**********************/
 
   /*******************vintage**********************/
