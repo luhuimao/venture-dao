@@ -42,11 +42,11 @@ const deploySummonContract = async () => {
 
 async function main() {
     // await getVintageManagementFee();
-    // await getFlexEscrowTokenInfo();
+    await getFlexEscrowTokenInfo();
     // await getAdapterAddress();
     // await getDaoConfig();
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
-    await deploy();
+    // await deploy();
     // await getFlexdaoInvestorWhitelist();
     // await summonVintageDao();
     // await submitVintageDaosetProposal();
@@ -2202,11 +2202,13 @@ const getAdapterAddress = async () => {
 
 const getDaoConfig = async () => {
     const daoContrct = (await hre.ethers.
-        getContractFactory("DaoRegistry")).attach("0x550da0eCd373EC51c614c92f7cEEd875E902A5c8");
+        getContractFactory("DaoRegistry")).attach("0xE5968c5809110eF4cbcC1AC6CC9ba017e54Df069");
 
-    const config = await daoContrct.getConfiguration("0xb4c601c38beae7eebb719eda3438f59fcbfd4c6dd7d38c00665b6fd5b432df32");
+    const managementFee = await daoContrct.getConfiguration("0x64c49ee5084f4940c312104c41603e43791b03dad28152afd6eadb5b960a8a87");
+    const FLEX_MANAGEMENT_FEE_TYPE = await daoContrct.getConfiguration("0xda34ff95e06cbf2c9c32a559cd8aadd1a10104596417d62c03db2c1258df83d3");
 
-    console.log(config);
+    console.log("FLEX_MANAGEMENT_FEE_TYPE: ", FLEX_MANAGEMENT_FEE_TYPE);
+    console.log("managementFee:", hre.ethers.utils.formatEther(managementFee));
 }
 
 const getFlexdaoInvestorWhitelist = async () => {
@@ -2215,19 +2217,39 @@ const getFlexdaoInvestorWhitelist = async () => {
     const rel = await flexInvestomentPoolContrct.getParticipanWhitelist("0x2b4897ce0a178bf100bb1510b699850e3c46fdab");
     console.log(rel);
 }
-
 const getFlexEscrowTokenInfo = async () => {
     const erc20 = (await hre.ethers.getContractAt("openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol:IERC20",
         "0x47ac6a76383661f64a880f6eab189f9a7e327b59"));
     const escorwContrct = (await hre.ethers.
         getContractFactory("FlexInvestmentPaybackTokenAdapterContract")).attach("0xb64Df32CbaF9BF21474E771C0967bF9F3A63c747");
     const approvedAmount = await escorwContrct.approvedInfos(
-        "0x5bf1c746ce35b535913db869e958c03d404ff3bf",
-        "0xe958c03d404ff3bf496e766573746d656e742332000000000000000000000000",
+        "0xE5968c5809110eF4cbcC1AC6CC9ba017e54Df069",
+        "0xcc9ba017e54df069496e766573746d656e742331000000000000000000000000",
         "0x4e9e414e08b363fd97facf1b02e4489275420ea7",
         "0x47ac6a76383661f64a880f6eab189f9a7e327b59")
     const escrowContractBal = await erc20.balanceOf("0x4e9e414e08b363fd97facf1b02e4489275420ea7");
     const allowance = await erc20.allowance("0x4e9e414e08b363fd97facf1b02e4489275420ea7", "0xb64Df32CbaF9BF21474E771C0967bF9F3A63c747");
+
+    const maxFundAmount = hre.ethers.utils.parseEther("100").mul(hre.ethers.utils.parseEther("1"))
+        .div(hre.ethers.utils.parseEther("1")
+            .sub(hre.ethers.utils.parseEther("0.003"))
+            .sub(hre.ethers.utils.parseEther("0.01"))
+            .sub(hre.ethers.utils.parseEther("0.02"))
+        );
+    const protocolFee = maxFundAmount.mul(hre.ethers.utils.parseEther("0.003")).div(hre.ethers.utils.parseEther("1"));
+    const managementFee = maxFundAmount.mul(hre.ethers.utils.parseEther("0.01")).div(hre.ethers.utils.parseEther("1"));
+    const cashReward = maxFundAmount.mul(hre.ethers.utils.parseEther("0.02")).div(hre.ethers.utils.parseEther("1"));
+
+    const paybackAmount = (
+        maxFundAmount
+            .sub(protocolFee)
+            .sub(managementFee)
+            .sub(cashReward)
+    )
+        .mul(hre.ethers.utils.parseEther("1"))
+        .div(hre.ethers.utils.parseEther("2"));
+    console.log(maxFundAmount);
+    console.log(paybackAmount);
     console.log(escrowContractBal);
     console.log(allowance);
     console.log(approvedAmount);
