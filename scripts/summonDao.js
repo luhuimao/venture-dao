@@ -2219,14 +2219,14 @@ const getFlexdaoInvestorWhitelist = async () => {
 }
 const getFlexEscrowTokenInfo = async () => {
     const erc20 = (await hre.ethers.getContractAt("openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol:IERC20",
-        "0x47ac6a76383661f64a880f6eab189f9a7e327b59"));
+        "0xec00be6efae15428c3badbe1a8dd068744098d5c"));
     const escorwContrct = (await hre.ethers.
         getContractFactory("FlexInvestmentPaybackTokenAdapterContract")).attach("0xb64Df32CbaF9BF21474E771C0967bF9F3A63c747");
     const approvedAmount = await escorwContrct.approvedInfos(
-        "0xE5968c5809110eF4cbcC1AC6CC9ba017e54Df069",
-        "0xcc9ba017e54df069496e766573746d656e742331000000000000000000000000",
+        "0x2ed8ca7d1005fba46466958cd45fe07a15c06cc5",
+        "0xd45fe07a15c06cc5496e766573746d656e742332000000000000000000000000",
         "0x4e9e414e08b363fd97facf1b02e4489275420ea7",
-        "0x47ac6a76383661f64a880f6eab189f9a7e327b59")
+        "0xec00be6efae15428c3badbe1a8dd068744098d5c")
     const escrowContractBal = await erc20.balanceOf("0x4e9e414e08b363fd97facf1b02e4489275420ea7");
     const allowance = await erc20.allowance("0x4e9e414e08b363fd97facf1b02e4489275420ea7", "0xb64Df32CbaF9BF21474E771C0967bF9F3A63c747");
 
