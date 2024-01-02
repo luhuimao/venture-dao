@@ -66,7 +66,7 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
     }
 
     /// @dev - Events for Bank
-    event NewBalance(address member, uint160 amount);
+    // event NewBalance(address member, uint160 amount);
 
     event Withdraw(address account, address tokenAddr, uint160 amount);
 
@@ -90,7 +90,7 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
     event Recovered(address token, uint256 amount);
     event NewBalance(address member, address tokenAddr, uint128 amount);
 
-    event Withdraw(address account, address tokenAddr, uint128 amount);
+    // event Withdraw(address account, address tokenAddr, uint128 amount);
 
     event DistributeFund(
         address distributeTo,
@@ -304,6 +304,35 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         erc20.transferFrom(msg.sender, address(this), amount);
     }
 
+    function addToBalance(
+        address depositer,
+        address fundTokenAddr,
+        uint256 amount
+    ) public hasExtensionAccess(AclFlag.ADD_TO_BALANCE) {
+        _newInvestor(depositer);
+        IERC20 erc20 = IERC20(fundTokenAddr);
+        uint256 oldBal = balanceOf(depositer);
+        uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL));
+        uint256 validTotalFunds = balanceOf(
+            address(DaoHelper.DAOSQUARE_TREASURY)
+        );
+        if (dao.isMember(depositer)) {
+            _createNewAmountCheckpoint(
+                address(DaoHelper.GP_POOL),
+                fundTokenAddr,
+                totalGPFunds + amount
+            );
+        }
+        _createNewAmountCheckpoint(depositer, fundTokenAddr, oldBal + amount);
+
+        _createNewAmountCheckpoint(
+            address(DaoHelper.DAOSQUARE_TREASURY),
+            fundTokenAddr,
+            validTotalFunds + amount
+        );
+        erc20.transferFrom(msg.sender, address(this), amount);
+    }
+
     /**
      * @notice Remove from a member's balance of a given token
      * @param member The member whose balance will be updated
@@ -379,6 +408,17 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
                 : 0;
     }
 
+    function balanceOfToken(
+        address investorAddr,
+        address token
+    ) public view returns (uint256) {
+        uint32 nCheckpoints = numCheckpoints[token][investorAddr];
+        return
+            nCheckpoints > 0
+                ? checkpoints[token][investorAddr][nCheckpoints - 1].amount
+                : 0;
+    }
+
     /**
      * @notice Determine the prior number of votes for an account as of a block number
      * @dev Block number must be a finalized block or else this function will revert to prevent misinformation.
@@ -436,7 +476,7 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         return
             super.supportsInterface(interfaceId) ||
             this.subtractFromBalance.selector == interfaceId ||
-            this.addToBalance.selector == interfaceId ||
+            // this.addToBalance.selector == interfaceId ||
             this.getPriorAmount.selector == interfaceId ||
             this.balanceOf.selector == interfaceId ||
             // this.internalTransfer.selector == interfaceId ||

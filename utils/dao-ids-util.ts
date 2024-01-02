@@ -16,12 +16,17 @@ export const adaptersIdsMap: Record<string, string> = {
   SUMMON_COLLECTIVE_DAO: "summon-collecgtive-dao",
   COLLECTIVE_GOVERNOR_MANAGEMENT: "collective-governor-management-adapter",
   COLLECTIVE_DAO_SET_ADAPTER: "collective-daoset-adapter",
-  COLLECTIVE_FUNDING_ADAPTER: "collective-fundning-adapter",
+  COLLECTIVE_FUNDING_ADAPTER: "collective-funding-adapter",
   COLLECTIVE_VOTING_ADAPTER: "collective-voting-adapter",
   COLLECTIVE_FUNDING_POOL_ADAPTER: "collective-funding-pool-adapter",
   COLLECTIVE_FUND_RAISE_ADAPTER: "collective-fund-raise-adapter",
   COLLECTIVE_PAYBACK_TOKEN_ADAPTER: "collective-payback-token-adapter",
   COLLECTIVE_ALLOCATION_ADAPTER: "collective-allocation-adapter",
+  COLLECTIVE_DISTRIBUTE_ADAPTER: "collective-distribute-adapter",
+  COLLECTIVE_TOP_UP_ADAPTER: "collective-topup-adapter",
+  COLLECTIVE_EXPENSE_ADAPTER: "collective-expense-adapter",
+  COLLECTIVE_VESTING_ADAPTER: "collective-vesting-adapter",
+  COLLECTIVE_ESCROW_FUND_ADAPTER: "collective-escrow-fund-adapter",
   /*******************collective end**********************/
 
   /*******************vintage**********************/

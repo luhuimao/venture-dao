@@ -39,6 +39,7 @@ contract CollectiveEscrowFundAdapterContract is AdapterGuard, Reimbursable {
             exactAmount = IERC20(token).balanceOf(address(this));
         }
         IERC20(token).safeTransfer(msg.sender, exactAmount);
+        escrowFunds[address(dao)][token][msg.sender] = 0;
         emit WithDraw(address(dao), token, msg.sender, exactAmount);
     }
 
@@ -50,7 +51,9 @@ contract CollectiveEscrowFundAdapterContract is AdapterGuard, Reimbursable {
     ) external {
         require(
             msg.sender ==
-                dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER),
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+                ),
             "access deny"
         );
         escrowFunds[address(dao)][token][account] += amount;

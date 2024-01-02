@@ -1280,9 +1280,9 @@ export const contracts: Array<ContractConfig> = [
   },
   {
     id: adaptersIdsMap.COLLECTIVE_GOVERNOR_MANAGEMENT,
-    name: "ColletiveGovernorManagementContract",
+    name: "ColletiveGovernorManagementAdapterContract",
     alias: "colletiveGovernorManagementContract",
-    path: "../../contracts/adapters/ColletiveGovernorManagementContract",
+    path: "../../contracts/adapters/ColletiveGovernorManagementAdapterContract",
     enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
@@ -1300,9 +1300,9 @@ export const contracts: Array<ContractConfig> = [
   },
   {
     id: adaptersIdsMap.COLLECTIVE_DAO_SET_ADAPTER,
-    name: "ColletiveDaoSetProposalContract",
+    name: "ColletiveDaoSetProposalAdapterContract",
     alias: "colletiveDaoSetProposalContract",
-    path: "../../contracts/adapters/ColletiveDaoSetProposalContract",
+    path: "../../contracts/adapters/ColletiveDaoSetProposalAdapterContract",
     enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
@@ -1321,9 +1321,9 @@ export const contracts: Array<ContractConfig> = [
   },
   {
     id: adaptersIdsMap.COLLECTIVE_FUNDING_ADAPTER,
-    name: "ColletiveFundingProposalContract",
+    name: "ColletiveFundingProposalAdapterContract",
     alias: "colletiveFundingProposalContract",
-    path: "../../contracts/adapters/ColletiveFundingProposalContract",
+    path: "../../contracts/adapters/ColletiveFundingProposalAdapterContract",
     enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
@@ -1340,9 +1340,9 @@ export const contracts: Array<ContractConfig> = [
   },
   {
     id: adaptersIdsMap.COLLECTIVE_VOTING_ADAPTER,
-    name: "CollectiveVotingContract",
+    name: "CollectiveVotingAdapterContract",
     alias: "collectiveVotingContract",
-    path: "../../contracts/adapters/CollectiveVotingContract",
+    path: "../../contracts/adapters/CollectiveVotingAdapterContract",
     enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
@@ -1354,9 +1354,9 @@ export const contracts: Array<ContractConfig> = [
   },
   {
     id: adaptersIdsMap.COLLECTIVE_FUNDING_POOL_ADAPTER,
-    name: "ColletiveFundingPoolContract",
+    name: "ColletiveFundingPoolAdapterContract",
     alias: "colletiveFundingPoolContract",
-    path: "../../contracts/adapters/ColletiveFundingPoolContract",
+    path: "../../contracts/adapters/ColletiveFundingPoolAdapterContract",
     enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
@@ -1377,9 +1377,9 @@ export const contracts: Array<ContractConfig> = [
   },
   {
     id: adaptersIdsMap.COLLECTIVE_FUND_RAISE_ADAPTER,
-    name: "ColletiveFundRaiseProposalContract",
+    name: "ColletiveFundRaiseProposalAdapterContract",
     alias: "colletiveFundRaiseProposalContract",
-    path: "../../contracts/adapters/ColletiveFundRaiseProposalContract",
+    path: "../../contracts/adapters/ColletiveFundRaiseProposalAdapterContract",
     enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
@@ -1412,6 +1412,81 @@ export const contracts: Array<ContractConfig> = [
     name: "CollectiveAllocationAdapterContract",
     alias: "collectiveAllocationAdapterContract",
     path: "../../contracts/adapters/CollectiveAllocationAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.COLLECTIVE_DISTRIBUTE_ADAPTER,
+    name: "CollectiveDistributeAdatperContract",
+    alias: "collectiveDistributeAdatperContract",
+    path: "../../contracts/adapters/CollectiveDistributeAdatperContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+        [extensionsIdsMap.COLLECTIVE_FUNDING_POOL_EXT]: [
+          collectiveFundingPoolExtensionAclFlagsMap.WITHDRAW,
+          collectiveFundingPoolExtensionAclFlagsMap.DISTRIBUTE_FUNDS,
+          collectiveFundingPoolExtensionAclFlagsMap.SUB_FROM_BALANCE
+        ],
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.COLLECTIVE_TOP_UP_ADAPTER,
+    name: "ColletiveTopUpProposalAdapterContract",
+    alias: "colletiveTopUpProposalContract",
+    path: "../../contracts/adapters/ColletiveTopUpProposalAdapterContract",
+    enabled: false,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.COLLECTIVE_ENPENSE_ADAPTER,
+    name: "ColletiveExpenseProposalAdapterContract",
+    alias: "colletiveExpenseProposalContract",
+    path: "../../contracts/adapters/ColletiveExpenseProposalAdapterContract",
+    enabled: false,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.COLLECTIVE_VESTING_ADAPTER,
+    name: "CollectiveVestingAdapterContract",
+    alias: "collectiveVestingContract",
+    path: "../../contracts/adapters/CollectiveVestingAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.COLLECTIVE_ESCROW_FUND_ADAPTER,
+    name: "CollectiveEscrowFundAdapterContract",
+    alias: "collectiveEscrowFundAdapterContract",
+    path: "../../contracts/adapters/CollectiveEscrowFundAdapterContract",
     enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,

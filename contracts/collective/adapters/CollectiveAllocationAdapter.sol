@@ -103,7 +103,7 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
         // ISablier streamingPaymentContract;
         // IFuroVesting vestingContract;
         CollectiveInvestmentPoolExtension fundingpool;
-        ColletiveFundingPoolContract fundingPoolAdapt;
+        ColletiveFundingPoolAdapterContract fundingPoolAdapt;
         uint256 totalReward;
         uint256 oldAllowance;
         uint256 newAllowance;
@@ -138,7 +138,7 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
                 address(
                     dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
                 ),
-            "allocateProjectToken::access deny"
+            "access deny"
         );
         allocateProjectTokenLocalVars memory vars;
 
@@ -160,7 +160,7 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
                 ),
                 address(this)
             ) >= vars.tokenAmount,
-            "AllocationAdapter::allocateProjectToken::insufficient allowance"
+            "insufficient allowance"
         );
         IERC20(tokenAddress).transferFrom(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_PAYBACK_TOKEN_ADAPTER),
@@ -204,7 +204,7 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
             dao.getAdapterAddress(DaoHelper.BEN_TO_BOX),
             vars.newAllowance
         );
-        vars.fundingPoolAdapt = ColletiveFundingPoolContract(
+        vars.fundingPoolAdapt = ColletiveFundingPoolAdapterContract(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER)
         );
         address[] memory allInvestors = vars.fundingPoolAdapt.getAllInvestors(
@@ -244,7 +244,7 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
         }
         require(
             vars.totalReward <= vars.tokenAmount,
-            "AllocationAdapter::allocateProjectToken::distribute token amount exceeds return token amount"
+            ">payback amount"
         );
         emit AllocateToken(
             address(dao),
@@ -262,7 +262,7 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
         require(
             msg.sender ==
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_VESTING_ADAPTER),
-            "AllocationAdapter:streamCreated:Access deny"
+            "Access deny"
         );
         vestingInfos[address(dao)][proposalId][recipient].created = true;
 

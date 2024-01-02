@@ -67,10 +67,32 @@ interface ICollectiveFunding {
         bytes32 ongongingPrposalId;
         uint256 _propsalStopVotingTimestamp;
         ICollectiveVoting votingContract;
-        ColletiveFundingPoolContract investmentPoolAdapt;
+        ColletiveFundingPoolAdapterContract investmentPoolAdapt;
         bool escorwPaybackTokenSucceed;
     }
+
+    struct ProcessProposalLocalVars {
+        bytes32 ongoingProposalId;
+        CollectiveVotingAdapterContract votingContract;
+        ColletiveFundingPoolAdapterContract investmentPoolAdapt;
+        CollectiveInvestmentPoolExtension investmentpool;
+        ICollectiveVoting.VotingState voteResult;
+        uint256 nbYes;
+        uint256 nbNo;
+        uint256 allVotingWeight;
+        uint256 protocolFee;
+        uint256 managementFee;
+        uint256 proposerFundReward;
+    }
     event ProposalCreated(address daoAddr, bytes32 proposalId);
-    event ProposalExecuted(address daoAddr, bytes32 proposalId);
+    event ProposalExecuted(
+        address daoAddr,
+        bytes32 proposalId,
+        uint256 allVotingWeight,
+        uint256 nbYes,
+        uint256 nbNo
+    );
     event StartVoting(address daoAddr, bytes32 proposalId);
+
+    error INVESTMENT_PROPOSAL_NOT_FINALIZED();
 }

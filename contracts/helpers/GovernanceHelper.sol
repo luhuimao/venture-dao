@@ -15,6 +15,7 @@ import "../vintage/adapters/VintageVoting.sol";
 import "../vintage/adapters/VintageRaiserAllocation.sol";
 import "../flex/adatpers/FlexVoting.sol";
 import "../flex/adatpers/FlexStewardAllocation.sol";
+import "../collective/adapters/CollectiveVotingAdapter.sol";
 import "../collective/adapters/CollectiveFundingPoolAdapter.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
@@ -398,6 +399,38 @@ library GovernanceHelper {
         DaoRegistry dao
     ) internal view returns (uint128) {}
 
+    function getCollectiveAllGovernorVotingWeightByProposalId(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) internal view returns (uint128) {
+        address[] memory allGovernors = dao.getAllSteward();
+        uint128 allGovernorweight;
+        CollectiveVotingAdapterContract collectiveVotingAdapt = CollectiveVotingAdapterContract(
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
+        );
+        for (uint8 i = 0; i < allGovernors.length; i++) {
+            if (
+                collectiveVotingAdapt.checkIfVoted(
+                    dao,
+                    proposalId,
+                    allGovernors[i]
+                )
+            ) {
+                allGovernorweight += collectiveVotingAdapt.voteWeights(
+                    address(dao),
+                    proposalId,
+                    allGovernors[i]
+                );
+            } else {
+                allGovernorweight += getCollectiveVotingWeight(
+                    dao,
+                    allGovernors[i]
+                );
+            }
+        }
+        return allGovernorweight;
+    }
+
     function getCollectiveVotingWeight(
         DaoRegistry dao,
         address account
@@ -408,7 +441,7 @@ library GovernanceHelper {
         uint256 votingWeightedType = dao.getConfiguration(
             DaoHelper.COLLECTIVE_VOTING_WEIGHTED_TYPE
         ); // 0. quantity 1. log2 2. 1 voter 1 vote
-        ColletiveFundingPoolContract fundingiPoolAdapt = ColletiveFundingPoolContract(
+        ColletiveFundingPoolAdapterContract fundingiPoolAdapt = ColletiveFundingPoolAdapterContract(
                 dao.getAdapterAddress(
                     DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
                 )

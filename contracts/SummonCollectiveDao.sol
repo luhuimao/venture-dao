@@ -11,7 +11,7 @@ import "hardhat/console.sol";
 contract SummonCollectiveDao {
     constructor() {}
 
-    event FlexDaoCreated(
+    event CollectiveDaoCreated(
         address daoFactoryAddress,
         address daoAddr,
         string name,
@@ -47,9 +47,8 @@ contract SummonCollectiveDao {
     struct CollectiveDaoInfo {
         string name;
         address creator;
+        address currency;
         uint256 redemptionFee;
-        // uint256 collectiveDaoManagementfee;
-        address managementFeeAddress;
         uint256 proposerInvestTokenReward;
         uint256 proposerPaybackTokenReward;
         address[] collectiveDaoGenesisGovernor;
@@ -79,7 +78,7 @@ contract SummonCollectiveDao {
             newDaoAddr != address(0x0),
             "SummmonDao::summonCollectiveDao::create dao failed"
         );
-        emit FlexDaoCreated(daoFacAddr, newDaoAddr, daoName, creator);
+        emit CollectiveDaoCreated(daoFacAddr, newDaoAddr, daoName, creator);
         return true;
     }
 
@@ -218,18 +217,12 @@ contract SummonCollectiveDao {
     function summonCollectiveDao6(
         address newDaoAddr,
         uint256 redemptFee,
-        // uint256 collectiveDaoManagementfee,
-        address managementFeeAddress,
+        address currencyAddress,
         uint256 proposerInvestTokenReward,
         uint256 proposerPaybackTokenReward
     ) external returns (bool) {
         DaoRegistry newDao = DaoRegistry(newDaoAddr);
         require(address(this) == msg.sender);
-
-        // newDao.setConfiguration(
-        //     DaoHelper.COLLECTIVE_MANAGEMENT_FEE_AMOUNT,
-        //     collectiveDaoManagementfee
-        // );
 
         newDao.setConfiguration(
             DaoHelper.COLLECTIVE_REDEMPT_FEE_AMOUNT,
@@ -245,8 +238,8 @@ contract SummonCollectiveDao {
         );
 
         newDao.setAddressConfiguration(
-            DaoHelper.COLLECTIVE_MANAGEMENT_FEE_RECEIVE_ADDRESS,
-            managementFeeAddress
+            DaoHelper.FUND_RAISING_CURRENCY_ADDRESS,
+            currencyAddress
         );
         return true;
     }
@@ -310,9 +303,9 @@ contract SummonCollectiveDao {
                 vType == 3 &&
                 collectiveDaoGovernorMembershipWhitelist.length > 0
             ) {
-                ColletiveGovernorManagementContract governorContract = ColletiveGovernorManagementContract(
+                ColletiveGovernorManagementAdapterContract governorContract = ColletiveGovernorManagementAdapterContract(
                         dao.getAdapterAddress(
-                            DaoHelper.COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPT
+                            DaoHelper.COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPTER
                         )
                     );
                 for (
@@ -347,13 +340,16 @@ contract SummonCollectiveDao {
 
         //remove summondaoContract && DaoFacConctract from dao member list
         dao.removeMember(dao.daoFactory());
-        dao.finalizeDao();
-        ColletiveGovernorManagementContract governorContract = ColletiveGovernorManagementContract(
+
+        ColletiveGovernorManagementAdapterContract governorContract = ColletiveGovernorManagementAdapterContract(
                 dao.getAdapterAddress(
-                    DaoHelper.COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPT
+                    DaoHelper.COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPTER
                 )
             );
+
         governorContract.quit(dao);
+        dao.finalizeDao();
+
         return true;
     }
 
@@ -396,9 +392,23 @@ contract SummonCollectiveDao {
         Call[9] calls;
     }
 
-    function summonFlexDao(
+    modifier ParamCheck(CollectiveDaoParams calldata params) {
+        require(
+            params.collectiveDaoInfo.currency != address(0x0) &&
+                params.collectiveDaoInfo.redemptionFee <
+                DaoHelper.TOKEN_AMOUNT_PRECISION &&
+                params.collectiveDaoInfo.proposerInvestTokenReward <
+                DaoHelper.TOKEN_AMOUNT_PRECISION &&
+                params.collectiveDaoInfo.proposerPaybackTokenReward <
+                DaoHelper.TOKEN_AMOUNT_PRECISION,
+            "Summon Flex DAO::Invalid Management Fee Amount"
+        );
+        _;
+    }
+
+    function summonCollectiveDao(
         CollectiveDaoParams calldata params
-    ) external returns (bool) {
+    ) external ParamCheck(params) returns (bool) {
         CollectiveDaoCallLocalVars memory vars;
         vars.summonCollectiveDao1Payload = abi.encodeWithSignature(
             "summonCollectiveDao1(address,string,address)",
@@ -468,8 +478,7 @@ contract SummonCollectiveDao {
             "summonCollectiveDao6(address,uint256,address,uint256,uint256)",
             vars.newDaoAddr,
             params.collectiveDaoInfo.redemptionFee,
-            // params.collectiveDaoInfo.collectiveDaoManagementfee,
-            params.collectiveDaoInfo.managementFeeAddress,
+            params.collectiveDaoInfo.currency,
             params.collectiveDaoInfo.proposerInvestTokenReward,
             params.collectiveDaoInfo.proposerPaybackTokenReward
         );

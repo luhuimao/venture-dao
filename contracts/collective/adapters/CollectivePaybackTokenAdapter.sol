@@ -35,7 +35,6 @@ contract CollectivePaybackTokenAdapterContract {
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER),
             "!access"
         );
-
         if (
             approvedInfos[address(dao)][proposalId][approver][erc20] <
             escrowAmount ||

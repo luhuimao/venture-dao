@@ -9,8 +9,10 @@ import "./CollectiveDaoSetProposalAdapter.sol";
 import "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./CollectivePaybackTokenAdapter.sol";
+import "./CollectiveDistributeAdapter.sol";
+import "./CollectiveAllocationAdapter.sol";
 
-contract ColletiveFundingProposalContract is
+contract ColletiveFundingProposalAdapterContract is
     ICollectiveFunding,
     Reimbursable,
     MemberGuard
@@ -32,7 +34,7 @@ contract ColletiveFundingProposalContract is
 
     address public protocolAddress =
         address(0x9ac9c636404C8d46D9eb966d7179983Ba5a3941A);
-
+    uint256 constant PERCENTAGE_PRECISION = 1e18;
     modifier onlyDaoFactoryOwner(DaoRegistry dao) {
         require(msg.sender == DaoHelper.daoFactoryAddress(dao));
         _;
@@ -46,7 +48,7 @@ contract ColletiveFundingProposalContract is
     }
 
     function daosetProposalCheck(DaoRegistry dao) internal view returns (bool) {
-        ColletiveDaoSetProposalContract daoset = ColletiveDaoSetProposalContract(
+        ColletiveDaoSetProposalAdapterContract daoset = ColletiveDaoSetProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
             );
         return daoset.isProposalAllDone(dao);
@@ -55,7 +57,7 @@ contract ColletiveFundingProposalContract is
     function submitProposal(
         ProposalParams calldata params
     ) external reimbursable(params.dao) onlyMember(params.dao) returns (bool) {
-        ColletiveFundingPoolContract investmentPoolAdapt = ColletiveFundingPoolContract(
+        ColletiveFundingPoolAdapterContract investmentPoolAdapt = ColletiveFundingPoolAdapterContract(
                 params.dao.getAdapterAddress(
                     DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
                 )
@@ -63,7 +65,7 @@ contract ColletiveFundingProposalContract is
         investmentPoolAdapt.processFundRaise(params.dao);
         require(
             investmentPoolAdapt.fundState(address(params.dao)) ==
-                ColletiveFundingPoolContract.FundState.DONE &&
+                ColletiveFundingPoolAdapterContract.FundState.DONE &&
                 block.timestamp >
                 params.dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END),
             "Only can submit proposal in investing period"
@@ -82,12 +84,19 @@ contract ColletiveFundingProposalContract is
         params.dao.submitProposal(vars.proposalId);
 
         // Saves the state of the proposal.
+        uint256 totalFund = (params.fundingInfo.fundingAmount *
+            PERCENTAGE_PRECISION) /
+            (PERCENTAGE_PRECISION -
+                (investmentPoolAdapt.protocolFee() +
+                    params.dao.getConfiguration(
+                        DaoHelper.COLLECTIVE_PROPOSER_INVEST_TOKEN_REWARD_AMOUNT
+                    )));
 
         proposals[address(params.dao)][vars.proposalId] = ProposalDetails(
             FundingInfo(
                 params.fundingInfo.token,
                 params.fundingInfo.fundingAmount,
-                0,
+                totalFund,
                 params.fundingInfo.receiver
             ),
             EscrowInfo(
@@ -148,7 +157,7 @@ contract ColletiveFundingProposalContract is
             );
         }
 
-        vars.investmentPoolAdapt = ColletiveFundingPoolContract(
+        vars.investmentPoolAdapt = ColletiveFundingPoolAdapterContract(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER)
         );
         vars._propsalStopVotingTimestamp =
@@ -171,13 +180,10 @@ contract ColletiveFundingProposalContract is
         vars.votingContract = ICollectiveVoting(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
         );
-        //fund inefficient || refund period
+        //fund inefficient
         if (
             vars.investmentPoolAdapt.poolBalance(dao) <
-            proposal.fundingInfo.totalAmount ||
-            (vars._propsalStopVotingTimestamp +
-                dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION) >
-                dao.getConfiguration(DaoHelper.FUND_END_TIME))
+            proposal.fundingInfo.totalAmount
         ) {
             proposal.state = ProposalState.FAILED;
         } else {
@@ -233,6 +239,149 @@ contract ColletiveFundingProposalContract is
         emit StartVoting(address(dao), proposalId);
     }
 
+    function processProposal(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external reimbursable(dao) returns (bool) {
+        ProcessProposalLocalVars memory vars;
+        vars.ongoingProposalId = ongoingProposal[address(dao)];
+        //make sure proposal process in sequence
+        if (vars.ongoingProposalId != bytes32(0)) {
+            require(proposalId == vars.ongoingProposalId, "Invalid PrposalId");
+        }
+        ProposalDetails storage proposal = proposals[address(dao)][proposalId];
+
+        require(
+            block.timestamp >
+                proposal.timeInfo.stopVotingTime +
+                    dao.getConfiguration(
+                        DaoHelper.COLLECTIVE_VOTING_GRACE_PERIOD
+                    ),
+            "In Voting Period"
+        );
+
+        require(
+            proposal.state != ProposalState.IN_EXECUTE_PROGRESS,
+            "In Execute Progress"
+        );
+        dao.processProposal(proposalId);
+        vars.investmentpool = CollectiveInvestmentPoolExtension(
+            dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
+        );
+
+        // Checks if the proposal has passed.
+        vars.votingContract = CollectiveVotingAdapterContract(
+            dao.votingAdapter(proposalId)
+        );
+        require(
+            address(vars.votingContract) != address(0x0),
+            "Adapter Not Found"
+        );
+
+        vars.allVotingWeight = GovernanceHelper
+            .getCollectiveAllGovernorVotingWeightByProposalId(dao, proposalId);
+        (vars.voteResult, vars.nbYes, vars.nbNo) = vars
+            .votingContract
+            .voteResult(dao, proposalId);
+
+        if (vars.voteResult == ICollectiveVoting.VotingState.PASS) {
+            proposal.state = ProposalState.IN_EXECUTE_PROGRESS;
+
+            ongoingProposal[address(dao)] = proposalId;
+
+            vars.investmentPoolAdapt = ColletiveFundingPoolAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+                )
+            );
+            vars.managementFee =
+                (proposal.fundingInfo.totalAmount *
+                    dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) /
+                PERCENTAGE_PRECISION;
+
+            vars.protocolFee =
+                (proposal.fundingInfo.totalAmount *
+                    vars.investmentPoolAdapt.protocolFee()) /
+                PERCENTAGE_PRECISION;
+
+            vars.proposerFundReward =
+                (proposal.fundingInfo.totalAmount *
+                    dao.getConfiguration(
+                        DaoHelper.VINTAGE_PROPOSER_FUND_REWARD_RADIO
+                    )) /
+                PERCENTAGE_PRECISION;
+
+            if (
+                vars.investmentpool.totalSupply() <
+                proposal.fundingInfo.totalAmount
+            ) {
+                //insufficient funds failed the distribution
+                proposal.state = ProposalState.FAILED;
+            } else {
+                CollectiveDistributeAdatperContract distributeCont = CollectiveDistributeAdatperContract(
+                        dao.getAdapterAddress(
+                            DaoHelper.COLLECTIVE_DISTRIBUTE_ADAPTER
+                        )
+                    );
+
+                distributeCont.distributeFundByInvestment(
+                    dao,
+                    [
+                        proposal.fundingInfo.receiver,
+                        protocolAddress,
+                        proposal.proposer
+                    ],
+                    [
+                        proposal.fundingInfo.fundingAmount,
+                        vars.managementFee,
+                        vars.protocolFee,
+                        vars.proposerFundReward
+                    ]
+                );
+
+                if (proposal.escrowInfo.escrow) {
+                    //process5. snap vest info for all eligible investor
+                    snapShotVestingInfo(dao, proposalId);
+
+                    //process6. set  projectTeamLockedToken to 0
+                    escrowPaybackTokens[address(dao)][proposalId][
+                        proposal.escrowInfo.approver
+                    ] = 0;
+                }
+
+                //process7. substract from invetment pool
+                distributeCont.subFromFundPool(
+                    dao,
+                    proposal.fundingInfo.fundingAmount,
+                    vars.protocolFee,
+                    vars.managementFee,
+                    vars.proposerFundReward
+                );
+                //process8. set proposal state
+                proposal.state = ProposalState.DONE;
+            }
+        } else if (
+            vars.voteResult == ICollectiveVoting.VotingState.NOT_PASS ||
+            vars.voteResult == ICollectiveVoting.VotingState.TIE
+        ) {
+            proposal.state = ProposalState.FAILED;
+        } else {
+            revert INVESTMENT_PROPOSAL_NOT_FINALIZED();
+        }
+        // proposal.proposalTimeInfo.proposalExecuteTimestamp = block.timestamp;
+        ongoingProposal[address(dao)] = bytes32(0);
+
+        emit ProposalExecuted(
+            address(dao),
+            proposalId,
+            vars.allVotingWeight,
+            vars.nbYes,
+            vars.nbNo
+        );
+
+        return true;
+    }
+
     function escrowPaybackToken(
         DaoRegistry dao,
         address approver,
@@ -276,8 +425,8 @@ contract ColletiveFundingProposalContract is
     }
 
     function snapShotVestingInfo(DaoRegistry dao, bytes32 proposalId) internal {
-        VintageAllocationAdapterContract allocAda = VintageAllocationAdapterContract(
-                dao.getAdapterAddress(DaoHelper.VINTAGE_ALLOCATION_ADAPTER)
+        CollectiveAllocationAdapterContract allocAda = CollectiveAllocationAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_ALLOCATION_ADAPTER)
             );
         ProposalDetails storage proposal = proposals[address(dao)][proposalId];
         uint256[6] memory uint256Args = [
@@ -301,5 +450,23 @@ contract ColletiveFundingProposalContract is
         if (!proposalQueue[address(dao)].empty())
             return proposalQueue[address(dao)].length();
         else return 0;
+    }
+
+    function isPrposalInGracePeriod(
+        DaoRegistry dao
+    ) public view returns (bool) {
+        if (ongoingProposal[address(dao)] == bytes32(0)) return true;
+        ProposalDetails storage proposal = proposals[address(dao)][
+            ongoingProposal[address(dao)]
+        ];
+
+        if (
+            block.timestamp > proposal.timeInfo.stopVotingTime &&
+            block.timestamp <
+            proposal.timeInfo.stopVotingTime +
+                dao.getConfiguration(DaoHelper.COLLECTIVE_VOTING_GRACE_PERIOD)
+        ) return true;
+
+        return false;
     }
 }

@@ -55,18 +55,18 @@ interface ICollectiveFundRaise {
     }
 
     struct SubmitProposalLocalVars {
-        ColletiveDaoSetProposalContract daosetAdapt;
+        ColletiveDaoSetProposalAdapterContract daosetAdapt;
         bytes32 proposalId;
-        ColletiveFundingProposalContract investmentContract;
-        ColletiveFundingPoolContract investmentPoolAdapt;
+        ColletiveFundingProposalAdapterContract investmentContract;
+        ColletiveFundingPoolAdapterContract investmentPoolAdapt;
         uint256 lastFundEndTime;
         uint256 refundDuration;
         uint256 protocolFeeRatio;
     }
 
     struct ProcessProposalLocalVars {
-        ColletiveFundingPoolContract investmentPoolAdapt;
-        CollectiveVotingContract votingContract;
+        ColletiveFundingPoolAdapterContract investmentPoolAdapt;
+        CollectiveVotingAdapterContract votingContract;
         ICollectiveVoting.VotingState voteResult;
         uint256 nbYes;
         uint256 nbNo;

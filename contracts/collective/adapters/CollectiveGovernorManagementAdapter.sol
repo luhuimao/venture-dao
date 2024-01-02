@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 import "../../core/DaoRegistry.sol";
 import "./interfaces/ICollectiveVoting.sol";
 import "./CollectiveDaoSetProposalAdapter.sol";
+import "./CollectiveFundingPoolAdapter.sol";
+import "./CollectiveFundingProposalAdapter.sol";
 import "../../helpers/DaoHelper.sol";
 import "../../helpers/GovernanceHelper.sol";
 import "../../utils/TypeConver.sol";
@@ -13,11 +15,15 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
 
-contract ColletiveGovernorManagementContract is Reimbursable, MemberGuard {
+contract ColletiveGovernorManagementAdapterContract is
+    Reimbursable,
+    MemberGuard
+{
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     enum ProposalState {
+        Submitted,
         Voting,
         Executing,
         Done,
@@ -34,7 +40,7 @@ contract ColletiveGovernorManagementContract is Reimbursable, MemberGuard {
         address account;
         address tokenAddress;
         uint256 depositAmount;
-        uint256 creationTime;
+        uint256 startVoteTime;
         uint256 stopVoteTime;
         ProposalState state;
         ProposalType pType;
@@ -57,6 +63,7 @@ contract ColletiveGovernorManagementContract is Reimbursable, MemberGuard {
         uint256 nbNo,
         uint256 voteResult
     );
+    event GovernorQuit(address daoAddr, address governor);
 
     // proposals per dao
     mapping(DaoRegistry => mapping(bytes32 => ProposalDetails))
@@ -64,25 +71,90 @@ contract ColletiveGovernorManagementContract is Reimbursable, MemberGuard {
     mapping(address => EnumerableSet.AddressSet) governorWhiteList;
     mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
 
+    modifier governorMembershipVarify(DaoRegistry dao, address account) {
+        if (
+            dao.getConfiguration(
+                DaoHelper.COLLECTIVE_GOVERNOR_MEMBERSHIP_ENABLE
+            ) == 1
+        ) {
+            uint256 varifyType = dao.getConfiguration(
+                DaoHelper.COLLECTIVE_GOVERNOR_MEMBERSHIP_TYPE
+            );
+            uint256 minHolding = dao.getConfiguration(
+                DaoHelper.COLLECTIVE_GOVERNOR_MEMBERSHIP_MINI_HOLDING
+            );
+            uint256 tokenId = dao.getConfiguration(
+                DaoHelper.COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ID
+            );
+            address tokenAddress = dao.getAddressConfiguration(
+                DaoHelper.COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS
+            );
+            ColletiveFundingPoolAdapterContract fundingpoolAdapt = ColletiveFundingPoolAdapterContract(
+                    dao.getAdapterAddress(
+                        DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+                    )
+                );
+            //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
+            if (varifyType == 0) {
+                require(
+                    IERC20(tokenAddress).balanceOf(account) >= minHolding,
+                    "< erc20 token min holding requirment"
+                );
+            } else if (varifyType == 1) {
+                require(
+                    IERC721(tokenAddress).balanceOf(account) >= minHolding,
+                    "< erc721 token min holding requirment"
+                );
+            } else if (varifyType == 2) {
+                require(
+                    IERC1155(tokenAddress).balanceOf(account, tokenId) >=
+                        minHolding,
+                    "< erc1155 token min holding requirment"
+                );
+            } else if (varifyType == 3) {
+                require(
+                    isGovernorWhiteList(dao, account),
+                    "not in governor whitelist"
+                );
+            } else {
+                revert("invalid membership type");
+            }
+        }
+        _;
+    }
+
     function daosetProposalCheck(DaoRegistry dao) internal view returns (bool) {
-        ColletiveDaoSetProposalContract daoset = ColletiveDaoSetProposalContract(
+        ColletiveDaoSetProposalAdapterContract daoset = ColletiveDaoSetProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
             );
         return daoset.isProposalAllDone(dao);
         // return true;
     }
 
+    struct SubmitGovernorInLocalParams {
+        bytes32 proposalId;
+        uint256 startVoteTime;
+        uint256 stopVoteTime;
+    }
+
     function submitGovernorInProposal(
         DaoRegistry dao,
         address applicant,
-        address tokenAddress,
         uint256 depositAmount
-    ) external reimbursable(dao) onlyMember(dao) returns (bytes32) {
+    )
+        external
+        reimbursable(dao)
+        onlyMember(dao)
+        governorMembershipVarify(dao, applicant)
+        returns (bytes32)
+    {
+        SubmitGovernorInLocalParams memory vars;
         require(!dao.isMember(applicant), "Is Governor already");
 
         require(daosetProposalCheck(dao), "UnDone Daoset Proposal");
+
         dao.increaseGovenorInId();
-        bytes32 proposalId = TypeConver.bytesToBytes32(
+        vars.proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
                 bytes8(uint64(uint160(address(dao)))),
                 "Governor-In#",
@@ -90,31 +162,82 @@ contract ColletiveGovernorManagementContract is Reimbursable, MemberGuard {
             )
         );
 
-        uint256 startVoteTime = block.timestamp;
-        uint256 stopVoteTime = startVoteTime +
-            dao.getConfiguration(DaoHelper.VOTING_PERIOD);
-
+        // vars.startVoteTime = block.timestamp;
+        // vars.stopVoteTime =
+        //     vars.startVoteTime +
+        //     dao.getConfiguration(DaoHelper.VOTING_PERIOD);
+        address tokenAddress = dao.getAddressConfiguration(
+            DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+        );
         _submitGovernorInProposal(
             dao,
-            proposalId,
+            vars.proposalId,
             applicant,
             tokenAddress,
             depositAmount,
-            startVoteTime,
-            stopVoteTime
+            vars.startVoteTime,
+            vars.stopVoteTime
         );
 
-        _sponsorProposal(dao, proposalId, bytes(""));
-        unDoneProposals[address(dao)].add(proposalId);
+        _sponsorProposal(dao, vars.proposalId, bytes(""));
+        unDoneProposals[address(dao)].add(vars.proposalId);
         emit ProposalCreated(
             address(dao),
-            proposalId,
+            vars.proposalId,
             applicant,
-            startVoteTime,
-            stopVoteTime,
+            vars.startVoteTime,
+            vars.stopVoteTime,
             ProposalType.GOVERNOR_IN
         );
-        return proposalId;
+        return vars.proposalId;
+    }
+
+    function startVoting(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external returns (bool) {
+        ProposalDetails storage proposal = proposals[dao][proposalId];
+        require(proposal.state == ProposalState.Submitted, "!Submitted");
+        console.log(
+            IERC20(proposal.tokenAddress).allowance(
+                proposal.account,
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+                )
+            )
+        );
+        console.log(proposal.depositAmount);
+
+        if (
+            // IERC20(proposal.tokenAddress).balanceOf(proposal.account) <
+            // amount ||
+            IERC20(proposal.tokenAddress).allowance(
+                proposal.account,
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+                )
+            ) < proposal.depositAmount
+        ) {
+            proposal.state = ProposalState.Failed;
+            return false;
+        }
+        ICollectiveVoting collectiveVotingContract = ICollectiveVoting(
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
+        );
+
+        collectiveVotingContract.startNewVotingForProposal(
+            dao,
+            proposalId,
+            bytes("")
+        );
+        proposal.state = ProposalState.Voting;
+
+        proposal.startVoteTime = block.timestamp;
+        proposal.stopVoteTime =
+            proposal.startVoteTime +
+            dao.getConfiguration(DaoHelper.VOTING_PERIOD);
+
+        return true;
     }
 
     function submitGovernorOutProposal(
@@ -166,18 +289,9 @@ contract ColletiveGovernorManagementContract is Reimbursable, MemberGuard {
         bytes32 proposalId,
         bytes memory data
     ) internal {
-        ICollectiveVoting collectiveVotingContract = ICollectiveVoting(
-            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
-        );
-
         dao.sponsorProposal(
             proposalId,
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
-        );
-        collectiveVotingContract.startNewVotingForProposal(
-            dao,
-            proposalId,
-            data
         );
     }
 
@@ -203,7 +317,7 @@ contract ColletiveGovernorManagementContract is Reimbursable, MemberGuard {
             depositAmount,
             startVoteTime,
             stopVoteTime,
-            ProposalState.Voting,
+            ProposalState.Submitted,
             ProposalType.GOVERNOR_IN
         );
 
@@ -273,10 +387,27 @@ contract ColletiveGovernorManagementContract is Reimbursable, MemberGuard {
 
             if (proposal.pType == ProposalType.GOVERNOR_IN) {
                 dao.potentialNewMember(applicant);
+                ColletiveFundingPoolAdapterContract fundingPoolAdapt = ColletiveFundingPoolAdapterContract(
+                        dao.getAdapterAddress(
+                            DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+                        )
+                    );
+                fundingPoolAdapt.transferFromNewGovernor(
+                    dao,
+                    proposal.tokenAddress,
+                    proposal.account,
+                    proposal.depositAmount
+                );
             }
 
             if (proposal.pType == ProposalType.GOVERNOR_OUT) {
                 dao.removeMember(applicant);
+                ColletiveFundingPoolAdapterContract fundingpoolAdapt = ColletiveFundingPoolAdapterContract(
+                        dao.getAdapterAddress(
+                            DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+                        )
+                    );
+                fundingpoolAdapt.returnFundToQuitGovernor(dao, msg.sender);
             }
 
             proposal.state = ProposalState.Done;
@@ -303,8 +434,25 @@ contract ColletiveGovernorManagementContract is Reimbursable, MemberGuard {
     }
 
     function quit(DaoRegistry dao) external onlyMember(dao) {
-        require(dao.daoCreator() != msg.sender, "dao summonor cant quit");
+        if (dao.state() == DaoRegistry.DaoState.READY) {
+            ColletiveFundingProposalAdapterContract fundingProposalAdapt = ColletiveFundingProposalAdapterContract(
+                    dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
+                );
+            require(
+                fundingProposalAdapt.isPrposalInGracePeriod(dao),
+                "!Grace Period"
+            );
+            require(dao.daoCreator() != msg.sender, "dao summonor cant quit");
+            ColletiveFundingPoolAdapterContract fundingpoolAdapt = ColletiveFundingPoolAdapterContract(
+                    dao.getAdapterAddress(
+                        DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+                    )
+                );
+            fundingpoolAdapt.returnFundToQuitGovernor(dao, msg.sender);
+        }
         dao.removeMember(msg.sender);
+
+        emit GovernorQuit(address(dao), msg.sender);
     }
 
     function registerGovernorWhiteList(
@@ -362,5 +510,12 @@ contract ColletiveGovernorManagementContract is Reimbursable, MemberGuard {
         address daoAddr
     ) external view returns (address[] memory) {
         return governorWhiteList[daoAddr].values();
+    }
+
+    function isGovernorWhiteList(
+        DaoRegistry dao,
+        address account
+    ) public view returns (bool) {
+        return governorWhiteList[address(dao)].contains(account);
     }
 }

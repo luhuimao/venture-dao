@@ -447,7 +447,7 @@ contract VintageFundingAdapterContract is
 
                     //process6. set  projectTeamLockedToken to 0
                     projectTeamLockedTokens[address(dao)][proposalId][
-                        proposal.recipientAddr
+                        proposal.proposalPaybackTokenInfo.approveOwnerAddr
                     ] = 0;
                 }
 

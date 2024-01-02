@@ -461,7 +461,7 @@ library DaoHelper {
         keccak256("collective-daoset-adapter");
     bytes32 internal constant COLLECTIVE_INVESTMENT_POOL_ADAPTER =
         keccak256("collective-funding-pool-adapter");
-    bytes32 internal constant COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPT =
+    bytes32 internal constant COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPTER =
         keccak256("collective-governor-management-adapter");
     bytes32 internal constant COLLECTIVE_DAO_SET_HELPER_ADAPTER =
         keccak256("collective-daoset-helper-adapter");
@@ -475,6 +475,14 @@ library DaoHelper {
         keccak256("collective-payback-token-adapter");
     bytes32 internal constant COLLECTIVE_VESTING_ADAPTER =
         keccak256("collective-vesting-adapter");
+    bytes32 internal constant COLLECTIVE_DISTRIBUTE_ADAPTER =
+        keccak256("collective-distribute-adapter");
+    bytes32 internal constant COLLECTIVE_TOPUP_ADAPTER =
+        keccak256("collective-topup-adapter");
+    bytes32 internal constant COLLECTIVE_EXPENSE_ADAPTER =
+        keccak256("collective-expense-adapter");
+    bytes32 internal constant COLLECTIVE_ESCROW_FUND_ADAPTER =
+        keccak256("collective-escrow-fund-adapter");
     //---------------------------------collective---------------------------------
     bytes32 internal constant FUND_RAISE = keccak256("fund-raise");
     bytes32 internal constant VESTWING = keccak256("vesting");

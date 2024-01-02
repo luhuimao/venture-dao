@@ -8,7 +8,7 @@ import "./CollectiveDaoSetProposalAdapter.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "../../guards/MemberGuard.sol";
 
-contract ColletiveFundRaiseProposalContract is
+contract ColletiveFundRaiseProposalAdapterContract is
     ICollectiveFundRaise,
     Reimbursable,
     MemberGuard
@@ -23,7 +23,7 @@ contract ColletiveFundRaiseProposalContract is
     mapping(address => bytes32) public lastProposalIds;
 
     function daosetProposalCheck(DaoRegistry dao) internal view returns (bool) {
-        ColletiveDaoSetProposalContract daoset = ColletiveDaoSetProposalContract(
+        ColletiveDaoSetProposalAdapterContract daoset = ColletiveDaoSetProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
             );
         return daoset.isProposalAllDone(dao);
@@ -44,7 +44,7 @@ contract ColletiveFundRaiseProposalContract is
 
         SubmitProposalLocalVars memory vars;
 
-        vars.daosetAdapt = ColletiveDaoSetProposalContract(
+        vars.daosetAdapt = ColletiveDaoSetProposalAdapterContract(
             params.dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
         );
         require(
@@ -52,7 +52,7 @@ contract ColletiveFundRaiseProposalContract is
             "DaoSet Proposal Undone"
         );
 
-        vars.investmentContract = ColletiveFundingProposalContract(
+        vars.investmentContract = ColletiveFundingProposalAdapterContract(
             params.dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
         );
         require(
@@ -67,7 +67,7 @@ contract ColletiveFundRaiseProposalContract is
         vars.refundDuration = params.dao.getConfiguration(
             DaoHelper.RETURN_DURATION
         );
-        vars.investmentPoolAdapt = ColletiveFundingPoolContract(
+        vars.investmentPoolAdapt = ColletiveFundingPoolAdapterContract(
             params.dao.getAdapterAddress(
                 DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
             )
@@ -79,11 +79,11 @@ contract ColletiveFundRaiseProposalContract is
         //fund state check
         require(
             vars.investmentPoolAdapt.fundState(address(params.dao)) ==
-                ColletiveFundingPoolContract.FundState.NOT_STARTED ||
+                ColletiveFundingPoolAdapterContract.FundState.NOT_STARTED ||
                 vars.investmentPoolAdapt.fundState(address(params.dao)) ==
-                ColletiveFundingPoolContract.FundState.FAILED ||
+                ColletiveFundingPoolAdapterContract.FundState.FAILED ||
                 (vars.investmentPoolAdapt.fundState(address(params.dao)) ==
-                    ColletiveFundingPoolContract.FundState.DONE &&
+                    ColletiveFundingPoolAdapterContract.FundState.DONE &&
                     block.timestamp >
                     vars.lastFundEndTime + vars.refundDuration),
             "not now"
@@ -178,10 +178,10 @@ contract ColletiveFundRaiseProposalContract is
 
         ProposalDetails storage proposalDetails = proposals[dao][proposalId];
         dao.processProposal(proposalId);
-        vars.investmentPoolAdapt = ColletiveFundingPoolContract(
+        vars.investmentPoolAdapt = ColletiveFundingPoolAdapterContract(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER)
         );
-        vars.votingContract = CollectiveVotingContract(
+        vars.votingContract = CollectiveVotingAdapterContract(
             dao.votingAdapter(proposalId)
         );
         require(
