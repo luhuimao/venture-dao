@@ -143,7 +143,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         }
         console.log(dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN));
         console.log(dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END));
-        console.log( block.timestamp);
+        console.log(block.timestamp);
         require(
             dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN) <
                 block.timestamp &&
@@ -331,28 +331,26 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         address token,
         uint256 totalRedemptionFee
     ) internal {
-        for (uint8 i = 0; i < fundInvestors[address(dao)].length(); i++) {
-            uint256 redemptionFee = (balanceOf(
-                dao,
-                fundInvestors[address(dao)].values()[i]
-            ) * totalRedemptionFee) / poolBalance(dao);
+        address[] memory governors = DaoHelper.getAllActiveMember(dao);
+        for (uint8 i = 0; i < governors.length; i++) {
+            if (balanceOf(dao, governors[i]) > 0) {
+                uint256 redemptionFee = (balanceOf(dao, governors[i]) *
+                    totalRedemptionFee) / poolBalance(dao);
 
-            CollectiveInvestmentPoolExtension fundingpool = CollectiveInvestmentPoolExtension(
-                    dao.getExtensionAddress(
-                        DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
-                    )
+                CollectiveInvestmentPoolExtension fundingpool = CollectiveInvestmentPoolExtension(
+                        dao.getExtensionAddress(
+                            DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
+                        )
+                    );
+                console.log(redemptionFee);
+                fundingpool.distributeFunds(governors[i], token, redemptionFee);
+
+                emit DistributeRedemptionFee(
+                    address(dao),
+                    governors[i],
+                    redemptionFee
                 );
-            fundingpool.distributeFunds(
-                fundInvestors[address(dao)].values()[i],
-                token,
-                redemptionFee
-            );
-
-            emit DistributeRedemptionFee(
-                address(dao),
-                fundInvestors[address(dao)].values()[i],
-                redemptionFee
-            );
+            }
         }
     }
 

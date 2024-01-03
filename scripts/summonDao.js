@@ -2237,10 +2237,10 @@ const getVintageManagementFee = async () => {
 
 const getAdapterAddress = async () => {
     const daoContrct = (await hre.ethers.
-        getContractFactory("DaoRegistry")).attach("0x8e44a67e4dcc71b5a953505d13baa28107faed12");
+        getContractFactory("DaoRegistry")).attach("0x2ed8ca7d1005fba46466958cd45fe07a15c06cc5");
 
 
-    const adapterAddr = await daoContrct.getAdapterAddress("0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c");
+    const adapterAddr = await daoContrct.getAdapterAddress("0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1");
     console.log(adapterAddr);
 }
 

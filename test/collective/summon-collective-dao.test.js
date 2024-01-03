@@ -832,7 +832,7 @@ describe.only("governor management...", () => {
         new governor approval...
         `);
         await this.testtoken1.transfer(applicant, depositAmount);
-        this.testtoken1.connect(this.user1).approve(this.colletiveFundingPoolContract.address, depositAmount);
+        await this.testtoken1.connect(this.user1).approve(this.colletiveFundingPoolContract.address, depositAmount);
 
         await this.colletiveGovernorManagementContract.startVoting(
             this.collectiveDirectdaoAddress1,
@@ -927,7 +927,7 @@ describe.only("governor management...", () => {
         new governor approval...
         `);
         await this.testtoken1.transfer(applicant, depositAmount);
-        this.testtoken1.connect(this.user2).approve(this.colletiveFundingPoolContract.address, depositAmount);
+        await this.testtoken1.connect(this.user2).approve(this.colletiveFundingPoolContract.address, depositAmount);
 
         console.log(`
         approved...
@@ -1025,7 +1025,7 @@ describe.only("governor management...", () => {
         new governor approval...
         `);
         await this.testtoken1.transfer(applicant, depositAmount);
-        this.testtoken1.connect(this.governor1).approve(this.colletiveFundingPoolContract.address, depositAmount);
+        await this.testtoken1.connect(this.governor1).approve(this.colletiveFundingPoolContract.address, depositAmount);
         await this.colletiveGovernorManagementContract.startVoting(
             this.collectiveDirectdaoAddress3,
             proposalId
@@ -1115,7 +1115,7 @@ describe.only("governor management...", () => {
         new governor approval...
         `);
         await this.testtoken1.transfer(applicant, depositAmount);
-        this.testtoken1.connect(this.governor2).approve(this.colletiveFundingPoolContract.address, depositAmount);
+        await this.testtoken1.connect(this.governor2).approve(this.colletiveFundingPoolContract.address, depositAmount);
         await this.colletiveGovernorManagementContract.startVoting(
             this.collectiveDirectdaoAddress4,
             proposalId
@@ -1167,7 +1167,7 @@ describe.only("governor management...", () => {
     });
 
     it("governor out...", async () => {
-        const applicant = this.genesis_steward1.address;
+        const applicant = this.user1.address;
         const tx = await this.colletiveGovernorManagementContract.submitGovernorOutProposal(
             this.collectiveDirectdaoAddress1,
             applicant
@@ -1199,6 +1199,11 @@ describe.only("governor management...", () => {
             1
         );
 
+        await this.collectiveVotingContract.connect(this.user1).submitVote(this.collectiveDirectdaoAddress1,
+            proposalId,
+            1
+        );
+
         let proposalDetail = await this.colletiveGovernorManagementContract.proposals(this.collectiveDirectdaoAddress1, proposalId);
         const stopVoteTime = proposalDetail.stopVoteTime;
 
@@ -1208,11 +1213,16 @@ describe.only("governor management...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
+        let oldDepositBal = await this.testtoken1.balanceOf(applicant);
+
         await this.colletiveGovernorManagementContract.processProposal(this.collectiveDirectdaoAddress1, proposalId);
         allGovernros = await this.colletiveGovernorManagementContract.getAllGovernor(this.collectiveDirectdaoAddress1);
         proposalDetail = await this.colletiveGovernorManagementContract.proposals(this.collectiveDirectdaoAddress1, proposalId);
+        let newDepositBal = await this.testtoken1.balanceOf(applicant);
         console.log(`
         executed...
+        oldDepositBal ${hre.ethers.utils.formatEther(oldDepositBal)}
+        newDepositBal ${hre.ethers.utils.formatEther(newDepositBal)}
         proposal state ${proposalDetail.state}
         allGovernros ${allGovernros}
         `);
@@ -1220,22 +1230,32 @@ describe.only("governor management...", () => {
     });
 
     it("governor quit...", async () => {
-        let allGovernros = await this.colletiveGovernorManagementContract.getAllGovernor(this.collectiveDirectdaoAddress1);
+        let allGovernros = await this.colletiveGovernorManagementContract.getAllGovernor(this.collectiveDirectdaoAddress4);
         console.log(allGovernros);
         for (var i = 0; i < allGovernros.length; i++) {
-            const bal = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress1, allGovernros[i]);
+            const depositbal = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress4, allGovernros[i]);
+            const TT1Bal = await this.testtoken1.balanceOf(allGovernros[i]);
             console.log(`
-            governor${i + 1} ${allGovernros[i]} deposite bal ${hre.ethers.utils.formatEther(bal)}
+            governor${i + 1} ${allGovernros[i]} deposite bal ${hre.ethers.utils.formatEther(depositbal)}
+            governor${i + 1} ${allGovernros[i]} tt1 bal ${TT1Bal}
             `);
         }
-        await this.colletiveGovernorManagementContract.connect(this.genesis_steward2).quit(this.collectiveDirectdaoAddress1);
-        allGovernros = await this.colletiveGovernorManagementContract.getAllGovernor(this.collectiveDirectdaoAddress1);
+        await this.colletiveGovernorManagementContract.connect(this.governor2).quit(this.collectiveDirectdaoAddress4);
+        allGovernros = await this.colletiveGovernorManagementContract.getAllGovernor(this.collectiveDirectdaoAddress4);
         for (var i = 0; i < allGovernros.length; i++) {
-            const bal = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress1, allGovernros[i]);
+            const bal = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress4, allGovernros[i]);
+            const TT1Bal = await this.testtoken1.balanceOf(allGovernros[i]);
             console.log(`
             governor${i + 1} ${allGovernros[i]} deposite bal ${hre.ethers.utils.formatEther(bal)}
+            governor${i + 1} ${allGovernros[i]} tt1 bal ${TT1Bal}
             `);
         }
+        const bal = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress4, this.governor2.address);
+        const TT1Bal = await this.testtoken1.balanceOf(this.governor2.address);
+        console.log(`
+        deposite bal ${hre.ethers.utils.formatEther(bal)}
+        tt1 bal ${hre.ethers.utils.formatEther(TT1Bal)}
+        `);
     });
 });
 

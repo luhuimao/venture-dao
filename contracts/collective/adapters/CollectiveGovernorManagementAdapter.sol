@@ -267,6 +267,15 @@ contract ColletiveGovernorManagementAdapterContract is
         );
 
         _sponsorProposal(dao, proposalId, bytes(""));
+        ICollectiveVoting collectiveVotingContract = ICollectiveVoting(
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
+        );
+
+        collectiveVotingContract.startNewVotingForProposal(
+            dao,
+            proposalId,
+            bytes("")
+        );
         unDoneProposals[address(dao)].add(proposalId);
 
         emit ProposalCreated(
