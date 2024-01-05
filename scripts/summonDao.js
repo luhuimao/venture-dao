@@ -42,11 +42,11 @@ const deploySummonContract = async () => {
 
 async function main() {
     // await getVintageManagementFee();
-    await getFlexEscrowTokenInfo();
+    // await getFlexEscrowTokenInfo();
     // await getAdapterAddress();
     // await getDaoConfig();
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
-    // await deploy();
+    await deploy();
     // await getFlexdaoInvestorWhitelist();
     // await summonVintageDao();
     // await submitVintageDaosetProposal();
@@ -1333,35 +1333,35 @@ const deploy = async () => {
     console.log("ETH balance: ", bal5);
 
 
-    const DaoRegistry = await hre.ethers.getContractFactory("DaoRegistry");
-    const daoRegistry = await DaoRegistry.deploy();
-    await daoRegistry.deployed();
-    console.log("daoRegistry deployed address:", daoRegistry.address);
+    // const DaoRegistry = await hre.ethers.getContractFactory("DaoRegistry");
+    // const daoRegistry = await DaoRegistry.deploy();
+    // await daoRegistry.deployed();
+    // console.log("daoRegistry deployed address:", daoRegistry.address);
 
-    const DaoFactory = await hre.ethers.getContractFactory("DaoFactory");
-    const daoFactory = await DaoFactory.deploy(daoRegistry.address);
-    await daoFactory.deployed();
-    console.log("daoFactory deployed address:", daoFactory.address);
+    // const DaoFactory = await hre.ethers.getContractFactory("DaoFactory");
+    // const daoFactory = await DaoFactory.deploy(daoRegistry.address);
+    // await daoFactory.deployed();
+    // console.log("daoFactory deployed address:", daoFactory.address);
 
     // const FlexFreeInEscrowFundAdapterContract = await hre.ethers.getContractFactory("FlexFreeInEscrowFundAdapterContract");
     // const flexFreeInEscrowFundAdapterContract = await FlexFreeInEscrowFundAdapterContract.deploy();
     // await flexFreeInEscrowFundAdapterContract.deployed();
     // console.log("flexFreeInEscrowFundAdapterContract deployed address:", flexFreeInEscrowFundAdapterContract.address);
 
-    // const FlexFundingHelperAdapterContract = await hre.ethers.getContractFactory("FlexFundingHelperAdapterContract");
-    // const flexFundingHelperAdapterContract = await FlexFundingHelperAdapterContract.deploy();
-    // await flexFundingHelperAdapterContract.deployed();
-    // console.log("flexFundingHelperAdapterContract deployed address:", flexFundingHelperAdapterContract.address);
+    const FlexFundingHelperAdapterContract = await hre.ethers.getContractFactory("FlexFundingHelperAdapterContract");
+    const flexFundingHelperAdapterContract = await FlexFundingHelperAdapterContract.deploy();
+    await flexFundingHelperAdapterContract.deployed();
+    console.log("flexFundingHelperAdapterContract deployed address:", flexFundingHelperAdapterContract.address);
 
-    // const FlexFundingAdapterContract = await hre.ethers.getContractFactory("FlexFundingAdapterContract");
-    // const flexFundingAdapterContract = await FlexFundingAdapterContract.deploy();
-    // await flexFundingAdapterContract.deployed();
-    // console.log("flexFundingAdapterContract deployed address:", flexFundingAdapterContract.address);
+    const FlexFundingAdapterContract = await hre.ethers.getContractFactory("FlexFundingAdapterContract");
+    const flexFundingAdapterContract = await FlexFundingAdapterContract.deploy();
+    await flexFundingAdapterContract.deployed();
+    console.log("flexFundingAdapterContract deployed address:", flexFundingAdapterContract.address);
 
-    // const FlexInvestmentPoolAdapterContract = await hre.ethers.getContractFactory("FlexInvestmentPoolAdapterContract");
-    // const flexInvestmentPoolAdapterContract = await FlexInvestmentPoolAdapterContract.deploy();
-    // await flexInvestmentPoolAdapterContract.deployed();
-    // console.log("flexInvestmentPoolAdapterContract deployed address:", flexInvestmentPoolAdapterContract.address);
+    const FlexInvestmentPoolAdapterContract = await hre.ethers.getContractFactory("FlexInvestmentPoolAdapterContract");
+    const flexInvestmentPoolAdapterContract = await FlexInvestmentPoolAdapterContract.deploy();
+    await flexInvestmentPoolAdapterContract.deployed();
+    console.log("flexInvestmentPoolAdapterContract deployed address:", flexInvestmentPoolAdapterContract.address);
 
     // const FlexPollingVotingContract = await hre.ethers.getContractFactory("FlexPollingVotingContract");
     // const flexPollingVotingContract = await FlexPollingVotingContract.deploy();
@@ -1436,10 +1436,10 @@ const deploy = async () => {
     // await flexDaoSetVotingAdapterContract.deployed();
     // console.log("flexDaoSetVotingAdapterContract deployed address:", flexDaoSetVotingAdapterContract.address);
 
-    const SummonDao = await hre.ethers.getContractFactory("SummonDao");
-    const summonDao = await SummonDao.deploy();
-    await summonDao.deployed();
-    console.log("summonDao deployed address:", summonDao.address);
+    // const SummonDao = await hre.ethers.getContractFactory("SummonDao");
+    // const summonDao = await SummonDao.deploy();
+    // await summonDao.deployed();
+    // console.log("summonDao deployed address:", summonDao.address);
 
     // const TestToken1 = await hre.ethers.getContractFactory("TestToken1");
     // const testToken1 = await TestToken1.deploy(100000000);
@@ -1520,10 +1520,10 @@ const deploy = async () => {
 
 
 
-    const SummonVintageDao = await hre.ethers.getContractFactory("SummonVintageDao");
-    const summonVintageDao = await SummonVintageDao.deploy();
-    await summonVintageDao.deployed();
-    console.log("summonVintageDao deployed address:", summonVintageDao.address);
+    // const SummonVintageDao = await hre.ethers.getContractFactory("SummonVintageDao");
+    // const summonVintageDao = await SummonVintageDao.deploy();
+    // await summonVintageDao.deployed();
+    // console.log("summonVintageDao deployed address:", summonVintageDao.address);
 
     // const VintageEscrowFundAdapterContract = await hre.ethers.getContractFactory("VintageEscrowFundAdapterContract");
     // const vintageEscrowFundAdapterContract = await VintageEscrowFundAdapterContract.deploy();

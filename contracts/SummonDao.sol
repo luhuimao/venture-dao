@@ -376,7 +376,6 @@ contract SummonDao {
     )
         external
         returns (
-            // address newDaoAddr
             bool
         )
     {
