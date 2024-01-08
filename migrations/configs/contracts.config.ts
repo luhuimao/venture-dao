@@ -1206,7 +1206,7 @@ export const contracts: Array<ContractConfig> = [
         daoAccessFlagsMap.INCREASE_GOVERNOR_MEMBERSHIP_ID,
         daoAccessFlagsMap.INCREASE_INVESTOR_MEMBERSHIP_ID,
         daoAccessFlagsMap.INCREASE_FEE_ID,
-        daoAccessFlagsMap.INCREASE_PROPOSER_MEMBERSHIP
+        daoAccessFlagsMap.INCREASE_PROPOSER_MEMBERSHIP_ID
       ],
       extensions: {
       },
@@ -1311,9 +1311,9 @@ export const contracts: Array<ContractConfig> = [
         daoAccessFlagsMap.SUBMIT_PROPOSAL,
         daoAccessFlagsMap.INCREASE_INVESTOR_CAP_ID,
         daoAccessFlagsMap.INCREASE_GOVERNOR_MEMBERSHIP_ID,
-        daoAccessFlagsMap.INCREASE_INVESTOR_MEMBERSHIP_ID,
         daoAccessFlagsMap.INCREASE_FEE_ID,
-        daoAccessFlagsMap.INCREASE_PROPOSER_MEMBERSHIP
+        daoAccessFlagsMap.INCREASE_PROPOSER_MEMBERSHIP_ID,
+        daoAccessFlagsMap.INCREASE_PROPOSER_REWARD_ID
       ],
       extensions: {
       },

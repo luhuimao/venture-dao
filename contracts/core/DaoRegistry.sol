@@ -100,7 +100,8 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         INCREASE_VOTING_ID,
         INCREASE_FEE_ID,
         INCREASE_POLL_FOR_INVESTMENT_ID,
-        INCREASE_PROPOSER_MEMBERSHIP
+        INCREASE_PROPOSER_MEMBERSHIP_ID,
+        INCREASE_PROPOSER_REWARD_ID
     }
     enum VoteType {
         SIMPLE_MAJORITY,
@@ -191,6 +192,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     Counters.Counter private _feesProposalIds;
     Counters.Counter private _pollForInvestmentProposalIds;
     Counters.Counter private _proposerMembershipPropossalIds;
+    Counters.Counter private _proposerRewardPropossalIds;
 
     /// @notice The map that keeps track of all proposasls submitted to the DAO
     mapping(bytes32 => Proposal) public proposals;
@@ -577,9 +579,16 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
 
     function increaseProposerMembershipId()
         external
-        hasAccess(this, AclFlag.INCREASE_PROPOSER_MEMBERSHIP)
+        hasAccess(this, AclFlag.INCREASE_PROPOSER_MEMBERSHIP_ID)
     {
         _proposerMembershipPropossalIds.increment();
+    }
+
+    function increaseProposerRewardId()
+        external
+        hasAccess(this, AclFlag.INCREASE_PROPOSER_REWARD_ID)
+    {
+        _proposerRewardPropossalIds.increment();
     }
 
     /**
@@ -996,6 +1005,14 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         returns (uint256)
     {
         return _proposerMembershipPropossalIds.current();
+    }
+
+    function getCurrentProposerRewardProposalId()
+        external
+        view
+        returns (uint256)
+    {
+        return _proposerRewardPropossalIds.current();
     }
 
     /**
