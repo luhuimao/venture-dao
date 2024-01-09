@@ -179,7 +179,7 @@ contract ColletiveGovernorManagementAdapterContract is
             vars.stopVoteTime
         );
 
-        _sponsorProposal(dao, vars.proposalId, bytes(""));
+        _sponsorProposal(dao, vars.proposalId);
         unDoneProposals[address(dao)].add(vars.proposalId);
         emit ProposalCreated(
             address(dao),
@@ -266,7 +266,7 @@ contract ColletiveGovernorManagementAdapterContract is
             stopVoteTime
         );
 
-        _sponsorProposal(dao, proposalId, bytes(""));
+        _sponsorProposal(dao, proposalId);
         ICollectiveVoting collectiveVotingContract = ICollectiveVoting(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
         );
@@ -293,11 +293,7 @@ contract ColletiveGovernorManagementAdapterContract is
      * @notice Starts a vote on the proposal to onboard a new member.
      * @param proposalId The proposal id to be processed. It needs to exist in the DAO Registry.
      */
-    function _sponsorProposal(
-        DaoRegistry dao,
-        bytes32 proposalId,
-        bytes memory data
-    ) internal {
+    function _sponsorProposal(DaoRegistry dao, bytes32 proposalId) internal {
         dao.sponsorProposal(
             proposalId,
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
@@ -469,11 +465,11 @@ contract ColletiveGovernorManagementAdapterContract is
         address account
     ) external {
         require(
-            // msg.sender ==
-            //     dao.getAdapterAddress(
-            //         DaoHelper.COLLECTIVE_DAO_SET_HELPER_ADAPTER
-            //     ) ||
-            DaoHelper.isInCreationModeAndHasAccess(dao),
+            msg.sender ==
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_DAO_SET_ADAPTER
+                ) ||
+                DaoHelper.isInCreationModeAndHasAccess(dao),
             "!access"
         );
         if (!governorWhiteList[address(dao)].contains(account)) {
@@ -484,9 +480,7 @@ contract ColletiveGovernorManagementAdapterContract is
     function clearGovernorWhitelist(DaoRegistry dao) external {
         require(
             msg.sender ==
-                dao.getAdapterAddress(
-                    DaoHelper.COLLECTIVE_DAO_SET_HELPER_ADAPTER
-                ),
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER),
             "!access"
         );
         uint256 len = governorWhiteList[address(dao)].values().length;

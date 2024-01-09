@@ -209,6 +209,8 @@ contract ColletiveFundRaiseProposalAdapterContract is
         } else {
             revert VOTING_NOT_FINISH();
         }
+        if (unDoneProposals[address(dao)].contains(proposalId))
+            unDoneProposals[address(dao)].remove(proposalId);
 
         uint128 allGPsWeight = GovernanceHelper
             .getAllCollectiveGovernorVotingWeight(dao);
@@ -350,5 +352,9 @@ contract ColletiveFundRaiseProposalAdapterContract is
         bytes32 proposalId
     ) external view returns (address[] memory) {
         return priorityDepositorWhitelist[dao][proposalId].values();
+    }
+
+    function allDone(DaoRegistry dao) external view returns (bool) {
+        return unDoneProposals[address(dao)].length() > 0 ? false : true;
     }
 }

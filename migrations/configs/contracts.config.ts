@@ -1309,11 +1309,13 @@ export const contracts: Array<ContractConfig> = [
     acls: {
       dao: [
         daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.SET_CONFIGURATION,
         daoAccessFlagsMap.INCREASE_INVESTOR_CAP_ID,
         daoAccessFlagsMap.INCREASE_GOVERNOR_MEMBERSHIP_ID,
         daoAccessFlagsMap.INCREASE_FEE_ID,
         daoAccessFlagsMap.INCREASE_PROPOSER_MEMBERSHIP_ID,
-        daoAccessFlagsMap.INCREASE_PROPOSER_REWARD_ID
+        daoAccessFlagsMap.INCREASE_PROPOSER_REWARD_ID,
+        daoAccessFlagsMap.INCREASE_VOTING_ID
       ],
       extensions: {
       },
@@ -1445,7 +1447,7 @@ export const contracts: Array<ContractConfig> = [
     name: "ColletiveTopUpProposalAdapterContract",
     alias: "colletiveTopUpProposalContract",
     path: "../../contracts/adapters/ColletiveTopUpProposalAdapterContract",
-    enabled: false,
+    enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
@@ -1459,7 +1461,7 @@ export const contracts: Array<ContractConfig> = [
     name: "ColletiveExpenseProposalAdapterContract",
     alias: "colletiveExpenseProposalContract",
     path: "../../contracts/adapters/ColletiveExpenseProposalAdapterContract",
-    enabled: false,
+    enabled: true,
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {

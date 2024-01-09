@@ -207,7 +207,7 @@ describe("Summon A Collective Dao", () => {
             {
                 id: '0xdac6d9ce728ebc92a61253866b4e5a4c73b76ba0aa11e7297a633f6232f54237', //collective-daoset-adapter
                 addr: this.colletiveDaoSetProposalContract.address,
-                flags: 1728514
+                flags: 1794058
             },
             {
                 id: '0x1a4f1390baec30049008138e650571a3c4374eba88116bc89dc192f2f9295efe', //collective-governor-management-adapter
@@ -501,7 +501,7 @@ describe("governor management...", () => {
             {
                 id: '0xdac6d9ce728ebc92a61253866b4e5a4c73b76ba0aa11e7297a633f6232f54237', //colletiveDaoSetProposalContract
                 addr: this.colletiveDaoSetProposalContract.address,
-                flags: 1728514
+                flags: 1794058
             },
             {
                 id: '0x1a4f1390baec30049008138e650571a3c4374eba88116bc89dc192f2f9295efe', //colletiveGovernorManagementContract
@@ -1368,7 +1368,7 @@ describe("fund raise proposal...", () => {
             {
                 id: '0xdac6d9ce728ebc92a61253866b4e5a4c73b76ba0aa11e7297a633f6232f54237', //colletiveDaoSetProposalContract
                 addr: this.colletiveDaoSetProposalContract.address,
-                flags: 1728514
+                flags: 1794058
             },
             {
                 id: '0x1a4f1390baec30049008138e650571a3c4374eba88116bc89dc192f2f9295efe', //colletiveGovernorManagementContract
@@ -1759,7 +1759,7 @@ describe("deposit, withdraw...", () => {
             {
                 id: '0xdac6d9ce728ebc92a61253866b4e5a4c73b76ba0aa11e7297a633f6232f54237', //colletiveDaoSetProposalContract
                 addr: this.colletiveDaoSetProposalContract.address,
-                flags: 1728514
+                flags: 1794058
             },
             {
                 id: '0x1a4f1390baec30049008138e650571a3c4374eba88116bc89dc192f2f9295efe', //colletiveGovernorManagementContract
@@ -2211,7 +2211,7 @@ describe("funding proposal...", () => {
             {
                 id: '0xdac6d9ce728ebc92a61253866b4e5a4c73b76ba0aa11e7297a633f6232f54237', //colletiveDaoSetProposalContract
                 addr: this.colletiveDaoSetProposalContract.address,
-                flags: 1728514
+                flags: 1794058
             },
             {
                 id: '0x1a4f1390baec30049008138e650571a3c4374eba88116bc89dc192f2f9295efe', //colletiveGovernorManagementContract
@@ -2792,7 +2792,7 @@ describe("clear fund...", () => {
             {
                 id: '0xdac6d9ce728ebc92a61253866b4e5a4c73b76ba0aa11e7297a633f6232f54237', //colletiveDaoSetProposalContract
                 addr: this.colletiveDaoSetProposalContract.address,
-                flags: 1728514
+                flags: 1794058
             },
             {
                 id: '0x1a4f1390baec30049008138e650571a3c4374eba88116bc89dc192f2f9295efe', //colletiveGovernorManagementContract
@@ -3235,6 +3235,8 @@ describe("daoset...", () => {
         this.collectiveDistributeAdatperContract = this.adapters.collectiveDistributeAdatperContract.instance;
         this.collectiveVestingContract = this.adapters.collectiveVestingContract.instance;
         this.collectiveEscrowFundAdapterContract = this.adapters.collectiveEscrowFundAdapterContract.instance;
+        this.colletiveTopUpProposalContract = this.adapters.colletiveTopUpProposalContract.instance;
+        this.colletiveExpenseProposalContract = this.adapters.colletiveExpenseProposalContract.instance;
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 
         const daoFactoriesAddress = [
@@ -3248,7 +3250,7 @@ describe("daoset...", () => {
             {
                 id: '0xdac6d9ce728ebc92a61253866b4e5a4c73b76ba0aa11e7297a633f6232f54237', //colletiveDaoSetProposalContract
                 addr: this.colletiveDaoSetProposalContract.address,
-                flags: 1728514
+                flags: 1794058
             },
             {
                 id: '0x1a4f1390baec30049008138e650571a3c4374eba88116bc89dc192f2f9295efe', //colletiveGovernorManagementContract
@@ -3303,6 +3305,15 @@ describe("daoset...", () => {
             {
                 id: '0x372fda66f626a705d3a459960a1457403a7c3564acccedc00092ea70262b7083', // collectiveEscrowFundAdapterContract
                 addr: this.collectiveEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x3b4de3360220463b2e1b681516ac7919070009f0544e8465d80dc511828dae5b', // colletiveTopUpProposalContract
+                addr: this.colletiveTopUpProposalContract.address,
+                flags: 0
+            }, {
+                id: '0xd0e09561b13ad01191fc8f65f6fc85651e4f495d3f9ab93d95010ea58382434b', // colletiveExpenseProposalContract
+                addr: this.colletiveExpenseProposalContract.address,
                 flags: 0
             },
         ];
@@ -3436,14 +3447,29 @@ describe("daoset...", () => {
 
     it("governor membership proposal...", async () => {
         const enable = true;
-        const varifyType = 1;
+        const varifyType = 3;
         const minAmount = 2;
         const tokenAddress = this.testtoken2.address;
         const tokenId = 2;
         const whiteList = [
-            this.user1.address,
-            this.user2, address
+            this.user1.address
         ];
+
+        let COLLECTIVE_GOVERNOR_MEMBERSHIP_ENABLE = await this.daoContract.getConfiguration(sha3("COLLECTIVE_GOVERNOR_MEMBERSHIP_ENABLE"));
+        let COLLECTIVE_GOVERNOR_MEMBERSHIP_TYPE = await this.daoContract.getConfiguration(sha3("COLLECTIVE_GOVERNOR_MEMBERSHIP_TYPE"));
+        let COLLECTIVE_GOVERNOR_MEMBERSHIP_MINI_HOLDING = await this.daoContract.getConfiguration(sha3("COLLECTIVE_GOVERNOR_MEMBERSHIP_MINI_HOLDING"));
+        let COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS = await this.daoContract.getAddressConfiguration(sha3("COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS"));
+        let COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ID = await this.daoContract.getConfiguration(sha3("COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ID"));
+        let COLLECTIVE_GOVERNOR_MEMBERSHIP_WHITELIST = await this.colletiveGovernorManagementContract.getGovernorWhitelist(this.collectiveDirectdaoAddress);
+        console.log(`
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_ENABLE ${COLLECTIVE_GOVERNOR_MEMBERSHIP_ENABLE}
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_TYPE ${COLLECTIVE_GOVERNOR_MEMBERSHIP_TYPE}
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_MINI_HOLDING ${COLLECTIVE_GOVERNOR_MEMBERSHIP_MINI_HOLDING}
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS ${COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS}
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ID ${COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ID}
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_WHITELIST ${COLLECTIVE_GOVERNOR_MEMBERSHIP_WHITELIST}
+        `);
+
         const tx = await this.colletiveDaoSetProposalContract.submitGovernorMembershpProposal(
             this.collectiveDirectdaoAddress,
             enable,
@@ -3453,26 +3479,376 @@ describe("daoset...", () => {
             tokenId,
             whiteList
         );
-
         const rel = await tx.wait();
 
         const proposalId = rel.events[rel.events.length - 1].args.proposalId;
+        console.log(`
+        created... ${proposalId}
+        voting...
+        `);
+        let proposalDetail = await this.colletiveDaoSetProposalContract.governorMembershipProposals(
+            this.collectiveDirectdaoAddress,
+            proposalId
+        );
 
+        await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(proposalDetail.stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.stopVoteTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+
+        console.log(`
+        voted...
+        execute...
+        `);
+
+        await this.colletiveDaoSetProposalContract.processGovernorMembershipProposal(
+            this.collectiveDirectdaoAddress,
+            proposalId
+        );
+
+        proposalDetail = await this.colletiveDaoSetProposalContract.governorMembershipProposals(
+            this.collectiveDirectdaoAddress,
+            proposalId
+        );
+
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_ENABLE = await this.daoContract.getConfiguration(sha3("COLLECTIVE_GOVERNOR_MEMBERSHIP_ENABLE"));
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_TYPE = await this.daoContract.getConfiguration(sha3("COLLECTIVE_GOVERNOR_MEMBERSHIP_TYPE"));
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_MINI_HOLDING = await this.daoContract.getConfiguration(sha3("COLLECTIVE_GOVERNOR_MEMBERSHIP_MINI_HOLDING"));
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS = await this.daoContract.getAddressConfiguration(sha3("COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS"));
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ID = await this.daoContract.getConfiguration(sha3("COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ID"));
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_WHITELIST = await this.colletiveGovernorManagementContract.getGovernorWhitelist(this.collectiveDirectdaoAddress);
+
+        console.log(`
+        executed...
+        state ${proposalDetail.state}
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_ENABLE ${COLLECTIVE_GOVERNOR_MEMBERSHIP_ENABLE}
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_TYPE ${COLLECTIVE_GOVERNOR_MEMBERSHIP_TYPE}
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_MINI_HOLDING ${COLLECTIVE_GOVERNOR_MEMBERSHIP_MINI_HOLDING}
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS ${COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS}
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ID ${COLLECTIVE_GOVERNOR_MEMBERSHIP_TOKEN_ID}
+        COLLECTIVE_GOVERNOR_MEMBERSHIP_WHITELIST ${COLLECTIVE_GOVERNOR_MEMBERSHIP_WHITELIST}
+        `);
     });
-    it("voting proposal...", async () => { });
+    it("voting proposal...", async () => {
+        const votingAssetType = 0;
+        const tokenAddress = ZERO_ADDRESS;
+        const tokenID = 1;
+        const votingWeightedType = 0;
+        const supportType = 1;
+        const quorumType = 1;
+        const support = 43;
+        const quorum = 33;
+        const votingPeriod = 60 * 100;
+        const executingPeriod = 60 * 2;
+
+        const params = [votingAssetType,
+            tokenAddress,
+            tokenID,
+            votingWeightedType,
+            supportType,
+            quorumType,
+            support,
+            quorum,
+            votingPeriod,
+            executingPeriod
+        ];
+
+        const tx = await this.colletiveDaoSetProposalContract.submitVotingProposal(
+            this.collectiveDirectdaoAddress,
+            params
+        );
+        const rel = await tx.wait();
+        const proposalId = rel.events[rel.events.length - 1].args.proposalId;
+
+
+        let COLLECTIVE_VOTING_ASSET_TYPE = await this.daoContract.getConfiguration(sha3("COLLECTIVE_VOTING_ASSET_TYPE"));
+        let COLLECTIVE_VOTING_WEIGHTED_TYPE = await this.daoContract.getConfiguration(sha3("COLLECTIVE_VOTING_WEIGHTED_TYPE"));
+        let COLLECTIVE_VOTING_SUPPORT_TYPE = await this.daoContract.getConfiguration(sha3("COLLECTIVE_VOTING_SUPPORT_TYPE"));
+        let COLLECTIVE_VOTING_QUORUM_TYPE = await this.daoContract.getConfiguration(sha3("COLLECTIVE_VOTING_QUORUM_TYPE"));
+        let QUORUM = await this.daoContract.getConfiguration(sha3("QUORUM"));
+        let VOTING_PERIOD = await this.daoContract.getConfiguration(sha3("VOTING_PERIOD"));
+        let PROPOSAL_EXECUTE_DURATION = await this.daoContract.getConfiguration(sha3("PROPOSAL_EXECUTE_DURATION"));
+
+        console.log(`
+        COLLECTIVE_VOTING_ASSET_TYPE ${COLLECTIVE_VOTING_ASSET_TYPE}
+        COLLECTIVE_VOTING_WEIGHTED_TYPE ${COLLECTIVE_VOTING_WEIGHTED_TYPE}
+        COLLECTIVE_VOTING_SUPPORT_TYPE ${COLLECTIVE_VOTING_SUPPORT_TYPE}
+        COLLECTIVE_VOTING_QUORUM_TYPE ${COLLECTIVE_VOTING_QUORUM_TYPE}
+        QUORUM ${QUORUM}
+        VOTING_PERIOD ${VOTING_PERIOD}
+        PROPOSAL_EXECUTE_DURATION ${PROPOSAL_EXECUTE_DURATION}
+
+        created... ${proposalId}
+        voting...
+        `);
+
+        let proposalDetail = await this.colletiveDaoSetProposalContract.votingProposals(
+            this.collectiveDirectdaoAddress,
+            proposalId
+        );
+
+        await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(proposalDetail.timeInfo.stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.timeInfo.stopVoteTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+
+        console.log(`
+        voted...
+        execute...
+        `);
+
+        await this.colletiveDaoSetProposalContract.processVotingProposal(
+            this.collectiveDirectdaoAddress,
+            proposalId
+        );
+
+        proposalDetail = await this.colletiveDaoSetProposalContract.votingProposals(
+            this.collectiveDirectdaoAddress,
+            proposalId
+        );
+
+        COLLECTIVE_VOTING_ASSET_TYPE = await this.daoContract.getConfiguration(sha3("COLLECTIVE_VOTING_ASSET_TYPE"));
+        COLLECTIVE_VOTING_WEIGHTED_TYPE = await this.daoContract.getConfiguration(sha3("COLLECTIVE_VOTING_WEIGHTED_TYPE"));
+        COLLECTIVE_VOTING_SUPPORT_TYPE = await this.daoContract.getConfiguration(sha3("COLLECTIVE_VOTING_SUPPORT_TYPE"));
+        COLLECTIVE_VOTING_QUORUM_TYPE = await this.daoContract.getConfiguration(sha3("COLLECTIVE_VOTING_QUORUM_TYPE"));
+        QUORUM = await this.daoContract.getConfiguration(sha3("QUORUM"));
+        VOTING_PERIOD = await this.daoContract.getConfiguration(sha3("VOTING_PERIOD"));
+        PROPOSAL_EXECUTE_DURATION = await this.daoContract.getConfiguration(sha3("PROPOSAL_EXECUTE_DURATION"));
+
+        console.log(`
+        executed...
+        state ${proposalDetail.state}
+        COLLECTIVE_VOTING_ASSET_TYPE ${COLLECTIVE_VOTING_ASSET_TYPE}
+        COLLECTIVE_VOTING_WEIGHTED_TYPE ${COLLECTIVE_VOTING_WEIGHTED_TYPE}
+        COLLECTIVE_VOTING_SUPPORT_TYPE ${COLLECTIVE_VOTING_SUPPORT_TYPE}
+        COLLECTIVE_VOTING_QUORUM_TYPE ${COLLECTIVE_VOTING_QUORUM_TYPE}
+        QUORUM ${QUORUM}
+        VOTING_PERIOD ${VOTING_PERIOD}
+        PROPOSAL_EXECUTE_DURATION ${PROPOSAL_EXECUTE_DURATION}
+        `);
+    });
     it("member cap proposal...", async () => {
-        const enabble = true;
+        const enable = true;
         const cap = 10;
         const tx = await this.colletiveDaoSetProposalContract.submitInvestorCapProposal(
             this.collectiveDirectdaoAddress,
             enable,
             cap);
+        const rel = await tx.wait();
 
         const proposalId = rel.events[rel.events.length - 1].args.proposalId;
 
+        let MAX_INVESTORS_ENABLE = await this.daoContract.getConfiguration(sha3("MAX_INVESTORS_ENABLE"));
+        let MAX_INVESTORS = await this.daoContract.getConfiguration(sha3("MAX_INVESTORS"));
+
+        console.log(`
+        created... ${proposalId}
+        MAX_INVESTORS_ENABLE ${MAX_INVESTORS_ENABLE}
+        MAX_INVESTORS ${MAX_INVESTORS}
+
+        voting...
+        `);
+        let proposalDetail = await this.colletiveDaoSetProposalContract.investorCapProposals(this.collectiveDirectdaoAddress,
+            proposalId);
+
+        await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(proposalDetail.stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.stopVoteTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+
+        console.log(`
+            voted...
+            execute...
+            `);
+
+        await this.colletiveDaoSetProposalContract.processInvestorCapProposal(
+            this.collectiveDirectdaoAddress,
+            proposalId);
+        proposalDetail = await this.colletiveDaoSetProposalContract.investorCapProposals(this.collectiveDirectdaoAddress,
+            proposalId);
+
+        MAX_INVESTORS_ENABLE = await this.daoContract.getConfiguration(sha3("MAX_INVESTORS_ENABLE"));
+        MAX_INVESTORS = await this.daoContract.getConfiguration(sha3("MAX_INVESTORS"));
+
+        console.log(`
+        state ${proposalDetail.state}
+        MAX_INVESTORS_ENABLE ${MAX_INVESTORS_ENABLE}
+        MAX_INVESTORS ${MAX_INVESTORS}
+        `);
+    });
+    it("fees proposal...", async () => {
+        const redemptionFee = hre.ethers.utils.parseEther("0.0002")
+        const tx = await this.colletiveDaoSetProposalContract.submitFeesProposal(
+            this.collectiveDirectdaoAddress,
+            redemptionFee
+        );
+
+        const rel = await tx.wait();
+
+        const proposalId = rel.events[rel.events.length - 1].args.proposalId;
+        let COLLECTIVE_REDEMPT_FEE_AMOUNT = await this.daoContract.getConfiguration(sha3("COLLECTIVE_REDEMPT_FEE_AMOUNT"));
+
+        console.log(`
+        created... ${proposalId}
+        COLLECTIVE_REDEMPT_FEE_AMOUNT ${COLLECTIVE_REDEMPT_FEE_AMOUNT}
+        voting...
+        `);
+
+        let proposalDetail = await this.colletiveDaoSetProposalContract.feesProposals(this.collectiveDirectdaoAddress,
+            proposalId);
+
+        await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(proposalDetail.stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.stopVoteTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+
+        console.log(`
+            voted...
+            execute...
+            `);
+
+        await this.colletiveDaoSetProposalContract.processFeesProposal(
+            this.collectiveDirectdaoAddress,
+            proposalId
+        );
+
+        COLLECTIVE_REDEMPT_FEE_AMOUNT = await this.daoContract.getConfiguration(sha3("COLLECTIVE_REDEMPT_FEE_AMOUNT"));
+        proposalDetail = await this.colletiveDaoSetProposalContract.feesProposals(this.collectiveDirectdaoAddress,
+            proposalId);
+
+        console.log(`
+        executed...
+        state ${proposalDetail.state}
+        COLLECTIVE_REDEMPT_FEE_AMOUNT ${COLLECTIVE_REDEMPT_FEE_AMOUNT}
+        `);
 
     });
-    it("fees proposal...", async () => { });
-    it("proposer reward proposal...", async () => { });
+    it("proposer reward proposal...", async () => {
+        const fundFromInvestorAmount = hre.ethers.utils.parseEther("0.0002");
+        const paybackTokenFromInvestorAmount = hre.ethers.utils.parseEther("0.0003");
+        const tx = await this.colletiveDaoSetProposalContract.submitProposerRewardProposal(
+            this.collectiveDirectdaoAddress,
+            fundFromInvestorAmount,
+            paybackTokenFromInvestorAmount
+        );
+
+        const rel = await tx.wait();
+
+        const proposalId = rel.events[rel.events.length - 1].args.proposalId;
+        let COLLECTIVE_PROPOSER_INVEST_TOKEN_REWARD_AMOUNT = await this.daoContract.getConfiguration(sha3("COLLECTIVE_PROPOSER_INVEST_TOKEN_REWARD_AMOUNT"));
+        let COLLECTIVE_PROPOSER_PAYBACK_TOKEN_REWARD_AMOUNT = await this.daoContract.getConfiguration(sha3("COLLECTIVE_PROPOSER_PAYBACK_TOKEN_REWARD_AMOUNT"));
+
+        console.log(
+            `
+        created... ${proposalId}
+        COLLECTIVE_PROPOSER_INVEST_TOKEN_REWARD_AMOUNT ${COLLECTIVE_PROPOSER_INVEST_TOKEN_REWARD_AMOUNT}
+        COLLECTIVE_PROPOSER_PAYBACK_TOKEN_REWARD_AMOUNT ${COLLECTIVE_PROPOSER_PAYBACK_TOKEN_REWARD_AMOUNT}
+        voting...
+        `);
+
+        let proposalDetail = await this.colletiveDaoSetProposalContract.proposerRewardProposals(this.collectiveDirectdaoAddress,
+            proposalId);
+
+        await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(proposalDetail.stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.stopVoteTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+
+        console.log(`
+            voted...
+            execute...
+            `);
+
+
+        await this.colletiveDaoSetProposalContract.processProposerRewardProposal(
+            this.collectiveDirectdaoAddress,
+            proposalId
+        );
+
+        COLLECTIVE_PROPOSER_INVEST_TOKEN_REWARD_AMOUNT = await this.daoContract.getConfiguration(sha3("COLLECTIVE_PROPOSER_INVEST_TOKEN_REWARD_AMOUNT"));
+        COLLECTIVE_PROPOSER_PAYBACK_TOKEN_REWARD_AMOUNT = await this.daoContract.getConfiguration(sha3("COLLECTIVE_PROPOSER_PAYBACK_TOKEN_REWARD_AMOUNT"));
+        proposalDetail = await this.colletiveDaoSetProposalContract.proposerRewardProposals(
+            this.collectiveDirectdaoAddress,
+            proposalId
+        );
+
+        console.log(`
+            executed...
+            state ${proposalDetail.state}
+            COLLECTIVE_PROPOSER_INVEST_TOKEN_REWARD_AMOUNT ${COLLECTIVE_PROPOSER_INVEST_TOKEN_REWARD_AMOUNT}
+            COLLECTIVE_PROPOSER_PAYBACK_TOKEN_REWARD_AMOUNT ${COLLECTIVE_PROPOSER_PAYBACK_TOKEN_REWARD_AMOUNT}
+        `);
+
+    });
 
 });

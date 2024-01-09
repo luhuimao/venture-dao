@@ -8,6 +8,10 @@ import "./CollectiveVotingAdapter.sol";
 import "./interfaces/ICollectiveVoting.sol";
 import "./CollectiveGovernorManagementAdapter.sol";
 import "./CollectiveFundingPoolAdapter.sol";
+import "./CollectiveExpenseProposalAdapter.sol";
+import "./CollectiveFundingProposalAdapter.sol";
+import "./CollectiveFundRaiseProposalAdapter.sol";
+import "./CollectiveTopUpProposalAdapter.sol";
 import "../../guards/RaiserGuard.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -94,7 +98,6 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         VotingSupportInfo supportInfo;
         VotingAssetInfo votingAssetInfo;
         VotingTimeInfo timeInfo;
-        VotingAllocs allocs;
         ProposalState state;
     }
 
@@ -134,8 +137,6 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         uint256 quorum;
         uint256 votingPeriod;
         uint256 executingPeriod;
-        address[] governors;
-        uint256[] allocations;
     }
 
     event ProposalCreated(
@@ -154,6 +155,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
     );
 
     error VOTING_NOT_FINISH();
+    error UNDONE_PROPOSALS();
 
     function fundPeriodCheck(DaoRegistry dao) internal view {
         ColletiveFundingPoolAdapterContract fundingPoolAdapt = ColletiveFundingPoolAdapterContract(
@@ -183,12 +185,40 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         );
     }
 
+    function undoneProposalsCheck(DaoRegistry dao) internal view {
+        ColletiveExpenseProposalAdapterContract expenseContr = ColletiveExpenseProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_EXPENSE_ADAPTER)
+            );
+        ColletiveFundingProposalAdapterContract fundingContr = ColletiveFundingProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
+            );
+        ColletiveFundRaiseProposalAdapterContract fundRaiseContrc = ColletiveFundRaiseProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
+            );
+        ColletiveGovernorManagementAdapterContract governorContrc = ColletiveGovernorManagementAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPTER
+                )
+            );
+        ColletiveTopUpProposalAdapterContract topupContrc = ColletiveTopUpProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_TOPUP_ADAPTER)
+            );
+
+        if (
+            !expenseContr.allDone(dao) ||
+            !fundingContr.allDone(dao) ||
+            !fundRaiseContrc.allDone(dao) ||
+            !governorContrc.allDone(dao) ||
+            !topupContrc.allDone(dao)
+        ) revert UNDONE_PROPOSALS();
+    }
+
     function submitInvestorCapProposal(
         DaoRegistry dao,
         bool enable,
         uint256 cap
     ) external onlyGovernor(dao) reimbursable(dao) {
-        fundPeriodCheck(dao);
+        undoneProposalsCheck(dao);
         require(
             ongoingInvestorCapProposal[address(dao)] == bytes32(0),
             "last cap proposal not finalized"
@@ -236,7 +266,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
             ongoingGovernorMembershipProposal[address(dao)] == bytes32(0),
             "last GovernorMembership proposal not finalized"
         );
-        fundPeriodCheck(dao);
+        undoneProposalsCheck(dao);
 
         dao.increaseGovernorMembershipId();
 
@@ -286,12 +316,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
             ongoingVotingProposal[address(dao)] == bytes32(0),
             "last voting proposal not finalized"
         );
-        require(
-            params.governors.length == params.allocations.length,
-            "!allocation params"
-        );
-        fundPeriodCheck(dao);
-
+        undoneProposalsCheck(dao);
         dao.increaseVotingId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
@@ -321,18 +346,9 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
                 block.timestamp,
                 block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD)
             ),
-            VotingAllocs(new uint256[](params.governors.length)),
             ProposalState.Voting
         );
         ongoingVotingProposal[address(dao)] = proposalId;
-        if (params.governors.length > 0) {
-            for (uint8 i = 0; i < params.governors.length; i++) {
-                votingProposals[address(dao)][proposalId].allocs.allocations[
-                        i
-                    ] = params.allocations[i];
-                votingGovernors[proposalId].add(params.governors[i]);
-            }
-        }
         setProposal(dao, proposalId);
         emit ProposalCreated(address(dao), proposalId, ProposalType.VOTING);
     }
@@ -341,7 +357,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         DaoRegistry dao,
         uint256 redemtionFee
     ) external onlyGovernor(dao) reimbursable(dao) {
-        fundPeriodCheck(dao);
+        undoneProposalsCheck(dao);
         require(
             ongoingFeesProposal[address(dao)] == bytes32(0),
             "last cap proposal not finalized"
@@ -378,7 +394,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         uint256 fundFromInvestorAmount,
         uint256 paybackTokenFromInvestorAmount
     ) external onlyGovernor(dao) reimbursable(dao) {
-        fundPeriodCheck(dao);
+        undoneProposalsCheck(dao);
         require(
             ongoingProposerRewardProposal[address(dao)] == bytes32(0),
             "last cap proposal not finalized"
@@ -566,6 +582,112 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         );
     }
 
+    function processFeesProposal(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external reimbursable(dao) {
+        FeesProposalDetails storage proposal = feesProposals[address(dao)][
+            proposalId
+        ];
+
+        dao.processProposal(proposalId);
+
+        ICollectiveVoting votingContract = ICollectiveVoting(
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
+        );
+
+        ICollectiveVoting.VotingState voteResult;
+        uint256 nbYes;
+        uint256 nbNo;
+
+        (voteResult, nbYes, nbNo) = votingContract.voteResult(dao, proposalId);
+
+        if (voteResult == ICollectiveVoting.VotingState.PASS) {
+            dao.setConfiguration(
+                DaoHelper.COLLECTIVE_REDEMPT_FEE_AMOUNT,
+                proposal.redemptionFeeAmount
+            );
+            proposal.state = ProposalState.Done;
+        } else if (
+            voteResult == ICollectiveVoting.VotingState.NOT_PASS ||
+            voteResult == ICollectiveVoting.VotingState.TIE
+        ) {
+            proposal.state = ProposalState.Failed;
+        } else {
+            revert VOTING_NOT_FINISH();
+        }
+
+        ongoingVotingProposal[address(dao)] = bytes32(0);
+
+        uint128 allGPsWeight = GovernanceHelper
+            .getCollectiveAllGovernorVotingWeightByProposalId(dao, proposalId);
+        emit ProposalProcessed(
+            address(dao),
+            proposalId,
+            proposal.state,
+            uint256(voteResult),
+            allGPsWeight,
+            nbYes,
+            nbNo
+        );
+    }
+
+    function processProposerRewardProposal(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external reimbursable(dao) {
+        ProposerRewardProposalDetails
+            storage proposal = proposerRewardProposals[address(dao)][
+                proposalId
+            ];
+
+        dao.processProposal(proposalId);
+
+        ICollectiveVoting votingContract = ICollectiveVoting(
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
+        );
+
+        ICollectiveVoting.VotingState voteResult;
+        uint256 nbYes;
+        uint256 nbNo;
+
+        (voteResult, nbYes, nbNo) = votingContract.voteResult(dao, proposalId);
+
+        if (voteResult == ICollectiveVoting.VotingState.PASS) {
+            dao.setConfiguration(
+                DaoHelper.COLLECTIVE_PROPOSER_INVEST_TOKEN_REWARD_AMOUNT,
+                proposal.fundFromInvestorAmount
+            );
+            dao.setConfiguration(
+                DaoHelper.COLLECTIVE_PROPOSER_PAYBACK_TOKEN_REWARD_AMOUNT,
+                proposal.paybackTokenFromInvestorAmount
+            );
+
+            proposal.state = ProposalState.Done;
+        } else if (
+            voteResult == ICollectiveVoting.VotingState.NOT_PASS ||
+            voteResult == ICollectiveVoting.VotingState.TIE
+        ) {
+            proposal.state = ProposalState.Failed;
+        } else {
+            revert VOTING_NOT_FINISH();
+        }
+
+        ongoingVotingProposal[address(dao)] = bytes32(0);
+
+        uint128 allGPsWeight = GovernanceHelper
+            .getCollectiveAllGovernorVotingWeightByProposalId(dao, proposalId);
+        emit ProposalProcessed(
+            address(dao),
+            proposalId,
+            proposal.state,
+            uint256(voteResult),
+            allGPsWeight,
+            nbYes,
+            nbNo
+        );
+    }
+
     function setInvestorCap(
         DaoRegistry dao,
         InvestorCapProposalDetails storage proposal
@@ -612,7 +734,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
             uint256 len = governorMembershipWhitelists[proposal.proposalId]
                 .values()
                 .length;
-            if (len > 0) {
+            if (len > 0 && proposal.varifyType == 3) {
                 ColletiveGovernorManagementAdapterContract governorManagementAdapt = ColletiveGovernorManagementAdapterContract(
                         dao.getAdapterAddress(
                             DaoHelper.COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPTER

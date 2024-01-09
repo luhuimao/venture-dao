@@ -22,7 +22,7 @@ contract ColletiveFundingProposalAdapterContract is
 
     mapping(address => mapping(bytes32 => ProposalDetails)) public proposals;
 
-    mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
+    // mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
     mapping(address => DoubleEndedQueue.Bytes32Deque) public proposalQueue;
     // Keeps track of all the locked token amount per DAO.
     mapping(address => mapping(bytes32 => mapping(address => uint256)))
@@ -468,5 +468,13 @@ contract ColletiveFundingProposalAdapterContract is
         ) return true;
 
         return false;
+    }
+
+    function allDone(DaoRegistry dao) external view returns (bool) {
+        if (
+            getQueueLength(dao) > 0 ||
+            ongoingProposal[address(dao)] != bytes32(0)
+        ) return false;
+        return true;
     }
 }
