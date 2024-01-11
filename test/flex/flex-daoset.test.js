@@ -552,6 +552,7 @@ describe("daoset proposal...", () => {
 
     it("submit governor membership dao set proposal...", async () => {
         const enable = true;
+        const name = "daoset-governor-membership-new-name";
         const varifyType = 1;
         const minAmount = 4;
         const tokenAddress = this.testtoken1.address;
@@ -560,6 +561,7 @@ describe("daoset proposal...", () => {
         const params = [
             this.flexDirectdaoAddress,
             enable,
+            name,
             varifyType,
             minAmount,
             tokenAddress,
@@ -567,7 +569,7 @@ describe("daoset proposal...", () => {
             whiteList
         ];
         const tx = await this.flexDaoSetAdapterContract
-            .submitGovernorMembershpProposal(
+            .submitGovernorMembershipProposal(
                 params
             );
 
@@ -579,7 +581,8 @@ describe("daoset proposal...", () => {
                 this.flexDirectdaoAddress,
                 proposalId
             );
-
+        let currentName = await this.daoContract
+            .getStringConfiguration("0xe6fc898f462d48724eb27b66193f38e8f83f214469eb3145fe9431a89411e724");
         let currentvarifyType = await this.daoContract
             .getConfiguration("0x84580f9d926113d2c801e908a914b652340b3d8527c171bcea8d1868e92a507c");
         let currentEnable = await this.daoContract
@@ -602,6 +605,7 @@ describe("daoset proposal...", () => {
         varifyType  ${proposal.varifyType}
         state ${proposal.state}
         currentEnable ${currentEnable}
+        currentName ${currentName}
         currentvarifyType ${currentvarifyType}
         currentminAmount ${currentminAmount}
         currenttokenAddress ${currenttokenAddress}
@@ -611,7 +615,7 @@ describe("daoset proposal...", () => {
        `);
 
         await expectRevert(this.flexDaoSetAdapterContract
-            .submitGovernorMembershpProposal(
+            .submitGovernorMembershipProposal(
                 params
             ),
             "revert");
@@ -644,6 +648,8 @@ describe("daoset proposal...", () => {
                 this.flexDirectdaoAddress,
                 proposalId
             );
+        currentName = await this.daoContract
+            .getStringConfiguration("0xe6fc898f462d48724eb27b66193f38e8f83f214469eb3145fe9431a89411e724");
         currentvarifyType = await this.daoContract
             .getConfiguration("0x84580f9d926113d2c801e908a914b652340b3d8527c171bcea8d1868e92a507c");
         currentEnable = await this.daoContract
@@ -666,6 +672,7 @@ describe("daoset proposal...", () => {
         state ${proposal.state}
         currentvarifyType ${currentvarifyType}
         currentEnable ${currentEnable}
+        currentName ${currentName}
         currentminAmount ${currentminAmount}
         currenttokenAddress ${currenttokenAddress}
         currenttokenId ${currenttokenId}
@@ -675,6 +682,7 @@ describe("daoset proposal...", () => {
 
     it("submit investor membership dao set proposal...", async () => {
         const enable = true;
+        const name = "daoset-investor-membership-name";
         const varifyType = 1;
         const minAmount = 4;
         const tokenAddress = this.testtoken1.address;
@@ -683,6 +691,7 @@ describe("daoset proposal...", () => {
         const params = [
             this.flexDirectdaoAddress,
             enable,
+            name,
             varifyType,
             minAmount,
             tokenAddress,
@@ -707,7 +716,8 @@ describe("daoset proposal...", () => {
             .getConfiguration("0x80140cd7e0b1d935bee578a67a41547c82987de8e7d6b3827d411b738110258b");
         let currentEnable = await this.daoContract
             .getConfiguration("0x96b394ec661f77cbb65c26efb1a3308a7405b2ad904ca7bd203e7a1c35737249");
-
+        let currentName = await this.daoContract
+            .getStringConfiguration("0xfd9a8d4692ffc545577ff1979a0a918c2b536b6b6a891cf324a93b2c43907f83");
 
         let investorMemberhsipWhitelistdata =
             await this.flexFundingPoolAdapterContract.getParticipanWhitelist(
@@ -734,6 +744,7 @@ describe("daoset proposal...", () => {
         varifyType  ${proposal.varifyType}
         state ${proposal.state}
         currentEnable ${currentEnable}
+        currentName ${currentName}
         currentvarifyType ${currentvarifyType}
         varifyType  ${investorMembershipDatavarifyType}
         minHolding  ${investorMembershipDataminHolding}
@@ -793,7 +804,8 @@ describe("daoset proposal...", () => {
                 this.flexDirectdaoAddress
             );
         expect(varifyType == currentvarifyType, true);
-
+        currentName = await this.daoContract
+            .getStringConfiguration("0xfd9a8d4692ffc545577ff1979a0a918c2b536b6b6a891cf324a93b2c43907f83");
         investorMembershipDatavarifyType = await this.daoContract
             .getConfiguration(sha3("FLEX_INVESTOR_MEMBERSHIP_TYPE"));
         investorMembershipDataminHolding = await this.daoContract
@@ -807,6 +819,7 @@ describe("daoset proposal...", () => {
         state ${proposal.state}
         currentvarifyType ${currentvarifyType}
         currentEnable ${currentEnable}
+        currentName ${currentName}
         varifyType  ${investorMembershipDatavarifyType}
         minHolding  ${investorMembershipDataminHolding}
         tokenAddress  ${investorMembershipDatatokenAddress}
@@ -1084,7 +1097,8 @@ describe("daoset proposal...", () => {
     });
 
     it("submit proposer membership proposal...", async () => {
-        const proposerMembershipEnable = true;
+        const proposerMembershipEnable = false;
+        const name = "daoset-proposer-membership-name";
         const varifyType = 3; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
         const minHolding = 12;
         const tokenAddress = this.testtoken2.address;
@@ -1097,6 +1111,7 @@ describe("daoset proposal...", () => {
         const params = [
             this.flexDirectdaoAddress,
             proposerMembershipEnable,
+            name,
             varifyType,
             minHolding,
             tokenAddress,
@@ -1117,10 +1132,12 @@ describe("daoset proposal...", () => {
                 this.flexDirectdaoAddress,
                 proposalId
             );
-
+        let FLEX_PROPOSER_ENABLE = await this.daoContract
+            .getConfiguration("0x2073e6ba5c75026b006fdd165596d94b89cada2e00d8e44a99d422de8ea467e0");
         const pWhitelist = await this.flexDaoSetAdapterContract.
             getProposerMembershipWhitelist(proposalId);
-
+        let currentName = await this.daoContract.
+            getStringConfiguration("0xed2fa238da16f9e9bea8f1aa8dc2f0d04c522f8adbda71cc4ea5c11f5a51f32d");
         let currentProposerMembershipMinHolding = await this.daoContract
             .getConfiguration("0xf6d5f030b79ca78dad001b87a49239ec96be97e62d13501da94c9a392700509e");
         let currentProposerMembershipTokenId = await this.daoContract
@@ -1138,6 +1155,8 @@ describe("daoset proposal...", () => {
         proposalId ${proposalId}
         pWhitelist ${pWhitelist}
         state ${proposal.state}
+        FLEX_PROPOSER_ENABLE ${FLEX_PROPOSER_ENABLE}
+        currentName ${currentName}
         currentProposerMembershipMinHolding ${currentProposerMembershipMinHolding}
         currentProposerMembershipTokenId ${currentProposerMembershipTokenId}
         currentProposerMembershipVarifyType ${currentProposerMembershipVarifyType}
@@ -1178,7 +1197,10 @@ describe("daoset proposal...", () => {
                 this.flexDirectdaoAddress,
                 proposalId
             );
-
+        FLEX_PROPOSER_ENABLE = await this.daoContract
+            .getConfiguration("0x2073e6ba5c75026b006fdd165596d94b89cada2e00d8e44a99d422de8ea467e0");
+        currentName = await this.daoContract.
+            getStringConfiguration("0xed2fa238da16f9e9bea8f1aa8dc2f0d04c522f8adbda71cc4ea5c11f5a51f32d");
         currentProposerMembershipMinHolding = await this.daoContract
             .getConfiguration("0xf6d5f030b79ca78dad001b87a49239ec96be97e62d13501da94c9a392700509e");
         currentProposerMembershipTokenId = await this.daoContract
@@ -1194,6 +1216,8 @@ describe("daoset proposal...", () => {
         console.log(`
         executed...
         state ${proposal.state}
+        FLEX_PROPOSER_ENABLE ${FLEX_PROPOSER_ENABLE}
+        currentName ${currentName}
         currentProposerMembershipMinHolding ${currentProposerMembershipMinHolding}
         currentProposerMembershipTokenId ${currentProposerMembershipTokenId}
         currentProposerMembershipVarifyType ${currentProposerMembershipVarifyType}
@@ -1203,6 +1227,7 @@ describe("daoset proposal...", () => {
     });
 
     it("submit poll for investment proposal...", async () => {
+        const name = "daoset-pollvoter-memberhsip-name";
         const varifyType = 3; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
         const minHolding = 12;
         const tokenAddress = this.testtoken2.address;
@@ -1225,6 +1250,7 @@ describe("daoset proposal...", () => {
         const params = [
             this.flexDirectdaoAddress,
             [
+                name,
                 varifyType,
                 minHolding,
                 tokenAddress,
@@ -1261,7 +1287,8 @@ describe("daoset proposal...", () => {
 
         const pWhitelist = await this.flexDaoSetAdapterContract.
             getProposerMembershipWhitelist(proposalId);
-
+        let currentName = await this.daoContract
+            .getStringConfiguration("0x7bd63360ec775df97ced77d73875245296c41d88ebf2b52f8e630b4e9a51b448");
         let currentflexDaoPollingVotingPeriod = await this.daoContract
             .getConfiguration("0xee63cc82ca6990a4cc5fa3ca10d8a5281ae1758a8d8f22892c4badb7cacd111e");
         let currentflexDaoPollingVotingPower = await this.daoContract
@@ -1293,6 +1320,7 @@ describe("daoset proposal...", () => {
         proposalId ${proposalId}
         state ${proposal.state}
         pWhitelist ${pWhitelist}
+        currentName ${currentName}
         currentflexDaoPollingVotingPeriod ${currentflexDaoPollingVotingPeriod}
         currentflexDaoPollingVotingPower ${currentflexDaoPollingVotingPower}
         currentflexDaoPollingSuperMajority ${currentflexDaoPollingSuperMajority}
@@ -1340,7 +1368,8 @@ describe("daoset proposal...", () => {
                 this.flexDirectdaoAddress,
                 proposalId
             );
-
+        currentName = await this.daoContract
+            .getStringConfiguration("0x7bd63360ec775df97ced77d73875245296c41d88ebf2b52f8e630b4e9a51b448");
         currentflexDaoPollingVotingPeriod = await this.daoContract
             .getConfiguration("0xee63cc82ca6990a4cc5fa3ca10d8a5281ae1758a8d8f22892c4badb7cacd111e");
         currentflexDaoPollingVotingPower = await this.daoContract
@@ -1370,6 +1399,7 @@ describe("daoset proposal...", () => {
         console.log(`
         executed...
         state ${proposal.state}
+        currentName ${currentName}
         currentflexDaoPollingVotingPeriod ${currentflexDaoPollingVotingPeriod}
         currentflexDaoPollingVotingPower ${currentflexDaoPollingVotingPower}
         currentflexDaoPollingSuperMajority ${currentflexDaoPollingSuperMajority}
@@ -1888,6 +1918,8 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         `);
 
         const enable = true;
+        const name = "daoset-governor-membership-new-name";
+
         const varifyType = 1;
         const minAmount = 4;
         const tokenAddress = this.testtoken1.address;
@@ -1896,6 +1928,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const params = [
             daoAddr,
             enable,
+            name,
             varifyType,
             minAmount,
             tokenAddress,
@@ -1904,7 +1937,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         ];
 
         await expectRevert(this.flexDaoSetAdapterContract
-            .submitGovernorMembershpProposal(
+            .submitGovernorMembershipProposal(
                 params), "revert");
 
         await this.flexVotingContract.submitVote(
@@ -1933,7 +1966,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         `);
 
         const tx1 = await this.flexDaoSetAdapterContract
-            .submitGovernorMembershpProposal(
+            .submitGovernorMembershipProposal(
                 params
             );
 
@@ -1987,6 +2020,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         `);
 
         const enable = true;
+        const name = "daoset-investor-membership-name";
         const varifyType = 1;
         const minAmount = 4;
         const tokenAddress = this.testtoken1.address;
@@ -1995,6 +2029,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const params = [
             this.flexDirectdaoAddress,
             enable,
+            name,
             varifyType,
             minAmount,
             tokenAddress,
@@ -2297,6 +2332,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         `);
 
         const proposerMembershipEnable = true;
+        const name = "daoset-proposer-membership-name";
         const varifyType = 3; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
         const minHolding = 12;
         const tokenAddress = this.testtoken2.address;
@@ -2309,6 +2345,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const params = [
             this.flexDirectdaoAddress,
             proposerMembershipEnable,
+            name,
             varifyType,
             minHolding,
             tokenAddress,
@@ -2400,7 +2437,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         currentgovenoroutId ${currentgovenoroutId} 
         currentnewfundId ${currentnewfundId}
         `);
-
+        const name = "daoset-pollvoter-memberhsip-name";
         const varifyType = 3; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
         const minHolding = 12;
         const tokenAddress = this.testtoken2.address;
@@ -2423,6 +2460,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const params = [
             this.flexDirectdaoAddress,
             [
+                name,
                 varifyType,
                 minHolding,
                 tokenAddress,

@@ -41,7 +41,8 @@ const deploySummonContract = async () => {
 }
 
 async function main() {
-    await summonFlexDao();
+    await getFlexDaosetPropsalInfo();
+    // await summonFlexDao();
     // await getVintageManagementFee();
     // await getFlexEscrowTokenInfo();
     // await createDaosetProposal();
@@ -1534,7 +1535,9 @@ const processFundingProposal = async (daoAddr, proposalId) => {
 }
 
 const deploy = async () => {
-    const [account1, account2, account3, account4, account5] = await hre.ethers.getSigners();
+    const [
+        account1, account2, account3, account4, account5
+    ] = await hre.ethers.getSigners();
     const bal = hre.ethers.utils.formatEther((await account1.getBalance()).toString());
     const bal2 = hre.ethers.utils.formatEther((await account2.getBalance()).toString());
     const bal3 = hre.ethers.utils.formatEther((await account3.getBalance()).toString());
@@ -1640,15 +1643,15 @@ const deploy = async () => {
     await flexDaoSetHelperAdapterContract.deployed();
     console.log("flexDaoSetHelperAdapterContract deployed address:", flexDaoSetHelperAdapterContract.address);
 
-    const FlexDaoSetPollingAdapterContract = await hre.ethers.getContractFactory("FlexDaoSetPollingAdapterContract");
-    const flexDaoSetPollingAdapterContract = await FlexDaoSetPollingAdapterContract.deploy();
-    await flexDaoSetPollingAdapterContract.deployed();
-    console.log("flexDaoSetPollingAdapterContract deployed address:", flexDaoSetPollingAdapterContract.address);
+    // const FlexDaoSetPollingAdapterContract = await hre.ethers.getContractFactory("FlexDaoSetPollingAdapterContract");
+    // const flexDaoSetPollingAdapterContract = await FlexDaoSetPollingAdapterContract.deploy();
+    // await flexDaoSetPollingAdapterContract.deployed();
+    // console.log("flexDaoSetPollingAdapterContract deployed address:", flexDaoSetPollingAdapterContract.address);
 
-    const FlexDaoSetVotingAdapterContract = await hre.ethers.getContractFactory("FlexDaoSetVotingAdapterContract");
-    const flexDaoSetVotingAdapterContract = await FlexDaoSetVotingAdapterContract.deploy();
-    await flexDaoSetVotingAdapterContract.deployed();
-    console.log("flexDaoSetVotingAdapterContract deployed address:", flexDaoSetVotingAdapterContract.address);
+    // const FlexDaoSetVotingAdapterContract = await hre.ethers.getContractFactory("FlexDaoSetVotingAdapterContract");
+    // const flexDaoSetVotingAdapterContract = await FlexDaoSetVotingAdapterContract.deploy();
+    // await flexDaoSetVotingAdapterContract.deployed();
+    // console.log("flexDaoSetVotingAdapterContract deployed address:", flexDaoSetVotingAdapterContract.address);
 
     // const SummonDao = await hre.ethers.getContractFactory("SummonDao");
     // const summonDao = await SummonDao.deploy();
@@ -2517,6 +2520,16 @@ const createDaosetProposal = async () => {
     const proposalId = rel.events[rel.events.length - 1].args.proposalId;
     console.log(proposalId);
 
+}
+
+const getFlexDaosetPropsalInfo = async () => {
+    const daoaddr = "0xa4db071de09c37da743c1fb43ef7bc80d47de244";
+    const proposalId = "0x3ef7bc80d47de244496e766573746f72204d656d626572736869702023320000";
+    const daosetContrct = (await hre.ethers.
+        getContractFactory("FlexDaoSetAdapterContract")).attach("0xEC3a7cb0C8d43cccCd1D2191646e2E4Cc98904fA");
+
+    const proposalInfo = await daosetContrct.investorMembershipProposals(daoaddr, proposalId);
+    console.log(proposalInfo);
 }
 
 main()

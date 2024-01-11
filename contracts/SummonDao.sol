@@ -9,7 +9,6 @@ import "./flex/adatpers/StewardManagement.sol";
 import "./flex/adatpers/FlexStewardAllocation.sol";
 import "./helpers/DaoHelper.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-
 import "hardhat/console.sol";
 
 contract SummonDao {
