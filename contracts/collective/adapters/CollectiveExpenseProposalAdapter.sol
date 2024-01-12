@@ -105,7 +105,7 @@ contract ColletiveExpenseProposalAdapterContract is
     function processProposal(
         DaoRegistry dao,
         bytes32 proposalId
-    ) external reimbursable(dao) {
+    ) external reimbursable(dao) returns (bool) {
         ProposalDetail storage proposal = proposals[address(dao)][proposalId];
         require(
             !dao.getProposalFlag(
@@ -136,9 +136,30 @@ contract ColletiveExpenseProposalAdapterContract is
         dao.processProposal(proposalId);
 
         if (voteResult == ICollectiveVoting.VotingState.PASS) {
-            proposal.state = ProposalState.Executing;
+            CollectiveInvestmentPoolExtension fundingpoolExt = CollectiveInvestmentPoolExtension(
+                    dao.getExtensionAddress(
+                        DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
+                    )
+                );
+            if (
+                fundingpoolExt.balanceOfToken(
+                    address(DaoHelper.DAOSQUARE_TREASURY),
+                    proposal.tokenAddress
+                ) < proposal.amount
+            ) proposal.state = ProposalState.Failed;
+            else {
+                fundingpoolExt.distributeFunds(
+                    proposal.receiver,
+                    proposal.tokenAddress,
+                    proposal.amount
+                );
 
-            proposal.state = ProposalState.Done;
+                fundingpoolExt.subtractAllFromBalance(
+                    proposal.tokenAddress,
+                    proposal.amount
+                );
+                proposal.state = ProposalState.Done;
+            }
         } else if (
             voteResult == ICollectiveVoting.VotingState.NOT_PASS ||
             voteResult == ICollectiveVoting.VotingState.TIE
@@ -159,6 +180,8 @@ contract ColletiveExpenseProposalAdapterContract is
             nbNo,
             uint256(voteResult)
         );
+
+        return true;
     }
 
     function allDone(DaoRegistry dao) external view returns (bool) {

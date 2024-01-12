@@ -141,9 +141,9 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                 "> max deposit amount"
             );
         }
-        console.log(dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN));
-        console.log(dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END));
-        console.log(block.timestamp);
+        // console.log(dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN));
+        // console.log(dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END));
+        // console.log(block.timestamp);
         require(
             dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN) <
                 block.timestamp &&
