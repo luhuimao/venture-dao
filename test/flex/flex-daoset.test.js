@@ -82,7 +82,7 @@ import {
 } from "v8";
 const hre = require("hardhat");
 
-describe("daoset proposal...", () => {
+describe.only("daoset proposal...", () => {
     before("deploy contracts...", async () => {
         let [
             owner,
@@ -829,22 +829,24 @@ describe("daoset proposal...", () => {
     });
 
     it("submit voting dao set proposal...", async () => {
-        const eligibilityType = 3;
+        const eligibilityType = 0;
         const tokenAddress = this.testtoken1.address;
-        const tokenId = 2;
-        const votingWeightedType = 1;
-        const supportType = 1;
-        const quorumType = 1
-        const support = 2;
+        const tokenId = 0;
+        const votingWeightedType = 0;
+        const supportType = 0;
+        const quorumType = 0
+        const support = 21;
         const quorum = 2;
         const votingPeriod = 60 * 10;
-        const executingPeriod = 60 * 5;
+        const executingPeriod = 60 * 0;
         const governors = [
-            this.owner.address,
-            this.genesis_steward1.address,
-            this.genesis_steward2.address
+            // this.owner.address,
+            // this.genesis_steward1.address,
+            // this.genesis_steward2.address
         ];
-        const allocations = [500, 200, 300];
+        const allocations = [
+            // 500, 200, 300
+        ];
         const params = [
             this.flexDirectdaoAddress,
             eligibilityType,
@@ -903,6 +905,8 @@ describe("daoset proposal...", () => {
         let alloc2 = await this.flexStewardAllocation.
             getAllocation(this.flexDirectdaoAddress,
                 this.genesis_steward2.address);
+
+        console.log(proposal);
 
         console.log(`
         created...
