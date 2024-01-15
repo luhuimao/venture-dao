@@ -224,6 +224,38 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         _addFundInvestor(dao, account);
     }
 
+    function topupFunds(
+        DaoRegistry dao,
+        address token,
+        address account,
+        uint256 amount
+    ) external {
+        require(
+            msg.sender ==
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_TOPUP_ADAPTER),
+            "Access Deny"
+        );
+        require(
+            IERC20(token).balanceOf(account) >= amount,
+            "insufficient fund"
+        );
+        require(
+            IERC20(token).allowance(account, address(this)) >= amount,
+            "insufficient allowance"
+        );
+        IERC20(token).transferFrom(account, address(this), amount);
+        IERC20(token).approve(
+            dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT),
+            amount
+        );
+        CollectiveInvestmentPoolExtension fundingPoolExt = CollectiveInvestmentPoolExtension(
+                dao.getExtensionAddress(
+                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
+                )
+            );
+        fundingPoolExt.addToBalance(account, token, amount);
+    }
+
     function returnFundToQuitGovernor(
         DaoRegistry dao,
         address account
