@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/ICollectiveVoting.sol";
 import "../../helpers/GovernanceHelper.sol";
 import "./CollectiveFundingPoolAdapter.sol";
+import "./CollectiveFundingProposalAdapter.sol";
 
 contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
     using EnumerableSet for EnumerableSet.Bytes32Set;
@@ -44,7 +45,7 @@ contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
     );
 
     error VOTE_NOT_START();
-
+    error UNDONE_FUNDING_PROPOSAL();
     mapping(address => mapping(bytes32 => ProposalDetail)) public proposals;
     mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
 
@@ -53,6 +54,11 @@ contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
         address token,
         uint256 amount
     ) external onlyGovernor(dao) reimbursable(dao) {
+        ColletiveFundingProposalAdapterContract fundingContr = ColletiveFundingProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
+            );
+        if (fundingContr.ongoingProposal(address(dao)) != bytes32(0))
+            revert UNDONE_FUNDING_PROPOSAL();
         dao.increaseTopupId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -180,6 +186,6 @@ contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
     }
 
     function allDone(DaoRegistry dao) external view returns (bool) {
-        return true;
+        return unDoneProposals[address(dao)].length() > 0 ? false : true;
     }
 }

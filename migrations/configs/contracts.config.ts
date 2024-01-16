@@ -1365,6 +1365,8 @@ export const contracts: Array<ContractConfig> = [
     acls: {
       dao: [
         daoAccessFlagsMap.SET_CONFIGURATION,
+        daoAccessFlagsMap.NEW_MEMBER,
+        daoAccessFlagsMap.REMOVE_MEMBER
       ],
       extensions: {
         [extensionsIdsMap.COLLECTIVE_FUNDING_POOL_EXT]: [

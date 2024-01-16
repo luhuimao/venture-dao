@@ -516,7 +516,7 @@ describe("governor management...", () => {
             {
                 id: '0x8f5b4aabbdb8527d420a29cc90ae207773ad49b73c632c3cfd2f29eb8776f2ea', //colletiveFundingPoolContract
                 addr: this.colletiveFundingPoolContract.address,
-                flags: 8
+                flags: 200
             },
             {
                 id: '0x3a06648a49edffe95b8384794dfe9cf3ab34782fab0130b4c91bfd53f3407e6b', //colletiveFundRaiseProposalContract
@@ -1383,7 +1383,7 @@ describe("fund raise proposal...", () => {
             {
                 id: '0x8f5b4aabbdb8527d420a29cc90ae207773ad49b73c632c3cfd2f29eb8776f2ea', //colletiveFundingPoolContract
                 addr: this.colletiveFundingPoolContract.address,
-                flags: 8
+                flags: 200
             },
             {
                 id: '0x3a06648a49edffe95b8384794dfe9cf3ab34782fab0130b4c91bfd53f3407e6b', //colletiveFundRaiseProposalContract
@@ -1774,7 +1774,7 @@ describe("deposit, withdraw...", () => {
             {
                 id: '0x8f5b4aabbdb8527d420a29cc90ae207773ad49b73c632c3cfd2f29eb8776f2ea', //colletiveFundingPoolContract
                 addr: this.colletiveFundingPoolContract.address,
-                flags: 8
+                flags: 200
             },
             {
                 id: '0x3a06648a49edffe95b8384794dfe9cf3ab34782fab0130b4c91bfd53f3407e6b', //colletiveFundRaiseProposalContract
@@ -2226,7 +2226,7 @@ describe("funding proposal...", () => {
             {
                 id: '0x8f5b4aabbdb8527d420a29cc90ae207773ad49b73c632c3cfd2f29eb8776f2ea', //colletiveFundingPoolContract
                 addr: this.colletiveFundingPoolContract.address,
-                flags: 8
+                flags: 200
             },
             {
                 id: '0x3a06648a49edffe95b8384794dfe9cf3ab34782fab0130b4c91bfd53f3407e6b', //colletiveFundRaiseProposalContract
@@ -2807,7 +2807,7 @@ describe("clear fund...", () => {
             {
                 id: '0x8f5b4aabbdb8527d420a29cc90ae207773ad49b73c632c3cfd2f29eb8776f2ea', //colletiveFundingPoolContract
                 addr: this.colletiveFundingPoolContract.address,
-                flags: 8
+                flags: 200
             },
             {
                 id: '0x3a06648a49edffe95b8384794dfe9cf3ab34782fab0130b4c91bfd53f3407e6b', //colletiveFundRaiseProposalContract
@@ -3265,7 +3265,7 @@ describe("daoset...", () => {
             {
                 id: '0x8f5b4aabbdb8527d420a29cc90ae207773ad49b73c632c3cfd2f29eb8776f2ea', //colletiveFundingPoolContract
                 addr: this.colletiveFundingPoolContract.address,
-                flags: 8
+                flags: 200
             },
             {
                 id: '0x3a06648a49edffe95b8384794dfe9cf3ab34782fab0130b4c91bfd53f3407e6b', //colletiveFundRaiseProposalContract
@@ -3853,7 +3853,7 @@ describe("daoset...", () => {
 
 });
 
-describe.only("expense...", () => {
+describe("expense...", () => {
     before("deploy contracts...", async () => {
         let [
             owner,
@@ -3978,7 +3978,7 @@ describe.only("expense...", () => {
             {
                 id: '0x8f5b4aabbdb8527d420a29cc90ae207773ad49b73c632c3cfd2f29eb8776f2ea', //colletiveFundingPoolContract
                 addr: this.colletiveFundingPoolContract.address,
-                flags: 8
+                flags: 200
             },
             {
                 id: '0x3a06648a49edffe95b8384794dfe9cf3ab34782fab0130b4c91bfd53f3407e6b', //colletiveFundRaiseProposalContract
