@@ -41,7 +41,7 @@ const deploySummonContract = async () => {
 }
 
 async function main() {
-    await getFlexDaosetPropsalInfo();
+    // await getFlexDaosetPropsalInfo();
     // await summonFlexDao();
     // await getVintageManagementFee();
     // await getFlexEscrowTokenInfo();
@@ -49,7 +49,7 @@ async function main() {
     // await getAdapterAddress();
     // await getDaoConfig();
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
-    // await deploy();
+    await deploy();
     // await getFlexdaoInvestorWhitelist();
     // await summonVintageDao();
     // await submitVintageDaosetProposal();
@@ -1648,10 +1648,10 @@ const deploy = async () => {
     // await flexDaoSetPollingAdapterContract.deployed();
     // console.log("flexDaoSetPollingAdapterContract deployed address:", flexDaoSetPollingAdapterContract.address);
 
-    const FlexDaoSetVotingAdapterContract = await hre.ethers.getContractFactory("FlexDaoSetVotingAdapterContract");
-    const flexDaoSetVotingAdapterContract = await FlexDaoSetVotingAdapterContract.deploy();
-    await flexDaoSetVotingAdapterContract.deployed();
-    console.log("flexDaoSetVotingAdapterContract deployed address:", flexDaoSetVotingAdapterContract.address);
+    // const FlexDaoSetVotingAdapterContract = await hre.ethers.getContractFactory("FlexDaoSetVotingAdapterContract");
+    // const flexDaoSetVotingAdapterContract = await FlexDaoSetVotingAdapterContract.deploy();
+    // await flexDaoSetVotingAdapterContract.deployed();
+    // console.log("flexDaoSetVotingAdapterContract deployed address:", flexDaoSetVotingAdapterContract.address);
 
     // const SummonDao = await hre.ethers.getContractFactory("SummonDao");
     // const summonDao = await SummonDao.deploy();
@@ -1772,10 +1772,10 @@ const deploy = async () => {
     // await vintageFundingPoolAdapterHelperContract.deployed();
     // console.log("vintageFundingPoolAdapterHelperContract deployed address:", vintageFundingPoolAdapterHelperContract.address);
 
-    // const VintageDaoSetAdapterContract = await hre.ethers.getContractFactory("VintageDaoSetAdapterContract");
-    // const vintageDaoSetAdapterContract = await VintageDaoSetAdapterContract.deploy();
-    // await vintageDaoSetAdapterContract.deployed();
-    // console.log("vintageDaoSetAdapterContract deployed address:", vintageDaoSetAdapterContract.address);
+    const VintageDaoSetAdapterContract = await hre.ethers.getContractFactory("VintageDaoSetAdapterContract");
+    const vintageDaoSetAdapterContract = await VintageDaoSetAdapterContract.deploy();
+    await vintageDaoSetAdapterContract.deployed();
+    console.log("vintageDaoSetAdapterContract deployed address:", vintageDaoSetAdapterContract.address);
 }
 
 

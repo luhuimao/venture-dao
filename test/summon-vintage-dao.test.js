@@ -13552,7 +13552,7 @@ describe("funding proposal start voting at refund period...", () => {
 
 });
 
-describe("daoset proposal...", () => {
+describe.only("daoset proposal...", () => {
 
     before("deploy contracts...", async () => {
         let [owner,
