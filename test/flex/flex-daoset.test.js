@@ -1231,6 +1231,7 @@ describe.only("daoset proposal...", () => {
     });
 
     it("submit poll for investment proposal...", async () => {
+        const pollEnable = true;
         const name = "daoset-pollvoter-memberhsip-name";
         const varifyType = 3; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
         const minHolding = 12;
@@ -1253,6 +1254,7 @@ describe.only("daoset proposal...", () => {
 
         const params = [
             this.flexDirectdaoAddress,
+            pollEnable,
             [
                 name,
                 varifyType,
@@ -1272,9 +1274,7 @@ describe.only("daoset proposal...", () => {
                 pollingsupportType,
                 pollingquorumType
             ]
-
         ];
-
         const tx = await this.flexDaoSetAdapterContract
             .submitPollForInvestmentProposal(
                 params
@@ -1288,6 +1288,8 @@ describe.only("daoset proposal...", () => {
                 this.flexDirectdaoAddress,
                 proposalId
             );
+
+        console.log(proposal);
 
         const pWhitelist = await this.flexDaoSetAdapterContract.
             getProposerMembershipWhitelist(proposalId);
@@ -1318,7 +1320,8 @@ describe.only("daoset proposal...", () => {
         let currentPollsterWhitelist = await
             this.flexPollingVotingContract.
                 getWhitelist(this.flexDirectdaoAddress);
-
+        let currentPollEnable = await this.daoContract
+            .getConfiguration("0x6e9fd67c3f2ca4e2b4e4b45b33b985dc3a1bffcadea24d12440a5901f72217b5");
         console.log(`
         created...
         proposalId ${proposalId}
@@ -1337,6 +1340,7 @@ describe.only("daoset proposal...", () => {
         currentflexPollsterMembershipTokenAddress ${currentflexPollsterMembershipTokenAddress}
         currentflexDaoPollsterMembershipTokenId ${currentflexDaoPollsterMembershipTokenId}
         currentPollsterWhitelist ${currentPollsterWhitelist}
+        currentPollEnable ${currentPollEnable}
         voting... 
         `);
 
@@ -1399,7 +1403,8 @@ describe.only("daoset proposal...", () => {
         currentPollsterWhitelist = await
             this.flexPollingVotingContract.
                 getWhitelist(this.flexDirectdaoAddress);
-
+        currentPollEnable = await this.daoContract
+            .getConfiguration("0x6e9fd67c3f2ca4e2b4e4b45b33b985dc3a1bffcadea24d12440a5901f72217b5");
         console.log(`
         executed...
         state ${proposal.state}
@@ -1416,6 +1421,7 @@ describe.only("daoset proposal...", () => {
         currentflexPollsterMembershipTokenAddress ${currentflexPollsterMembershipTokenAddress}
         currentflexDaoPollsterMembershipTokenId ${currentflexDaoPollsterMembershipTokenId}
         currentPollsterWhitelist ${currentPollsterWhitelist}
+        currentPollEnable ${currentPollEnable}
         `);
     });
 });
@@ -1837,7 +1843,6 @@ describe("submit daoset proposal during other poposal in progress...", () => {
                 this.flexDirectdaoAddress,
                 enableParticipantCap,
                 cap), "revert");
-        console.log(222);
         // const result1 = await tx1.wait();
         // const proposalId1 = result1.events[result.events.length - 1].args.proposalId;
 
@@ -2425,6 +2430,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
     it("varify undone proposal - poll for investment...", async () => {
         const stewardMangementContract = this.flexStewardMangement;
         const daoAddr = this.flexDirectdaoAddress;
+        const pollEnable = true;
         await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
         const tx = await stewardMangementContract.submitGovernorInProposal(daoAddr, this.user1.address, 0);
         const result = await tx.wait();
@@ -2463,6 +2469,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
 
         const params = [
             this.flexDirectdaoAddress,
+            pollEnable,
             [
                 name,
                 varifyType,

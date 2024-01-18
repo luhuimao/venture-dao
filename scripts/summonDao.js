@@ -46,10 +46,10 @@ async function main() {
     // await getVintageManagementFee();
     // await getFlexEscrowTokenInfo();
     // await createDaosetProposal();
-    // await getAdapterAddress();
+    await getAdapterAddress();
     // await getDaoConfig();
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
-    await deploy();
+    // await deploy();
     // await getFlexdaoInvestorWhitelist();
     // await summonVintageDao();
     // await submitVintageDaosetProposal();
@@ -1633,10 +1633,10 @@ const deploy = async () => {
     // await flexVestingERC721.deployed();
     // console.log("flexVestingERC721 deployed address:", flexVestingERC721.address);
 
-    // const FlexDaoSetAdapterContract = await hre.ethers.getContractFactory("FlexDaoSetAdapterContract");
-    // const flexDaoSetAdapterContract = await FlexDaoSetAdapterContract.deploy();
-    // await flexDaoSetAdapterContract.deployed();
-    // console.log("flexDaoSetAdapterContract deployed address:", flexDaoSetAdapterContract.address);
+    const FlexDaoSetAdapterContract = await hre.ethers.getContractFactory("FlexDaoSetAdapterContract");
+    const flexDaoSetAdapterContract = await FlexDaoSetAdapterContract.deploy();
+    await flexDaoSetAdapterContract.deployed();
+    console.log("flexDaoSetAdapterContract deployed address:", flexDaoSetAdapterContract.address);
 
     // const FlexDaoSetHelperAdapterContract = await hre.ethers.getContractFactory("FlexDaoSetHelperAdapterContract");
     // const flexDaoSetHelperAdapterContract = await FlexDaoSetHelperAdapterContract.deploy();
@@ -1772,10 +1772,10 @@ const deploy = async () => {
     // await vintageFundingPoolAdapterHelperContract.deployed();
     // console.log("vintageFundingPoolAdapterHelperContract deployed address:", vintageFundingPoolAdapterHelperContract.address);
 
-    const VintageDaoSetAdapterContract = await hre.ethers.getContractFactory("VintageDaoSetAdapterContract");
-    const vintageDaoSetAdapterContract = await VintageDaoSetAdapterContract.deploy();
-    await vintageDaoSetAdapterContract.deployed();
-    console.log("vintageDaoSetAdapterContract deployed address:", vintageDaoSetAdapterContract.address);
+    // const VintageDaoSetAdapterContract = await hre.ethers.getContractFactory("VintageDaoSetAdapterContract");
+    // const vintageDaoSetAdapterContract = await VintageDaoSetAdapterContract.deploy();
+    // await vintageDaoSetAdapterContract.deployed();
+    // console.log("vintageDaoSetAdapterContract deployed address:", vintageDaoSetAdapterContract.address);
 }
 
 
@@ -2410,7 +2410,7 @@ const getVintageManagementFee = async () => {
 
 const getAdapterAddress = async () => {
     const daoContrct = (await hre.ethers.
-        getContractFactory("DaoRegistry")).attach("0xd26eec725751d60dc54a44f2e6d46e5d124d331e");
+        getContractFactory("DaoRegistry")).attach("0x5A093dB6721b10F863462cCe6E0c423922A872A9");
 
 
     const FlexVesting = await daoContrct.getAdapterAddress("0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd");
