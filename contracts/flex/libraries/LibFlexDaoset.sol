@@ -66,6 +66,7 @@ library FlexDaosetLibrary {
     }
 
     struct PollForInvestmentProposalDetails {
+        bool pollEnable;
         string name;
         uint8 varifyType;
         uint256 minHolding;
@@ -91,6 +92,7 @@ library FlexDaosetLibrary {
 
     struct PollForInvestmentParams {
         DaoRegistry dao;
+        bool pollEnable;
         FlexDaoPollVoterMembershipInfo pollvoterMembership;
         flexDaoPollingInfo pollingInfo;
     }

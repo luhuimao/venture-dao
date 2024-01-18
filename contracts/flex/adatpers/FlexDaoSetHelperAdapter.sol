@@ -293,6 +293,7 @@ contract FlexDaoSetHelperAdapterContract {
         uint256[9] calldata uint256Args,
         address[2] calldata addressArgs,
         address[] calldata pollvoterMembershipWhitelist,
+        bool pollEnable,
         string calldata name
     ) external {
         require(
@@ -349,6 +350,11 @@ contract FlexDaoSetHelperAdapterContract {
             DaoHelper.FLEX_POLLVOTER_MEMBERSHIP_TOKENID,
             uint256Args[8] //flexDaoPollvoterMembershipTokenId
         );
+        if (pollEnable) {
+            dao.setConfiguration(DaoHelper.FLEX_INVESTMENT_TYPE, 1);
+        } else {
+            dao.setConfiguration(DaoHelper.FLEX_INVESTMENT_TYPE, 0);
+        }
 
         if (pollvoterMembershipWhitelist.length > 0) {
             FlexPollingVotingContract flexPollingVoting = FlexPollingVotingContract(

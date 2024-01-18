@@ -48,6 +48,7 @@ contract FlexDaoSetPollingAdapterContract {
         pollForInvestmentProposals[address(params.dao)][
             proposalId
         ] = FlexDaosetLibrary.PollForInvestmentProposalDetails(
+            params.pollEnable,
             params.pollvoterMembership.name,
             params.pollvoterMembership.varifyType,
             params.pollvoterMembership.minHolding,
@@ -159,6 +160,7 @@ contract FlexDaoSetPollingAdapterContract {
             ],
             [proposal.pollingInfo.tokenAddress, proposal.tokenAddress],
             pollvoterMembershipWhiteLists[proposalId].values(),
+            proposal.pollEnable,
             proposal.name
         );
     }
