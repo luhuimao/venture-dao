@@ -146,9 +146,10 @@ contract VintageFundingPoolAdapterContract is
         address account
     ) external {
         require(
-            dao.isMember(msg.sender) ||
+            DaoHelper.isInCreationModeAndHasAccess(dao) ||
+                // dao.isMember(msg.sender) ||
                 msg.sender ==
-                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER),
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_HELPER_ADAPTER),
             "!access"
         );
         if (!investorMembershipWhiteList[address(dao)].contains(account)) {
@@ -159,7 +160,7 @@ contract VintageFundingPoolAdapterContract is
     function clearInvestorWhitelist(DaoRegistry dao) external {
         require(
             msg.sender ==
-                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER),
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_HELPER_ADAPTER),
             "!access"
         );
         uint256 len = investorMembershipWhiteList[address(dao)].values().length;
@@ -407,9 +408,7 @@ contract VintageFundingPoolAdapterContract is
             dao.getConfiguration(DaoHelper.MAX_INVESTORS_ENABLE) == 1 &&
             fundInvestors[address(dao)][vars.fundRounds].length() >=
             dao.getConfiguration(DaoHelper.MAX_INVESTORS) &&
-            !fundInvestors[address(dao)][vars.fundRounds].contains(
-                msg.sender
-            )
+            !fundInvestors[address(dao)][vars.fundRounds].contains(msg.sender)
         ) revert MAX_PATICIPANT_AMOUNT_REACH();
         address token = vars.fundingpool.getFundRaisingTokenAddress();
         require(IERC20(token).balanceOf(msg.sender) >= amount, "!fund");

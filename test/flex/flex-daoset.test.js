@@ -1243,10 +1243,10 @@ describe.only("daoset proposal...", () => {
         ];
 
         const pollingvotingPeriod = 60 * 8;
-        const pollingvotingPower = 1;
+        const pollingvotingPower = 2;
         const pollingsuperMajority = 12;
         const pollingquorum = 22;
-        const pollingeligibilityType = 1; //0. erc20 1.erc721 2.erc1155 3.allocation
+        const pollingeligibilityType = 2; //0. erc20 1.erc721 2.erc1155 3.allocation
         const pollingtokenAddress = this.testtoken2.address;
         const pollingtokenID = 44;
         const pollingsupportType = 1; // 0. YES - NO > X
@@ -1304,7 +1304,7 @@ describe.only("daoset proposal...", () => {
         let currentflexDaoPollingQuorum = await this.daoContract
             .getConfiguration("0x7789eea44dccd66529026559d1b36215cb5766016b41a8a8f16e08b2ec875837");
         let currentflexDaoPollingEligibilityType = await this.daoContract
-            .getConfiguration("0xd0dad4aff06879b1b839b3b8b56f7ec287c8ccfaf9a1461575d34b45effb2ca3");
+            .getConfiguration("0xf873703084a7a9b6b81a595d5038f888fd90f4f9a530d4950a46c89eab021188");
         let currentflexEligibilityTokenId = await this.daoContract
             .getConfiguration("0x656f80c3ee5e8b049b7028f53c3d8f66f585b411116738cd6604ce8e8deb3a92");
         let currentflexEligibilityTokenAddress = await this.daoContract
@@ -1387,7 +1387,7 @@ describe.only("daoset proposal...", () => {
         currentflexDaoPollingQuorum = await this.daoContract
             .getConfiguration("0x7789eea44dccd66529026559d1b36215cb5766016b41a8a8f16e08b2ec875837");
         currentflexDaoPollingEligibilityType = await this.daoContract
-            .getConfiguration("0xd0dad4aff06879b1b839b3b8b56f7ec287c8ccfaf9a1461575d34b45effb2ca3");
+            .getConfiguration("0xf873703084a7a9b6b81a595d5038f888fd90f4f9a530d4950a46c89eab021188");
         currentflexEligibilityTokenId = await this.daoContract
             .getConfiguration("0x656f80c3ee5e8b049b7028f53c3d8f66f585b411116738cd6604ce8e8deb3a92");
         currentflexEligibilityTokenAddress = await this.daoContract

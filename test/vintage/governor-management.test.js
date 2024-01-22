@@ -172,6 +172,7 @@ describe("raiser allocations...", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -196,7 +197,8 @@ describe("raiser allocations...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
+        const enalbeAdapters = [
+            {
                 id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
@@ -270,10 +272,16 @@ describe("raiser allocations...", () => {
                 id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
                 addr: this.vintageDaoSetAdapterContract.address,
                 flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
             }
         ];
 
-        const adapters1 = [{
+        const adapters1 = [
+            {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
                 addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23

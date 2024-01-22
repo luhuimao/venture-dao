@@ -167,6 +167,7 @@ describe("Summon A Vintage Dao", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -208,98 +209,105 @@ describe("Summon A Vintage Dao", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
-        }
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
+            }
         ];
 
-        const adapters1 = [{
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
-            flags: 23
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
-            flags: 14
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
-            flags: 22
-        }
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
+                flags: 23
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
+                flags: 14
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
+                flags: 22
+            }
         ];
 
         const vintageDaoParticipantCapInfo = [
@@ -550,6 +558,7 @@ describe("verify raiser membership...", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -579,92 +588,105 @@ describe("verify raiser membership...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
-        }
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
+            }
         ];
-        const adapters1 = [{
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
-            flags: 23
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
-            flags: 14
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
-            flags: 22
-        }
+
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
+                flags: 23
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
+                flags: 14
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
+                flags: 22
+            }
         ];
 
 
@@ -1035,6 +1057,7 @@ describe("voting....", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -1059,98 +1082,105 @@ describe("voting....", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
-        }
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
+            }
         ];
 
-        const adapters1 = [{
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
-            flags: 23
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
-            flags: 14
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
-            flags: 22
-        }
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
+                flags: 23
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
+                flags: 14
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
+                flags: 22
+            }
         ];
 
 
@@ -4533,6 +4563,7 @@ describe("fund term...", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -4562,98 +4593,105 @@ describe("fund term...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
-        }
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
+            }
         ];
 
-        const adapters1 = [{
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
-            flags: 23
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
-            flags: 14
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
-            flags: 22
-        }
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
+                flags: 23
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
+                flags: 14
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
+                flags: 22
+            }
         ];
 
 
@@ -5008,6 +5046,7 @@ describe("funding...", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -5032,98 +5071,105 @@ describe("funding...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
-        }
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
+            }
         ];
 
-        const adapters1 = [{
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
-            flags: 23
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
-            flags: 14
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
-            flags: 22
-        }
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
+                flags: 23
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
+                flags: 14
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
+                flags: 22
+            }
         ];
 
 
@@ -6454,6 +6500,7 @@ describe("investor membership...", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -6478,99 +6525,105 @@ describe("investor membership...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
-        }
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
+            }
         ];
 
-        const adapters1 = [{
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
-            flags: 23
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
-            flags: 14
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
-            flags: 22
-        }
-
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
+                flags: 23
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
+                flags: 14
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
+                flags: 22
+            }
         ];
 
 
@@ -7716,6 +7769,7 @@ describe("eligibility deposit voting...", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -7740,99 +7794,105 @@ describe("eligibility deposit voting...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
-        }
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
+            }
         ];
 
-        const adapters1 = [{
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
-            flags: 23
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
-            flags: 14
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
-            flags: 22
-        }
-
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
+                flags: 23
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
+                flags: 14
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
+                flags: 22
+            }
         ];
 
 
@@ -8577,6 +8637,7 @@ describe("funding NFT", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -8611,98 +8672,105 @@ describe("funding NFT", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
-        }
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
+            }
         ];
 
-        const adapters1 = [{
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
-            flags: 23
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
-            flags: 14
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
-            flags: 22
-        }
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
+                flags: 23
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
+                flags: 14
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
+                flags: 22
+            }
         ];
 
 
@@ -9823,6 +9891,7 @@ describe("raiser allocations...", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -9847,98 +9916,105 @@ describe("raiser allocations...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
-        }
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
+            }
         ];
 
-        const adapters1 = [{
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
-            flags: 23
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
-            flags: 14
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
-            flags: 22
-        }
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
+                flags: 23
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
+                flags: 14
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
+                flags: 22
+            }
         ];
 
         const vintageDaoParticipantCapInfo = [
@@ -10177,6 +10253,7 @@ describe("Free-In...", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -10201,98 +10278,105 @@ describe("Free-In...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
-        }
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
+            }
         ];
 
-        const adapters1 = [{
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
-            flags: 23
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
-            flags: 14
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
-            flags: 22
-        }
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
+                flags: 23
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
+                flags: 14
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
+                flags: 22
+            }
         ];
 
         const vintageDaoParticipantCapInfo = [
@@ -11946,6 +12030,7 @@ describe("participant cap...", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -11970,98 +12055,105 @@ describe("participant cap...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
-        }
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
+            }
         ];
 
-        const adapters1 = [{
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
-            flags: 23
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
-            flags: 14
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
-            flags: 22
-        }
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
+                flags: 23
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
+                flags: 14
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
+                flags: 22
+            }
         ];
 
         const vintageDaoParticipantCapInfo = [
@@ -12423,6 +12515,7 @@ describe("return token management fee...", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -12447,98 +12540,105 @@ describe("return token management fee...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
-        }
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
+            }
         ];
 
-        const adapters1 = [{
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
-            flags: 23
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
-            flags: 14
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
-            flags: 22
-        }
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
+                flags: 23
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
+                flags: 14
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
+                flags: 22
+            }
         ];
 
         const vintageDaoParticipantCapInfo = [
@@ -13046,6 +13146,7 @@ describe("funding proposal start voting at refund period...", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -13070,98 +13171,105 @@ describe("funding proposal start voting at refund period...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
-        }
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
+            }
         ];
 
-        const adapters1 = [{
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
-            flags: 23
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
-            flags: 14
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
-            flags: 22
-        }
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
+                flags: 23
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
+                flags: 14
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
+                flags: 22
+            }
         ];
 
         const vintageDaoParticipantCapInfo = [
@@ -13552,7 +13660,7 @@ describe("funding proposal start voting at refund period...", () => {
 
 });
 
-describe.only("daoset proposal...", () => {
+describe("daoset proposal...", () => {
 
     before("deploy contracts...", async () => {
         let [owner,
@@ -13631,7 +13739,7 @@ describe.only("daoset proposal...", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
-
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
@@ -13655,98 +13763,105 @@ describe.only("daoset proposal...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
-        }
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
+            }
         ];
 
-        const adapters1 = [{
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
-            flags: 23
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
-            flags: 14
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
-            flags: 22
-        }
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
+                flags: 23
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
+                flags: 14
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
+                flags: 22
+            }
         ];
 
         const vintageDaoParticipantCapInfo = [
@@ -14085,6 +14200,7 @@ describe.only("daoset proposal...", () => {
 
     it("create daoset governor membership proposal...", async () => {
         const enable = true;
+        const name = "governor-memvership001";
         const varifyType = 0; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS 4 DEPOSIT
         const minAmount = hre.ethers.utils.parseEther("10000");
         const tokenAddress = this.testtoken1.address;
@@ -14093,24 +14209,20 @@ describe.only("daoset proposal...", () => {
             this.user1.address,
             this.user2.address
         ]
-        const tx = await this.vintageDaoSetAdapterContract.submitGovernorMembershpProposal(
-            this.daoAddr1,
+        const params = [this.daoAddr1,
+            name,
             enable,
             varifyType,
             minAmount,
             tokenAddress,
             tokenId,
-            whitelist
+            whitelist];
+        const tx = await this.vintageDaoSetAdapterContract.submitGovernorMembershipProposal(
+            params
         );
 
-        await expectRevert(this.vintageDaoSetAdapterContract.submitGovernorMembershpProposal(
-            this.daoAddr1,
-            enable,
-            varifyType,
-            minAmount,
-            tokenAddress,
-            tokenId,
-            whitelist
+        await expectRevert(this.vintageDaoSetAdapterContract.submitGovernorMembershipProposal(
+            params
         ), "revert");
 
         const rel = await tx.wait();
@@ -14176,7 +14288,7 @@ describe.only("daoset proposal...", () => {
     });
 
     it("create daoset investor membership proposal...", async () => {
-
+        const name = 'investormembership002';
         const enable = true;
         const varifyType = 1; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
         const minAmount = 2;
@@ -14187,24 +14299,21 @@ describe.only("daoset proposal...", () => {
             this.user2.address
         ];
 
-        const tx = await this.vintageDaoSetAdapterContract.submitInvestorMembershipProposal(
-            this.daoAddr1,
+        const params = [this.daoAddr1,
+            name,
             enable,
             varifyType,
             minAmount,
             tokenAddress,
             tokenId,
-            whitelist
+            whitelist];
+
+        const tx = await this.vintageDaoSetAdapterContract.submitInvestorMembershipProposal(
+            params
         );
 
         await expectRevert(this.vintageDaoSetAdapterContract.submitInvestorMembershipProposal(
-            this.daoAddr1,
-            enable,
-            varifyType,
-            minAmount,
-            tokenAddress,
-            tokenId,
-            whitelist
+            params
         ), "revert");
 
         const rel = await tx.wait();

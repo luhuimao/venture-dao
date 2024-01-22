@@ -944,6 +944,22 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
+  {
+    id: adaptersIdsMap.VINTAGE_DAOSET_HELPER_ADAPTER,
+    name: "VintageDaoSetHelperAdapterContract",
+    alias: "vintageDaoSetHelperAdapterContract",
+    path: "../../contracts/adapters/VintageDaoSetHelperAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SET_CONFIGURATION
+      ],
+      extensions: {
+      },
+    },
+  },
   /***********************************vintage end********************************/
   // flex
   {

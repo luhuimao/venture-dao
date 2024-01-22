@@ -10,6 +10,7 @@ import "./interfaces/IVintageVoting.sol";
 import "./VintageRaiserManagement.sol";
 import "./VintageFundingPoolAdapter.sol";
 import "./VintageRaiserAllocation.sol";
+import "./VintageDaoSetHelperAdapter.sol";
 import "../../guards/RaiserGuard.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -18,7 +19,7 @@ import "hardhat/console.sol";
 
 contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
     using EnumerableSet for EnumerableSet.AddressSet;
-    using EnumerableSet for EnumerableSet.UintSet;
+    // using EnumerableSet for EnumerableSet.UintSet;
 
     mapping(address => bytes32) public ongoingInvestorCapProposal;
     mapping(address => bytes32) public ongoingGovernorMembershipProposal;
@@ -40,7 +41,6 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
     mapping(bytes32 => EnumerableSet.AddressSet) governorMembershipWhitelists;
     mapping(bytes32 => EnumerableSet.AddressSet) investorMembershipWhiteLists;
 
-    // mapping(bytes32 => uint256[]) votingAllocations;
     mapping(bytes32 => EnumerableSet.AddressSet) votingGovernors;
     enum ProposalState {
         Voting,
@@ -57,7 +57,7 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
     }
 
     struct InvestorCapProposalDetails {
-        bytes32 proposalId;
+        // bytes32 proposalId;
         bool enable;
         uint256 cap;
         uint256 creationTime;
@@ -67,6 +67,7 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
 
     struct GovernorMembershipProposalDetails {
         bytes32 proposalId;
+        string name;
         bool enable;
         uint8 varifyType;
         uint256 minAmount;
@@ -79,6 +80,7 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
 
     struct InvestorMembershipProposalDetails {
         bytes32 proposalId;
+        string name;
         bool enable;
         uint8 varifyType;
         uint256 minAmount;
@@ -98,7 +100,7 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
         ProposalState state;
     }
 
-    struct VotingAllocs{
+    struct VotingAllocs {
         uint256[] allocations;
     }
 
@@ -154,22 +156,17 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
     );
 
     error VOTING_NOT_FINISH();
-
-    // error FUND_PERIOD();
+    error LAST_CAP_NOT_FINALIZED();
+    error LAST_GOVERNOR_MEMBERSHIP_NOT_FINALIZED();
+    error LAST_INVESOTR_MEMBERHISP_NOT_FINALIZED();
+    error LAST_VOTING_NOT_FINALIZED();
+    error INVALID_ALLOC_PARAMS();
 
     function fundPeriodCheck(DaoRegistry dao) internal view {
         VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
                 dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
             );
-        // if (
-        //     block.timestamp >=
-        //     dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN) &&
-        //     block.timestamp <=
-        //     dao.getConfiguration(DaoHelper.FUND_END_TIME) +
-        //         dao.getConfiguration(DaoHelper.RETURN_DURATION)
-        // ) {
-        //     revert FUND_PERIOD();
-        // }
+
         DaoHelper.FundRaiseState state = fundingPoolAdapt.daoFundRaisingStates(
             address(dao)
         );
@@ -196,10 +193,12 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
         uint256 cap
     ) external onlyGovernor(dao) reimbursable(dao) {
         fundPeriodCheck(dao);
-        require(
-            ongoingInvestorCapProposal[address(dao)] == bytes32(0),
-            "last cap proposal not finalized"
-        );
+        // require(
+        //     ongoingInvestorCapProposal[address(dao)] == bytes32(0),
+        //     "last cap proposal not finalized"
+        // );
+        if (ongoingInvestorCapProposal[address(dao)] != bytes32(0))
+            revert LAST_CAP_NOT_FINALIZED();
         dao.increaseInvestorCapId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
@@ -212,7 +211,6 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
         investorCapProposals[address(dao)][
             proposalId
         ] = InvestorCapProposalDetails(
-            proposalId,
             enable,
             cap,
             block.timestamp,
@@ -230,111 +228,130 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
         );
     }
 
-    function submitGovernorMembershpProposal(
-        DaoRegistry dao,
-        bool enable,
-        uint8 varifyType,
-        uint256 minAmount,
-        address tokenAddress,
-        uint256 tokenId,
-        address[] calldata whiteList
-    ) external onlyGovernor(dao) reimbursable(dao) {
-        require(
-            ongoingGovernorMembershipProposal[address(dao)] == bytes32(0),
-            "last GovernorMembership proposal not finalized"
-        );
-        fundPeriodCheck(dao);
+    struct GovernorMembershipParams {
+        DaoRegistry dao;
+        string name;
+        bool enable;
+        uint8 varifyType;
+        uint256 minAmount;
+        address tokenAddress;
+        uint256 tokenId;
+        address[] whiteList;
+    }
 
-        dao.increaseGovernorMembershipId();
+    function submitGovernorMembershipProposal(
+        GovernorMembershipParams calldata params
+    ) external onlyGovernor(params.dao) reimbursable(params.dao) {
+        if (
+            ongoingGovernorMembershipProposal[address(params.dao)] != bytes32(0)
+        ) revert LAST_GOVERNOR_MEMBERSHIP_NOT_FINALIZED();
+        fundPeriodCheck(params.dao);
+
+        params.dao.increaseGovernorMembershipId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
-                bytes8(uint64(uint160(address(dao)))),
+                bytes8(uint64(uint160(address(params.dao)))),
                 "Governor-Membership#",
-                Strings.toString(dao.getCurrentGovernorMembershipProposalId())
+                Strings.toString(
+                    params.dao.getCurrentGovernorMembershipProposalId()
+                )
             )
         );
-        governorMembershipProposals[address(dao)][
+        governorMembershipProposals[address(params.dao)][
             proposalId
         ] = GovernorMembershipProposalDetails(
             proposalId,
-            enable,
-            varifyType,
-            minAmount,
-            tokenAddress,
-            tokenId,
+            params.name,
+            params.enable,
+            params.varifyType,
+            params.minAmount,
+            params.tokenAddress,
+            params.tokenId,
             block.timestamp,
-            block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD),
+            block.timestamp +
+                params.dao.getConfiguration(DaoHelper.VOTING_PERIOD),
             ProposalState.Voting
         );
 
-        if (whiteList.length > 0) {
-            for (uint8 i = 0; i < whiteList.length; i++) {
-                governorMembershipWhitelists[proposalId].add(whiteList[i]);
+        if (params.whiteList.length > 0) {
+            for (uint8 i = 0; i < params.whiteList.length; i++) {
+                governorMembershipWhitelists[proposalId].add(
+                    params.whiteList[i]
+                );
             }
         }
 
-        ongoingGovernorMembershipProposal[address(dao)] = proposalId;
+        ongoingGovernorMembershipProposal[address(params.dao)] = proposalId;
 
-        setProposal(dao, proposalId);
+        setProposal(params.dao, proposalId);
 
         emit ProposalCreated(
-            address(dao),
+            address(params.dao),
             proposalId,
             ProposalType.GOVERNOR_MEMBERSHIP
         );
     }
 
-    function submitInvestorMembershipProposal(
-        DaoRegistry dao,
-        bool enable,
-        uint8 varifyType,
-        uint256 minAmount,
-        address tokenAddress,
-        uint256 tokenId,
-        address[] calldata whiteList
-    ) external onlyGovernor(dao) reimbursable(dao) {
-        require(
-            ongoingInvstorMembershipProposal[address(dao)] == bytes32(0),
-            "last InvestorMembership proposal not finalized"
-        );
-        fundPeriodCheck(dao);
+    struct InvesotrMembershipParams {
+        DaoRegistry dao;
+        string name;
+        bool enable;
+        uint8 varifyType;
+        uint256 minAmount;
+        address tokenAddress;
+        uint256 tokenId;
+        address[] whiteList;
+    }
 
-        dao.increaseInvstorMembershipId();
+    function submitInvestorMembershipProposal(
+        InvesotrMembershipParams calldata params
+    ) external onlyGovernor(params.dao) reimbursable(params.dao) {
+        if (ongoingInvstorMembershipProposal[address(params.dao)] != bytes32(0))
+            revert LAST_INVESOTR_MEMBERHISP_NOT_FINALIZED();
+        fundPeriodCheck(params.dao);
+
+        params.dao.increaseInvstorMembershipId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
-                bytes8(uint64(uint160(address(dao)))),
+                bytes8(uint64(uint160(address(params.dao)))),
                 "Investor-Membership#",
-                Strings.toString(dao.getCurrentInvestorMembershipProposalId())
+                Strings.toString(
+                    params.dao.getCurrentInvestorMembershipProposalId()
+                )
             )
         );
-        investorMembershipProposals[address(dao)][
+        investorMembershipProposals[address(params.dao)][
             proposalId
         ] = InvestorMembershipProposalDetails(
             proposalId,
-            enable,
-            varifyType,
-            minAmount,
-            tokenAddress,
-            tokenId,
+            params.name,
+            params.enable,
+            params.varifyType,
+            params.minAmount,
+            params.tokenAddress,
+            params.tokenId,
             block.timestamp,
-            block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD),
+            block.timestamp +
+                params.dao.getConfiguration(DaoHelper.VOTING_PERIOD),
             ProposalState.Voting
         );
 
-        if (whiteList.length > 0) {
-            for (uint8 i = 0; i < whiteList.length; i++) {
-                investorMembershipWhiteLists[proposalId].add(whiteList[i]);
+        if (params.whiteList.length > 0) {
+            for (uint8 i = 0; i < params.whiteList.length; i++) {
+                investorMembershipWhiteLists[proposalId].add(
+                    params.whiteList[i]
+                );
             }
         }
 
-        ongoingInvstorMembershipProposal[address(dao)] = proposalId;
+        ongoingInvstorMembershipProposal[address(params.dao)] = proposalId;
 
-        setProposal(dao, proposalId);
+        setProposal(params.dao, proposalId);
 
         emit ProposalCreated(
-            address(dao),
+            address(params.dao),
             proposalId,
             ProposalType.INVESTOR_MEMBERSHIP
         );
@@ -344,14 +361,11 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
         DaoRegistry dao,
         VotingParams calldata params
     ) external onlyGovernor(dao) reimbursable(dao) {
-        require(
-            ongoingVotingProposal[address(dao)] == bytes32(0),
-            "last voting proposal not finalized"
-        );
-        require(
-            params.governors.length == params.allocations.length,
-            "!allocation params"
-        );
+        if (ongoingVotingProposal[address(dao)] != bytes32(0))
+            revert LAST_VOTING_NOT_FINALIZED();
+
+        if (params.governors.length != params.allocations.length)
+            revert INVALID_ALLOC_PARAMS();
         fundPeriodCheck(dao);
 
         dao.increaseVotingId();
@@ -390,7 +404,9 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
         if (params.governors.length > 0) {
             // votingProposals[address(dao)][proposalId].allocations=new uint256[](params.governors.length);
             for (uint8 i = 0; i < params.governors.length; i++) {
-                votingProposals[address(dao)][proposalId].allocs.allocations[i]= params.allocations[i];
+                votingProposals[address(dao)][proposalId].allocs.allocations[
+                        i
+                    ] = params.allocations[i];
                 // votingProposals[address(dao)][proposalId].allocations.push(params.allocations[i]);
                 votingGovernors[proposalId].add(params.governors[i]);
             }
@@ -419,10 +435,9 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
         DaoRegistry dao,
         bytes32 proposalId
     ) external reimbursable(dao) {
-        InvestorCapProposalDetails
-            storage proposal = investorCapProposals[address(dao)][
-                proposalId
-            ];
+        InvestorCapProposalDetails storage proposal = investorCapProposals[
+            address(dao)
+        ][proposalId];
 
         dao.processProposal(proposalId);
 
@@ -614,190 +629,77 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
         DaoRegistry dao,
         InvestorCapProposalDetails storage proposal
     ) internal {
-        dao.setConfiguration(
-            DaoHelper.MAX_INVESTORS_ENABLE,
-            proposal.enable == true ? 1 : 0
-        );
-        dao.setConfiguration(DaoHelper.MAX_INVESTORS, proposal.cap);
+        VintageDaoSetHelperAdapterContract helper = VintageDaoSetHelperAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_HELPER_ADAPTER)
+            );
+        helper.setInvestorCap(dao, proposal.enable, proposal.cap);
     }
 
     function setGovernorMembership(
         DaoRegistry dao,
         GovernorMembershipProposalDetails storage proposal
     ) internal {
-        dao.setConfiguration(
-            DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_ENABLE,
-            proposal.enable == true ? 1 : 0
+        VintageDaoSetHelperAdapterContract helper = VintageDaoSetHelperAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_HELPER_ADAPTER)
+            );
+
+        helper.setGovernorMembership(
+            dao,
+            proposal.enable,
+            proposal.name,
+            proposal.varifyType,
+            proposal.minAmount,
+            proposal.tokenId,
+            proposal.tokenAddress,
+            governorMembershipWhitelists[proposal.proposalId].values()
         );
-
-        if (proposal.enable) {
-            dao.setConfiguration(
-                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TYPE,
-                proposal.varifyType
-            );
-            dao.setConfiguration(
-                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_MIN_HOLDING,
-                proposal.minAmount
-            );
-            dao.setAddressConfiguration(
-                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TOKEN_ADDRESS,
-                proposal.tokenAddress
-            );
-
-            dao.setConfiguration(
-                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TOKENID,
-                proposal.tokenId
-            );
-
-            dao.setConfiguration(
-                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_MIN_DEPOSIT,
-                proposal.minAmount
-            );
-            uint256 len = governorMembershipWhitelists[proposal.proposalId]
-                .values()
-                .length;
-            if (len > 0) {
-                VintageRaiserManagementContract raiserManagementAdapt = VintageRaiserManagementContract(
-                        dao.getAdapterAddress(
-                            DaoHelper.VINTAGE_GOVERNOR_MANAGEMENT
-                        )
-                    );
-
-                raiserManagementAdapt.clearGovernorWhitelist(dao);
-                for (uint8 i = 0; i < len; i++) {
-                    raiserManagementAdapt.registerGovernorWhiteList(
-                        dao,
-                        governorMembershipWhitelists[proposal.proposalId].at(i)
-                    );
-                }
-            }
-        }
     }
 
     function setInvestorMembership(
         DaoRegistry dao,
         InvestorMembershipProposalDetails storage proposal
     ) internal {
-        dao.setConfiguration(
-            DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_ENABLE,
-            proposal.enable == true ? 1 : 0
+        VintageDaoSetHelperAdapterContract helper = VintageDaoSetHelperAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_HELPER_ADAPTER)
+            );
+
+        helper.setInvestorMembership(
+            dao,
+            proposal.enable,
+            proposal.name,
+            proposal.varifyType,
+            proposal.minAmount,
+            proposal.tokenId,
+            proposal.tokenAddress,
+            investorMembershipWhiteLists[proposal.proposalId].values()
         );
-        if (proposal.enable) {
-            dao.setConfiguration(
-                DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_TYPE,
-                proposal.varifyType
-            );
-            //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
-            dao.setConfiguration(
-                DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_MIN_HOLDING,
-                proposal.minAmount
-            );
-            dao.setAddressConfiguration(
-                DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS,
-                proposal.tokenAddress
-            );
-
-            dao.setConfiguration(
-                DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_TOKENID,
-                proposal.tokenId
-            );
-
-            uint256 len = investorMembershipWhiteLists[proposal.proposalId]
-                .values()
-                .length;
-            if (len > 0) {
-                VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
-                        dao.getAdapterAddress(
-                            DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT
-                        )
-                    );
-                fundingPoolAdapt.clearInvestorWhitelist(dao);
-                for (uint8 i = 0; i < len; i++) {
-                    fundingPoolAdapt.registerInvestorWhiteList(
-                        dao,
-                        investorMembershipWhiteLists[proposal.proposalId].at(i)
-                    );
-                }
-            }
-        }
     }
 
     function setVoting(
         DaoRegistry dao,
         VotingProposalDetails storage proposal
     ) internal {
-        dao.setConfiguration(
-            DaoHelper.VINTAGE_VOTING_ASSET_TYPE,
-            proposal.votingAssetInfo.votingAssetType
+        VintageDaoSetHelperAdapterContract helper = VintageDaoSetHelperAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_HELPER_ADAPTER)
+            );
+        helper.setVoting(
+            dao,
+            [
+                proposal.votingAssetInfo.votingAssetType,
+                proposal.votingAssetInfo.tokenID,
+                proposal.votingAssetInfo.votingWeightedType,
+                proposal.supportInfo.supportType,
+                proposal.supportInfo.quorumType,
+                proposal.supportInfo.quorum,
+                proposal.supportInfo.support,
+                proposal.timeInfo.votingPeriod,
+                proposal.timeInfo.executingPeriod
+            ],
+            proposal.votingAssetInfo.tokenAddress,
+            proposal.allocs.allocations,
+            votingGovernors[proposal.proposalId].values()
         );
-        dao.setAddressConfiguration(
-            DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ADDRESS,
-            proposal.votingAssetInfo.tokenAddress
-        );
-        dao.setConfiguration(
-            DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ID,
-            proposal.votingAssetInfo.tokenID
-        );
-        dao.setConfiguration(
-            DaoHelper.VINTAGE_VOTING_WEIGHTED_TYPE,
-            proposal.votingAssetInfo.votingWeightedType
-        );
-        dao.setConfiguration(
-            DaoHelper.VINTAGE_VOTING_SUPPORT_TYPE,
-            proposal.supportInfo.supportType
-        );
-        dao.setConfiguration(
-            DaoHelper.VINTAGE_VOTING_QUORUM_TYPE,
-            proposal.supportInfo.quorumType
-        );
-        dao.setConfiguration(DaoHelper.QUORUM, proposal.supportInfo.quorum);
-        dao.setConfiguration(
-            DaoHelper.SUPER_MAJORITY,
-            proposal.supportInfo.support
-        );
-        dao.setConfiguration(
-            DaoHelper.VOTING_PERIOD,
-            proposal.timeInfo.votingPeriod
-        );
-        dao.setConfiguration(
-            DaoHelper.PROPOSAL_EXECUTE_DURATION,
-            proposal.timeInfo.executingPeriod
-        );
-
-        uint256 len = votingGovernors[proposal.proposalId].values().length;
-        if (len > 0) {
-            VintageRaiserAllocationAdapter raiserAlloc = VintageRaiserAllocationAdapter(
-                    dao.getAdapterAddress(
-                        DaoHelper.VINTAGE_GOVERNOR_ALLOCATION_ADAPTER
-                    )
-                );
-            for (uint8 i = 0; i < len; i++) {
-                raiserAlloc.setAllocation(
-                    dao,
-                    votingGovernors[proposal.proposalId].at(i),
-                    proposal.allocs.allocations[i]
-                );
-            }
-        }
     }
-
-    // function getInvestorMembershipWhitelist(
-    //     bytes32 proposalId
-    // ) external view returns (address[] memory) {
-    //     return investorMembershipWhiteLists[proposalId].values();
-    // }
-
-    // function getGovernorMembershipWhitelist(
-    //     bytes32 proposalId
-    // ) external view returns (address[] memory) {
-    //     return governorMembershipWhitelists[proposalId].values();
-    // }
-
-    // function getAllocation(
-    //     bytes32 proposalId
-    // ) external view returns (uint256[] memory) {
-    //     return votingAllocations[proposalId];
-    // }
 
     function isProposalAllDone(address daoAddr) external view returns (bool) {
         if (

@@ -370,6 +370,8 @@ library DaoHelper {
         keccak256("vintage-free-in-escrow-fund-adapter");
     bytes32 internal constant VINTAGE_DAO_SET_ADAPTER =
         keccak256("vintage-daoset-adapter");
+    bytes32 internal constant VINTAGE_DAO_SET_HELPER_ADAPTER =
+        keccak256("vintage-daoset-helper-adapter");
 
     /* 
     vintage Adapters **************************************************************************************************
