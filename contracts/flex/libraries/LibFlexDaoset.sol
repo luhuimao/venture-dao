@@ -41,6 +41,7 @@ library FlexDaosetLibrary {
         VotingAssetInfo votingAssetInfo;
         VotingTimeInfo timeInfo;
         VotingAllocation allocations;
+        VotingGovernor governors;
         ProposalState state;
     }
 
@@ -122,6 +123,10 @@ library FlexDaosetLibrary {
 
     struct VotingAllocation {
         uint256[] allocs;
+    }
+
+    struct VotingGovernor {
+        address[] governors;
     }
 
     struct VotingAssetInfo {

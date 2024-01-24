@@ -13660,7 +13660,7 @@ describe("funding proposal start voting at refund period...", () => {
 
 });
 
-describe("daoset proposal...", () => {
+describe.only("daoset proposal...", () => {
 
     before("deploy contracts...", async () => {
         let [owner,
@@ -14299,14 +14299,16 @@ describe("daoset proposal...", () => {
             this.user2.address
         ];
 
-        const params = [this.daoAddr1,
+        const params = [
+            this.daoAddr1,
             name,
             enable,
             varifyType,
             minAmount,
             tokenAddress,
             tokenId,
-            whitelist];
+            whitelist
+        ];
 
         const tx = await this.vintageDaoSetAdapterContract.submitInvestorMembershipProposal(
             params
@@ -14323,10 +14325,12 @@ describe("daoset proposal...", () => {
             this.daoAddr1,
             proposalId);
 
+        const current_VINTAGE_INVESTOR_MEMBERSHIP_NAME = await await this.dao1Contract.getStringConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_NAME"));
 
         console.log(proposal);
         console.log(`
         proposalId ${proposal.proposalId}
+        current_VINTAGE_INVESTOR_MEMBERSHIP_NAME ${current_VINTAGE_INVESTOR_MEMBERSHIP_NAME}
         `);
 
         console.log("voting...");
@@ -14355,7 +14359,7 @@ describe("daoset proposal...", () => {
         const cvrmamount = await this.dao1Contract.getConfiguration(sha3("VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING"));
         const cvrmtokenaddr = await this.dao1Contract.getAddressConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS"));
         const cvrmtokenid = await this.dao1Contract.getConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_TOKENID"));
-
+        const VINTAGE_INVESTOR_MEMBERSHIP_NAME = await await this.dao1Contract.getStringConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_NAME"));
         expect(cvrmtype == varifyType, true);
         expect(minAmount == cvrmamount, true);
         expect(tokenAddress == cvrmtokenaddr, true);
@@ -14368,6 +14372,7 @@ describe("daoset proposal...", () => {
         cvrmamount ${hre.ethers.utils.formatEther(cvrmamount)}
         cvrmtokenid ${cvrmtokenid}
         cvrmtokenaddr ${cvrmtokenaddr}
+        VINTAGE_INVESTOR_MEMBERSHIP_NAME ${VINTAGE_INVESTOR_MEMBERSHIP_NAME}
         `);
     });
 

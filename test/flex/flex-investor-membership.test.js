@@ -640,6 +640,7 @@ describe("investor membership...", () => {
 
     it("erc721...", async () => {
         const enable = true;
+        const name = "invester-membership-erc721-name";
         const varifyType = 1;//erc721
         const minAmount = 4;
         const erc721tokenAddress = this.testERC721.address;
@@ -648,6 +649,7 @@ describe("investor membership...", () => {
         const params = [
             this.flexDirectdaoAddress,
             enable,
+            name,
             varifyType,
             minAmount,
             erc721tokenAddress,
@@ -913,6 +915,7 @@ describe("investor membership...", () => {
 
     it("erc1155...", async () => {
         const enable = true;
+        const name = "invester-membeership-erc1155-name";
         const varifyType = 2;//erc1155
         const minAmount = 4;
         const erc1155tokenAddress = this.testERC1155.address;
@@ -921,6 +924,7 @@ describe("investor membership...", () => {
         const params = [
             this.flexDirectdaoAddress,
             enable,
+            name,
             varifyType,
             minAmount,
             erc1155tokenAddress,
@@ -1179,6 +1183,7 @@ describe("investor membership...", () => {
 
     it("whitelist...", async () => {
         const enable = true;
+        const name = "invester-membership-whitelist-name";
         const varifyType = 3;//whitelist
         const minAmount = 0;
         const erc1155tokenAddress = ZERO_ADDRESS;
@@ -1190,6 +1195,7 @@ describe("investor membership...", () => {
         const params = [
             this.flexDirectdaoAddress,
             enable,
+            name,
             varifyType,
             minAmount,
             erc1155tokenAddress,

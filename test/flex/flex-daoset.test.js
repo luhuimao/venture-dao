@@ -581,6 +581,7 @@ describe.only("daoset proposal...", () => {
                 this.flexDirectdaoAddress,
                 proposalId
             );
+
         let currentName = await this.daoContract
             .getStringConfiguration("0xe6fc898f462d48724eb27b66193f38e8f83f214469eb3145fe9431a89411e724");
         let currentvarifyType = await this.daoContract
@@ -2204,7 +2205,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
                 this.flexDirectdaoAddress,
                 proposalId1
             );
-
+        console.log(proposal);
         await this.flexVotingContract.submitVote(
             this.flexDirectdaoAddress,
             proposalId1,
