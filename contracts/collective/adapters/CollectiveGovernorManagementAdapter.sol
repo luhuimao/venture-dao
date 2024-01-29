@@ -64,7 +64,9 @@ contract ColletiveGovernorManagementAdapterContract is
         uint256 voteResult
     );
     event GovernorQuit(address daoAddr, address governor);
-
+    error UNDONE_INVESTMET_PROPOSAL();
+    error GRACE_PERIOD();
+    error SUMMONOR_CANT_QUIT();
     // proposals per dao
     mapping(DaoRegistry => mapping(bytes32 => ProposalDetails))
         public proposals;
@@ -152,7 +154,11 @@ contract ColletiveGovernorManagementAdapterContract is
         require(!dao.isMember(applicant), "Is Governor already");
 
         require(daosetProposalCheck(dao), "UnDone Daoset Proposal");
-
+        ColletiveFundingProposalAdapterContract fundingCont = ColletiveFundingProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
+            );
+        if (fundingCont.ongoingProposal(address(dao)) != bytes32(0))
+            revert UNDONE_INVESTMET_PROPOSAL();
         dao.increaseGovenorInId();
         vars.proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -162,10 +168,6 @@ contract ColletiveGovernorManagementAdapterContract is
             )
         );
 
-        // vars.startVoteTime = block.timestamp;
-        // vars.stopVoteTime =
-        //     vars.startVoteTime +
-        //     dao.getConfiguration(DaoHelper.VOTING_PERIOD);
         address tokenAddress = dao.getAddressConfiguration(
             DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
         );
@@ -245,6 +247,12 @@ contract ColletiveGovernorManagementAdapterContract is
         address applicant
     ) external onlyMember(dao) reimbursable(dao) returns (bytes32) {
         require(dao.isMember(applicant), "Applicant Isnt Governor");
+        require(daosetProposalCheck(dao), "UnDone Daoset Proposal");
+        ColletiveFundingProposalAdapterContract fundingCont = ColletiveFundingProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
+            );
+        if (fundingCont.ongoingProposal(address(dao)) != bytes32(0))
+            revert UNDONE_INVESTMET_PROPOSAL();
         dao.increaseGovenorOutId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -443,11 +451,13 @@ contract ColletiveGovernorManagementAdapterContract is
             ColletiveFundingProposalAdapterContract fundingProposalAdapt = ColletiveFundingProposalAdapterContract(
                     dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
                 );
-            require(
-                fundingProposalAdapt.isPrposalInGracePeriod(dao),
-                "!Grace Period"
-            );
-            require(dao.daoCreator() != msg.sender, "dao summonor cant quit");
+
+            // if (
+            //     fundingProposalAdapt.ongoingProposal(address(dao)) != bytes32(0)
+            // ) revert UNDONE_INVESTMET_PROPOSAL();
+            if (!fundingProposalAdapt.isPrposalInGracePeriod(dao))
+                revert GRACE_PERIOD();
+            if (dao.daoCreator() == msg.sender) revert SUMMONOR_CANT_QUIT();
             ColletiveFundingPoolAdapterContract fundingpoolAdapt = ColletiveFundingPoolAdapterContract(
                     dao.getAdapterAddress(
                         DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
@@ -466,9 +476,7 @@ contract ColletiveGovernorManagementAdapterContract is
     ) external {
         require(
             msg.sender ==
-                dao.getAdapterAddress(
-                    DaoHelper.COLLECTIVE_DAO_SET_ADAPTER
-                ) ||
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER) ||
                 DaoHelper.isInCreationModeAndHasAccess(dao),
             "!access"
         );

@@ -108,6 +108,9 @@ contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
                 bytes("")
             );
             proposal.state = ProposalState.Voting;
+            proposal.stopVoteTime =
+                block.timestamp +
+                dao.getConfiguration(DaoHelper.VOTING_PERIOD);
         } else {
             proposal.state = ProposalState.Failed;
         }
@@ -161,6 +164,7 @@ contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
                 proposal.account,
                 proposal.amount
             );
+            proposal.state = ProposalState.Done;
         } else if (
             voteResult == ICollectiveVoting.VotingState.NOT_PASS ||
             voteResult == ICollectiveVoting.VotingState.TIE

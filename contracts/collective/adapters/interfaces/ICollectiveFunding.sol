@@ -3,6 +3,7 @@ import "../../../core/DaoRegistry.sol";
 import "../CollectiveVotingAdapter.sol";
 import "./ICollectiveVoting.sol";
 import "../CollectiveFundingPoolAdapter.sol";
+import "../../extensions/CollectiveFundingPool.sol";
 
 // SPDX-License-Identifier: MIT
 

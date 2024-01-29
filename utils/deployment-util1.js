@@ -825,7 +825,7 @@ const configureDao = async ({
                 withAccess.push(v);
                 return withAccess;
             }, adaptersWithAccess);
-        console.log("contractsWithAccess ", contractsWithAccess);
+        // console.log("contractsWithAccess ", contractsWithAccess);
         const tx = await daoFactory.instance.addAdapters(dao.address, contractsWithAccess);
         await tx.wait();
         log("configure adapters with access FINISHED!");

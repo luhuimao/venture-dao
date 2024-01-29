@@ -5,6 +5,10 @@ import "../../core/DaoRegistry.sol";
 import "../../helpers/DaoHelper.sol";
 import "../../utils/TypeConver.sol";
 import "./CollectiveVotingAdapter.sol";
+import "./CollectiveFundingProposalAdapter.sol";
+import "./CollectiveFundRaiseProposalAdapter.sol";
+import "./CollectiveGovernorManagementAdapter.sol";
+import "./CollectiveTopUpProposalAdapter.sol";
 import "../extensions/CollectiveFundingPool.sol";
 import "./interfaces/ICollectiveVoting.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
@@ -51,6 +55,7 @@ contract ColletiveExpenseProposalAdapterContract is
     );
 
     error INSUFFICIENT_FUND();
+    error UNDONE_PROPOSALS();
 
     function summbitProposal(
         DaoRegistry dao,
@@ -58,6 +63,7 @@ contract ColletiveExpenseProposalAdapterContract is
         address receiver,
         uint256 amount
     ) external onlyGovernor(dao) reimbursable(dao) {
+        undoneProposalsCheck(dao);
         CollectiveInvestmentPoolExtension poolExt = CollectiveInvestmentPoolExtension(
                 dao.getExtensionAddress(
                     DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
@@ -186,5 +192,29 @@ contract ColletiveExpenseProposalAdapterContract is
 
     function allDone(DaoRegistry dao) external view returns (bool) {
         return unDoneProposals[address(dao)].length() > 0 ? false : true;
+    }
+
+    function undoneProposalsCheck(DaoRegistry dao) internal view {
+        ColletiveFundingProposalAdapterContract fundingContr = ColletiveFundingProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
+            );
+        ColletiveFundRaiseProposalAdapterContract fundRaiseContrc = ColletiveFundRaiseProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
+            );
+        ColletiveGovernorManagementAdapterContract governorContrc = ColletiveGovernorManagementAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPTER
+                )
+            );
+        ColletiveTopUpProposalAdapterContract topupContrc = ColletiveTopUpProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_TOPUP_ADAPTER)
+            );
+
+        if (
+            !fundingContr.allDone(dao) ||
+            !fundRaiseContrc.allDone(dao) ||
+            !governorContrc.allDone(dao) ||
+            !topupContrc.allDone(dao)
+        ) revert UNDONE_PROPOSALS();
     }
 }

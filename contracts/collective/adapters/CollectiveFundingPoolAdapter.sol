@@ -3,7 +3,8 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 import "../../core/DaoRegistry.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
-import "../extensions/CollectiveFundingPool.sol";
+// import "../extensions/CollectiveFundingPool.sol";
+import "./CollectiveFundingProposalAdapter.sol";
 import "./CollectiveEscrowFundAdapter.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
@@ -30,7 +31,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
     );
     event ClearFund(address daoAddress, uint256 escrowAmount, address executer);
     error MAX_PATICIPANT_AMOUNT_REACH();
-
+    error INVESTMENT_GRACE_PERIOD();
     mapping(address => EnumerableSet.AddressSet) fundInvestors;
     mapping(address => FundState) public fundState;
 
@@ -78,6 +79,12 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         //         block.timestamp > dao.getConfiguration(DaoHelper.FUND_END_TIME),
         //     "!withdraw"
         // );
+        //investment grace period
+        ColletiveFundingProposalAdapterContract fundingAdapt = ColletiveFundingProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
+            );
+        if (!fundingAdapt.isPrposalInGracePeriod(dao))
+            revert INVESTMENT_GRACE_PERIOD();
         CollectiveInvestmentPoolExtension fundingpool = CollectiveInvestmentPoolExtension(
                 dao.getExtensionAddress(
                     DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT

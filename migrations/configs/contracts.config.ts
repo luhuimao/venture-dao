@@ -1453,7 +1453,10 @@ export const contracts: Array<ContractConfig> = [
     version: "1.0.0",
     type: ContractType.Adapter,
     acls: {
-      dao: [],
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.INCREASE_TOPUP_ID
+      ],
       extensions: {
       },
     },
