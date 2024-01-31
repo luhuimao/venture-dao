@@ -82,7 +82,7 @@ import {
 } from "v8";
 const hre = require("hardhat");
 
-describe.only("daoset proposal...", () => {
+describe("daoset proposal...", () => {
     before("deploy contracts...", async () => {
         let [
             owner,

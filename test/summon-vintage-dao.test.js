@@ -951,7 +951,7 @@ describe("verify raiser membership...", () => {
     });
 });
 
-describe("voting....", () => {
+describe.only("voting....", () => {
 
     before("deploy contracts...", async () => {
         let [owner,
@@ -13660,7 +13660,7 @@ describe("funding proposal start voting at refund period...", () => {
 
 });
 
-describe.only("daoset proposal...", () => {
+describe("daoset proposal...", () => {
 
     before("deploy contracts...", async () => {
         let [owner,
