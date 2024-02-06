@@ -473,6 +473,7 @@ contract VintageFundingAdapterContract is
         }
         proposal.proposalTimeInfo.proposalExecuteTimestamp = block.timestamp;
         ongoingProposal[address(dao)] = bytes32(0);
+        proposal.executeBlockNum = block.number;
 
         emit ProposalExecuted(
             address(dao),
@@ -481,7 +482,6 @@ contract VintageFundingAdapterContract is
             vars.nbYes,
             vars.nbNo
         );
-
         return true;
     }
 

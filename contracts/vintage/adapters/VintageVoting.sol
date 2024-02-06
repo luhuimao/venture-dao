@@ -199,7 +199,7 @@ contract VintageVotingContract is
         );
 
         Voting storage vote = votes[address(dao)][proposalId];
-        console.log("vote.startingTime ", vote.startingTime);
+        // console.log("vote.startingTime ", vote.startingTime);
         require(
             block.timestamp > vote.startingTime && vote.startingTime > 0,
             "Voting::submitVote::this proposalId has not start voting"

@@ -970,7 +970,7 @@ contract BentoBoxV1 is MasterContractManager, BoringBatchable {
         if (share == 0) {
             // value of the share may be lower than the amount due to rounding, that's ok
             share = total.toBase(amount, false);
-            console.log("BentoBox deposit", share);
+            // console.log("BentoBox deposit", share);
             // Any deposit should lead to at least the minimum share balance, otherwise it's ignored (no amount taken)
             if (total.base.add(share.to128()) < MINIMUM_SHARE_BALANCE) {
                 return (0, 0);

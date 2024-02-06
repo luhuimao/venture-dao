@@ -12,6 +12,7 @@ contract VintageVesting is IVesting {
     uint256 public vestIds;
 
     uint256 public constant PERCENTAGE_PRECISION = 1e18;
+    error Invalid_Vesting_Time_Setting();
 
     constructor() {
         vestIds = 1;
@@ -31,11 +32,11 @@ contract VintageVesting is IVesting {
         );
         require(
             vars.allocAdapter.ifEligible(dao, recipientAddr, proposalId),
-            "Vesting::createVesting::Recipient not eligible of this proposalId"
+            "!eligible"
         );
         require(
             !vars.allocAdapter.isVestCreated(dao, proposalId, recipientAddr),
-            "Vesting::createVesting::Already created"
+            "Already Created"
         );
 
         vars.vintageFundingAdapt = VintageFundingAdapterContract(
@@ -47,7 +48,13 @@ contract VintageVesting is IVesting {
             recipientAddr
         );
 
-        (, , , , , , , vars.vestInfo, vars.paybackTokenInfo, ) = vars
+        vars.depositAmount += vars.allocAdapter.getInvestmentRewards(
+            dao,
+            recipientAddr,
+            proposalId
+        );
+
+        (, , , , , , , vars.vestInfo, vars.paybackTokenInfo, , ) = vars
             .vintageFundingAdapt
             .proposals(address(dao), proposalId);
 
@@ -56,8 +63,7 @@ contract VintageVesting is IVesting {
             vars.vestInfo.vestingCliffEndTime == 0 ||
             vars.vestInfo.vetingEndTime == 0 ||
             vars.vestInfo.vestingInterval == 0
-        ) revert("Invalid Vesting Time Setting");
-
+        ) revert Invalid_Vesting_Time_Setting();
         vars.depositedShares = _depositToken(
             dao,
             vars.paybackTokenInfo.paybackToken,
