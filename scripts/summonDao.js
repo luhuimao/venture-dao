@@ -1572,20 +1572,20 @@ const deploy = async () => {
     // await flexFreeInEscrowFundAdapterContract.deployed();
     // console.log("flexFreeInEscrowFundAdapterContract deployed address:", flexFreeInEscrowFundAdapterContract.address);
 
-    // const FlexFundingHelperAdapterContract = await hre.ethers.getContractFactory("FlexFundingHelperAdapterContract");
-    // const flexFundingHelperAdapterContract = await FlexFundingHelperAdapterContract.deploy();
-    // await flexFundingHelperAdapterContract.deployed();
-    // console.log("flexFundingHelperAdapterContract deployed address:", flexFundingHelperAdapterContract.address);
+    const FlexFundingHelperAdapterContract = await hre.ethers.getContractFactory("FlexFundingHelperAdapterContract");
+    const flexFundingHelperAdapterContract = await FlexFundingHelperAdapterContract.deploy();
+    await flexFundingHelperAdapterContract.deployed();
+    console.log("flexFundingHelperAdapterContract deployed address:", flexFundingHelperAdapterContract.address);
 
-    // const FlexFundingAdapterContract = await hre.ethers.getContractFactory("FlexFundingAdapterContract");
-    // const flexFundingAdapterContract = await FlexFundingAdapterContract.deploy();
-    // await flexFundingAdapterContract.deployed();
-    // console.log("flexFundingAdapterContract deployed address:", flexFundingAdapterContract.address);
+    const FlexFundingAdapterContract = await hre.ethers.getContractFactory("FlexFundingAdapterContract");
+    const flexFundingAdapterContract = await FlexFundingAdapterContract.deploy();
+    await flexFundingAdapterContract.deployed();
+    console.log("flexFundingAdapterContract deployed address:", flexFundingAdapterContract.address);
 
-    // const FlexInvestmentPoolAdapterContract = await hre.ethers.getContractFactory("FlexInvestmentPoolAdapterContract");
-    // const flexInvestmentPoolAdapterContract = await FlexInvestmentPoolAdapterContract.deploy();
-    // await flexInvestmentPoolAdapterContract.deployed();
-    // console.log("flexInvestmentPoolAdapterContract deployed address:", flexInvestmentPoolAdapterContract.address);
+    const FlexInvestmentPoolAdapterContract = await hre.ethers.getContractFactory("FlexInvestmentPoolAdapterContract");
+    const flexInvestmentPoolAdapterContract = await FlexInvestmentPoolAdapterContract.deploy();
+    await flexInvestmentPoolAdapterContract.deployed();
+    console.log("flexInvestmentPoolAdapterContract deployed address:", flexInvestmentPoolAdapterContract.address);
 
     // const FlexPollingVotingContract = await hre.ethers.getContractFactory("FlexPollingVotingContract");
     // const flexPollingVotingContract = await FlexPollingVotingContract.deploy();
@@ -1598,10 +1598,10 @@ const deploy = async () => {
     // await flexVotingContract.deployed();
     // console.log("flexVotingContract deployed address:", flexVotingContract.address);
 
-    // const FlexVesting = await hre.ethers.getContractFactory("FlexVesting");
-    // const flexVesting = await FlexVesting.deploy();
-    // await flexVesting.deployed();
-    // console.log("flexVesting deployed address:", flexVesting.address);
+    const FlexVesting = await hre.ethers.getContractFactory("FlexVesting");
+    const flexVesting = await FlexVesting.deploy();
+    await flexVesting.deployed();
+    console.log("flexVesting deployed address:", flexVesting.address);
 
 
     // const StewardManagementContract = await hre.ethers.getContractFactory("StewardManagementContract");
@@ -1610,10 +1610,10 @@ const deploy = async () => {
     // console.log("stewardManagementContract deployed address:", stewardManagementContract.address);
 
 
-    // const FlexAllocationAdapterContract = await hre.ethers.getContractFactory("FlexAllocationAdapterContract");
-    // const flexAllocationAdapterContract = await FlexAllocationAdapterContract.deploy();
-    // await flexAllocationAdapterContract.deployed();
-    // console.log("flexAllocationAdapterContract deployed address:", flexAllocationAdapterContract.address);
+    const FlexAllocationAdapterContract = await hre.ethers.getContractFactory("FlexAllocationAdapterContract");
+    const flexAllocationAdapterContract = await FlexAllocationAdapterContract.deploy();
+    await flexAllocationAdapterContract.deployed();
+    console.log("flexAllocationAdapterContract deployed address:", flexAllocationAdapterContract.address);
 
     // const FlexStewardAllocationAdapter = await hre.ethers.getContractFactory("FlexStewardAllocationAdapter");
     // const flexStewardAllocationAdapter = await FlexStewardAllocationAdapter.deploy();
@@ -1702,19 +1702,19 @@ const deploy = async () => {
     // await vintageRaiserManagementContract.deployed();
     // console.log("vintageRaiserManagementContract deployed address:", vintageRaiserManagementContract.address);
 
-    const InvestmentLibrary = await hre.ethers.getContractFactory("InvestmentLibrary");
-    const investmentLibrary = await InvestmentLibrary.deploy();
-    await investmentLibrary.deployed();
-    console.log("investmentLibrary deployed address:", investmentLibrary.address);
+    // const InvestmentLibrary = await hre.ethers.getContractFactory("InvestmentLibrary");
+    // const investmentLibrary = await InvestmentLibrary.deploy();
+    // await investmentLibrary.deployed();
+    // console.log("investmentLibrary deployed address:", investmentLibrary.address);
 
-    const VintageFundingAdapterContract = await hre.ethers.getContractFactory("VintageFundingAdapterContract", {
-        libraries: {
-            InvestmentLibrary: investmentLibrary.address,
-        }
-    });
-    const vintageFundingAdapterContract = await VintageFundingAdapterContract.deploy();
-    await vintageFundingAdapterContract.deployed();
-    console.log("vintageFundingAdapterContract deployed address:", vintageFundingAdapterContract.address);
+    // const VintageFundingAdapterContract = await hre.ethers.getContractFactory("VintageFundingAdapterContract", {
+    //     libraries: {
+    //         InvestmentLibrary: investmentLibrary.address,
+    //     }
+    // });
+    // const vintageFundingAdapterContract = await VintageFundingAdapterContract.deploy();
+    // await vintageFundingAdapterContract.deployed();
+    // console.log("vintageFundingAdapterContract deployed address:", vintageFundingAdapterContract.address);
 
     // const VintageVestingERC721 = await hre.ethers.getContractFactory("VintageVestingERC721");
     // const vintageVestingERC721 = await VintageVestingERC721.deploy("DAOSquare Vintage Vesting", "DVV", "0x8651A8eaD88b3D225E4bF23D4F3dD61FAee058B5");
@@ -1722,15 +1722,15 @@ const deploy = async () => {
     // console.log("vintageVestingERC721 deployed address:", vintageVestingERC721.address);
 
 
-    const VintageAllocationAdapterContract = await hre.ethers.getContractFactory("VintageAllocationAdapterContract");
-    const vintageAllocationAdapterContract = await VintageAllocationAdapterContract.deploy();
-    await vintageAllocationAdapterContract.deployed();
-    console.log("vintageAllocationAdapterContract deployed address:", vintageAllocationAdapterContract.address);
+    // const VintageAllocationAdapterContract = await hre.ethers.getContractFactory("VintageAllocationAdapterContract");
+    // const vintageAllocationAdapterContract = await VintageAllocationAdapterContract.deploy();
+    // await vintageAllocationAdapterContract.deployed();
+    // console.log("vintageAllocationAdapterContract deployed address:", vintageAllocationAdapterContract.address);
 
-    const VintageVesting = await hre.ethers.getContractFactory("VintageVesting");
-    const vintageVesting = await VintageVesting.deploy();
-    await vintageVesting.deployed();
-    console.log("vintageVesting deployed address:", vintageVesting.address);
+    // const VintageVesting = await hre.ethers.getContractFactory("VintageVesting");
+    // const vintageVesting = await VintageVesting.deploy();
+    // await vintageVesting.deployed();
+    // console.log("vintageVesting deployed address:", vintageVesting.address);
 
     // const VintageFundingPoolExtension = await hre.ethers.getContractFactory("VintageFundingPoolExtension");
     // const vintageFundingPoolExtension = await VintageFundingPoolExtension.deploy();
@@ -1779,10 +1779,10 @@ const deploy = async () => {
     // await vintageFundingPoolAdapterHelperContract.deployed();
     // console.log("vintageFundingPoolAdapterHelperContract deployed address:", vintageFundingPoolAdapterHelperContract.address);
 
-    const VintageDaoSetAdapterContract = await hre.ethers.getContractFactory("VintageDaoSetAdapterContract");
-    const vintageDaoSetAdapterContract = await VintageDaoSetAdapterContract.deploy();
-    await vintageDaoSetAdapterContract.deployed();
-    console.log("vintageDaoSetAdapterContract deployed address:", vintageDaoSetAdapterContract.address);
+    // const VintageDaoSetAdapterContract = await hre.ethers.getContractFactory("VintageDaoSetAdapterContract");
+    // const vintageDaoSetAdapterContract = await VintageDaoSetAdapterContract.deploy();
+    // await vintageDaoSetAdapterContract.deployed();
+    // console.log("vintageDaoSetAdapterContract deployed address:", vintageDaoSetAdapterContract.address);
 
     // const VintageDaoSetHelperAdapterContract = await hre.ethers.getContractFactory("VintageDaoSetHelperAdapterContract");
     // const vintageDaoSetHelperAdapterContract = await VintageDaoSetHelperAdapterContract.deploy();

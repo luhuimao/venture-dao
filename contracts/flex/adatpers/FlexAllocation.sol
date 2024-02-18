@@ -52,11 +52,6 @@ contract FlexAllocationAdapterContract is AdapterGuard {
      * PUBLIC VARIABLES
      */
 
-    // bytes32 constant GPAllocationBonusRadio =
-    //     keccak256("allocation.gpAllocationBonusRadio");
-    // bytes32 constant RiceStakeAllocationRadio =
-    //     keccak256("allocation.riceStakeAllocationRadio");
-
     mapping(address => mapping(bytes32 => mapping(address => VestingInfo)))
         public vestingInfos;
 
@@ -73,6 +68,8 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         address proposer,
         address[] lps
     );
+
+    // event NoEscrow(bytes32 proposalId, address daoAddr, address[] lps);
 
     /**
      * @notice Configures the DAO with the Voting and Gracing periods.
@@ -95,23 +92,48 @@ contract FlexAllocationAdapterContract is AdapterGuard {
     function getInvestmentRewards(
         DaoRegistry dao,
         bytes32 proposalId,
-        address investor,
-        uint256 tokenAmount
-    ) public view returns (uint256) {
-        FlexInvestmentPoolAdapterContract fundingpool = FlexInvestmentPoolAdapterContract(
-                dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_POOL_ADAPT)
+        address investor
+    ) external view returns (uint256) {
+        FlexInvestmentPoolExtension investmentpoolExt = FlexInvestmentPoolExtension(
+                dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
             );
-
-        uint256 totalFund = fundingpool.getTotalFundByProposalId(
-            dao,
-            proposalId
+        FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
-        uint256 fund = fundingpool.balanceOf(dao, proposalId, investor);
+        uint256 executedBlockNum;
+        IFlexFunding.ProposalInvestmentInfo memory investmentInfo;
 
-        if (totalFund <= 0 || fund <= 0 || tokenAmount <= 0) {
+        (, investmentInfo, , , , , , , executedBlockNum) = flexFunding
+            .Proposals(address(dao), proposalId);
+        uint256 totalFund = investmentpoolExt.getPriorAmount(
+            proposalId,
+            DaoHelper.TOTAL,
+            executedBlockNum - 1
+        );
+        uint256 fund = investmentpoolExt.getPriorAmount(
+            proposalId,
+            investor,
+            executedBlockNum - 1
+        );
+
+        uint256 paybackTokenAmount = investmentInfo.paybackTokenAmount;
+        uint256 returnTokenManagementFee = (paybackTokenAmount *
+            dao.getConfiguration(
+                DaoHelper.FLEX_RETURN_TOKEN_MANAGEMENT_FEE_AMOUNT
+            )) / 1e18;
+        uint256 proposerBonus = getProposerBonus(
+            dao,
+            proposalId,
+            paybackTokenAmount
+        );
+        paybackTokenAmount =
+            paybackTokenAmount -
+            returnTokenManagementFee -
+            proposerBonus;
+        if (totalFund <= 0 || fund <= 0 || paybackTokenAmount <= 0) {
             return 0;
         }
-        return (fund * tokenAmount) / totalFund;
+        return (fund * paybackTokenAmount) / totalFund;
     }
 
     function getProposerBonus(
@@ -124,7 +146,7 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         );
 
         IFlexFunding.ProposerRewardInfo memory proposerRewardInfo;
-        (, , , , proposerRewardInfo, , , ) = flexFunding.Proposals(
+        (, , , , proposerRewardInfo, , , , ) = flexFunding.Proposals(
             address(dao),
             proposalId
         );
@@ -157,53 +179,91 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         uint256 returnTokenManagementFee;
     }
 
-    function noEscrow(
+    function getNoEscrowInvestmentShare(
         DaoRegistry dao,
-        bytes32 proposalId
-    ) external returns (bool) {
-        require(
-            msg.sender ==
-                address(dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)),
-            "access deny"
-        );
-        allocateProjectTokenLocalVars memory vars;
+        bytes32 proposalId,
+        address account
+    ) external view returns (uint256) {
         FlexFundingAdapterContract flexInvestment = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
-        vars.investmentpool = FlexInvestmentPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
-        );
-        IFlexFunding.ProposalInvestmentInfo memory investmentInfo;
-        (, investmentInfo, , , , , , ) = flexInvestment.Proposals(
-            address(dao),
-            proposalId
-        );
-        vars.tokenAmount = investmentInfo.paybackTokenAmount;
+        FlexInvestmentPoolExtension investmentpoolExt = FlexInvestmentPoolExtension(
+                dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
+            );
+        uint256 fundingProposalExecutedBlockNum;
+        (, , , , , , , , fundingProposalExecutedBlockNum) = flexInvestment
+            .Proposals(address(dao), proposalId);
 
-        address[] memory allInvestors = vars
-            .investmentpool
-            .getInvestorsByProposalId(proposalId);
-        vars.totalReward = 0;
-        vars.totalFund = vars.investmentpool.balanceOf(
+        uint256 fund = investmentpoolExt.getPriorAmount(
             proposalId,
-            DaoHelper.TOTAL
+            account,
+            fundingProposalExecutedBlockNum - 1
         );
-        if (allInvestors.length > 0) {
-            for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
-                vars.bal = vars.investmentpool.balanceOf(
-                    proposalId,
-                    allInvestors[vars.i]
-                );
-                if (vars.bal > 0) {
-                    vars.shares = ((vars.bal * 1e18) / vars.totalFund);
-                    vestingInfos[address(dao)][proposalId][
-                        allInvestors[vars.i]
-                    ] = VestingInfo(vars.shares, false);
-                }
-            }
-        }
-        return true;
+        uint256 totalFund = investmentpoolExt.getPriorAmount(
+            proposalId,
+            DaoHelper.TOTAL,
+            fundingProposalExecutedBlockNum - 1
+        );
+
+        if (totalFund > 0) return ((fund * 1e18) / totalFund);
+        return 0;
     }
+
+    // function noEscrow(
+    //     DaoRegistry dao,
+    //     bytes32 proposalId
+    // ) external returns (bool) {
+    //     require(
+    //         msg.sender ==
+    //             address(dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)),
+    //         "access deny"
+    //     );
+    //     allocateProjectTokenLocalVars memory vars;
+    //     FlexFundingAdapterContract flexInvestment = FlexFundingAdapterContract(
+    //         dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
+    //     );
+    //     vars.investmentpool = FlexInvestmentPoolExtension(
+    //         dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
+    //     );
+    //     IFlexFunding.ProposalInvestmentInfo memory investmentInfo;
+    //     uint256 fundingProposalExecutedBlockNum;
+    //     (
+    //         ,
+    //         investmentInfo,
+    //         ,
+    //         ,
+    //         ,
+    //         ,
+    //         ,
+    //         ,
+    //         fundingProposalExecutedBlockNum
+    //     ) = flexInvestment.Proposals(address(dao), proposalId);
+    //     vars.tokenAmount = investmentInfo.paybackTokenAmount;
+
+    //     address[] memory allInvestors = vars
+    //         .investmentpool
+    //         .getInvestorsByProposalId(proposalId);
+    //     vars.totalReward = 0;
+    //     vars.totalFund = vars.investmentpool.balanceOf(
+    //         proposalId,
+    //         DaoHelper.TOTAL
+    //     );
+    //     if (allInvestors.length > 0) {
+    //         for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
+    //             vars.bal = vars.investmentpool.balanceOf(
+    //                 proposalId,
+    //                 allInvestors[vars.i]
+    //             );
+    //             if (vars.bal > 0) {
+    //                 vars.shares = ((vars.bal * 1e18) / vars.totalFund);
+    //                 vestingInfos[address(dao)][proposalId][
+    //                     allInvestors[vars.i]
+    //                 ] = VestingInfo(vars.shares, false);
+    //             }
+    //         }
+    //     }
+    //     return true;
+    // }
 
     // uint256Args[0]: tokenAmount
     // uint256Args[0]: vestingStartTIme
@@ -245,7 +305,9 @@ contract FlexAllocationAdapterContract is AdapterGuard {
             "AllocationAdapter::allocateProjectToken::insufficient allowance"
         );
         IERC20(tokenAddress).transferFrom(
-            dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_PAYBACI_TOKEN_ADAPT),
+            dao.getAdapterAddress(
+                DaoHelper.FLEX_INVESTMENT_PAYBACI_TOKEN_ADAPT
+            ),
             address(this),
             vars.tokenAmount
         );
@@ -281,25 +343,25 @@ contract FlexAllocationAdapterContract is AdapterGuard {
             .getInvestorsByProposalId(proposalId);
         // vars.totalReward = 0;
         // console.log("investor amount: ", allInvestors.length);
-        if (allInvestors.length > 0) {
-            for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
-                vars.investmentRewards = getInvestmentRewards(
-                    dao,
-                    proposalId,
-                    allInvestors[vars.i],
-                    vars.tokenAmount -
-                        vars.returnTokenManagementFee -
-                        vars.proposerBonus
-                );
-                //bug fixed: fillter fundingRewards > 0 ;20220614
-                if (vars.investmentRewards > 0) {
-                    vestingInfos[address(dao)][proposalId][
-                        allInvestors[vars.i]
-                    ] = VestingInfo(vars.investmentRewards, false);
-                    vars.totalReward += vars.investmentRewards;
-                }
-            }
-        }
+        // if (allInvestors.length > 0) {
+        //     for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
+        //         vars.investmentRewards = getInvestmentRewards(
+        //             dao,
+        //             proposalId,
+        //             allInvestors[vars.i],
+        //             vars.tokenAmount -
+        //                 vars.returnTokenManagementFee -
+        //                 vars.proposerBonus
+        //         );
+        //         //bug fixed: fillter fundingRewards > 0 ;20220614
+        //         if (vars.investmentRewards > 0) {
+        //             vestingInfos[address(dao)][proposalId][
+        //                 allInvestors[vars.i]
+        //             ] = VestingInfo(vars.investmentRewards, false);
+        //             vars.totalReward += vars.investmentRewards;
+        //         }
+        //     }
+        // }
 
         if (proposerAddr != address(0x0)) {
             if (vars.proposerBonus > 0) {
@@ -386,8 +448,28 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         bytes32 proposalId,
         address recipient
     ) external view returns (bool) {
-        if (vestingInfos[address(dao)][proposalId][recipient].tokenAmount > 0)
-            return true;
+        FlexInvestmentPoolExtension investmentpoolExt = FlexInvestmentPoolExtension(
+                dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
+            );
+        FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
+        );
+        uint256 executedBlockNum;
+
+        (, , , , , , , , executedBlockNum) = flexFunding.Proposals(
+            address(dao),
+            proposalId
+        );
+
+        uint256 fund = investmentpoolExt.getPriorAmount(
+            proposalId,
+            recipient,
+            executedBlockNum - 1
+        );
+        if (
+            fund > 0 ||
+            vestingInfos[address(dao)][proposalId][recipient].tokenAmount > 0
+        ) return true;
         else return false;
     }
 }

@@ -296,7 +296,8 @@ contract FlexFundingAdapterContract is
                 : 0,
             _investmentType == InvestmentType.POLL
                 ? ProposalStatus.IN_VOTING_PROGRESS
-                : ProposalStatus.IN_FUND_RAISE_PROGRESS
+                : ProposalStatus.IN_FUND_RAISE_PROGRESS,
+            0
         );
 
         if (
@@ -451,12 +452,13 @@ contract FlexFundingAdapterContract is
                             proposal.vestInfo.vestingInterval
                         ]
                     );
-                } else {
-                    vars.flexAllocAdapt = FlexAllocationAdapterContract(
-                        dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
-                    );
-                    vars.flexAllocAdapt.noEscrow(dao, proposalId);
                 }
+                //else {
+                //     vars.flexAllocAdapt = FlexAllocationAdapterContract(
+                //         dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
+                //     );
+                //     vars.flexAllocAdapt.noEscrow(dao, proposalId);
+                // }
                 //1
                 proposal.state = ProposalStatus.IN_EXECUTE_PROGRESS;
 
@@ -521,6 +523,8 @@ contract FlexFundingAdapterContract is
         }
         if (unDoneProposals[address(dao)].contains(proposalId))
             unDoneProposals[address(dao)].remove(proposalId);
+
+        proposal.executeBlockNum = block.number;
         emit ProposalExecuted(address(dao), proposalId, proposal.state);
         return true;
     }

@@ -29,11 +29,11 @@ contract FlexVesting is IFlexVesting {
         vars.allocAdapter = FlexAllocationAdapterContract(vars.allocAdaptAddr);
         require(
             vars.allocAdapter.ifEligible(dao, proposalId, recipientAddr),
-            "Vesting::createVesting::Recipient not eligible of this proposalId"
+            "!eligible"
         );
         require(
             !vars.allocAdapter.isVestCreated(dao, proposalId, recipientAddr),
-            "Vesting::createVesting::Already created"
+            "Already Created"
         );
 
         vars.flexFundingAdapt = FlexFundingAdapterContract(
@@ -44,8 +44,13 @@ contract FlexVesting is IFlexVesting {
             proposalId,
             recipientAddr
         );
+        vars.depositAmount += vars.allocAdapter.getInvestmentRewards(
+            dao,
+            proposalId,
+            recipientAddr
+        );
 
-        (, vars.investmentInfo, vars.vestInfo, , , , , ) = vars
+        (, vars.investmentInfo, vars.vestInfo, , , , , , ) = vars
             .flexFundingAdapt
             .Proposals(address(dao), proposalId);
         if (

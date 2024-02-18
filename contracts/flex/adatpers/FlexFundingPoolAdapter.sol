@@ -127,7 +127,8 @@ contract FlexInvestmentPoolAdapterContract is
             ,
             ,
             ,
-            IFlexFunding.ProposalStatus state
+            IFlexFunding.ProposalStatus state,
+
         ) = flexInvestment.Proposals(address(dao), proposalId);
         require(
             fundRaiseInfo.fundRaiseEndTime > block.timestamp ||
@@ -138,6 +139,7 @@ contract FlexInvestmentPoolAdapterContract is
         (
             ,
             IFlexFunding.ProposalInvestmentInfo memory investmentInfo,
+            ,
             ,
             ,
             ,

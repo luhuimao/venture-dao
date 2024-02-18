@@ -21,6 +21,7 @@ contract FlexFundingHelperAdapterContract {
             IFlexFunding.ProposerRewardInfo memory proposerRewardInfo,
             ,
             ,
+            ,
 
         ) = flexInvestment.Proposals(address(dao), proposalId);
         uint256 maxInvestmentAmount = 0;
@@ -60,6 +61,7 @@ contract FlexFundingHelperAdapterContract {
             ,
             ,
             ,
+            ,
 
         ) = flexFunding.Proposals(address(dao), proposalId);
         return fundRaiseInfo.fundRaiseType;
@@ -75,6 +77,7 @@ contract FlexFundingHelperAdapterContract {
         (
             ,
             IFlexFunding.ProposalInvestmentInfo memory investmentInfo,
+            ,
             ,
             ,
             ,
@@ -101,6 +104,7 @@ contract FlexFundingHelperAdapterContract {
             ,
             ,
             ,
+            ,
 
         ) = flexFunding.Proposals(address(dao), proposalId);
 
@@ -117,7 +121,7 @@ contract FlexFundingHelperAdapterContract {
         FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
-        (, , , , , , , IFlexFunding.ProposalStatus state) = flexFunding
+        (, , , , , , , IFlexFunding.ProposalStatus state, ) = flexFunding
             .Proposals(address(dao), proposalId);
 
         return state;
@@ -135,6 +139,7 @@ contract FlexFundingHelperAdapterContract {
             ,
             ,
             IFlexFunding.FundRaiseInfo memory fundRaiseInfo,
+            ,
             ,
             ,
             ,
@@ -157,6 +162,7 @@ contract FlexFundingHelperAdapterContract {
             ,
             ,
             IFlexFunding.FundRaiseInfo memory fundRaiseInfo,
+            ,
             ,
             ,
             ,
