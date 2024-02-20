@@ -92,23 +92,16 @@ module.exports = {
     //   accounts: [process.env.RINKEBY_TEST_PRIVATE_KEY],
     //   signerId: process.env.SIGNER || undefined,
     // },
-    // goerli: {
-    //   // url: process.env.GOERLI_NODE_URL_INFURA,
-    //   url: process.env.GOERLI_NODE_URL,//alchemy
-    //   // network_id: 5,
-    //   // chainId: 5,
-    //   // skipDryRun: true,
-    //   // gas: 2100000,
-    //   // gasPrice: 200000000000,
-    //   accounts: [
-    //     process.env.GOERLI_TEST_PRIVATE_KEY,
-    //     process.env.TEST_PRIVATE_KEY1,
-    //     process.env.TEST_PRIVATE_KEY2,
-    //     process.env.TEST_PRIVATE_KEY3,
-    //     process.env.TEST_PRIVATE_KEY4
-    //   ],
-    //   // signerId: process.env.SIGNER || undefined,
-    // },
+    goerli: {
+      url: 'https://eth-goerli.g.alchemy.com/v2/aXCPHCYy28ef5-dwglTqPWsdLW-aJIuu',
+      accounts: [
+        process.env.TEST_PRIVATE_KEY1,
+        process.env.TEST_PRIVATE_KEY2,
+        process.env.TEST_PRIVATE_KEY3,
+        process.env.TEST_PRIVATE_KEY4,
+        process.env.TEST_PRIVATE_KEY5
+      ],
+    },
     // xDaiTestNet: {
     //   url: 'https://xdai.poanetwork.dev/',
     //   accounts: [
@@ -120,7 +113,17 @@ module.exports = {
     //   ],
     // },
     xdai: {
-      url: 'https://gnosis.blockpi.network/v1/rpc/public',
+      url: 'https://rpc.gnosischain.com',
+      accounts: [
+        process.env.TEST_PRIVATE_KEY1,
+        process.env.TEST_PRIVATE_KEY2,
+        process.env.TEST_PRIVATE_KEY3,
+        process.env.TEST_PRIVATE_KEY4,
+        process.env.TEST_PRIVATE_KEY5
+      ],
+    },
+    sepolia: {
+      url: 'https://eth-sepolia.g.alchemy.com/v2/vtLHpaRYAqgDeXApP2F7fSA3fAmB0Dk1',
       accounts: [
         process.env.TEST_PRIVATE_KEY1,
         process.env.TEST_PRIVATE_KEY2,

@@ -7,6 +7,8 @@ import "hardhat/console.sol";
 import "../../guards/AdapterGuard.sol";
 import "../extensions/fundingpool/VintageFundingPool.sol";
 import "./VintageFundingPoolAdapter.sol";
+import "./VintageFundingAdapter.sol";
+import "../libraries/fundingLibrary.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -88,18 +90,52 @@ contract VintageAllocationAdapterContract is AdapterGuard {
     function getInvestmentRewards(
         DaoRegistry dao,
         address recipient,
-        uint256 tokenAmount
-    ) public view returns (uint256) {
-        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
+        bytes32 proposalId
+    ) external view returns (uint256) {
+        VintageFundingPoolExtension fundingpoolext = VintageFundingPoolExtension(
+                dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
+            );
+
+        VintageFundingAdapterContract fundingAdapt = VintageFundingAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_ADAPTER)
+            );
+        uint256 blocknum = 0;
+        InvestmentLibrary.ProposalPaybackTokenInfo memory paybackTokenInfo;
+        address proposer;
+        (, , , , , proposer, , , paybackTokenInfo, , blocknum) = fundingAdapt
+            .proposals(address(dao), proposalId);
+        if (blocknum == 0) return 0;
+
+        uint256 fund = fundingpoolext.getPriorAmount(
+            recipient,
+            dao.getAddressConfiguration(
+                DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+            ),
+            blocknum - 1
         );
 
-        uint256 totalFund = fundingpool.totalSupply();
-        uint256 fund = fundingpool.balanceOf(recipient);
-        if (totalFund <= 0 || fund <= 0 || tokenAmount <= 0) {
+        uint256 totalFund = fundingpoolext.getPriorAmount(
+            address(DaoHelper.DAOSQUARE_TREASURY),
+            dao.getAddressConfiguration(
+                DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+            ),
+            blocknum - 1
+        );
+        uint256 paybackTokenForInvestors = paybackTokenInfo.paybackTokenAmount -
+            (paybackTokenInfo.paybackTokenAmount *
+                dao.getConfiguration(
+                    DaoHelper.VINTAGE_RETURN_TOKEN_MANAGEMENT_FEE_AMOUNT
+                )) /
+            1e18 -
+            getProposerBonus(
+                dao,
+                proposer,
+                paybackTokenInfo.paybackTokenAmount
+            );
+        if (totalFund <= 0 || fund <= 0 || paybackTokenForInvestors <= 0) {
             return 0;
         }
-        return (fund * tokenAmount) / totalFund;
+        return (fund * paybackTokenForInvestors) / totalFund;
     }
 
     function getProposerBonus(
@@ -226,24 +262,24 @@ contract VintageAllocationAdapterContract is AdapterGuard {
         );
         address[] memory allInvestors = vars.fundingpool.getInvestors();
 
-        if (allInvestors.length > 0) {
-            for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
-                vars.investmentRewards = getInvestmentRewards(
-                    dao,
-                    allInvestors[vars.i],
-                    vars.tokenAmount -
-                        vars.returnTokenManagementFee -
-                        vars.proposerBonus
-                );
-                //bug fixed: fillter investmentRewards > 0 ;20220614
-                if (vars.investmentRewards > 0) {
-                    vestingInfos[address(dao)][proposalId][
-                        allInvestors[vars.i]
-                    ] = VestingInfo(vars.investmentRewards, false);
-                    vars.totalReward += vars.investmentRewards;
-                }
-            }
-        }
+        // if (allInvestors.length > 0) {
+        //     for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
+        //         vars.investmentRewards = getInvestmentRewards(
+        //             dao,
+        //             allInvestors[vars.i],
+        //             vars.tokenAmount -
+        //                 vars.returnTokenManagementFee -
+        //                 vars.proposerBonus
+        //         );
+        //         //bug fixed: fillter investmentRewards > 0 ;20220614
+        //         if (vars.investmentRewards > 0) {
+        //             vestingInfos[address(dao)][proposalId][
+        //                 allInvestors[vars.i]
+        //             ] = VestingInfo(vars.investmentRewards, false);
+        //             vars.totalReward += vars.investmentRewards;
+        //         }
+        //     }
+        // }
 
         if (proposerAddr != address(0x0)) {
             if (vars.proposerBonus > 0) {
@@ -297,8 +333,28 @@ contract VintageAllocationAdapterContract is AdapterGuard {
         address recipient,
         bytes32 proposalId
     ) external view returns (bool) {
-        if (vestingInfos[address(dao)][proposalId][recipient].tokenAmount > 0)
-            return true;
+        VintageFundingAdapterContract fundingAdapt = VintageFundingAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_ADAPTER)
+            );
+        uint256 blocknum = 0;
+        (, , , , , , , , , , blocknum) = fundingAdapt.proposals(
+            address(dao),
+            proposalId
+        );
+        VintageFundingPoolExtension fundingpoolext = VintageFundingPoolExtension(
+                dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
+            );
+        uint256 bal = fundingpoolext.getPriorAmount(
+            recipient,
+            dao.getAddressConfiguration(
+                DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+            ),
+            blocknum - 1
+        );
+        if (
+            vestingInfos[address(dao)][proposalId][recipient].tokenAmount > 0 ||
+            bal > 0
+        ) return true;
         else return false;
     }
 }

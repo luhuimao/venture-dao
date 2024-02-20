@@ -248,7 +248,6 @@ contract FlexInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
     function registerPotentialNewInvestmentProposal(
         bytes32 proposalId
     ) external hasExtensionAccess(AclFlag.REGISTER_NEW_TOKEN) {
-
         if (!availableInvestmentProposals[proposalId]) {
             availableInvestmentProposals[proposalId] = true;
             investmentProposals.push(proposalId);

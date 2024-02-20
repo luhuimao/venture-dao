@@ -172,6 +172,7 @@ describe("vesting...", () => {
         this.vintageFreeInEscrowFundAdapterContract = adapters.vintageFreeInEscrowFundAdapterContract.instance;
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
+        this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -196,98 +197,105 @@ describe("vesting...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
-        }
+        const enalbeAdapters = [
+            {
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
+            },
+            {
+                id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
+                addr: this.vintageDaoSetHelperAdapterContract.address,
+                flags: 8
+            }
         ];
 
-        const adapters1 = [{
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
-            flags: 23
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
-            flags: 14
-        },
-        {
-            id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
-            addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
-            flags: 22
-        }
+        const adapters1 = [
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
+                flags: 23
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageFundingAdapterContract.address, //VintageFundingAdapterContract
+                flags: 14
+            },
+            {
+                id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
+                addr: this.vintageDistributeAdatperContract.address, // vintageDistrubteAdapterContract
+                flags: 22
+            }
         ];
 
         const vintageDaoParticipantCapInfo = [
@@ -300,6 +308,7 @@ describe("vesting...", () => {
         this.testERC721 = erc721;
         const vintageDaoBackerMembershipInfo1 = [
             1, // bool enable;
+            "vintageDaoBackerMembershipInfo1",
             0, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -314,6 +323,7 @@ describe("vesting...", () => {
         //erc20
         const vintageDaoRaiserMembershipInfo1 = [
             1, // bool enable;
+            "vintageDaoRaiserMembershipInfo1",
             0, // uint256 varifyType;erc20
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -387,6 +397,8 @@ describe("vesting...", () => {
     };
 
     it("funding vesting...", async () => {
+        const vintageFundingPoolExtAddr = await this.daoContract.getExtensionAddress("0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f");
+        const vintageFundingPoolExtContrct = (await hre.ethers.getContractFactory("VintageFundingPoolExtension")).attach(vintageFundingPoolExtAddr);
         const vintageFundingAdapterContract = this.vintageFundingAdapterContract;
         const vintageFundingPoolAdapterContract = this.vintageFundingPoolAdapterContract;
         const vintageVotingAdapterContract = this.vintageVotingAdapterContract;
@@ -506,13 +518,17 @@ describe("vesting...", () => {
         executed...
         fund State ${fundState}
         `);
-
+        await this.testtoken1.transfer(this.investor1.address, hre.ethers.utils.parseEther("10000"));
         await this.testtoken1.approve(this.vintageFundingPoolAdapterContract.address, hre.ethers.utils.parseEther("200000"));
+        await this.testtoken1.connect(this.investor1).approve(this.vintageFundingPoolAdapterContract.address, hre.ethers.utils.parseEther("200000"));
 
         console.log(`
         deposit...
         `);
         await this.vintageFundingPoolAdapterContract.deposit(this.daoAddr1, hre.ethers.utils.parseEther("26000"));
+        await this.vintageFundingPoolAdapterContract.connect(this.investor1).deposit(this.daoAddr1, hre.ethers.utils.parseEther("2000"));
+
+        let currentBal1 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.owner.address);
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(endTime) > blocktimestamp) {
@@ -522,7 +538,13 @@ describe("vesting...", () => {
 
         await this.vintageFundingPoolAdapterContract.processFundRaise(this.daoAddr1);
         fundState = await vintageFundingPoolAdapterContract.daoFundRaisingStates(this.daoAddr1);
-
+        let blocknum = (await hre.ethers.provider.getBlock("latest")).number;
+        console.log("blocknum ", blocknum);
+        let priorBal1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.testtoken1.address, parseInt(blocknum) - 1);
+        console.log(`
+        priorBal1 ${hre.ethers.utils.formatEther(priorBal1)}
+        currentBal1 ${hre.ethers.utils.formatEther(currentBal1)}
+        `);
         console.log(`
         executed...
         fund State ${fundState}
@@ -632,26 +654,107 @@ describe("vesting...", () => {
         }
 
         await vintageFundingAdapterContract.processProposal(this.daoAddr1, proposalId);
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(blocktimestamp) + 60])
+        await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+
         let fundingProposalInfo = await vintageFundingAdapterContract.proposals(this.daoAddr1, proposalId);
-        const investorVestAmount = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, this.owner.address);
-        const proposerVestAmount = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, proposer.address);
-        const managementVestAmount = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, managementFeeAddress);
+        const executeBlockTime = fundingProposalInfo.executeBlockNum;
+        priorBal1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.testtoken1.address, parseInt(executeBlockTime) - 1);
+        let priorBal2 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.testtoken1.address, parseInt(executeBlockTime));
+
+        currentBal1 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.owner.address);
+        const investorVestAmount = await this.vintageAllocationAdapterContract.getInvestmentRewards(this.daoAddr1,
+            this.owner.address,
+            proposalId);
+        const investorVestAmount2 = await this.vintageAllocationAdapterContract.getInvestmentRewards(this.daoAddr1,
+            this.investor1.address,
+            proposalId);
+        // const investorVestAmount = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, this.owner.address);
+        let proposerVestAmount = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, proposer.address);
+        let managementVestAmount = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, managementFeeAddress);
+        const totalVestingAmount = toBN(investorVestAmount).
+            add(toBN(investorVestAmount2)).
+            add(toBN(proposerVestAmount[0])).
+            add(toBN(managementVestAmount[0]));
+
         console.log(
             `
         state ${fundingProposalInfo.status}
-        investorVestAmount ${hre.ethers.utils.formatEther(investorVestAmount[0])}
+        paybackTokenAmount ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalPaybackTokenInfo.paybackTokenAmount)}
+        investorVestAmount ${hre.ethers.utils.formatEther(investorVestAmount)}
+        investorVestAmount2 ${hre.ethers.utils.formatEther(investorVestAmount2)}
         proposerVestAmount ${hre.ethers.utils.formatEther(proposerVestAmount[0])}
         managementVestAmount ${hre.ethers.utils.formatEther(managementVestAmount[0])}
+        totalVestingAmount ${hre.ethers.utils.formatEther(totalVestingAmount)}
+        executeBlockTime ${executeBlockTime}
+        priorBal1 ${hre.ethers.utils.formatEther(priorBal1)}
+        priorBal2 ${hre.ethers.utils.formatEther(priorBal2)}
+        currentBal1 ${hre.ethers.utils.formatEther(currentBal1)}
         create vesting...
             `
         );
 
         await this.vintageVesting.createVesting(this.daoAddr1, this.owner.address, proposalId);
+        console.log(`owner vesting created...`);
+        await this.vintageVesting.createVesting(this.daoAddr1, this.investor1.address, proposalId);
+        console.log(`investor1 vesting created...`);
         await this.vintageVesting.createVesting(this.daoAddr1, proposer.address, proposalId);
+        console.log(`proposer vesting created...`);
         await this.vintageVesting.createVesting(this.daoAddr1, managementFeeAddress, proposalId);
+        console.log(`managementFeeAddress vesting created...`);
+
+        proposerVestAmount = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, proposer.address);
+        managementVestAmount = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, managementFeeAddress);
+        let investorVest1 = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, this.owner.address);
+        let investorVest2 = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, this.investor1.address);
 
         console.log(`
-        created...
+        proposerVest created ${proposerVestAmount[1]}
+        managementVest created ${managementVestAmount[1]}
+        investorVest1 created ${investorVest1[1]}
+        investorVest2 created ${investorVest2[1]}
+        `);
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        if (parseInt(vetingEndTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vetingEndTime) + 1])
+            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        }
+
+        let vestBal1 = await this.vintageVesting.vestBalance(1);
+        let vestBal2 = await this.vintageVesting.vestBalance(2);
+        let vestBal3 = await this.vintageVesting.vestBalance(3);
+        let vestBal4 = await this.vintageVesting.vestBalance(4);
+
+        console.log(`
+        vestBal1 ${hre.ethers.utils.formatEther(vestBal1)}
+        vestBal2 ${hre.ethers.utils.formatEther(vestBal2)}
+        vestBal3 ${hre.ethers.utils.formatEther(vestBal3)}
+        vestBal4 ${hre.ethers.utils.formatEther(vestBal4)}
+        `);
+
+        await this.vintageVesting.connect(this.owner).withdraw(this.daoAddr1, 1);
+        console.log("investor1 withdraw...");
+        await this.vintageVesting.connect(this.investor1).withdraw(this.daoAddr1, 2);
+        console.log("investor2 withdraw...");
+        await this.vintageVesting.connect(this.genesis_raiser1).withdraw(this.daoAddr1, 3);
+        console.log("proposer withdraw...");
+        await this.vintageVesting.connect(this.user1).withdraw(this.daoAddr1, 4);
+        console.log("management withdraw...");
+
+        vestBal1 = await this.vintageVesting.vestBalance(1);
+        vestBal2 = await this.vintageVesting.vestBalance(2);
+        vestBal3 = await this.vintageVesting.vestBalance(3);
+        vestBal4 = await this.vintageVesting.vestBalance(4);
+
+        console.log(`
+        vestBal1 ${hre.ethers.utils.formatEther(vestBal1)}
+        vestBal2 ${hre.ethers.utils.formatEther(vestBal2)}
+        vestBal3 ${hre.ethers.utils.formatEther(vestBal3)}
+        vestBal4 ${hre.ethers.utils.formatEther(vestBal4)}
         `);
 
     });

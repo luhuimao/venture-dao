@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 import "../../core/DaoRegistry.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
-// import "../extensions/CollectiveFundingPool.sol";
+import "../extensions/CollectiveFundingPool.sol";
 import "./CollectiveFundingProposalAdapter.sol";
 import "./CollectiveEscrowFundAdapter.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";

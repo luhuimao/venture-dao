@@ -44,12 +44,12 @@ const {
     ZERO_ADDRESS,
     oneDay,
     oneWeek
-} = require("../utils/contract-util");
+} = require("../../utils/contract-util");
 const {
     checkBalance,
     depositToFundingPool,
     createDistributeFundsProposal
-} = require("../utils/test-util");
+} = require("../../utils/test-util");
 
 const {
     expectRevert,
@@ -59,11 +59,11 @@ const {
     FundingPoolExtension,
     web3,
     accounts
-} = require("../utils/oz-util");
+} = require("../../utils/oz-util");
 
-import {
-    exec
-} from "child_process";
+// import {
+//     exec
+// } from "child_process";
 import {
     DaoFactory,
     DaoRegistry,
@@ -75,19 +75,19 @@ import {
     expect,
     expectRevert,
     web3
-} from "../utils/hh-util";
-import {
-    createDao
-} from "../utils/deployment-util1";
-import {
-    zeroPad
-} from "ethers/lib/utils";
-import {
-    boolean
-} from "hardhat/internal/core/params/argumentTypes";
-import {
-    deserialize
-} from "v8";
+} from "../../utils/hh-util";
+// import {
+//     createDao
+// } from "../utils/deployment-util1";
+// import {
+//     zeroPad
+// } from "ethers/lib/utils";
+// import {
+//     boolean
+// } from "hardhat/internal/core/params/argumentTypes";
+// import {
+//     deserialize
+// } from "v8";
 const hre = require("hardhat");
 
 
@@ -320,6 +320,7 @@ describe("Summon A Flex Dao", () => {
 
         const flexDaoParticipantsMemberships = [
             0, // uint8 varifyType;
+            "flexDaoIvestorsMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -328,6 +329,7 @@ describe("Summon A Flex Dao", () => {
 
         const flexDaoStewardMembershipInfo = [
             1, // bool enable;
+            "flexDaoGovernorMembershipName",
             0, // uint256 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -349,6 +351,7 @@ describe("Summon A Flex Dao", () => {
 
         const flexDaoPollsterMembershipInfo = [
             0, // uint8 varifyType;
+            "flexDaoPollVoterMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -369,6 +372,7 @@ describe("Summon A Flex Dao", () => {
 
         const flexDaoProposerMembershipInfo = [
             true,
+            "flexDaoProposerMembershipName",
             3, // uint8 varifyType;
             0, // uint256 minHolding;
             ZERO_ADDRESS, // address tokenAddress;
@@ -564,6 +568,7 @@ describe("Summon A Flex Dao", () => {
 
         const flexDaoParticipantsMemberships = [
             0, // uint8 varifyType;
+            "flexDaoIvestorsMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -572,6 +577,7 @@ describe("Summon A Flex Dao", () => {
 
         const flexDaoStewardMembershipInfo = [
             1, // bool enable;
+            "flexDaoGovernorMembershipName",
             0, // uint256 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -594,6 +600,7 @@ describe("Summon A Flex Dao", () => {
 
         const flexDaoPollsterMembershipInfo = [
             3, // uint8 varifyType;   //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
+            "flexDaoPollVoterMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -617,6 +624,7 @@ describe("Summon A Flex Dao", () => {
 
         const flexDaoProposerMembershipInfo = [
             true,
+            "flexDaoProposerMembershipName",
             3, // uint8 varifyType;
             0, // uint256 minHolding;
             ZERO_ADDRESS, // address tokenAddress;
@@ -2021,6 +2029,7 @@ describe("Steward-In Management", () => {
 
         const flexDaoParticipantsMemberships = [
             0, // uint8 varifyType;
+            "flexDaoIvestorsMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -2029,6 +2038,7 @@ describe("Steward-In Management", () => {
 
         const flexDaoStewardMembershipInfo = [
             1, // bool enable;
+            "flexDaoGovernorMembershipName",
             0, // uint256 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -2050,6 +2060,7 @@ describe("Steward-In Management", () => {
 
         const flexDaoPollsterMembershipInfo = [
             0, // uint8 varifyType;
+            "flexDaoPollVoterMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -2069,6 +2080,7 @@ describe("Steward-In Management", () => {
 
         const flexDaoProposerMembershipInfo = [
             true,
+            "flexDaoProposerMembershipName",
             3, // uint8 varifyType;
             0, // uint256 minHolding;
             ZERO_ADDRESS, // address tokenAddress;
@@ -2514,6 +2526,7 @@ describe("Steward-In Management", () => {
 
         const flexDaoParticipantsMemberships = [
             0, // uint8 varifyType;
+            "flexDaoIvestorsMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -2521,6 +2534,7 @@ describe("Steward-In Management", () => {
         ];
         const flexDaoStewardMembershipInfo = [
             1, // bool enable;
+            "flexDaoGovernorMembershipName",
             3, // uint256 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -2542,6 +2556,7 @@ describe("Steward-In Management", () => {
 
         const flexDaoPollsterMembershipInfo = [
             0, // uint8 varifyType;
+            "flexDaoPollVoterMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -2561,6 +2576,7 @@ describe("Steward-In Management", () => {
 
         const flexDaoProposerMembershipInfo = [
             true,
+            "flexDaoProposerMembershipName",
             3, // uint8 varifyType;
             0, // uint256 minHolding;
             ZERO_ADDRESS, // address tokenAddress;
@@ -2861,6 +2877,7 @@ describe("voting...", () => {
 
         const flexDaoParticipantsMemberships = [
             0, // uint8 varifyType;
+            "flexDaoIvestorsMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -2869,6 +2886,7 @@ describe("voting...", () => {
 
         const flexDaoStewardMembershipInfo = [
             1, // bool enable;
+            "flexDaoGovernorMembershipName",
             0, // uint256 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -3053,6 +3071,7 @@ describe("voting...", () => {
 
         const flexDaoPollsterMembershipInfo = [
             0, // uint8 varifyType;
+            "flexDaoPollVoterMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -3072,6 +3091,7 @@ describe("voting...", () => {
 
         const flexDaoProposerMembershipInfo = [
             true,
+            "flexDaoProposerMembershipName",
             3, // uint8 varifyType;
             0, // uint256 minHolding;
             ZERO_ADDRESS, // address tokenAddress;
@@ -4562,6 +4582,7 @@ describe("polling voting...", () => {
 
         const flexDaoParticipantsMemberships = [
             0, // uint8 varifyType;
+            "flexDaoIvestorsMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -4570,6 +4591,7 @@ describe("polling voting...", () => {
 
         const flexDaoStewardMembershipInfo = [
             1, // bool enable;
+            "flexDaoGovernorMembershipName",
             0, // uint256 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -4727,6 +4749,7 @@ describe("polling voting...", () => {
 
         const flexDaoPollsterMembershipInfo = [
             0, // uint8 varifyType;
+            "flexDaoPollVoterMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -4883,6 +4906,7 @@ describe("polling voting...", () => {
 
         const flexDaoProposerMembershipInfo = [
             true,
+            "flexDaoProposerMembershipName",
             3, // uint8 varifyType;
             0, // uint256 minHolding;
             ZERO_ADDRESS, // address tokenAddress;
@@ -7641,6 +7665,7 @@ describe("verify proposer membership...", () => {
 
         const flexDaoParticipantsMemberships = [
             0, // uint8 varifyType;
+            "flexDaoIvestorsMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -7649,6 +7674,7 @@ describe("verify proposer membership...", () => {
 
         const flexDaoStewardMembershipInfo = [
             1, // bool enable;
+            "flexDaoGovernorMembershipName",
             0, // uint256 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -7806,6 +7832,7 @@ describe("verify proposer membership...", () => {
 
         const flexDaoPollsterMembershipInfo = [
             0, // uint8 varifyType;
+            "flexDaoPollVoterMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -7962,6 +7989,7 @@ describe("verify proposer membership...", () => {
 
         const flexDaoProposerMembershipInfo1 = [
             false,
+            "flexDaoProposerMembershipName",
             3, // uint8 varifyType;
             0, // uint256 minHolding;
             ZERO_ADDRESS, // address tokenAddress;
@@ -7971,6 +7999,7 @@ describe("verify proposer membership...", () => {
 
         const flexDaoProposerMembershipInfo2 = [
             true,
+            "flexDaoProposerMembershipName",
             0, // uint8 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -7980,6 +8009,7 @@ describe("verify proposer membership...", () => {
 
         const flexDaoProposerMembershipInfo3 = [
             true,
+            "flexDaoProposerMembershipName",
             1, // uint8 varifyType;
             1, // uint256 minHolding;
             this.testERC721.address, // address tokenAddress;
@@ -7990,6 +8020,7 @@ describe("verify proposer membership...", () => {
 
         const flexDaoProposerMembershipInfo4 = [
             true,
+            "flexDaoProposerMembershipName",
             2, // uint8 varifyType;
             1, // uint256 minHolding;
             this.testERC1155.address, // address tokenAddress;
@@ -7999,6 +8030,7 @@ describe("verify proposer membership...", () => {
 
         const flexDaoProposerMembershipInfo5 = [
             true,
+            "flexDaoProposerMembershipName",
             3, // uint8 varifyType;
             0, // uint256 minHolding;
             ZERO_ADDRESS, // address tokenAddress;
@@ -9357,6 +9389,7 @@ describe("vesting nft...", () => {
 
         const flexDaoParticipantsMemberships = [
             0, // uint8 varifyType;
+            "flexDaoIvestorsMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -9365,6 +9398,7 @@ describe("vesting nft...", () => {
 
         const flexDaoStewardMembershipInfo = [
             1, // bool enable;
+            "flexDaoGovernorMembershipName",
             0, // uint256 varifyType;
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -9386,6 +9420,7 @@ describe("vesting nft...", () => {
 
         const flexDaoPollsterMembershipInfo = [
             0, // uint8 varifyType;
+            "flexDaoPollVoterMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -9406,6 +9441,7 @@ describe("vesting nft...", () => {
 
         const flexDaoProposerMembershipInfo = [
             true,
+            "flexDaoProposerMembershipName",
             3, // uint8 varifyType;
             0, // uint256 minHolding;
             ZERO_ADDRESS, // address tokenAddress;
@@ -10251,6 +10287,7 @@ describe("steward allocations...", () => {
 
         const flexDaoParticipantsMemberships = [
             0, // uint8 varifyType;
+            "flexDaoIvestorsMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -10259,6 +10296,7 @@ describe("steward allocations...", () => {
 
         const flexDaoStewardMembershipInfo = [
             1, // bool enable;
+            "flexDaoGovernorMembershipName",
             0, // uint256 varifyType;0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -10280,6 +10318,7 @@ describe("steward allocations...", () => {
 
         const flexDaoPollsterMembershipInfo = [
             0, // uint8 varifyType;
+            "flexDaoPollVoterMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -10300,6 +10339,7 @@ describe("steward allocations...", () => {
 
         const flexDaoProposerMembershipInfo = [
             true,
+            "flexDaoProposerMembershipName",
             3, // uint8 varifyType;
             0, // uint256 minHolding;
             ZERO_ADDRESS, // address tokenAddress;
@@ -10648,6 +10688,7 @@ describe("free in...", () => {
 
         const flexDaoParticipantsMemberships = [
             0, // uint8 varifyType;
+            "flexDaoIvestorsMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -10656,6 +10697,7 @@ describe("free in...", () => {
 
         const flexDaoStewardMembershipInfo = [
             1, // bool enable;
+            "flexDaoGovernorMembershipName",
             0, // uint256 varifyType;0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -10677,6 +10719,7 @@ describe("free in...", () => {
 
         const flexDaoPollsterMembershipInfo = [
             0, // uint8 varifyType;
+            "flexDaoPollVoterMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -10697,6 +10740,7 @@ describe("free in...", () => {
 
         const flexDaoProposerMembershipInfo = [
             true,
+            "flexDaoProposerMembershipName",
             3, // uint8 varifyType;
             0, // uint256 minHolding;
             ZERO_ADDRESS, // address tokenAddress;
@@ -11283,6 +11327,7 @@ describe("participant cap...", () => {
 
         const flexDaoParticipantsMemberships = [
             0, // uint8 varifyType;
+            "flexDaoIvestorsMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -11291,6 +11336,7 @@ describe("participant cap...", () => {
 
         const flexDaoStewardMembershipInfo = [
             1, // bool enable;
+            "flexDaoGovernorMembershipName",
             0, // uint256 varifyType;0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -11312,6 +11358,7 @@ describe("participant cap...", () => {
 
         const flexDaoPollsterMembershipInfo = [
             0, // uint8 varifyType;
+            "flexDaoPollVoterMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -11332,6 +11379,7 @@ describe("participant cap...", () => {
 
         const flexDaoProposerMembershipInfo = [
             true,
+            "flexDaoProposerMembershipName",
             3, // uint8 varifyType;
             0, // uint256 minHolding;
             ZERO_ADDRESS, // address tokenAddress;
@@ -11830,6 +11878,7 @@ describe.only("return token management fee...", () => {
 
         const flexDaoParticipantsMemberships = [
             0, // uint8 varifyType;
+            "flexDaoIvestorsMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -11838,6 +11887,7 @@ describe.only("return token management fee...", () => {
 
         const flexDaoStewardMembershipInfo = [
             1, // bool enable;
+            "flexDaoGovernorMembershipName",
             0, // uint256 varifyType;0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
@@ -11859,6 +11909,7 @@ describe.only("return token management fee...", () => {
 
         const flexDaoPollsterMembershipInfo = [
             0, // uint8 varifyType;
+            "flexDaoPollVoterMembershipName",
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -11879,6 +11930,7 @@ describe.only("return token management fee...", () => {
 
         const flexDaoProposerMembershipInfo = [
             true,
+            "flexDaoProposerMembershipName",
             3, // uint8 varifyType;
             0, // uint256 minHolding;
             ZERO_ADDRESS, // address tokenAddress;

@@ -6,7 +6,9 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 import "../../guards/AdapterGuard.sol";
 import "../extensions/CollectiveFundingPool.sol";
+import "./CollectiveFundingProposalAdapter.sol";
 import "./CollectiveFundingPoolAdapter.sol";
+import "./interfaces/ICollectiveFunding.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -67,20 +69,63 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
     function getInvestmentRewards(
         DaoRegistry dao,
         address recipient,
-        uint256 tokenAmount
+        bytes32 proposalId
     ) public view returns (uint256) {
-        CollectiveInvestmentPoolExtension fundingpool = CollectiveInvestmentPoolExtension(
+        CollectiveInvestmentPoolExtension fundingpoolExt = CollectiveInvestmentPoolExtension(
                 dao.getExtensionAddress(
                     DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
                 )
             );
+        ColletiveFundingProposalAdapterContract collectiveFundingAdapt = ColletiveFundingProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
+            );
+        uint256 executedBlockNum;
+        ICollectiveFunding.EscrowInfo memory escrowInfo;
+        ICollectiveFunding.FundingInfo memory fundingInfo;
+        address proposer;
+        (
+            fundingInfo,
+            escrowInfo,
+            ,
+            ,
+            proposer,
+            executedBlockNum,
 
-        uint256 totalFund = fundingpool.totalSupply();
-        uint256 fund = fundingpool.balanceOf(recipient);
-        if (totalFund <= 0 || fund <= 0 || tokenAmount <= 0) {
+        ) = collectiveFundingAdapt.proposals(address(dao), proposalId);
+        uint256 totalFund = fundingpoolExt.getPriorAmount(
+            DaoHelper.DAOSQUARE_TREASURY,
+            fundingInfo.token,
+            executedBlockNum - 1
+        );
+        uint256 fund = fundingpoolExt.getPriorAmount(
+            recipient,
+            fundingInfo.token,
+            executedBlockNum - 1
+        );
+
+        // uint256 paybackTokenAmount = escrowInfo.paybackTokenAmount;
+        uint256 returnTokenManagementFee = (escrowInfo.paybackAmount *
+            dao.getConfiguration(
+                DaoHelper.COLLECTIVE_PAYBACK_TOKEN_MANAGEMENT_FEE_AMOUNT
+            )) / 1e18;
+        uint256 proposerBonus = getProposerBonus(
+            dao,
+            proposer,
+            escrowInfo.paybackAmount
+        );
+
+        uint256 paybackTokenAmount = escrowInfo.paybackAmount -
+            returnTokenManagementFee -
+            proposerBonus;
+
+        // uint256 totalFund = fundingpoolExt.totalSupply();
+        // uint256 fund = fundingpoolExt.balanceOf(recipient);
+
+        if (totalFund <= 0 || fund <= 0 || paybackTokenAmount <= 0) {
             return 0;
         }
-        return (fund * tokenAmount) / totalFund;
+
+        return (fund * paybackTokenAmount) / totalFund;
     }
 
     function getProposerBonus(
@@ -211,24 +256,24 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
             dao
         );
 
-        if (allInvestors.length > 0) {
-            for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
-                vars.investmentRewards = getInvestmentRewards(
-                    dao,
-                    allInvestors[vars.i],
-                    vars.tokenAmount -
-                        vars.returnTokenManagementFee -
-                        vars.proposerBonus
-                );
-                //bug fixed: fillter investmentRewards > 0 ;20220614
-                if (vars.investmentRewards > 0) {
-                    vestingInfos[address(dao)][proposalId][
-                        allInvestors[vars.i]
-                    ] = VestingInfo(vars.investmentRewards, false);
-                    vars.totalReward += vars.investmentRewards;
-                }
-            }
-        }
+        // if (allInvestors.length > 0) {
+        //     for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
+        //         vars.investmentRewards = getInvestmentRewards(
+        //             dao,
+        //             allInvestors[vars.i],
+        //             vars.tokenAmount -
+        //                 vars.returnTokenManagementFee -
+        //                 vars.proposerBonus
+        //         );
+        //         //bug fixed: fillter investmentRewards > 0 ;20220614
+        //         if (vars.investmentRewards > 0) {
+        //             vestingInfos[address(dao)][proposalId][
+        //                 allInvestors[vars.i]
+        //             ] = VestingInfo(vars.investmentRewards, false);
+        //             vars.totalReward += vars.investmentRewards;
+        //         }
+        //     }
+        // }
 
         if (proposerAddr != address(0x0)) {
             if (vars.proposerBonus > 0) {
@@ -242,10 +287,7 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
                 vars.totalReward += vars.proposerBonus;
             }
         }
-        require(
-            vars.totalReward <= vars.tokenAmount,
-            ">payback amount"
-        );
+        require(vars.totalReward <= vars.tokenAmount, ">payback amount");
         emit AllocateToken(
             address(dao),
             proposalId,
@@ -282,8 +324,29 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
         address recipient,
         bytes32 proposalId
     ) external view returns (bool) {
-        if (vestingInfos[address(dao)][proposalId][recipient].tokenAmount > 0)
-            return true;
+        CollectiveInvestmentPoolExtension collectiveFundingPoolExt = CollectiveInvestmentPoolExtension(
+                dao.getExtensionAddress(
+                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
+                )
+            );
+        ColletiveFundingProposalAdapterContract collectiveFundingAdapt = ColletiveFundingProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
+            );
+        uint256 executedBlockNum;
+        ICollectiveFunding.FundingInfo memory fundingInfo;
+
+        (fundingInfo, , , , , executedBlockNum, ) = collectiveFundingAdapt
+            .proposals(address(dao), proposalId);
+
+        uint256 fund = collectiveFundingPoolExt.getPriorAmount(
+            recipient,
+            fundingInfo.token,
+            executedBlockNum - 1
+        );
+        if (
+            fund > 0 ||
+            vestingInfos[address(dao)][proposalId][recipient].tokenAmount > 0
+        ) return true;
         else return false;
     }
 }

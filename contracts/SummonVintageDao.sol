@@ -26,8 +26,9 @@ contract SummonVintageDao {
         uint256 cap;
     }
 
-    struct VintageBackerMembership {
+    struct VintageInvestorMembership {
         bool enable;
+        string name;
         uint8 varifyType;
         uint256 minAmount;
         address tokenAddress;
@@ -37,6 +38,7 @@ contract SummonVintageDao {
 
     struct VintageGovernorMembership {
         bool enable;
+        string name;
         uint8 varifyType;
         uint256 minAmount;
         address tokenAddress;
@@ -64,7 +66,7 @@ contract SummonVintageDao {
         DaoFactory.Adapter[] enalbeAdapters;
         DaoFactory.Adapter[] adapters1;
         VintageInvestorCapInfo investorCap;
-        VintageBackerMembership backerMembership;
+        VintageInvestorMembership investorMembership;
         VintageGovernorMembership governorMembership;
         VintageVotingInfo votingInfo;
         address[] genesisGovernors;
@@ -155,6 +157,7 @@ contract SummonVintageDao {
     // config governor Membership
     function summonVintageDao5(
         bool vintageDaoStewardMembershipEnable,
+        string calldata name,
         uint256[3] memory uint256Params,
         address vintageDaoStewardMembershipTokenAddress,
         address[] calldata vintageDaoGovernorMembershipWhitelist,
@@ -168,7 +171,14 @@ contract SummonVintageDao {
 
         //config governor Membership
         if (vintageDaoStewardMembershipEnable) {
-            dao.setConfiguration(DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_ENABLE, 1);
+            dao.setConfiguration(
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_ENABLE,
+                1
+            );
+            dao.setStringConfiguration(
+                DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_NAME,
+                name
+            );
             dao.setConfiguration(
                 DaoHelper.VINTAGE_GOVERNOR_MEMBERSHIP_TYPE,
                 uint256Params[0]
@@ -319,6 +329,7 @@ contract SummonVintageDao {
     function summonVintageDao8(
         bool enable,
         address newDaoAddr,
+        string calldata name,
         uint8 varifyType,
         uint256 minHolding,
         uint256 tokenId,
@@ -332,6 +343,10 @@ contract SummonVintageDao {
             dao.setConfiguration(
                 DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_ENABLE,
                 1
+            );
+            dao.setStringConfiguration(
+                DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_NAME,
+                name
             );
             dao.setConfiguration(
                 DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_TYPE,
@@ -486,8 +501,9 @@ contract SummonVintageDao {
             params.governorMembership.tokenId
         ];
         vars.summonVintageDao5Payload = abi.encodeWithSignature(
-            "summonVintageDao5(bool,uint256[3],address,address[],address)",
+            "summonVintageDao5(bool,string,uint256[3],address,address[],address)",
             params.governorMembership.enable,
+            params.governorMembership.name,
             uint256SummonVintageDao5Params,
             params.governorMembership.tokenAddress,
             params.governorMembership.whiteList,
@@ -521,14 +537,15 @@ contract SummonVintageDao {
         );
 
         vars.summonVintageDao8Payload = abi.encodeWithSignature(
-            "summonVintageDao8(bool,address,uint8,uint256,uint256,address,address[])",
-            params.backerMembership.enable,
+            "summonVintageDao8(bool,address,string,uint8,uint256,uint256,address,address[])",
+            params.investorMembership.enable,
             vars.newDaoAddr,
-            params.backerMembership.varifyType,
-            params.backerMembership.minAmount,
-            params.backerMembership.tokenId,
-            params.backerMembership.tokenAddress,
-            params.backerMembership.whiteList
+            params.investorMembership.name,
+            params.investorMembership.varifyType,
+            params.investorMembership.minAmount,
+            params.investorMembership.tokenId,
+            params.investorMembership.tokenAddress,
+            params.investorMembership.whiteList
         );
 
         vars.summonVintageDao9Payload = abi.encodeWithSignature(

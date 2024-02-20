@@ -38,7 +38,7 @@ contract CollectiveVestingAdapterContract is ICollectiveVesting {
             "Already Created"
         );
 
-        vars.vintageFundingAdapt = ColletiveFundingProposalAdapterContract(
+        vars.collectiveFundingAdapt = ColletiveFundingProposalAdapterContract(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
         );
         (vars.depositAmount, ) = vars.allocAdapter.vestingInfos(
@@ -46,9 +46,14 @@ contract CollectiveVestingAdapterContract is ICollectiveVesting {
             proposalId,
             recipientAddr
         );
+        vars.depositAmount += vars.allocAdapter.getInvestmentRewards(
+            dao,
+            recipientAddr,
+            proposalId
+        );
 
-        (, vars.paybackTokenInfo, vars.vestInfo, , , ) = vars
-            .vintageFundingAdapt
+        (, vars.paybackTokenInfo, vars.vestInfo, , , , ) = vars
+            .collectiveFundingAdapt
             .proposals(address(dao), proposalId);
 
         if (

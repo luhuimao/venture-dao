@@ -115,6 +115,7 @@ contract ColletiveFundingProposalAdapterContract is
             ),
             TimeInfo(0, 0),
             msg.sender,
+            0,
             ProposalState.IN_QUEUE
         );
 
@@ -371,6 +372,7 @@ contract ColletiveFundingProposalAdapterContract is
         // proposal.proposalTimeInfo.proposalExecuteTimestamp = block.timestamp;
         ongoingProposal[address(dao)] = bytes32(0);
 
+        proposal.executeBlockNum = block.number;
         emit ProposalExecuted(
             address(dao),
             proposalId,

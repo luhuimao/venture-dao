@@ -48,6 +48,8 @@ contract FlexDaoSetPollingAdapterContract {
         pollForInvestmentProposals[address(params.dao)][
             proposalId
         ] = FlexDaosetLibrary.PollForInvestmentProposalDetails(
+            params.pollEnable,
+            params.pollvoterMembership.name,
             params.pollvoterMembership.varifyType,
             params.pollvoterMembership.minHolding,
             params.pollvoterMembership.tokenAddress,
@@ -157,7 +159,9 @@ contract FlexDaoSetPollingAdapterContract {
                 proposal.tokenId
             ],
             [proposal.pollingInfo.tokenAddress, proposal.tokenAddress],
-            pollvoterMembershipWhiteLists[proposalId].values()
+            pollvoterMembershipWhiteLists[proposalId].values(),
+            proposal.pollEnable,
+            proposal.name
         );
     }
 
@@ -180,7 +184,7 @@ contract FlexDaoSetPollingAdapterContract {
         ) = votingContract.voteResult(dao, proposalId);
         uint128 allWeight = GovernanceHelper
             .getAllFlexGovernorVotingWeightByProposalId(dao, proposalId);
-       
+
         return (vs, nbYes, nbNo, allWeight);
     }
 

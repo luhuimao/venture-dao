@@ -116,7 +116,7 @@ contract FlexDaoSetAdapterContract is GovernorGuard, Reimbursable, MemberGuard {
         );
     }
 
-    function submitGovernorMembershpProposal(
+    function submitGovernorMembershipProposal(
         FlexDaosetLibrary.GovernorMembershipParams calldata params
     ) external onlyMember(params.dao) reimbursable(params.dao) {
         require(
@@ -142,6 +142,7 @@ contract FlexDaoSetAdapterContract is GovernorGuard, Reimbursable, MemberGuard {
             proposalId
         ] = FlexDaosetLibrary.GovernorMembershipProposalDetails(
             params.enable,
+            params.name,
             params.varifyType,
             params.minAmount,
             params.tokenAddress,
@@ -196,6 +197,7 @@ contract FlexDaoSetAdapterContract is GovernorGuard, Reimbursable, MemberGuard {
             proposalId
         ] = FlexDaosetLibrary.InvestorMembershipProposalDetails(
             params.enable,
+            params.name,
             params.varifyType,
             params.minAmount,
             params.tokenAddress,
@@ -308,6 +310,7 @@ contract FlexDaoSetAdapterContract is GovernorGuard, Reimbursable, MemberGuard {
             proposalId
         ] = FlexDaosetLibrary.ProposerMembershipProposalDetails(
             params.proposerMembershipEnable,
+            params.name,
             params.varifyType, //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
             params.minHolding,
             params.tokenAddress,
@@ -377,9 +380,7 @@ contract FlexDaoSetAdapterContract is GovernorGuard, Reimbursable, MemberGuard {
         bytes32 proposalId
     ) external reimbursable(dao) {
         FlexDaosetLibrary.InvestorCapProposalDetails
-            storage proposal = investorCapProposals[address(dao)][
-                proposalId
-            ];
+            storage proposal = investorCapProposals[address(dao)][proposalId];
 
         (IFlexVoting.VotingState voteResult, , ) = processProposal(
             dao,
@@ -614,6 +615,7 @@ contract FlexDaoSetAdapterContract is GovernorGuard, Reimbursable, MemberGuard {
         daosetHelper.setGovernorMembership(
             dao,
             proposal.enable,
+            proposal.name,
             proposal.minAmount,
             proposal.tokenAddress,
             proposal.tokenId,
@@ -633,6 +635,7 @@ contract FlexDaoSetAdapterContract is GovernorGuard, Reimbursable, MemberGuard {
         daosetHelper.setInvestorMembership(
             dao,
             proposal.enable,
+            proposal.name,
             proposal.varifyType,
             proposal.minAmount,
             proposal.tokenAddress,
@@ -667,6 +670,8 @@ contract FlexDaoSetAdapterContract is GovernorGuard, Reimbursable, MemberGuard {
 
         daosetHelper.setProposerMembership(
             dao,
+            proposal.proposerMembershipEnable,
+            proposal.name,
             proposal.minHolding,
             proposal.tokenId,
             proposal.varifyType,

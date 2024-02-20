@@ -28,6 +28,7 @@ library InvestmentLibrary {
         VestInfo vestInfo;
         ProposalPaybackTokenInfo proposalPaybackTokenInfo;
         ProposalTimeInfo proposalTimeInfo;
+        uint256 executeBlockNum;
     }
 
     struct ProposalPaybackTokenInfo {
@@ -127,10 +128,7 @@ library InvestmentLibrary {
                     proposal.vestInfo.vestingInterval > 0,
                 "vesting time invalid"
             );
-            require(
-                proposal.price > 0,
-                "price must > 0"
-            );
+            require(proposal.price > 0, "price must > 0");
             uint256 paybackTokenAmount = (proposal.investmentAmount *
                 PERCENTAGE_PRECISION) / proposal.price;
 

@@ -49,6 +49,7 @@ export const adaptersIdsMap: Record<string, string> = {
   VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER: "vintage-funding-return-token-adapter",
   VINTAGE_FREE_IN_ESCORW_FUND_ADAPTER: "vintage-free-in-escrow-fund-adapter",
   VINTAGE_DAOSET_ADAPTER: "vintage-daoset-adapter",
+  VINTAGE_DAOSET_HELPER_ADAPTER: "vintage-daoset-helper-adapter",
   /*******************vintage end******************/
 
 

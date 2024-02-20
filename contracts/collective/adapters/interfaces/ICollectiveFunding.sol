@@ -14,6 +14,7 @@ interface ICollectiveFunding {
         VestingInfo vestingInfo;
         TimeInfo timeInfo;
         address proposer;
+        uint256 executeBlockNum;
         ProposalState state;
     }
 

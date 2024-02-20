@@ -2111,7 +2111,7 @@ describe("deposit, withdraw...", () => {
     });
 });
 
-describe("funding proposal...", () => {
+describe.only("funding proposal...", () => {
     before("deploy contracts...", async () => {
         let [
             owner,
@@ -2402,6 +2402,9 @@ describe("funding proposal...", () => {
     it("submit funding proposal...", async () => {
         let dao = this.collectiveDirectdaoAddress;
         let tokenAddress = this.testtoken1.address;
+        const fundingpoolextensionAddr = await this.daoContract.getExtensionAddress(sha3("collective-funding-pool-ext"));
+        const collectiveFundingPoolExtContract = (await hre.ethers.getContractFactory("CollectiveInvestmentPoolExtension")).attach(fundingpoolextensionAddr);
+
         let miniTarget = hre.ethers.utils.parseEther("1000");
         let maxCap = hre.ethers.utils.parseEther("2000");
         let miniDeposit = hre.ethers.utils.parseEther("10");
@@ -2513,6 +2516,24 @@ describe("funding proposal...", () => {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(endTime) + 1]);
             await hre.network.provider.send("evm_mine");
         }
+        let currentBlockNum = (await hre.ethers.provider.getBlock("latest")).number;
+
+        let depositBal1 = await collectiveFundingPoolExtContract.getPriorAmount(
+            this.owner.address,
+            this.testtoken1.address,
+            currentBlockNum - 1
+        );
+
+        let depositBal2 = await collectiveFundingPoolExtContract.getPriorAmount(
+            this.investor1.address,
+            this.testtoken1.address,
+            currentBlockNum - 1
+        );
+
+        console.log(`
+        depositBal1 ${hre.ethers.utils.formatEther(depositBal1)}
+        depositBal2 ${hre.ethers.utils.formatEther(depositBal2)}
+        `);
 
         //funding proposal
         const token = this.testtoken1.address;
@@ -2629,6 +2650,10 @@ describe("funding proposal...", () => {
 
         const vi1 = await this.collectiveAllocationAdapterContract.vestingInfos(dao, proposalId, this.owner.address);
         const vi2 = await this.collectiveAllocationAdapterContract.vestingInfos(dao, proposalId, this.investor1.address);
+        let priorDepositBal1 = await collectiveFundingPoolExtContract.getPriorAmount(
+            this.owner.address,
+            this.testtoken1.address,
+            currentBlockNum - 1);
 
         console.log(`
         vi1 ${hre.ethers.utils.formatEther(vi1[0])}
@@ -2649,8 +2674,9 @@ describe("funding proposal...", () => {
         let vestInfo2 = await this.collectiveVestingContract.vests(2)
         console.log(`
         vesting created...
-        vestInfo1 ${vestInfo1}
-        vestInfo2 ${vestInfo2}
+        paybackAmount ${hre.ethers.utils.formatEther(proposalDetail.escrowInfo.paybackAmount)}
+        vest1 total  ${hre.ethers.utils.formatEther(vestInfo1.total)}
+        vest2 total  ${hre.ethers.utils.formatEther(vestInfo2.total)}
         `);
 
 

@@ -15,7 +15,7 @@ contract VintageRaiserAllocationAdapter {
         require(
             DaoHelper.isInCreationModeAndHasAccess(dao) ||
                 msg.sender ==
-                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER) ||
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_HELPER_ADAPTER) ||
                 msg.sender ==
                 dao.getAdapterAddress(DaoHelper.VINTAGE_GOVERNOR_MANAGEMENT),
             "!Access"

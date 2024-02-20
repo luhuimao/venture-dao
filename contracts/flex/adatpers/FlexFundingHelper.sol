@@ -21,6 +21,7 @@ contract FlexFundingHelperAdapterContract {
             IFlexFunding.ProposerRewardInfo memory proposerRewardInfo,
             ,
             ,
+            ,
 
         ) = flexInvestment.Proposals(address(dao), proposalId);
         uint256 maxInvestmentAmount = 0;
@@ -60,6 +61,7 @@ contract FlexFundingHelperAdapterContract {
             ,
             ,
             ,
+            ,
 
         ) = flexFunding.Proposals(address(dao), proposalId);
         return fundRaiseInfo.fundRaiseType;
@@ -75,6 +77,7 @@ contract FlexFundingHelperAdapterContract {
         (
             ,
             IFlexFunding.ProposalInvestmentInfo memory investmentInfo,
+            ,
             ,
             ,
             ,
@@ -101,6 +104,7 @@ contract FlexFundingHelperAdapterContract {
             ,
             ,
             ,
+            ,
 
         ) = flexFunding.Proposals(address(dao), proposalId);
 
@@ -117,7 +121,7 @@ contract FlexFundingHelperAdapterContract {
         FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
-        (, , , , , , , IFlexFunding.ProposalStatus state) = flexFunding
+        (, , , , , , , IFlexFunding.ProposalStatus state, ) = flexFunding
             .Proposals(address(dao), proposalId);
 
         return state;
@@ -138,9 +142,63 @@ contract FlexFundingHelperAdapterContract {
             ,
             ,
             ,
+            ,
 
         ) = flexFunding.Proposals(address(dao), proposalId);
 
         return (fundRaiseInfo.minDepositAmount, fundRaiseInfo.maxDepositAmount);
+    }
+
+    function isPriorityDepositer(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        address account
+    ) public view returns (bool) {
+        FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
+        );
+        (
+            ,
+            ,
+            ,
+            IFlexFunding.FundRaiseInfo memory fundRaiseInfo,
+            ,
+            ,
+            ,
+            ,
+
+        ) = flexFunding.Proposals(address(dao), proposalId);
+        if (fundRaiseInfo.priorityDepositInfo.enable == true) {
+            IFlexFunding.PriorityDepositType ptype = fundRaiseInfo
+                .priorityDepositInfo
+                .pType;
+            address token = fundRaiseInfo.priorityDepositInfo.token;
+            uint256 tokenAmount = fundRaiseInfo.priorityDepositInfo.amount;
+            uint256 tokenId = fundRaiseInfo.priorityDepositInfo.tokenId;
+            if (
+                ptype == IFlexFunding.PriorityDepositType.ERC20 &&
+                IERC20(token).balanceOf(account) >= tokenAmount
+            ) return true;
+            else if (
+                ptype == IFlexFunding.PriorityDepositType.ERC721 &&
+                IERC721(token).balanceOf(account) >= tokenAmount
+            ) return true;
+            else if (
+                ptype == IFlexFunding.PriorityDepositType.ERC1155 &&
+                IERC1155(token).balanceOf(account, tokenId) >= tokenAmount
+            ) return true;
+            else if (
+                ptype == IFlexFunding.PriorityDepositType.WHITE_LIST &&
+                flexFunding.isPriorityDepositedWhitelist(
+                    dao,
+                    proposalId,
+                    account
+                )
+            ) return true;
+            else {
+                return false;
+            }
+        }
+        return false;
     }
 }

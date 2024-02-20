@@ -131,6 +131,7 @@ interface IFlexFunding {
         uint256 startVoteTime;
         uint256 stopVoteTime;
         ProposalStatus state;
+        uint256 executeBlockNum;
     }
 
     struct ProposalInvestmentInfo {

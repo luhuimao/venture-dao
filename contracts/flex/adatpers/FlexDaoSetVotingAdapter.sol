@@ -18,8 +18,9 @@ contract FlexDaoSetVotingAdapterContract {
     mapping(address => bytes32) public ongoingVotingProposal;
     mapping(address => mapping(bytes32 => FlexDaosetLibrary.VotingProposalDetails))
         public votingProposals;
+
     // mapping(bytes32 => EnumerableSet.UintSet) votingAllocations;
-    mapping(bytes32 => EnumerableSet.AddressSet) votingGovernors;
+    // mapping(bytes32 => EnumerableSet.AddressSet) votingGovernors;
 
     function submitVotingProposal(
         FlexDaosetLibrary.VotingParams calldata params
@@ -72,12 +73,20 @@ contract FlexDaoSetVotingAdapterContract {
                 FlexDaosetLibrary.VotingAllocation(
                     new uint256[](params.allocations.length)
                 ),
+                FlexDaosetLibrary.VotingGovernor(
+                    new address[](params.governors.length)
+                ),
                 FlexDaosetLibrary.ProposalState.Voting
             );
 
-        for(uint8 i=0; i<params.allocations.length; i++){
-            votingGovernors[proposalId].add(params.governors[i]);
-            votingProposals[address(params.dao)][proposalId].allocations.allocs[i]=params.allocations[i];
+        for (uint8 i = 0; i < params.allocations.length; i++) {
+            // votingGovernors[proposalId].add(params.governors[i]);
+            votingProposals[address(params.dao)][proposalId].allocations.allocs[
+                    i
+                ] = params.allocations[i];
+            votingProposals[address(params.dao)][proposalId]
+                .governors
+                .governors[i] = params.governors[i];
         }
 
         ongoingVotingProposal[address(params.dao)] = proposalId;
@@ -117,7 +126,7 @@ contract FlexDaoSetVotingAdapterContract {
         ) = processProposal(dao, proposalId);
 
         if (voteResult == IFlexVoting.VotingState.PASS) {
-            setVoting(dao, proposalId, proposal);
+            setVoting(dao, proposal);
             proposal.state = FlexDaosetLibrary.ProposalState.Done;
         } else if (
             voteResult == IFlexVoting.VotingState.NOT_PASS ||
@@ -134,7 +143,7 @@ contract FlexDaoSetVotingAdapterContract {
 
     function setVoting(
         DaoRegistry dao,
-        bytes32 proposalId,
+        // bytes32 proposalId,
         FlexDaosetLibrary.VotingProposalDetails storage proposal
     ) internal {
         FlexDaoSetHelperAdapterContract daosetHelper = FlexDaoSetHelperAdapterContract(
@@ -153,7 +162,8 @@ contract FlexDaoSetVotingAdapterContract {
                 proposal.supportInfo.support,
                 proposal.timeInfo.votingPeriod
             ],
-            votingGovernors[proposalId].values(),
+            // votingGovernors[proposalId].values(),
+            proposal.governors.governors,
             proposal.allocations.allocs
         );
     }
@@ -186,8 +196,9 @@ contract FlexDaoSetVotingAdapterContract {
         bytes32 proposalId
     ) external view returns (address[] memory, uint256[] memory) {
         return (
-            votingGovernors[proposalId].values(),
-          votingProposals[daoAddr][proposalId].allocations.allocs
+            // votingGovernors[proposalId].values(),
+            votingProposals[daoAddr][proposalId].governors.governors,
+            votingProposals[daoAddr][proposalId].allocations.allocs
         );
     }
 }

@@ -213,6 +213,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     /// @notice The map that keeps track of configuration parameters for the DAO and adapters
     mapping(bytes32 => uint256) public mainConfiguration;
     mapping(bytes32 => address) public addressConfiguration;
+    mapping(bytes32 => string) public stringConfiguration;
     // vote types for proposal
     // mapping(bytes32 => VoteType) public proposalVoteTypes;
     uint256 public lockedAt;
@@ -293,6 +294,14 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     ) external hasAccess(this, AclFlag.SET_CONFIGURATION) {
         mainConfiguration[key] = value;
         emit ConfigurationUpdated(key, value);
+    }
+
+      function setStringConfiguration(
+        bytes32 key,
+        string calldata value
+    ) external hasAccess(this, AclFlag.SET_CONFIGURATION) {
+        stringConfiguration[key] = value;
+        // emit ConfigurationUpdated(key, value);
     }
 
     /**
@@ -402,6 +411,12 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         bytes32 key
     ) external view returns (address) {
         return addressConfiguration[key];
+    }
+
+     function getStringConfiguration(
+        bytes32 key
+    ) external view returns (string memory) {
+        return stringConfiguration[key];
     }
 
     /**

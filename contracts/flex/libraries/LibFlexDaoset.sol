@@ -14,6 +14,7 @@ library FlexDaosetLibrary {
 
     struct GovernorMembershipProposalDetails {
         bool enable;
+        string name;
         uint8 varifyType;
         uint256 minAmount;
         address tokenAddress;
@@ -25,6 +26,7 @@ library FlexDaosetLibrary {
 
     struct InvestorMembershipProposalDetails {
         bool enable;
+        string name;
         uint8 varifyType;
         uint256 minAmount;
         address tokenAddress;
@@ -39,6 +41,7 @@ library FlexDaosetLibrary {
         VotingAssetInfo votingAssetInfo;
         VotingTimeInfo timeInfo;
         VotingAllocation allocations;
+        VotingGovernor governors;
         ProposalState state;
     }
 
@@ -53,6 +56,7 @@ library FlexDaosetLibrary {
 
     struct ProposerMembershipProposalDetails {
         bool proposerMembershipEnable;
+        string name;
         uint8 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
         uint256 minHolding;
         address tokenAddress;
@@ -63,6 +67,8 @@ library FlexDaosetLibrary {
     }
 
     struct PollForInvestmentProposalDetails {
+        bool pollEnable;
+        string name;
         uint8 varifyType;
         uint256 minHolding;
         address tokenAddress;
@@ -87,11 +93,13 @@ library FlexDaosetLibrary {
 
     struct PollForInvestmentParams {
         DaoRegistry dao;
+        bool pollEnable;
         FlexDaoPollVoterMembershipInfo pollvoterMembership;
         flexDaoPollingInfo pollingInfo;
     }
 
     struct FlexDaoPollVoterMembershipInfo {
+        string name;
         uint8 varifyType;
         uint256 minHolding;
         address tokenAddress;
@@ -113,8 +121,12 @@ library FlexDaosetLibrary {
         uint256 stopVoteTime;
     }
 
-    struct VotingAllocation{
+    struct VotingAllocation {
         uint256[] allocs;
+    }
+
+    struct VotingGovernor {
+        address[] governors;
     }
 
     struct VotingAssetInfo {
@@ -143,6 +155,7 @@ library FlexDaosetLibrary {
     struct ProposerMembershipParams {
         DaoRegistry dao;
         bool proposerMembershipEnable;
+        string name;
         uint8 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
         uint256 minHolding;
         address tokenAddress;
@@ -153,6 +166,7 @@ library FlexDaosetLibrary {
     struct InvestorMembershipParams {
         DaoRegistry dao;
         bool enable;
+        string name;
         uint8 varifyType;
         uint256 minAmount;
         address tokenAddress;
@@ -163,6 +177,7 @@ library FlexDaosetLibrary {
     struct GovernorMembershipParams {
         DaoRegistry dao;
         bool enable;
+        string name;
         uint8 varifyType;
         uint256 minAmount;
         address tokenAddress;

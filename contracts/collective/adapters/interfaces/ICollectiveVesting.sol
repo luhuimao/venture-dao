@@ -79,7 +79,7 @@ interface ICollectiveVesting {
         uint128 stepShares;
         uint128 cliffShares;
         CollectiveAllocationAdapterContract allocAdapter;
-        ColletiveFundingProposalAdapterContract vintageFundingAdapt;
+        ColletiveFundingProposalAdapterContract collectiveFundingAdapt;
         uint256 duration;
         uint256 depositAmount;
         uint256 vestingStartTime;

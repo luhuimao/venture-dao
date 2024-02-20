@@ -115,6 +115,9 @@ contract FlexInvestmentPoolAdapterContract is
         FlexFundingAdapterContract flexInvestment = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
+        FlexFundingHelperAdapterContract fundingHelper = FlexFundingHelperAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_HELPER_ADAPTER)
+            );
 
         (
             ,
@@ -124,7 +127,8 @@ contract FlexInvestmentPoolAdapterContract is
             ,
             ,
             ,
-            IFlexFunding.ProposalStatus state
+            IFlexFunding.ProposalStatus state,
+
         ) = flexInvestment.Proposals(address(dao), proposalId);
         require(
             fundRaiseInfo.fundRaiseEndTime > block.timestamp ||
@@ -140,6 +144,7 @@ contract FlexInvestmentPoolAdapterContract is
             ,
             ,
             ,
+            ,
 
         ) = flexInvestment.Proposals(address(dao), proposalId);
         flexInvestmentPool.withdraw(
@@ -149,7 +154,9 @@ contract FlexInvestmentPoolAdapterContract is
             amount
         );
 
-        if (flexInvestment.isPriorityDepositer(dao, proposalId, msg.sender))
+        // if (flexInvestment.isPriorityDepositer(dao, proposalId, msg.sender))
+        //     freeINPriorityDeposits[address(dao)][proposalId] -= amount;
+        if (fundingHelper.isPriorityDepositer(dao, proposalId, msg.sender))
             freeINPriorityDeposits[address(dao)][proposalId] -= amount;
 
         emit WithDraw(address(dao), proposalId, amount, msg.sender);
@@ -232,8 +239,8 @@ contract FlexInvestmentPoolAdapterContract is
 
     struct DepositLocalVars {
         FlexFundingAdapterContract flexFunding;
-        FlexInvestmentPoolExtension flexFungdingPoolExt;
         FlexFundingHelperAdapterContract flexFundingHelper;
+        FlexInvestmentPoolExtension flexFungdingPoolExt;
         IFlexFunding.FundRaiseType fundRaiseType;
         uint256 fundRaiseStartTime;
         uint256 fundRaiseEndTime;
@@ -332,9 +339,19 @@ contract FlexInvestmentPoolAdapterContract is
             dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT),
             amount
         );
+        vars.flexFundingHelper = FlexFundingHelperAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_HELPER_ADAPTER)
+        );
+        // if (vars.flexFunding.isPriorityDepositer(dao, proposalId, msg.sender))
+        //     freeINPriorityDeposits[address(dao)][proposalId] += amount;
 
-        if (vars.flexFunding.isPriorityDepositer(dao, proposalId, msg.sender))
-            freeINPriorityDeposits[address(dao)][proposalId] += amount;
+        if (
+            vars.flexFundingHelper.isPriorityDepositer(
+                dao,
+                proposalId,
+                msg.sender
+            )
+        ) freeINPriorityDeposits[address(dao)][proposalId] += amount;
         vars.flexFungdingPoolExt.addToBalance(proposalId, msg.sender, amount);
         emit Deposit(address(dao), proposalId, amount, msg.sender);
     }
@@ -399,7 +416,8 @@ contract FlexInvestmentPoolAdapterContract is
             for (uint8 i = 0; i < allInvestors.length; i++) {
                 if (vars.priorityFunds >= vars.maxFund) {
                     if (
-                        vars.flexFunding.isPriorityDepositer(
+                        // vars.flexFunding.isPriorityDepositer(
+                        vars.flexFundingHelper.isPriorityDepositer(
                             dao,
                             proposalId,
                             allInvestors[i]
@@ -418,7 +436,8 @@ contract FlexInvestmentPoolAdapterContract is
                         );
                 } else {
                     if (
-                        vars.flexFunding.isPriorityDepositer(
+                        // vars.flexFunding.isPriorityDepositer(
+                        vars.flexFundingHelper.isPriorityDepositer(
                             dao,
                             proposalId,
                             allInvestors[i]
