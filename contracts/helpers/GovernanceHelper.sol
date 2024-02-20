@@ -494,8 +494,8 @@ library GovernanceHelper {
         address[] memory allGovernors = dao.getAllSteward();
         uint128 allGovernorweight;
         CollectiveVotingAdapterContract collectiveVotingAdapt = CollectiveVotingAdapterContract(
-            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
-        );
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
+            );
         for (uint8 i = 0; i < allGovernors.length; i++) {
             if (
                 collectiveVotingAdapt.checkIfVoted(
@@ -555,7 +555,16 @@ library GovernanceHelper {
             return votingWeight;
         } else if (votingWeightedType == 2) {
             //1 voter 1 vote
-            return 1;
+            uint128 votingWeight = 0;
+            if (etype == 0) {
+                //0 deposit
+                votingWeight = fundingiPoolAdapt.balanceOf(dao, account) > 0
+                    ? 1
+                    : 0;
+            } else {
+                return 0;
+            }
+            return votingWeight;
         } else if (votingWeightedType == 0) {
             //quantity
             uint256 bal = 0;

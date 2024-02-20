@@ -2111,7 +2111,7 @@ describe("deposit, withdraw...", () => {
     });
 });
 
-describe.only("funding proposal...", () => {
+describe("funding proposal...", () => {
     before("deploy contracts...", async () => {
         let [
             owner,
