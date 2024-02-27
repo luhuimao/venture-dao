@@ -28,7 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 contract TestToken1 is ERC20 {
-    constructor(uint256 _totalSupply) ERC20("TestToken1", "TT1") {
+    constructor(uint256 _totalSupply) ERC20("CNY", "CNY") {
         _mint(msg.sender, _totalSupply * (10**uint256(decimals())));
     }
 }

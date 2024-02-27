@@ -131,6 +131,18 @@ module.exports = {
         process.env.TEST_PRIVATE_KEY4,
         process.env.TEST_PRIVATE_KEY5
       ],
+    },
+    base_sepolia: {
+      url: 'https://base-sepolia-rpc.publicnode.com',
+      chainId: 84532,
+      gasPrice: 100000000,
+      accounts: [
+        process.env.TEST_PRIVATE_KEY1,
+        process.env.TEST_PRIVATE_KEY2,
+        process.env.TEST_PRIVATE_KEY3,
+        process.env.TEST_PRIVATE_KEY4,
+        process.env.TEST_PRIVATE_KEY5
+      ],
     }
     // polygon: {
     //   url: 'https://polygon.llamarpc.com',

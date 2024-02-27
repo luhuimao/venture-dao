@@ -541,8 +541,12 @@ describe("vesting...", () => {
         let blocknum = (await hre.ethers.provider.getBlock("latest")).number;
         console.log("blocknum ", blocknum);
         let priorBal1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.testtoken1.address, parseInt(blocknum) - 1);
+        let priorBal2 = await vintageFundingPoolExtContrct.getPriorAmount(this.investor1.address, this.testtoken1.address, parseInt(blocknum) - 1);
+
         console.log(`
         priorBal1 ${hre.ethers.utils.formatEther(priorBal1)}
+        priorBal2 ${hre.ethers.utils.formatEther(priorBal2)}
+
         currentBal1 ${hre.ethers.utils.formatEther(currentBal1)}
         `);
         console.log(`
@@ -640,6 +644,15 @@ describe("vesting...", () => {
 
         await vintageFundingAdapterContract.startVotingProcess(this.daoAddr1, proposalId);
 
+        blocknum = (await hre.ethers.provider.getBlock("latest")).number;
+        priorBal1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.testtoken1.address, parseInt(blocknum) - 1);
+        priorBal2 = await vintageFundingPoolExtContrct.getPriorAmount(this.investor1.address, this.testtoken1.address, parseInt(blocknum) - 1);
+
+        console.log(`
+        priorBal1 ${hre.ethers.utils.formatEther(priorBal1)}
+        priorBal2 ${hre.ethers.utils.formatEther(priorBal2)}
+        `);
+
         await this.vintageVotingAdapterContract.connect(this.genesis_raiser1).submitVote(this.daoAddr1, proposalId, 1);
         await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr1, proposalId, 1);
         await this.vintageVotingAdapterContract.submitVote(this.daoAddr1, proposalId, 1);
@@ -662,7 +675,8 @@ describe("vesting...", () => {
         let fundingProposalInfo = await vintageFundingAdapterContract.proposals(this.daoAddr1, proposalId);
         const executeBlockTime = fundingProposalInfo.executeBlockNum;
         priorBal1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.testtoken1.address, parseInt(executeBlockTime) - 1);
-        let priorBal2 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.testtoken1.address, parseInt(executeBlockTime));
+        let priorBal1_1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.testtoken1.address, parseInt(executeBlockTime));
+        priorBal2 = await vintageFundingPoolExtContrct.getPriorAmount(this.investor1.address, this.testtoken1.address, parseInt(executeBlockTime));
 
         currentBal1 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.owner.address);
         const investorVestAmount = await this.vintageAllocationAdapterContract.getInvestmentRewards(this.daoAddr1,
@@ -690,6 +704,7 @@ describe("vesting...", () => {
         totalVestingAmount ${hre.ethers.utils.formatEther(totalVestingAmount)}
         executeBlockTime ${executeBlockTime}
         priorBal1 ${hre.ethers.utils.formatEther(priorBal1)}
+        priorBal1_1 ${hre.ethers.utils.formatEther(priorBal1_1)}
         priorBal2 ${hre.ethers.utils.formatEther(priorBal2)}
         currentBal1 ${hre.ethers.utils.formatEther(currentBal1)}
         create vesting...
