@@ -51,7 +51,7 @@ async function main() {
     // await getAdapterAddress();
     // await getDaoConfig();
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
-    // await deploy();
+    await deploy();
     // await getFlexdaoInvestorWhitelist();
     // await summonVintageDao();
     // await submitVintageDaosetProposal();
@@ -68,7 +68,7 @@ async function main() {
     // await getVintageSetApproveAmount();
     // await fetchBathETHBalance();
     // await isVintageRedemptPeriod();
-    await getVintageEscrowTokenInfo();
+    // await getVintageEscrowTokenInfo();
     // await getVintageNewFundProposalInfo();
     // await getvintageFundingReturnTokenApprovedAmount(
     //     "0x82d1f2b12c1b35cf06d5d3f9559c75c3d3a47c89",
@@ -1599,10 +1599,10 @@ const deploy = async () => {
     // await flexVotingContract.deployed();
     // console.log("flexVotingContract deployed address:", flexVotingContract.address);
 
-    // const FlexVesting = await hre.ethers.getContractFactory("FlexVesting");
-    // const flexVesting = await FlexVesting.deploy();
-    // await flexVesting.deployed();
-    // console.log("flexVesting deployed address:", flexVesting.address);
+    const FlexVesting = await hre.ethers.getContractFactory("FlexVesting");
+    const flexVesting = await FlexVesting.deploy();
+    await flexVesting.deployed();
+    console.log("flexVesting deployed address:", flexVesting.address);
 
 
     // const StewardManagementContract = await hre.ethers.getContractFactory("StewardManagementContract");
@@ -1666,10 +1666,10 @@ const deploy = async () => {
     // await summonDao.deployed();
     // console.log("summonDao deployed address:", summonDao.address);
 
-    const TestToken1 = await hre.ethers.getContractFactory("TestToken1");
-    const testToken1 = await TestToken1.deploy(100000000);
-    await testToken1.deployed();
-    console.log("testToken1 deployed address:", testToken1.address);
+    // const TestToken1 = await hre.ethers.getContractFactory("TestToken1");
+    // const testToken1 = await TestToken1.deploy(100000000);
+    // await testToken1.deployed();
+    // console.log("testToken1 deployed address:", testToken1.address);
 
     // const TestToken2 = await hre.ethers.getContractFactory("TestToken2");
     // const testToken2 = await TestToken2.deploy(100000000);
@@ -1728,10 +1728,10 @@ const deploy = async () => {
     // await vintageAllocationAdapterContract.deployed();
     // console.log("vintageAllocationAdapterContract deployed address:", vintageAllocationAdapterContract.address);
 
-    // const VintageVesting = await hre.ethers.getContractFactory("VintageVesting");
-    // const vintageVesting = await VintageVesting.deploy();
-    // await vintageVesting.deployed();
-    // console.log("vintageVesting deployed address:", vintageVesting.address);
+    const VintageVesting = await hre.ethers.getContractFactory("VintageVesting");
+    const vintageVesting = await VintageVesting.deploy();
+    await vintageVesting.deployed();
+    console.log("vintageVesting deployed address:", vintageVesting.address);
 
     // const VintageFundingPoolExtension = await hre.ethers.getContractFactory("VintageFundingPoolExtension");
     // const vintageFundingPoolExtension = await VintageFundingPoolExtension.deploy();

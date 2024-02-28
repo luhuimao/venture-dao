@@ -732,6 +732,36 @@ describe("vesting...", () => {
         investorVest2 created ${investorVest2[1]}
         `);
 
+
+
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        if (parseInt(vestingCliffEndTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestingCliffEndTime) + 1])
+            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        }
+        await this.vintageVesting.connect(this.owner).withdraw(this.daoAddr1, 1);
+        console.log("investor1 withdraw...");
+        await this.vintageVesting.connect(this.investor1).withdraw(this.daoAddr1, 2);
+        console.log("investor2 withdraw...");
+        await this.vintageVesting.connect(this.genesis_raiser1).withdraw(this.daoAddr1, 3);
+        console.log("proposer withdraw...");
+        await this.vintageVesting.connect(this.user1).withdraw(this.daoAddr1, 4);
+        console.log("management withdraw...");
+        
+        let vest1 = await this.vintageVesting.vests(1);
+        let vest2 = await this.vintageVesting.vests(2);
+        let vest3 = await this.vintageVesting.vests(3);
+        let vest4 = await this.vintageVesting.vests(4);
+
+        console.log(`
+        claimed1 ${vest1.claimed}
+        claimed2 ${vest2.claimed}
+        claimed3 ${vest3.claimed}
+        claimed4 ${vest4.claimed}
+        `);
+
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
         if (parseInt(vetingEndTime) > blocktimestamp) {
@@ -765,11 +795,29 @@ describe("vesting...", () => {
         vestBal3 = await this.vintageVesting.vestBalance(3);
         vestBal4 = await this.vintageVesting.vestBalance(4);
 
+
+        vest1 = await this.vintageVesting.vests(1);
+        vest2 = await this.vintageVesting.vests(2);
+        vest3 = await this.vintageVesting.vests(3);
+        vest4 = await this.vintageVesting.vests(4);
+
         console.log(`
         vestBal1 ${hre.ethers.utils.formatEther(vestBal1)}
         vestBal2 ${hre.ethers.utils.formatEther(vestBal2)}
         vestBal3 ${hre.ethers.utils.formatEther(vestBal3)}
         vestBal4 ${hre.ethers.utils.formatEther(vestBal4)}
+
+        claimed1 ${vest1.claimed}
+        total1 ${vest1.total}
+        
+        claimed2 ${vest2.claimed}
+        total2 ${vest2.total}
+
+        claimed3 ${vest3.claimed}
+        total3 ${vest3.total}
+
+        claimed4 ${vest4.claimed}
+        total4 ${vest4.total}
         `);
 
     });
