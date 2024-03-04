@@ -11671,7 +11671,7 @@ describe("participant cap...", () => {
     });
 });
 
-describe.only("return token management fee...", () => {
+describe("return token management fee...", () => {
     before("deploy contracts...", async () => {
         let [owner,
             user1, user2,

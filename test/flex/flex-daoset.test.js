@@ -1268,7 +1268,7 @@ describe("daoset proposal...", () => {
             [
                 pollingvotingPeriod,
                 pollingvotingPower,
-                pollingSupport,
+                pollingsuperMajority,
                 pollingquorum,
                 pollingeligibilityType,
                 pollingtokenAddress,
