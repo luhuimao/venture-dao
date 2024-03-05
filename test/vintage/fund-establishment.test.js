@@ -189,8 +189,8 @@ describe("fund establishment...", () => {
         this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
 
         const daoFactoriesAddress = [
-            this.daoFactory.address,
-            this.vintageFundingPoolFactory.address
+            this.daoFactory.address, //daoFactory address
+            this.vintageFundingPoolFactory.address //vintageFundingPoolFactory
         ];
 
         const _daoName = _daoName1;
@@ -199,88 +199,89 @@ describe("fund establishment...", () => {
 
         const enalbeAdapters = [
             {
-            id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
-            addr: this.vintageFundRaiseAdapterContract.address,
-            flags: 1034
-        },
-        {
-            id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
-            addr: this.vintageFundingPoolAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
-            addr: this.vintageVotingAdapterContract.address,
-            flags: 258
-        },
-        {
-            id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
-            addr: this.vintageRaiserManagementContract.address,
-            flags: 6346
-        },
-        {
-            id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
-            addr: this.vintageFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
-            addr: this.vintageAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
-            addr: this.vintageVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        {
-            id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
-            addr: this.vintageEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
-            addr: this.vintageDistributeAdatperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
-            addr: this.vintageRaiserAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
-            addr: this.vintageFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
-            addr: this.vintageFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
-            addr: this.vintageFundingPoolAdapterHelperContract.address,
-            flags: 0
-        },
-        {
-            id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
-            addr: this.vintageDaoSetAdapterContract.address,
-            flags: 122890
+                id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
+                addr: this.vintageFundRaiseAdapterContract.address,
+                flags: 1034
+            },
+            {
+                id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
+                addr: this.vintageFundingPoolAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8', //vintageVotingAdapterContract
+                addr: this.vintageVotingAdapterContract.address,
+                flags: 258
+            },
+            {
+                id: '0xd90e10040720d66c9412cb511e3dbb6ba51669248a7495e763d44ab426893efa', //vintageRaiserManagementContract
+                addr: this.vintageRaiserManagementContract.address,
+                flags: 6346
+            },
+            {
+                id: '0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1', //VintageFundingAdapterContract
+                addr: this.vintageFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0x99d271900d627893bad1d8649a7d7eb3501c339595ec52be94d222433d755603', //vintageAllocationAdapterContract
+                addr: this.vintageAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a', //vintageVestingContract
+                addr: this.vintageVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xf03649ccf5cbda635d0464f73bc807b602819fde8d2e1387f87b988bb0e858a3', // vintageEscrowFundAdapterContract
+                addr: this.vintageEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe1cf6669e8110c379c9ea0aceed535b5ed15ea1db2447ab3fbda96c746d21a1a', // vintageDistrubteAdapterContract
+                addr: this.vintageDistributeAdatperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x1fa6846b165d822fff79e37c67625706652fa9380c2aa49fd513ce534cc72ed4', // vintageRaiserAllocation
+                addr: this.vintageRaiserAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257', // vintageFundingReturnTokenAdapterContract
+                addr: this.vintageFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x6a687e96f72a484e38a32d2ee3b61626294e792821961a90ce9a98d1999252d5', //vintageFreeInEscrowFundAdapterContract
+                addr: this.vintageFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xe70101dfebc310a1a68aa271bb3eb593540746781f9eaca3d7f52f31ba60f5d1', //vintageFundingPoolAdapterHelperContract
+                addr: this.vintageFundingPoolAdapterHelperContract.address,
+                flags: 0
+            },
+            {
+                id: '0x77cdf6056467142a33aa6f753fc1e3907f6850ebf08c7b63b107b0611a69b04e', //vintageDaoSetAdapterContract
+                addr: this.vintageDaoSetAdapterContract.address,
+                flags: 122890
             },
             {
                 id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
                 addr: this.vintageDaoSetHelperAdapterContract.address,
                 flags: 8
-        }
+            }
         ];
 
-        const adapters1 = [{
+        const adapters1 = [
+            {
                 id: '0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f',
                 addr: this.vintageFundingPoolAdapterContract.address, //vintageFundingPoolAdapterContract
                 flags: 23
@@ -371,7 +372,7 @@ describe("fund establishment...", () => {
 
         const investorMbN = await dao1Contract.getStringConfiguration("0x324dfda0ffcc38c4650b5df076e6f7b4938c2b723873af58b1be5e221dd2cc30");
         const governorMbN = await dao1Contract.getStringConfiguration("0xa4b6f581a2d1e8b24bacedf9a91a13c8df6147ffb9d2bd4a770d867d91018da6");
-       
+
         console.log(`
         investorMbN ${investorMbN}
         governorMbN ${governorMbN}      
@@ -508,7 +509,7 @@ describe("fund establishment...", () => {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1])
             await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
         }
-         let voteRel = await this.vintageVotingAdapterContract.voteResult(this.daoAddr1, newFundProposalId);
+        let voteRel = await this.vintageVotingAdapterContract.voteResult(this.daoAddr1, newFundProposalId);
         console.log(`
         voted. processing...
         vote result ${voteRel.state}  nbYes ${voteRel.nbYes}  nbNo ${voteRel.nbNo}
@@ -612,41 +613,6 @@ describe("fund establishment...", () => {
 
         const proposer = this.genesis_raiser1;
 
-        const fundingInfo = [
-            requestedFundAmount,
-            this.testtoken1.address,
-            receiver
-        ]
-
-        const returnTokenInfo = [
-            escrow,
-            projectTeamTokenAddr,
-            price,
-            "0",
-            approver,
-            false,
-            ZERO_ADDRESS
-        ];
-
-        const vestingInfo = [
-            "vesting name",
-            "vesting description",
-            vestingStartTime,
-            vetingEndTime,
-            vestingCliffEndTime,
-            vestingCliffLockAmount,
-            vestingInterval
-        ];
-        const params = [fundingInfo, returnTokenInfo, vestingInfo];
-
-        const proposer = this.genesis_raiser1;
-
-        let proposalId = await createFundingProposal(
-            vintageFundingAdapterContract,
-            proposer,
-            this.daoAddr1,
-            params
-        );
         let proposalId = await createFundingProposal(
             vintageFundingAdapterContract,
             proposer,
@@ -654,13 +620,11 @@ describe("fund establishment...", () => {
             params
         );
 
-        console.log(`
         console.log(`
          created...
          proposalId ${proposalId}
          `);
 
-        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price));
         await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price));
 
         await this.vintageFundingReturnTokenAdapterContract.setFundingApprove(
@@ -669,23 +633,9 @@ describe("fund establishment...", () => {
             this.testtoken2.address,
             requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price)
         );
-            this.daoAddr1,
-            proposalId,
-            this.testtoken2.address,
-            requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price)
-        );
 
         await vintageFundingAdapterContract.startVotingProcess(this.daoAddr1, proposalId);
-        await vintageFundingAdapterContract.startVotingProcess(this.daoAddr1, proposalId);
 
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        const fundingstopVoteTime = parseInt(blocktimestamp) + 60 * 10;
-        const fundEndTime = await this.vintageFundingPoolAdapterHelperContract.getFundEndTime(this.daoAddr1);
-
-        if (parseInt(fundEndTime) + parseInt(returnPeriod) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundEndTime) + parseInt(returnPeriod) + 1])
-            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
-        }
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         const fundingstopVoteTime = parseInt(blocktimestamp) + 60 * 10;
         const fundEndTime = await this.vintageFundingPoolAdapterHelperContract.getFundEndTime(this.daoAddr1);

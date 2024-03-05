@@ -12365,10 +12365,17 @@ describe("return token management fee...", () => {
 
         console.log(`
             claimed...
-            claimed: ${hre.ethers.utils.formatEther(createdVestingInfo.claimed)}
-            claimed2: ${hre.ethers.utils.formatEther(createdVestingInfo2.claimed)}
+            claimed: ${createdVestingInfo.claimed}
+            total1: ${createdVestingInfo.total}
+
+            claimed2: ${createdVestingInfo2.claimed}
+            total2: ${createdVestingInfo2.total}
+
             claimed3: ${hre.ethers.utils.formatEther(createdVestingInfo3.claimed)}
+            total3: ${hre.ethers.utils.formatEther(createdVestingInfo3.total)}
+
             claimed4: ${hre.ethers.utils.formatEther(createdVestingInfo4.claimed)}
+            total4: ${hre.ethers.utils.formatEther(createdVestingInfo4.total)}
 
             return token balance ${hre.ethers.utils.formatEther(returnTokenBal)}
             returnTokenBal2 ${hre.ethers.utils.formatEther(returnTokenBal2)}

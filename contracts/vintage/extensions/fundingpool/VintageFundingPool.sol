@@ -489,7 +489,6 @@ contract VintageFundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         address tokenAddr,
         uint256 blockNumber
     ) external view returns (uint128) {
-        // console.log(block.number);
         require(
             blockNumber < block.number,
             "Uni::getPriorAmount: not yet determined"

@@ -227,9 +227,9 @@ contract FlexVesting is IFlexVesting {
                 vest.timeInfo.cliffDuration +
                 vest.stepInfo.steps *
                 vest.timeInfo.stepDuration >
-            vest.timeInfo.end &&
+            vest.timeInfo.end ||
             block.timestamp > vest.timeInfo.end
-        ) stepPassed = vest.stepInfo.steps;
+        ) return vest.total; //stepPassed = vest.stepInfo.steps;
 
         claimable =
             vest.stepInfo.cliffShares +

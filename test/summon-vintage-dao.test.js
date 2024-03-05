@@ -951,7 +951,7 @@ describe("verify raiser membership...", () => {
     });
 });
 
-describe.only("voting....", () => {
+describe("voting....", () => {
 
     before("deploy contracts...", async () => {
         let [owner,

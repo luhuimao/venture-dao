@@ -462,10 +462,10 @@ describe("vesting", () => {
 
         let tokenAddress = this.testtoken1.address;
         let minFundingAmount = hre.ethers.utils.parseEther("100");
-        let maxFundingAmount = hre.ethers.utils.parseEther("1000");
+        let maxFundingAmount = hre.ethers.utils.parseEther("100");
         let escrow = true;
         let returnTokenAddr = this.testtoken2.address;
-        let price = hre.ethers.utils.parseEther("0.3");
+        let price = hre.ethers.utils.parseEther("2");
 
         let returnTokenAmount = maxFundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price);
         let minReturnAmount = hre.ethers.utils.parseEther("1000000");
@@ -604,19 +604,16 @@ describe("vesting", () => {
         }
 
         await this.testtoken2.transfer(this.user1.address, returnTokenAmount);
-        const aa = hre.ethers.utils.parseEther("200").sub(
-            hre.ethers.utils.parseEther("200")
-                .mul(hre.ethers.utils.parseEther("0.003"))
-                .div(hre.ethers.utils.parseEther("1")))
+       
         await this.testtoken2.connect(this.user1).approve(this.flexFundingReturnTokenAdapterContract.address,
-            aa.mul(hre.ethers.utils.parseEther("1")).div(price));
+            maxFundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price));
 
-        console.log("approved amount ", aa.mul(hre.ethers.utils.parseEther("1")).div(price));
+        console.log("approved amount ", maxFundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price));
         await this.flexFundingReturnTokenAdapterContract.connect(this.user1).setFundingApprove(
             dao.address,
             proposalId,
             this.testtoken2.address,
-            hre.ethers.utils.parseEther("200").mul(hre.ethers.utils.parseEther("1")).div(price)
+            maxFundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price)
         );
 
         await USDT.approve(flexFundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
@@ -667,7 +664,8 @@ describe("vesting", () => {
             price               ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.price)}
             finalRaiseAmount    ${flexFundingProposalInfo.investmentInfo.finalRaisedAmount}
             MaxInvestmentAmount ${MaxInvestmentAmount}
-            paybackTokenAmount  ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.paybackTokenAmount)}
+            paybackTokenAmount  ${flexFundingProposalInfo.investmentInfo.paybackTokenAmount}
+            approved amount     ${maxFundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price)}
             protocol Fee        ${hre.ethers.utils.formatEther(protocolFee)}
             management Fee      ${hre.ethers.utils.formatEther(managementFee)}
             proposer reward     ${hre.ethers.utils.formatEther(proposerreward)}
