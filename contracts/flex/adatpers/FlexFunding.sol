@@ -407,15 +407,25 @@ contract FlexFundingAdapterContract is
 
                 if (proposal.investmentInfo.escrow) {
                     // calculate && update payback token amount
-                    proposal.investmentInfo.paybackTokenAmount = (((vars
-                        .poolBalance -
+                    vars.paybackTokenAmount = (((vars.poolBalance -
                         vars.protocolFee -
                         vars.managementFee -
                         vars.proposerReward) * RETRUN_TOKEN_AMOUNT_PRECISION) /
                         proposal.investmentInfo.price);
-                    vars.paybackTokenAmount = proposal
-                        .investmentInfo
+                    if (
+                        vars.paybackTokenAmount >
+                        (proposal.investmentInfo.maxInvestmentAmount *
+                            RETRUN_TOKEN_AMOUNT_PRECISION) /
+                            proposal.investmentInfo.price
+                    )
+                        vars.paybackTokenAmount =
+                            (proposal.investmentInfo.maxInvestmentAmount *
+                                RETRUN_TOKEN_AMOUNT_PRECISION) /
+                            proposal.investmentInfo.price;
+
+                    proposal.investmentInfo.paybackTokenAmount = vars
                         .paybackTokenAmount;
+
                     if (
                         !_escrowToken(
                             dao,

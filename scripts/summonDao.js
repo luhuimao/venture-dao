@@ -41,15 +41,16 @@ const deploySummonContract = async () => {
 }
 
 async function main() {
+    // await vintageFundingProposalDebug();
     // await getVintageInvestors();
-    await getVintageAdapterAddress();
+    // await getVintageAdapterAddress();
     // await getFlexDaosetPropsalInfo();
     // await summonFlexDao();
     // await getVintageManagementFee();
     // await getFlexEscrowTokenInfo();
     // await createDaosetProposal();
     // await getAdapterAddress();
-    // await getDaoConfig();
+    await getDaoConfig();
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
     // await deploy();
     // await getFlexdaoInvestorWhitelist();
@@ -1599,10 +1600,10 @@ const deploy = async () => {
     // await flexVotingContract.deployed();
     // console.log("flexVotingContract deployed address:", flexVotingContract.address);
 
-    const FlexVesting = await hre.ethers.getContractFactory("FlexVesting");
-    const flexVesting = await FlexVesting.deploy();
-    await flexVesting.deployed();
-    console.log("flexVesting deployed address:", flexVesting.address);
+    // const FlexVesting = await hre.ethers.getContractFactory("FlexVesting");
+    // const flexVesting = await FlexVesting.deploy();
+    // await flexVesting.deployed();
+    // console.log("flexVesting deployed address:", flexVesting.address);
 
 
     // const StewardManagementContract = await hre.ethers.getContractFactory("StewardManagementContract");
@@ -1728,10 +1729,10 @@ const deploy = async () => {
     // await vintageAllocationAdapterContract.deployed();
     // console.log("vintageAllocationAdapterContract deployed address:", vintageAllocationAdapterContract.address);
 
-    const VintageVesting = await hre.ethers.getContractFactory("VintageVesting");
-    const vintageVesting = await VintageVesting.deploy();
-    await vintageVesting.deployed();
-    console.log("vintageVesting deployed address:", vintageVesting.address);
+    // const VintageVesting = await hre.ethers.getContractFactory("VintageVesting");
+    // const vintageVesting = await VintageVesting.deploy();
+    // await vintageVesting.deployed();
+    // console.log("vintageVesting deployed address:", vintageVesting.address);
 
     // const VintageFundingPoolExtension = await hre.ethers.getContractFactory("VintageFundingPoolExtension");
     // const vintageFundingPoolExtension = await VintageFundingPoolExtension.deploy();
@@ -2426,7 +2427,7 @@ const getVintageManagementFee = async () => {
 
 const getAdapterAddress = async () => {
     const daoContrct = (await hre.ethers.
-        getContractFactory("DaoRegistry")).attach("0x7ab04203d1586247966c1ec223e2ac63a889dee8");
+        getContractFactory("DaoRegistry")).attach("0x45bec1fdd45851355a25d35f442ba144b857b948");
 
 
     const FlexVesting = await daoContrct.getAdapterAddress("0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd");
@@ -2518,21 +2519,29 @@ const getVintageAdapterAddress = async () => {
 }
 
 const getDaoConfig = async () => {
+    const daoaddr = "0x8dec1e1f70ee7af4b6b8c76779252c655faf5dd5";
     const daoContrct = (await hre.ethers.
-        getContractFactory("DaoRegistry")).attach("0x00ccf477ce30e399dd8af094ff1ef1c4c34bd0f2");
+        getContractFactory("DaoRegistry")).attach(daoaddr);
+    const FundingPoolAdapterContractAddr = await daoContrct.getAdapterAddress("0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892");
+
+    const vintageFundingPoolAdapterContract = (await hre.ethers.
+        getContractFactory("VintageFundingPoolAdapterContract")).attach(FundingPoolAdapterContractAddr);
+    const fundRaiseState = await vintageFundingPoolAdapterContract.daoFundRaisingStates(daoaddr);
 
     const managementFee = await daoContrct.getConfiguration("0x64c49ee5084f4940c312104c41603e43791b03dad28152afd6eadb5b960a8a87");
     const FLEX_MANAGEMENT_FEE_TYPE = await daoContrct.getConfiguration("0xda34ff95e06cbf2c9c32a559cd8aadd1a10104596417d62c03db2c1258df83d3");
     const FUND_END_TIME = await daoContrct.getConfiguration("0x9ce69cf04065e3c7823cc5540c0598d8a694bd7a9a5a2a786d8bccf14ed6e2ea")
     const PROPOSAL_EXECUTE_DURATION = await daoContrct.getConfiguration("0x02a3530cbb6e7c084516c86f68bd62c3e3fcd783c6c5d7e138616207f7a32250")
     const VOTING_PERIOD = await daoContrct.getConfiguration("0x9876c0f0505bfb2b1c38d3bbd25ba13159172cd0868972d76927723f5a9480fc")
-
-    console.log("FLEX_MANAGEMENT_FEE_TYPE: ", FLEX_MANAGEMENT_FEE_TYPE);
-    console.log("managementFee:", hre.ethers.utils.formatEther(managementFee));
+    const RETURN_DURATION = await daoContrct.getConfiguration("0xb0d4178853a5320a41f8c55fa6d58af06637e392beff71e66dba4e8f32c39bb8");
     console.log(`
-    FUND_END_TIME ${FUND_END_TIME}
+    FLEX_MANAGEMENT_FEE_TYPE: ${FLEX_MANAGEMENT_FEE_TYPE}
+    managementFee             ${hre.ethers.utils.formatEther(managementFee)}
+    fundRaiseState            ${fundRaiseState}
+    FUND_END_TIME             ${FUND_END_TIME}
+    RETURN_DURATION           ${RETURN_DURATION}
     PROPOSAL_EXECUTE_DURATION ${PROPOSAL_EXECUTE_DURATION}
-    VOTING_PERIOD ${VOTING_PERIOD}
+    VOTING_PERIOD             ${VOTING_PERIOD}
     `);
 }
 
@@ -2543,28 +2552,30 @@ const getFlexdaoInvestorWhitelist = async () => {
     console.log(rel);
 }
 const getFlexEscrowTokenInfo = async () => {
-    const daoAddr = "0x94360044e0d58fc8eee54e8bbc142cfcaf9d4efb";
-    const proposalId = "0xbc142cfcaf9d4efb496e766573746d656e742337000000000000000000000000";
-    const paybackTokenAddr = "0x32bf9e40e6b94419f2e49dd112231bfaecac3b6c";
-    const approver = "0x9ab302974abd84c875343d6beea05309bede2f10"
+    const daoAddr = "0x905af9c8ae25dc3290d08ec0418d84e46e879b2e";
+    const proposalId = "0x418d84e46e879b2e496e766573746d656e742331000000000000000000000000";
+    const paybackTokenAddr = "0x11b1cec8d386d4e2ff4bc178775d98ba3e7247ba";
+    const approver = "0x4e9e414e08b363fd97facf1b02e4489275420ea7"
     const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).
         attach(daoAddr);
-
+    const flexFundingAdapterContractAddr = await daoContract.getAdapterAddress("0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda");
+    const FlexInvestmentPaybackTokenAdapterContractAddr = await daoContract.getAdapterAddress("0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1");
+    const flexFundingPoolAdptAddr = await daoContract.getAdapterAddress("0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c");
     const flexFundingAdapterContract = (await hre.ethers.getContractFactory("FlexFundingAdapterContract")).
-        attach("0x4c30AA413304ff440783a80663e64852DAec5D3E");
+        attach(flexFundingAdapterContractAddr);
     const erc20 = (await hre.ethers.getContractAt("openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol:IERC20",
         paybackTokenAddr));
     const escorwContrct = (await hre.ethers.
-        getContractFactory("FlexInvestmentPaybackTokenAdapterContract")).attach("0x883B0218F3D2A74f6904bD281077E122952cB409");
+        getContractFactory("FlexInvestmentPaybackTokenAdapterContract")).attach(FlexInvestmentPaybackTokenAdapterContractAddr);
     const approvedAmount = await escorwContrct.approvedInfos(
         daoAddr,
         proposalId,
         approver,
         paybackTokenAddr)
-    const escrowContractBal = await erc20.balanceOf("0x9ab302974abd84c875343d6beea05309bede2f10");
+    const escrowContractBal = await erc20.balanceOf(approver);
     const allowance = await erc20.allowance(
         approver,
-        "0x883B0218F3D2A74f6904bD281077E122952cB409");
+        FlexInvestmentPaybackTokenAdapterContractAddr);
 
     // const maxFundAmount = hre.ethers.utils.parseEther("100").mul(hre.ethers.utils.parseEther("1"))
     //     .div(hre.ethers.utils.parseEther("1")
@@ -2590,7 +2601,7 @@ const getFlexEscrowTokenInfo = async () => {
         proposalId);
     const managementFee = await daoContract.getConfiguration("0xda34ff95e06cbf2c9c32a559cd8aadd1a10104596417d62c03db2c1258df83d3");
     const flexInvestmentPoolAdapterContract = (await hre.ethers.
-        getContractFactory("FlexInvestmentPoolAdapterContract")).attach("0xceEb2b45a74A4d9F8348F09C33f70CEdEB0B7878");
+        getContractFactory("FlexInvestmentPoolAdapterContract")).attach(flexFundingPoolAdptAddr);
     const poolbal = await flexInvestmentPoolAdapterContract.getTotalFundByProposalId(daoAddr,
         proposalId);
     const protocolFee = toBN("100000000000000000000").mul(hre.ethers.utils.parseEther("0.003")).div(hre.ethers.utils.parseEther("1"));
@@ -2600,7 +2611,7 @@ const getFlexEscrowTokenInfo = async () => {
     console.log("poolbal ", poolbal);
     console.log("protocolFee ", protocolFee);
     console.log(toBN("100000000000000000000").mul(hre.ethers.utils.parseEther("1")).div(hre.ethers.utils.parseEther("0.097")))
-    console.log(managementFee);
+    console.log("managementFee ", managementFee);
     console.log("cashRewardAmount ", proposalInfo.proposerRewardInfo.cashRewardAmount);
     console.log("paybackTokenAmount ", proposalInfo.investmentInfo.paybackTokenAmount);
     console.log(hre.ethers.utils.parseEther("100").mul(hre.ethers.utils.parseEther("1")).div(toBN("3000000000000000000")));
@@ -2636,7 +2647,7 @@ const getFlexDaosetPropsalInfo = async () => {
 }
 
 const getVintageInvestors = async () => {
-    const daoAddress = "0x5e3572f17b64fb676d22a35efa34c29fe070a745";
+    const daoAddress = "0xb5cbd56f927dcb5659f4bb7f5d7fcc6d6f3ca0de";
     const dao = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddress);
     const vintageFundingPoolAdaptAddr = await dao.getAdapterAddress("0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892")
     // const VintageFundingAdapterContractAddr = await dao.getAdapterAddress("0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1");
@@ -2674,6 +2685,33 @@ const getVintageInvestors = async () => {
 const getVintageFundingApproveInfo = async () => {
     const vintageInvestmentPaybackTokenAdapterContract = (await hre.ethers.getContractFactory("VintageInvestmentPaybackTokenAdapterContract"))
         .attach(vintageFundingPoolAdaptAddr);
+}
+
+const vintageFundingProposalDebug = async () => {
+    const daoAddress = "0xb5cbd56f927dcb5659f4bb7f5d7fcc6d6f3ca0de";
+    const dao = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddress);
+    const fundingProposalId = "0x5d7fcc6d6f3ca0de496e766573746d656e742333000000000000000000000000";
+    const vintageFundingPoolAdaptAddr = await dao.getAdapterAddress("0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892")
+    // const VintageFundingAdapterContractAddr = await dao.getAdapterAddress("0x0fd8cce4ef00a7a8c0c5f91194bc80f122deefe664dd2a2384687da62ab117d1");
+    const vintageFundingpoolExtAddress = await dao.getExtensionAddress("0x161fca6912f107b0f13c9c7275de7391b32d2ea1c52ffba65a3c961880a0c60f")
+    // const vintageFundingAdapt = (await hre.ethers.getContractFactory("VintageFundingAdapterContract"))
+    //     .attach(VintageFundingAdapterContractAddr);
+    const vintageFundingPoolAdaptContractInstance = (await hre.ethers.getContractFactory("VintageFundingPoolAdapterContract"))
+        .attach(vintageFundingPoolAdaptAddr);
+
+    const voteAdaptAddr = await dao.getAdapterAddress("0xd3999c37f8f35da86f802a74f9bf032c4aeb46e49abd9c861f489ef4cb40d0a8");
+    const vintageVotingAdapterContract = (await hre.ethers.getContractFactory("VintageVotingContract"))
+        .attach(voteAdaptAddr);
+
+    const vintageFundingPoolExtInstance = (await hre.ethers.getContractFactory("VintageFundingPoolExtension"))
+        .attach(vintageFundingpoolExtAddress);
+
+    const currentBal = await vintageFundingPoolAdaptContractInstance.balanceOf(daoAddress, '0x693f4838abef3fe8479033a893c36d1072c9b6a8');
+    const voteRel = await vintageVotingAdapterContract.voteResult(daoAddress, fundingProposalId)
+    console.log("voteRel ", voteRel);
+    console.log(`
+    currentBal ${currentBal}
+    `);
 }
 
 main()
