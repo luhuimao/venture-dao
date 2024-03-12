@@ -49,9 +49,9 @@ async function main() {
     // await getFlexEscrowTokenInfo();
     // await createDaosetProposal();
     // await getAdapterAddress();
-    // await getDaoConfig();
+    await getDaoConfig();
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
-    await deploy();
+    // await deploy();
     // await getFlexdaoInvestorWhitelist();
     // await summonVintageDao();
     // await submitVintageDaosetProposal();
@@ -2519,7 +2519,7 @@ const getDaoNameByDaoAddress = async () => {
 }
 
 const getDaoConfig = async () => {
-    const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach("0x54Be3efea03A5F539675E24E74A771b291C367ff");;
+    const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach("0xe7e2cb8d29cc2a438a532c8c62769ca7d510de96");;
 
     const fundingType = await daoContract.getConfiguration("0x6e9fd67c3f2ca4e2b4e4b45b33b985dc3a1bffcadea24d12440a5901f72217b5");
     const tokenId = await daoContract.getConfiguration("0xf2b332c307ef460e99eb866928b78eca9f8af0da0626b4b48a13f9b52842fa6a");
@@ -2529,11 +2529,18 @@ const getDaoConfig = async () => {
 
     const FLEX_MANAGEMENT_FEE_AMOUNT = await daoContract.getConfiguration("0x64c49ee5084f4940c312104c41603e43791b03dad28152afd6eadb5b960a8a87");
 
-    const managementFee = await daoContrct.getConfiguration("0x64c49ee5084f4940c312104c41603e43791b03dad28152afd6eadb5b960a8a87");
-    const FLEX_MANAGEMENT_FEE_TYPE = await daoContrct.getConfiguration("0xda34ff95e06cbf2c9c32a559cd8aadd1a10104596417d62c03db2c1258df83d3");
-    const FUND_END_TIME = await daoContrct.getConfiguration("0x9ce69cf04065e3c7823cc5540c0598d8a694bd7a9a5a2a786d8bccf14ed6e2ea")
-    const PROPOSAL_EXECUTE_DURATION = await daoContrct.getConfiguration("0x02a3530cbb6e7c084516c86f68bd62c3e3fcd783c6c5d7e138616207f7a32250")
-    const VOTING_PERIOD = await daoContrct.getConfiguration("0x9876c0f0505bfb2b1c38d3bbd25ba13159172cd0868972d76927723f5a9480fc")
+    const managementFee = await daoContract.getConfiguration("0x64c49ee5084f4940c312104c41603e43791b03dad28152afd6eadb5b960a8a87");
+    const FLEX_MANAGEMENT_FEE_TYPE = await daoContract.getConfiguration("0xda34ff95e06cbf2c9c32a559cd8aadd1a10104596417d62c03db2c1258df83d3");
+    const FUND_END_TIME = await daoContract.getConfiguration("0x9ce69cf04065e3c7823cc5540c0598d8a694bd7a9a5a2a786d8bccf14ed6e2ea")
+    const PROPOSAL_EXECUTE_DURATION = await daoContract.getConfiguration("0x02a3530cbb6e7c084516c86f68bd62c3e3fcd783c6c5d7e138616207f7a32250")
+    const VOTING_PERIOD = await daoContract.getConfiguration("0x9876c0f0505bfb2b1c38d3bbd25ba13159172cd0868972d76927723f5a9480fc")
+    const QUORUM = await daoContract.getConfiguration("0x0324de13a5a6e302ddb95a9fdf81cc736fc8acee2abe558970daac27395904e7")
+    const SUPPORT = await daoContract.getConfiguration("0xb4c601c38beae7eebb719eda3438f59fcbfd4c6dd7d38c00665b6fd5b432df32")
+ 
+    console.log(`
+    QUORUM   ${QUORUM}
+    SUPPORT  ${SUPPORT}
+    `);
 
     console.log("FLEX_MANAGEMENT_FEE_TYPE: ", FLEX_MANAGEMENT_FEE_TYPE);
     console.log("managementFee:", hre.ethers.utils.formatEther(managementFee));
