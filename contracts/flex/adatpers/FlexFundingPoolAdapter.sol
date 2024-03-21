@@ -453,7 +453,7 @@ contract FlexInvestmentPoolAdapterContract is
                 }
 
                 if (vars.extraFund > 0) {
-                    console.log("extraFund ", vars.extraFund);
+                    // console.log("extraFund ", vars.extraFund);
                     //1. escrow Fund From Funding Pool
                     vars.freeInEscrowFundAdapter.escrowFundFromFundingPool(
                         dao,

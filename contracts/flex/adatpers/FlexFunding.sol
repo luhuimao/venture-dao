@@ -611,51 +611,6 @@ contract FlexFundingAdapterContract is
         }
     }
 
-    // function isPriorityDepositer(
-    //     DaoRegistry dao,
-    //     bytes32 proposalId,
-    //     address account
-    // ) public view returns (bool) {
-    //     ProposalInfo storage proposal = Proposals[address(dao)][proposalId];
-    //     if (proposal.fundRaiseInfo.priorityDepositInfo.enable == true) {
-    //         PriorityDepositType ptype = proposal
-    //             .fundRaiseInfo
-    //             .priorityDepositInfo
-    //             .pType;
-    //         address token = proposal.fundRaiseInfo.priorityDepositInfo.token;
-    //         uint256 tokenAmount = proposal
-    //             .fundRaiseInfo
-    //             .priorityDepositInfo
-    //             .amount;
-    //         uint256 tokenId = proposal
-    //             .fundRaiseInfo
-    //             .priorityDepositInfo
-    //             .tokenId;
-    //         if (
-    //             ptype == PriorityDepositType.ERC20 &&
-    //             IERC20(token).balanceOf(account) >= tokenAmount
-    //         ) return true;
-    //         else if (
-    //             ptype == PriorityDepositType.ERC721 &&
-    //             IERC721(token).balanceOf(account) >= tokenAmount
-    //         ) return true;
-    //         else if (
-    //             ptype == PriorityDepositType.ERC1155 &&
-    //             IERC1155(token).balanceOf(account, tokenId) >= tokenAmount
-    //         ) return true;
-    //         else if (
-    //             ptype == PriorityDepositType.WHITE_LIST &&
-    //             priorityDepositWhitelist[address(dao)][proposalId].contains(
-    //                 account
-    //             )
-    //         ) return true;
-    //         else {
-    //             return false;
-    //         }
-    //     }
-    //     return false;
-    // }
-
     function getPriorityDepositedWhitelist(
         DaoRegistry dao,
         bytes32 proposalId

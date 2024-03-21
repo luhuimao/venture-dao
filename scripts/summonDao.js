@@ -41,6 +41,8 @@ const deploySummonContract = async () => {
 }
 
 async function main() {
+    await debug();
+    // await getVintageVestingInfo();
     // await vintageFundingProposalDebug();
     // await getVintageInvestors();
     // await getVintageAdapterAddress();
@@ -50,7 +52,7 @@ async function main() {
     // await getFlexEscrowTokenInfo();
     // await createDaosetProposal();
     // await getAdapterAddress();
-    await getDaoConfig();
+    // await getDaoConfig();
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
     // await deploy();
     // await getFlexdaoInvestorWhitelist();
@@ -2396,18 +2398,29 @@ const getFlexDaosetVotingProposalInfo = async () => {
 
 
 const getVintageEscrowTokenInfo = async () => {
+    const daoAddr = "0xc789e3390805c2e911213ed588a610792e32e4e6";
+    const fundingProposalId = "0x88a610792e32e4e6496e766573746d656e742331000000000000000000000000";
+    const approver = "0x8fe556d89f4c84d32e7dc243cb68c47968ba3103";
+    const paybackTokenAddr = "0x11b1cec8d386d4e2ff4bc178775d98ba3e7247ba";
+    const daoContrct = (await hre.ethers.
+        getContractFactory("DaoRegistry")).attach(daoAddr);
+    const erc20 = (await hre.ethers.getContractAt("openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol:IERC20",
+        paybackTokenAddr));
+    const vintageInvestmentPaybackTokenAdapterContractaddr = await daoContrct.getAdapterAddress("0xde483f9dde6f6b12a62abdfd75010c5234f3ce7693a592507d331ec725f77257");
     const vintageInvestmentPaybackTokenAdapterContract = (await hre.ethers.
-        getContractFactory("VintageInvestmentPaybackTokenAdapterContract")).attach("0x6e1Dd516Df25DF3FedD4a796757D7E3d626F9626");
+        getContractFactory("VintageInvestmentPaybackTokenAdapterContract")).attach(vintageInvestmentPaybackTokenAdapterContractaddr);
     const approvedAmount = await vintageInvestmentPaybackTokenAdapterContract.approvedInfos(
-        "0x2ad7541f64f06d7d54f7c4f70bdb3d7322737935",
-        "0x0bdb3d7322737935496e766573746d656e742332000000000000000000000000",
-        "0x06bc456535ec14669c1b116d339226faba08b429",
-        "0x11b1cec8d386d4e2ff4bc178775d98ba3e7247ba"
+        daoAddr,
+        fundingProposalId,
+        approver,
+        paybackTokenAddr
     );
-
-    console.log(`
-        approvedAmount ${approvedAmount}
-        `);
+    const approvePaybackTokenBal = await erc20.balanceOf(approver);
+    console.log(
+        `
+        approvePaybackTokenBal ${approvePaybackTokenBal}
+        approvedAmount         ${approvedAmount}
+    `);
 }
 
 const getVintageManagementFee = async () => {
@@ -2713,6 +2726,46 @@ const vintageFundingProposalDebug = async () => {
     currentBal ${currentBal}
     `);
 }
+
+const getVintageVestingInfo = async () => {
+    const daoAddress = "0x3bf3ee0a12896a64ba5def1573fabe7f6b787784";
+    const daoContrct = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddress);
+    let vintageVestingContractAddr = await daoContrct.getAdapterAddress("0x8295fbcf0c0d839b7cf11cacb43f22c81604fd9f0e4b295ff1d641ad9dd5786a");
+
+    const vestingCont = (await hre.ethers.getContractFactory("VintageVesting")).attach(vintageVestingContractAddr);
+
+    const vestInfo = await vestingCont.vests(2);
+
+    console.log(vestInfo);
+}
+
+const debug = async () => {
+    // const vesting = (await hre.ethers.getContractFactory("VintageVesting")).attach('0xc8a7a42a0618322971554e2f4a15bafeea8f7219');
+    // const bal = await vesting.vestBalance(46);
+    // console.log(hre.ethers.utils.formatEther(bal))
+    const daoAddr = "0x1f08d3e56299687a497026a997400857e2fd9e26";
+    const proposalId = "0x97400857e2fd9e26496e766573746d656e742331000000000000000000000000";
+    const account1 = "0xd9f04ec9a0ac241edc631cb0b44f11d17cd13bbe";
+    const account2 = "0xdbacb3aba5500a2ac99966f3c8dfd8206efda268";
+
+    const daoContrct = (await hre.ethers.
+        getContractFactory("DaoRegistry")).attach(daoAddr);
+
+
+    // const FlexVesting = await daoContrct.getAdapterAddress("0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd");
+    // const FlexERC721 = await daoContrct.getAdapterAddress("0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35");
+    const FlexAllocationAdapterContractAddr = await daoContrct.getAdapterAddress("0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8");
+    const FlexAllocationAdapterContract = (await hre.ethers.
+        getContractFactory("FlexAllocationAdapterContract")).attach(FlexAllocationAdapterContractAddr);
+    const investmentResward1 = await FlexAllocationAdapterContract.getInvestmentRewards(daoAddr, proposalId, account1);
+    const investmentResward2 = await FlexAllocationAdapterContract.getInvestmentRewards(daoAddr, proposalId, account2);
+
+    console.log(`
+    investmentResward1 ${investmentResward1}
+    investmentResward2 ${investmentResward2}
+    `);
+}
+
 
 main()
     .then(() => process.exit(0))
