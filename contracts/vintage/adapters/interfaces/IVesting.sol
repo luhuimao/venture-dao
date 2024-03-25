@@ -122,4 +122,5 @@ interface IVesting {
 
     error NotOwner();
     error NotVestReceiver();
+    error NotClaimable();
 }

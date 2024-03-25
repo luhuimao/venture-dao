@@ -130,4 +130,5 @@ interface IFlexVesting {
     error NotVestReceiver();
     error InvalidVestingAmountSetting();
     error InvalidVestingTimeSetting();
+    error NotClaimable();
 }

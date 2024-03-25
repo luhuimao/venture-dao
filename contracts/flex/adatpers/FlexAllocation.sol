@@ -9,6 +9,7 @@ import "../../guards/AdapterGuard.sol";
 import "./FlexFundingPoolAdapter.sol";
 import "../extensions/FlexFundingPool.sol";
 import "./FlexFunding.sol";
+import "./FlexFreeInEscrowFund.sol";
 import "./FlexERC721.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -89,34 +90,61 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         // emit ConfigureDao(gpAllocationBonusRadio, riceStakeAllocationRadio);
     }
 
+    struct InvestmentRewardLocalVars {
+        FlexInvestmentPoolExtension investmentpoolExt;
+        FlexFundingAdapterContract flexFunding;
+        FlexFreeInEscrowFundAdapterContract freeInCont;
+        FlexInvestmentPoolAdapterContract fundingPoolCont;
+        IFlexFunding.ProposalInvestmentInfo investmentInfo;
+        uint256 totalFund;
+        uint256 escrowAmount;
+        uint256 fund;
+        uint256 paybackTokenAmount;
+        uint256 returnTokenManagementFee;
+        uint256 proposerBonus;
+    }
+
     function getInvestmentRewards(
         DaoRegistry dao,
         bytes32 proposalId,
         address investor
     ) external view returns (uint256) {
-        FlexInvestmentPoolExtension investmentpoolExt = FlexInvestmentPoolExtension(
-                dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
-            );
-        FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
+        InvestmentRewardLocalVars memory vars;
+        vars.investmentpoolExt = FlexInvestmentPoolExtension(
+            dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
+        );
+        vars.flexFunding = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
+        vars.freeInCont = FlexFreeInEscrowFundAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_FREE_IN_ESCROW_FUND_ADAPTER)
+        );
+        vars.fundingPoolCont = FlexInvestmentPoolAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_INVESTMENT_POOL_ADAPT)
+        );
         uint256 executedBlockNum;
-        IFlexFunding.ProposalInvestmentInfo memory investmentInfo;
+        vars.investmentInfo;
 
-        (, investmentInfo, , , , , , , executedBlockNum) = flexFunding
+        (, vars.investmentInfo, , , , , , , executedBlockNum) = vars
+            .flexFunding
             .Proposals(address(dao), proposalId);
-        uint256 totalFund = investmentpoolExt.getPriorAmount(
+        uint256 totalFund = vars.investmentpoolExt.getPriorAmount(
             proposalId,
             DaoHelper.TOTAL,
             executedBlockNum - 1
+        ) - vars.fundingPoolCont.freeInExtraAmount(address(dao), proposalId);
+        (, uint256 escrowAmount) = vars.freeInCont.getEscrowAmount(
+            dao,
+            proposalId,
+            investor
         );
-        uint256 fund = investmentpoolExt.getPriorAmount(
+        uint256 fund = vars.investmentpoolExt.getPriorAmount(
             proposalId,
             investor,
             executedBlockNum - 1
-        );
+        ) - escrowAmount;
 
-        uint256 paybackTokenAmount = investmentInfo.paybackTokenAmount;
+        uint256 paybackTokenAmount = vars.investmentInfo.paybackTokenAmount;
         uint256 returnTokenManagementFee = (paybackTokenAmount *
             dao.getConfiguration(
                 DaoHelper.FLEX_RETURN_TOKEN_MANAGEMENT_FEE_AMOUNT
@@ -209,68 +237,11 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         return 0;
     }
 
-    // function noEscrow(
-    //     DaoRegistry dao,
-    //     bytes32 proposalId
-    // ) external returns (bool) {
-    //     require(
-    //         msg.sender ==
-    //             address(dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)),
-    //         "access deny"
-    //     );
-    //     allocateProjectTokenLocalVars memory vars;
-    //     FlexFundingAdapterContract flexInvestment = FlexFundingAdapterContract(
-    //         dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
-    //     );
-    //     vars.investmentpool = FlexInvestmentPoolExtension(
-    //         dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
-    //     );
-    //     IFlexFunding.ProposalInvestmentInfo memory investmentInfo;
-    //     uint256 fundingProposalExecutedBlockNum;
-    //     (
-    //         ,
-    //         investmentInfo,
-    //         ,
-    //         ,
-    //         ,
-    //         ,
-    //         ,
-    //         ,
-    //         fundingProposalExecutedBlockNum
-    //     ) = flexInvestment.Proposals(address(dao), proposalId);
-    //     vars.tokenAmount = investmentInfo.paybackTokenAmount;
-
-    //     address[] memory allInvestors = vars
-    //         .investmentpool
-    //         .getInvestorsByProposalId(proposalId);
-    //     vars.totalReward = 0;
-    //     vars.totalFund = vars.investmentpool.balanceOf(
-    //         proposalId,
-    //         DaoHelper.TOTAL
-    //     );
-    //     if (allInvestors.length > 0) {
-    //         for (vars.i = 0; vars.i < allInvestors.length; vars.i++) {
-    //             vars.bal = vars.investmentpool.balanceOf(
-    //                 proposalId,
-    //                 allInvestors[vars.i]
-    //             );
-    //             if (vars.bal > 0) {
-    //                 vars.shares = ((vars.bal * 1e18) / vars.totalFund);
-    //                 vestingInfos[address(dao)][proposalId][
-    //                     allInvestors[vars.i]
-    //                 ] = VestingInfo(vars.shares, false);
-    //             }
-    //         }
-    //     }
-    //     return true;
-    // }
-
     // uint256Args[0]: tokenAmount
     // uint256Args[0]: vestingStartTIme
     // uint256Args[0]: vestingCliffDuration
     // uint256Args[0]: vestingStepDuration
     // uint256Args[0]: vestingSteps
-
     function allocateProjectToken(
         DaoRegistry dao,
         address tokenAddress,
@@ -454,18 +425,27 @@ contract FlexAllocationAdapterContract is AdapterGuard {
         FlexFundingAdapterContract flexFunding = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
+        FlexFreeInEscrowFundAdapterContract freeInCont = FlexFreeInEscrowFundAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.FLEX_FREE_IN_ESCROW_FUND_ADAPTER
+                )
+            );
         uint256 executedBlockNum;
 
         (, , , , , , , , executedBlockNum) = flexFunding.Proposals(
             address(dao),
             proposalId
         );
-
+        (, uint256 escrowAmount) = freeInCont.getEscrowAmount(
+            dao,
+            proposalId,
+            recipient
+        );
         uint256 fund = investmentpoolExt.getPriorAmount(
             proposalId,
             recipient,
             executedBlockNum - 1
-        );
+        ) - escrowAmount;
         if (
             fund > 0 ||
             vestingInfos[address(dao)][proposalId][recipient].tokenAmount > 0

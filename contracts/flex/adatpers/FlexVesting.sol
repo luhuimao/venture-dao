@@ -185,7 +185,7 @@ contract FlexVesting is IFlexVesting {
         }
         uint256 canClaim = _balanceOf(vest) - vest.claimed;
 
-        if (canClaim == 0) return;
+        if (canClaim <= 0) revert NotClaimable();
 
         vest.claimed += uint128(canClaim);
 
