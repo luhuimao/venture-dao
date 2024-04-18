@@ -173,6 +173,7 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
         uint256 returnDuration = dao.getConfiguration(
             DaoHelper.RETURN_DURATION
         );
+        //
         require(
             (state == DaoHelper.FundRaiseState.NOT_STARTED) ||
                 (state == DaoHelper.FundRaiseState.FAILED &&

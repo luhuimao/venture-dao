@@ -112,8 +112,8 @@ contract FlexVesting is IFlexVesting {
                 recipientAddr
             );
 
-            tokenIdToVestId[vars.vestInfo.erc721][vars.vestId] = vars
-                .newTokenId;
+            tokenIdToVestId[vars.vestInfo.erc721][vars.newTokenId] = vars
+                .vestId;
         }
 
         vests[vars.vestId] = Vest(

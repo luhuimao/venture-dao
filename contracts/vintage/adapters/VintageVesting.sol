@@ -111,8 +111,9 @@ contract VintageVesting is IVesting {
             vars.newTokenId = VintageVestingERC721(vars.paybackTokenInfo.erc721)
                 .safeMint(recipientAddr);
 
-            tokenIdToVestId[vars.paybackTokenInfo.erc721][vars.vestId] = vars
-                .newTokenId;
+            tokenIdToVestId[vars.paybackTokenInfo.erc721][
+                vars.newTokenId
+            ] = vars.vestId;
         }
 
         createNewVest(
