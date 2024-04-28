@@ -73,8 +73,8 @@ contract VintageVestingERC721 is ERC721 {
                 vestInfo.token,
                 [
                     timeInfo.stepDuration,
-                    remaining_,
-                    total_,
+                    remaining_ * 10 ** 18,
+                    total_ * 10 ** 18,
                     timeInfo.start + timeInfo.cliffDuration,
                     timeInfo.end
                 ]
@@ -123,8 +123,8 @@ contract VintageVestingERC721 is ERC721 {
                 ERC20(vestInfo.token).symbol(),
                 vestInfo.token,
                 [
-                    remaining_,
-                    total_,
+                    remaining_ * 10 ** 18,
+                    total_ * 10 ** 18,
                     timeInfo.stepDuration,
                     timeInfo.start + timeInfo.cliffDuration,
                     timeInfo.end

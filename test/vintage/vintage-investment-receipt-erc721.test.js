@@ -188,6 +188,21 @@ describe("vesting...", () => {
         this.summonVintageDao = this.adapters.summonVintageDao.instance;
         this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
 
+        const VintageInvestmentReceiptERC721Helper = await hre.ethers.getContractFactory("VintageInvestmentReceiptERC721Helper");
+        const vintageInvestmentReceiptERC721Helper = await VintageInvestmentReceiptERC721Helper.deploy();
+        await vintageInvestmentReceiptERC721Helper.deployed();
+        this.vintageInvestmentReceiptERC721Helper = vintageInvestmentReceiptERC721Helper;
+
+        const VintageInvestmentReceiptERC721 = await hre.ethers.getContractFactory("VintageInvestmentReceiptERC721");
+        const vintageInvestmentReceiptERC721 = await VintageInvestmentReceiptERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.vintageFundingAdapterContract.address,
+            this.vintageInvestmentReceiptERC721Helper.address
+        );
+        await vintageInvestmentReceiptERC721.deployed();
+        this.vintageInvestmentReceiptERC721 = vintageInvestmentReceiptERC721;
+
         const daoFactoriesAddress = [
             this.daoFactory.address,
             this.vintageFundingPoolFactory.address
@@ -673,160 +688,46 @@ describe("vesting...", () => {
             await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
         }
 
-        await vintageFundingAdapterContract.processProposal(this.daoAddr1, proposalId);
+        const tx1 = await vintageFundingAdapterContract.processProposal(this.daoAddr1, proposalId);
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(blocktimestamp) + 60])
         await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
 
         let fundingProposalInfo = await vintageFundingAdapterContract.proposals(this.daoAddr1, proposalId);
-        const executeBlockTime = fundingProposalInfo.executeBlockNum;
-        priorBal1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.testtoken1.address, parseInt(executeBlockTime) - 1);
-        let priorBal1_1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.testtoken1.address, parseInt(executeBlockTime));
-        priorBal2 = await vintageFundingPoolExtContrct.getPriorAmount(this.investor1.address, this.testtoken1.address, parseInt(executeBlockTime));
-
-        currentBal1 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.owner.address);
-        const investorVestAmount = await this.vintageAllocationAdapterContract.getInvestmentRewards(this.daoAddr1,
-            this.owner.address,
-            proposalId);
-        const investorVestAmount2 = await this.vintageAllocationAdapterContract.getInvestmentRewards(this.daoAddr1,
-            this.investor1.address,
-            proposalId);
-        // const investorVestAmount = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, this.owner.address);
-        let proposerVestAmount = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, proposer.address);
-        let managementVestAmount = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, managementFeeAddress);
-        const totalVestingAmount = toBN(investorVestAmount).
-            add(toBN(investorVestAmount2)).
-            add(toBN(proposerVestAmount[0])).
-            add(toBN(managementVestAmount[0]));
 
         console.log(
             `
         state ${fundingProposalInfo.status}
-        paybackTokenAmount ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalPaybackTokenInfo.paybackTokenAmount)}
-        investorVestAmount ${hre.ethers.utils.formatEther(investorVestAmount)}
-        investorVestAmount2 ${hre.ethers.utils.formatEther(investorVestAmount2)}
-        proposerVestAmount ${hre.ethers.utils.formatEther(proposerVestAmount[0])}
-        managementVestAmount ${hre.ethers.utils.formatEther(managementVestAmount[0])}
-        totalVestingAmount ${hre.ethers.utils.formatEther(totalVestingAmount)}
-        executeBlockTime ${executeBlockTime}
-        priorBal1 ${hre.ethers.utils.formatEther(priorBal1)}
-        priorBal1_1 ${hre.ethers.utils.formatEther(priorBal1_1)}
-        priorBal2 ${hre.ethers.utils.formatEther(priorBal2)}
-        currentBal1 ${hre.ethers.utils.formatEther(currentBal1)}
-        create vesting...
-            `
+        `);
+
+        await this.vintageInvestmentReceiptERC721.safeMint(
+            this.daoAddr1,
+            proposalId,
+            tx1.hash,
+            "jjjjjjjj",
+            "ssssssssssssssss"
         );
 
-        await this.vintageVesting.createVesting(this.daoAddr1, this.owner.address, proposalId);
-        console.log(`owner vesting created...`);
-        await this.vintageVesting.createVesting(this.daoAddr1, this.investor1.address, proposalId);
-        console.log(`investor1 vesting created...`);
-        await this.vintageVesting.createVesting(this.daoAddr1, proposer.address, proposalId);
-        console.log(`proposer vesting created...`);
-        await this.vintageVesting.createVesting(this.daoAddr1, managementFeeAddress, proposalId);
-        console.log(`managementFeeAddress vesting created...`);
+        await this.vintageInvestmentReceiptERC721.connect(this.investor1).safeMint(
+            this.daoAddr1,
+            proposalId,
+            tx1.hash,
+            "jjjjjjjj",
+            "ssssssssssssssss"
+        );
 
-        proposerVestAmount = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, proposer.address);
-        managementVestAmount = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, managementFeeAddress);
-        let investorVest1 = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, this.owner.address);
-        let investorVest2 = await this.vintageAllocationAdapterContract.vestingInfos(this.daoAddr1, proposalId, this.investor1.address);
+        const a = await this.vintageInvestmentReceiptERC721.tokenIdToInvestmentProposalInfo(1);
+        // console.log(a);
+        const tokenURI1 = await this.vintageInvestmentReceiptERC721.tokenURI(1);
+        const tokenURI2 = await this.vintageInvestmentReceiptERC721.tokenURI(2);
 
-        console.log(`
-        proposerVest created ${proposerVestAmount[1]}
-        managementVest created ${managementVestAmount[1]}
-        investorVest1 created ${investorVest1[1]}
-        investorVest2 created ${investorVest2[1]}
-        `);
+        const svg1 = await this.vintageInvestmentReceiptERC721Helper.getSvg(1, this.vintageInvestmentReceiptERC721.address);
+        const svg2 = await this.vintageInvestmentReceiptERC721Helper.getSvg(2, this.vintageInvestmentReceiptERC721.address);
 
-
-
-
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-
-        if (parseInt(vestingCliffEndTime) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestingCliffEndTime) + 1])
-            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
-        }
-        await this.vintageVesting.connect(this.owner).withdraw(this.daoAddr1, 1);
-        console.log("investor1 withdraw...");
-        await this.vintageVesting.connect(this.investor1).withdraw(this.daoAddr1, 2);
-        console.log("investor2 withdraw...");
-        await this.vintageVesting.connect(this.genesis_raiser1).withdraw(this.daoAddr1, 3);
-        console.log("proposer withdraw...");
-        await this.vintageVesting.connect(this.user1).withdraw(this.daoAddr1, 4);
-        console.log("management withdraw...");
-
-        let vest1 = await this.vintageVesting.vests(1);
-        let vest2 = await this.vintageVesting.vests(2);
-        let vest3 = await this.vintageVesting.vests(3);
-        let vest4 = await this.vintageVesting.vests(4);
-
-        console.log(`
-        vest info ${vest1}
-        claimed1 ${vest1.claimed}
-        claimed2 ${vest2.claimed}
-        claimed3 ${vest3.claimed}
-        claimed4 ${vest4.claimed}
-        `);
-
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-
-        if (parseInt(vetingEndTime) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vetingEndTime) + 1])
-            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
-        }
-
-        let vestBal1 = await this.vintageVesting.vestBalance(1);
-        let vestBal2 = await this.vintageVesting.vestBalance(2);
-        let vestBal3 = await this.vintageVesting.vestBalance(3);
-        let vestBal4 = await this.vintageVesting.vestBalance(4);
-
-        console.log(`
-        vestBal1 ${hre.ethers.utils.formatEther(vestBal1)}
-        vestBal2 ${hre.ethers.utils.formatEther(vestBal2)}
-        vestBal3 ${hre.ethers.utils.formatEther(vestBal3)}
-        vestBal4 ${hre.ethers.utils.formatEther(vestBal4)}
-        `);
-
-        await this.vintageVesting.connect(this.owner).withdraw(this.daoAddr1, 1);
-        console.log("investor1 withdraw...");
-        await this.vintageVesting.connect(this.investor1).withdraw(this.daoAddr1, 2);
-        console.log("investor2 withdraw...");
-        await this.vintageVesting.connect(this.genesis_raiser1).withdraw(this.daoAddr1, 3);
-        console.log("proposer withdraw...");
-        await this.vintageVesting.connect(this.user1).withdraw(this.daoAddr1, 4);
-        console.log("management withdraw...");
-
-        vestBal1 = await this.vintageVesting.vestBalance(1);
-        vestBal2 = await this.vintageVesting.vestBalance(2);
-        vestBal3 = await this.vintageVesting.vestBalance(3);
-        vestBal4 = await this.vintageVesting.vestBalance(4);
-
-
-        vest1 = await this.vintageVesting.vests(1);
-        vest2 = await this.vintageVesting.vests(2);
-        vest3 = await this.vintageVesting.vests(3);
-        vest4 = await this.vintageVesting.vests(4);
-
-        console.log(`
-        vestBal1 ${hre.ethers.utils.formatEther(vestBal1)}
-        vestBal2 ${hre.ethers.utils.formatEther(vestBal2)}
-        vestBal3 ${hre.ethers.utils.formatEther(vestBal3)}
-        vestBal4 ${hre.ethers.utils.formatEther(vestBal4)}
-
-        claimed1 ${vest1.claimed}
-        total1 ${vest1.total}
-        
-        claimed2 ${vest2.claimed}
-        total2 ${vest2.total}
-
-        claimed3 ${vest3.claimed}
-        total3 ${vest3.total}
-
-        claimed4 ${vest4.claimed}
-        total4 ${vest4.total}
-        `);
+        // console.log(tokenURI1);
+        console.log(svg2);
 
     });
-});
+
+})

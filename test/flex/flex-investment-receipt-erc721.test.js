@@ -61,9 +61,6 @@ const {
     accounts
 } = require("../../utils/oz-util");
 
-// import {
-//     exec
-// } from "child_process";
 import {
     DaoFactory,
     DaoRegistry,
@@ -76,23 +73,11 @@ import {
     expectRevert,
     web3
 } from "../../utils/hh-util";
-// import {
-//     createDao
-// } from "../utils/deployment-util1";
-// import {
-//     zeroPad
-// } from "ethers/lib/utils";
-// import {
-//     boolean
-// } from "hardhat/internal/core/params/argumentTypes";
-// import {
-//     deserialize
-// } from "v8";
+
 const hre = require("hardhat");
 
 
-
-describe("funding...", () => {
+describe("flex investment receipt NFT...", () => {
     before("deploy contracts...", async () => {
         let [owner,
             user1, user2,
@@ -175,6 +160,22 @@ describe("funding...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+
+        const FlexInvestmentReceiptERC721Helper = await hre.ethers.getContractFactory("FlexInvestmentReceiptERC721Helper");
+        const flexInvestmentReceiptERC721Helper = await FlexInvestmentReceiptERC721Helper.deploy();
+        await flexInvestmentReceiptERC721Helper.deployed();
+        this.flexInvestmentReceiptERC721Helper = flexInvestmentReceiptERC721Helper;
+
+        const FlexInvestmentReceiptERC721 = await hre.ethers.getContractFactory("FlexInvestmentReceiptERC721");
+        const flexInvestmentReceiptERC721 = await FlexInvestmentReceiptERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.flexFundingAdapterContract.address,
+            this.flexInvestmentReceiptERC721Helper.address
+        );
+        await flexInvestmentReceiptERC721.deployed();
+        this.flexInvestmentReceiptERC721 = flexInvestmentReceiptERC721;
+
 
         this.summonDao = this.adapters.summonDao.instance;
 
@@ -365,7 +366,7 @@ describe("funding...", () => {
         const allocations = [10, 20, 30];
 
         const fundingPollEnable = false; //DIRECT mode
-        const flexDaoFundriaseStyle = 1 // 0 - FCFS 1- Free ink0
+        const flexDaoFundriaseStyle = 0 // 0 - FCFS 1- Free ink0
 
         const flexDaoInfo = {
             name: _daoName, // string name;
@@ -438,18 +439,18 @@ describe("funding...", () => {
 
     it("escrow funding...", async () => {
         const flexFundingAdapterContract = this.flexFundingAdapterContract;
-        const flexVestingContract = this.flexVesting;
         const dao = (await hre.ethers.getContractFactory("DaoRegistry")).attach(this.flexDirectdaoAddress);
         const fundingpoolextensionAddr = await dao.getExtensionAddress(sha3("flex-funding-pool-ext"));
         const flexFundingPoolExtContract = (await hre.ethers.getContractFactory("FlexInvestmentPoolExtension")).attach(fundingpoolextensionAddr);
 
         let tokenAddress = this.testtoken1.address;
         let minFundingAmount = hre.ethers.utils.parseEther("100");
-        let maxFundingAmount = hre.ethers.utils.parseEther("100");
+        let maxFundingAmount = hre.ethers.utils.parseEther("10000000000000");
         let escrow = true;
         let returnTokenAddr = this.testtoken2.address;
-        let returnTokenAmount = hre.ethers.utils.parseEther("10000");
-        let price = hre.ethers.utils.parseEther("0.01");
+        let price = hre.ethers.utils.parseEther("100000");
+        let returnTokenAmount = hre.ethers.utils.parseEther("1000000000");
+        // let returnTokenAmount = maxFundingAmount.div(price);
         let minReturnAmount = hre.ethers.utils.parseEther("1000000");
         let maxReturnAmount = hre.ethers.utils.parseEther("1000000");
         let approverAddr = this.user1.address;
@@ -469,9 +470,9 @@ describe("funding...", () => {
             recipientAddr
         ];
 
-        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        let block_timestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
-        let vestingStartTime = blocktimestamp + 100000;
+        let vestingStartTime = block_timestamp + 100000;
         let vestingCliffEndTime = vestingStartTime + 60 * 60 * 1;
         let vestingEndTime = vestingCliffEndTime + 60 * 60 * 2 + 60;
         let vestingInterval = 60 * 60 * 1;
@@ -495,10 +496,10 @@ describe("funding...", () => {
         ];
 
         let fundRaiseType = 1;
-        let fundRaiseStartTime = blocktimestamp;
+        let fundRaiseStartTime = block_timestamp;
         let fundRaiseEndTime = fundRaiseStartTime + 100000;
         let minDepositAmount = hre.ethers.utils.parseEther("1");
-        let maxDepositAmount = hre.ethers.utils.parseEther("200");
+        let maxDepositAmount = hre.ethers.utils.parseEther("2000000000000");
         let backerIdentification = false;
 
         let bType = 0;
@@ -577,12 +578,16 @@ describe("funding...", () => {
 
         const fundRaiseStartTimes = flexFundingProposalInfo.fundRaiseInfo.fundRaiseStartTime;
 
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        block_timestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
-        if (parseInt(fundRaiseStartTimes) > blocktimestamp) {
+        if (parseInt(fundRaiseStartTimes) > block_timestamp) {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaiseStartTimes) + 1]);
             await hre.network.provider.send("evm_mine");
         }
+
+        console.log('token1 total supply ', hre.ethers.utils.formatEther(await USDT.balanceOf(this.owner.address)));
+        console.log('token2 total supply ', hre.ethers.utils.formatEther(await this.testtoken2.balanceOf(this.owner.address)));
+
 
         await this.testtoken2.transfer(this.user1.address, returnTokenAmount)
         await this.testtoken2.connect(this.user1).approve(this.flexFundingReturnTokenAdapterContract.address,
@@ -595,13 +600,14 @@ describe("funding...", () => {
             returnTokenAmount);
 
 
+
         await USDT.transfer(this.investor1.address, hre.ethers.utils.parseEther("100000"));
-        await USDT.approve(flexFundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
-        await USDT.connect(this.investor1).approve(flexFundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
+        await USDT.approve(flexFundingPoolAdapt.address, hre.ethers.utils.parseEther("10000000000000"));
+        await USDT.connect(this.investor1).approve(flexFundingPoolAdapt.address, hre.ethers.utils.parseEther("10000000000000"));
 
         await expectRevert(flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("0.1")), "revert");
-        await flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("160"));
-        await flexFundingPoolAdapt.connect(this.investor1).deposit(dao.address, proposalId, hre.ethers.utils.parseEther("15"));
+        await flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("1990000000000"));
+        await flexFundingPoolAdapt.connect(this.investor1).deposit(dao.address, proposalId, hre.ethers.utils.parseEther("240.2324"));
 
         const investors = await flexFundingPoolExtContract.getInvestorsByProposalId(proposalId);
         console.log("investors: ", investors);
@@ -610,239 +616,59 @@ describe("funding...", () => {
             deposit balance   ${hre.ethers.utils.formatEther(depositeBal.toString())}
             whitdraw...
             `);
-        await flexFundingPoolAdapt.withdraw(dao.address, proposalId, hre.ethers.utils.parseEther("10"));
+        // await flexFundingPoolAdapt.withdraw(dao.address, proposalId, hre.ethers.utils.parseEther("10"));
         depositeBal = await flexFundingPoolAdapt.balanceOf(dao.address, proposalId, this.owner.address);
         console.log(`
             deposit balance   ${hre.ethers.utils.formatEther(depositeBal.toString())}
             process proposal...
             `);
 
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        block_timestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
-        if (parseInt(fundRaiseEndTime) > blocktimestamp) {
+        if (parseInt(fundRaiseEndTime) > block_timestamp) {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaiseEndTime) + 1]);
             await hre.network.provider.send("evm_mine");
         }
 
-        await flexFundingAdapterContract.processProposal(dao.address, proposalId);
+        const tx1 = await flexFundingAdapterContract.processProposal(dao.address, proposalId);
+        // console.log("tx ", tx1);
         flexFundingProposalInfo = await flexFundingAdapterContract.Proposals(dao.address, proposalId);
-        const paybacktokenamount = flexFundingProposalInfo.investmentInfo.paybackTokenAmount;
-        const managementFeeAddress = await dao.getAddressConfiguration(sha3("FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS"));
-
-        const returnTokenManagementFeeAmount = toBN(paybacktokenamount).
-            mul(toBN(hre.ethers.utils.parseEther("0.0024"))).
-            div(hre.ethers.utils.parseEther("1"));
-        const receivedReturnTokenManangementFeeAmount = await this.testtoken2.balanceOf(managementFeeAddress);
-        const protocolAddress = await flexFundingAdapterContract.protocolAddress();
-        const protocolFee = await USDT.balanceOf(protocolAddress);
-        const managementFee = await USDT.balanceOf(managementFeeAddress);
-        const proposerReturnTokenRewardAmount = toBN(paybacktokenamount)
-            .mul(tokenRewardAmount)
-            .div(hre.ethers.utils.parseEther("1"));
-        const proposerReceivedReturnTokenAmount = await this.testtoken2.balanceOf(this.funding_proposer1_whitelist.address);
-        const proposerreward = await USDT.balanceOf(this.funding_proposer1_whitelist.address);
-        const receiveAmount = await USDT.balanceOf(recipientAddr);
-        const allTributedAmount = toBN(protocolFee.toString()).
-            add(toBN(managementFee.toString())).
-            add(toBN(proposerreward.toString())).
-            add(toBN(receiveAmount.toString()));
-
-
-        const totalFunding = toBN(flexFundingProposalInfo.investmentInfo.finalRaisedAmount.toString())
-            .sub(
-                toBN(protocolFee.toString()))
-            .sub(
-                toBN(managementFee.toString()))
-            .sub(
-                toBN(proposerreward.toString())
-            );
-
-        const totalPayback = totalFunding.mul(toBN(hre.ethers.utils.parseEther("1"))).div(toBN(price));
-
         console.log(`
-            processed...
-            state ${flexFundingProposalInfo.state}
-            price ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.price)}
-            finalRaiseAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.finalRaisedAmount)}
-            paybackTokenAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.paybackTokenAmount)}
-            protocol Fee ${hre.ethers.utils.formatEther(protocolFee)}
-            management Fee ${hre.ethers.utils.formatEther(managementFee)}
-            totalFunding ${hre.ethers.utils.formatEther(totalFunding)}
-            totalPayback ${hre.ethers.utils.formatEther(totalPayback)}
-            proposerReturnTokenRewardAmount ${hre.ethers.utils.formatEther(proposerReturnTokenRewardAmount)}
-            proposerReceivedReturnTokenAmount ${hre.ethers.utils.formatEther(proposerReceivedReturnTokenAmount)}
-            proposer reward ${hre.ethers.utils.formatEther(proposerreward)}
-            receive Amount ${hre.ethers.utils.formatEther(receiveAmount)}
-            returnTokenManagementFeeAmount ${hre.ethers.utils.formatEther(returnTokenManagementFeeAmount)}
-            receivedReturnTokenManangementFeeAmount ${hre.ethers.utils.formatEther(receivedReturnTokenManangementFeeAmount)}
-            total tributed amount ${hre.ethers.utils.formatEther(allTributedAmount)}
-            create vesting...
-            `);
-
-
-        await flexVestingContract.createVesting(dao.address, this.owner.address, proposalId);
-        await flexVestingContract.connect(this.genesis_steward1).createVesting(dao.address, this.genesis_steward1.address, proposalId);
-        await flexVestingContract.connect(this.funding_proposer1_whitelist).createVesting(dao.address, this.funding_proposer1_whitelist.address, proposalId);
-        await flexVestingContract.connect(this.investor1).createVesting(dao.address, this.investor1.address, proposalId);
-
-        const vestId = await flexVestingContract.getVestIdByTokenId(nftToken, 1)
-        console.log("vestId ", vestId);
-
-        // const tokenId = await flexVestingContract.tokenIdToVestId(this.flexVestingERC721.address, 1);
-        // console.log("tokenId ", tokenId);
-
-        const maxTotalSupply = await this.flexVestingERC721.maxTotalSupply();
-        console.log("maxTotalSupply ", maxTotalSupply);
-        const rel = await flexVestingContract.getRemainingPercentage(nftToken, 1);
-        console.log(rel);
-        const uri = await this.flexVestingERC721.tokenURI(1);
-        console.log(uri);
-        const svg = await this.flexVestingERC721.getSvg(1);
-        console.log(`
-        svg 
-        ${svg}
-        `
+        processed...
+        state ${flexFundingProposalInfo.state}`
         );
 
-        let createdVestingInfo = await flexVestingContract.vests(1);
-        let createdVestingInfo2 = await flexVestingContract.vests(2);
-        let createdVestingInfo3 = await flexVestingContract.vests(3);
-        let createdVestingInfo4 = await flexVestingContract.vests(4);
-
-        const vestingBal = await flexVestingContract.vestBalance(1);
-        const vestingBal2 = await flexVestingContract.vestBalance(2);
-        const vestingBal3 = await flexVestingContract.vestBalance(3);
-        const vestingBal4 = await flexVestingContract.vestBalance(4);
-
-        let returnTokenBal = await this.testtoken2.balanceOf(this.owner.address);
-        let returnTokenBal2 = await this.testtoken2.balanceOf(this.genesis_steward1.address);
-        let returnTokenBal3 = await this.testtoken2.balanceOf(this.funding_proposer1_whitelist.address);
-        let returnTokenBal4 = await this.testtoken2.balanceOf(this.investor1.address);
-
-        console.log(`
-            vesting info ...
-            vest name ${createdVestingInfo.vestInfo.name}
-            vest description ${createdVestingInfo.vestInfo.description}
-            nft address ${createdVestingInfo.nftInfo.nftToken}
-            tokenId ${createdVestingInfo.nftInfo.tokenId}
-            proposalId: ${createdVestingInfo.proposalId},
-            owner: ${createdVestingInfo.vestInfo.owner},
-            recipient: ${createdVestingInfo.vestInfo.recipient},
-            token: ${createdVestingInfo.vestInfotoken},
-            start: ${createdVestingInfo.timeInfo.start},
-            cliffDuration: ${createdVestingInfo.timeInfo.cliffDuration}
-            stepDuration: ${createdVestingInfo.timeInfo.stepDuration}
-            steps: ${createdVestingInfo.stepInfo.steps}
-            cliffShares: ${hre.ethers.utils.formatEther(createdVestingInfo.stepInfo.cliffShares)}
-            stepShares: ${hre.ethers.utils.formatEther(createdVestingInfo.stepInfo.stepShares)}
-            claimed: ${createdVestingInfo.claimed}
-            claiable: ${hre.ethers.utils.formatEther(vestingBal)}
-            return token balance ${hre.ethers.utils.formatEther(returnTokenBal)}
-            claiming ...
-            `);
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-
-        if (parseInt(vestingCliffEndTime) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestingCliffEndTime) + 1]);
-            await hre.network.provider.send("evm_mine");
-        }
+        const projectName = "ABI Finance";
+        const description = "Camelot is an ecosystem-focused and community-driven DEX built on Arbitrum. It has been built as a highly efficient and customizable protocol, allowing both builders and users to leverage our custom infrastructure for deep, sustainable, and adaptable liquidity. Camelot moves beyond the traditional design of DEXs to focus on offering a tailored approach that prioritises composability";
+        await this.flexInvestmentReceiptERC721.
+            safeMint(
+                dao.address,
+                proposalId,
+                tx1.hash,
+                projectName,
+                description
+            );
 
 
-        await flexVestingContract.withdraw(dao.address, 1);
-        console.log("vest #1 withdraw...");
+        await this.flexInvestmentReceiptERC721.connect(this.investor1).
+            safeMint(
+                dao.address,
+                proposalId,
+                tx1.hash,
+                projectName,
+                description
+            );
+        const tokenId1 = await this.flexInvestmentReceiptERC721.investmentIdToTokenId(proposalId, this.owner.address);
+        const tokenId2 = await this.flexInvestmentReceiptERC721.investmentIdToTokenId(proposalId, this.investor1.address);
 
-        await flexVestingContract.connect(this.genesis_steward1).withdraw(dao.address, 2);
-        console.log("vest #2 withdraw...");
+        const tokenURI = await this.flexInvestmentReceiptERC721.tokenURI(1);
+        const svg = await this.flexInvestmentReceiptERC721Helper.getSvg(1, this.flexInvestmentReceiptERC721.address);
+        // const svg2 = await this.flexInvestmentReceiptERC721Helper.getSvg(2, this.flexInvestmentReceiptERC721.address);
+        console.log(tokenId1);
+        console.log(tokenId2);
+        // console.log(tokenURI);
+        console.log(svg);
 
-        await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 3);
-        console.log("vest #3 withdraw...");
-
-        await flexVestingContract.connect(this.investor1).withdraw(dao.address, 4);
-        console.log("vest #4 withdraw...");
-
-
-        createdVestingInfo = await flexVestingContract.vests(1);
-        createdVestingInfo2 = await flexVestingContract.vests(2);
-        createdVestingInfo3 = await flexVestingContract.vests(3);
-        createdVestingInfo4 = await flexVestingContract.vests(4);
-
-        returnTokenBal = await this.testtoken2.balanceOf(this.owner.address);
-        returnTokenBal2 = await this.testtoken2.balanceOf(this.genesis_steward1.address);
-        returnTokenBal3 = await this.testtoken2.balanceOf(this.funding_proposer1_whitelist.address);
-        returnTokenBal4 = await this.testtoken2.balanceOf(this.investor1.address);
-
-        const nextVestId = await flexVestingContract.vestIds()
-        console.log(`
-
-            claimed...
-            claimed: ${hre.ethers.utils.formatEther(createdVestingInfo.claimed)}      
-            total: ${hre.ethers.utils.formatEther(createdVestingInfo.total)}
-
-            claimed2: ${hre.ethers.utils.formatEther(createdVestingInfo2.claimed)}
-            total2: ${hre.ethers.utils.formatEther(createdVestingInfo.total)}
-
-            claimed3: ${hre.ethers.utils.formatEther(createdVestingInfo3.claimed)}
-            total3: ${hre.ethers.utils.formatEther(createdVestingInfo.total)}
-
-            claimed4: ${hre.ethers.utils.formatEther(createdVestingInfo4.claimed)}
-            total4: ${hre.ethers.utils.formatEther(createdVestingInfo.total)}
-
-
-            return token balance ${hre.ethers.utils.formatEther(returnTokenBal)}
-            returnTokenBal2 ${hre.ethers.utils.formatEther(returnTokenBal2)}
-            returnTokenBal3 ${hre.ethers.utils.formatEther(returnTokenBal3)}
-            returnTokenBal4 ${hre.ethers.utils.formatEther(returnTokenBal4)}
-
-            next Vest Id ${nextVestId}
-            `);
-
-
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-
-        if (parseInt(vestingEndTime) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestingEndTime) + 1]);
-            await hre.network.provider.send("evm_mine");
-        }
-
-        // await flexVestingContract.withdraw(dao.address, 1);
-        // console.log("vest #1 withdraw...");
-        // await flexVestingContract.connect(this.genesis_steward1).withdraw(dao.address, 2);
-        // console.log("vest #2 withdraw...");
-        // await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 3);
-        // console.log("vest #3 withdraw...");
-        // await flexVestingContract.connect(this.investor1).withdraw(dao.address, 4);
-        // console.log("vest #4 withdraw...");
-
-
-        createdVestingInfo = await flexVestingContract.vests(1);
-        createdVestingInfo2 = await flexVestingContract.vests(2);
-        createdVestingInfo3 = await flexVestingContract.vests(3);
-        createdVestingInfo3 = await flexVestingContract.vests(4);
-
-        returnTokenBal = await this.testtoken2.balanceOf(this.owner.address);
-        returnTokenBal2 = await this.testtoken2.balanceOf(this.genesis_steward1.address);
-        returnTokenBal3 = await this.testtoken2.balanceOf(this.funding_proposer1_whitelist.address);
-        returnTokenBal4 = await this.testtoken2.balanceOf(this.investor1.address);
-
-        console.log(`
-            claimed...
-            claimed: ${createdVestingInfo.claimed}
-            total1: ${createdVestingInfo.total}
-
-            claimed2: ${createdVestingInfo2.claimed}
-            total2: ${createdVestingInfo2.total}
-
-            claimed3: ${hre.ethers.utils.formatEther(createdVestingInfo3.claimed)}
-            total3: ${hre.ethers.utils.formatEther(createdVestingInfo3.total)}
-
-            claimed4: ${hre.ethers.utils.formatEther(createdVestingInfo4.claimed)}
-            total4: ${hre.ethers.utils.formatEther(createdVestingInfo4.total)}
-
-            return token balance ${hre.ethers.utils.formatEther(returnTokenBal)}
-            returnTokenBal2 ${hre.ethers.utils.formatEther(returnTokenBal2)}
-            returnTokenBal3 ${hre.ethers.utils.formatEther(returnTokenBal3)}
-            returnTokenBal4 ${hre.ethers.utils.formatEther(returnTokenBal4)}
-            `);
     });
 
-});
+})

@@ -102,17 +102,17 @@ describe("to decimal percentage...", () => {
         const amount2 = 999999999;
         const amount3 = 999999999999;
         const amount4 = 99999999999999;
-        const rel = await nFTDescriptorTest.integerToString(amount);
-        const rel1 = await nFTDescriptorTest.integerToString(amount1);
-        const rel2 = await nFTDescriptorTest.integerToString(amount2);
-        const rel3 = await nFTDescriptorTest.integerToString(amount3);
-        const rel4 = await nFTDescriptorTest.integerToString(amount4);
+        // const rel = await nFTDescriptorTest.integerToString(amount);
+        // const rel1 = await nFTDescriptorTest.integerToString(amount1);
+        // const rel2 = await nFTDescriptorTest.integerToString(amount2);
+        // const rel3 = await nFTDescriptorTest.integerToString(amount3);
+        // const rel4 = await nFTDescriptorTest.integerToString(amount4);
 
-        console.log(amount, rel);
-        console.log(amount1, rel1);
-        console.log(amount2, rel2);
-        console.log(amount3, rel3);
-        console.log(amount4, rel4);
+        // console.log(amount, rel);
+        // console.log(amount1, rel1);
+        // console.log(amount2, rel2);
+        // console.log(amount3, rel3);
+        // console.log(amount4, rel4);
 
 
         //         uint256Params[0] remaining_,
@@ -120,18 +120,53 @@ describe("to decimal percentage...", () => {
         //         uint256Params[2] interval,
         //         uint256Params[3] cliffTime,
         //         uint256Params[4] endTime
-        const svg = await nFTDescriptorTest.generateSVG(
-            "SDF",
-            ZERO_ADDRESS,
-            [
-                40,
-                40,
-                3600,
-                1712147224,
-                1712154484
-            ]
-        )
+        // const svg = await nFTDescriptorTest.generateSVG(
+        //     "SDF",
+        //     ZERO_ADDRESS,
+        //     [
+        //         40,
+        //         40,
+        //         3600,
+        //         1712147224,
+        //         1712154484
+        //     ]
+        // )
 
-        console.log(svg);
+        // console.log(svg);
+
+        // const percentage = await nFTDescriptorTest.pencentageString(6, 100000);
+        // console.log(percentage);
+
+        // const subS = await nFTDescriptorTest.substring("only support ASCII Strings");
+        // console.log(subS);
+
+        const txHash = "0x999999993332323"
+        const projectName = "ABC Finance"
+        const symbol = "VVD"
+        const totalInvestedAmount = hre.ethers.utils.parseEther("4888.89")
+        const myInvestedAmount = hre.ethers.utils.parseEther("4888.89")
+        const proposalLink = "https://graph.phoenix.fi/venturedaos/vintage/0x5416d82ed5d0a04348c31688acbdd4a1920581d5/proposals/0xacbdd4a1920581d5496e766573746d656e742333000000000000000000000000/investment"
+        const receiptSVG = await nFTDescriptorTest.generateReceiptSVG(txHash,
+            projectName,
+            symbol,
+            totalInvestedAmount,
+            myInvestedAmount);
+        console.log(receiptSVG);
+
+
+        const receiptAttributes = await nFTDescriptorTest.generateReceiptCollectionAttributes(
+            projectName,
+            symbol, txHash,
+            proposalLink,
+            myInvestedAmount, totalInvestedAmount
+        );
+        console.log(receiptAttributes);
+        // const txHash = "0xfjsjfsdfdsfdfjifsdfd";
+        // const projectName = "Doge Coin Investment";
+        // const symbol = "DOGE";
+        // const totalInvestedAmount = 3233423;
+        // const myInvestedAmount = 22342;
+        // const svg = await nFTDescriptorTest.getInvestmentSVG(txHash, projectName, symbol, totalInvestedAmount, myInvestedAmount);
+        // console.log(svg);
     })
 })

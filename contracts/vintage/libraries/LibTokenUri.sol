@@ -55,8 +55,8 @@ library LibTokenUri {
             uint256Params[3],
             uint256Params[4]
         );
-        console.log(name);
-        console.log(description);
+        // console.log(name);
+        // console.log(description);
         return
             string(
                 abi.encodePacked(

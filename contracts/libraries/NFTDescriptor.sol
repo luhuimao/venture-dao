@@ -472,51 +472,145 @@ library NFTDescriptor {
         uint256 tem1;
         uint256 tem2;
         uint256 tem3;
-        if (amount < 1000) {
-            return string(abi.encodePacked(uintToString(amount), ".00"));
+        uint256 tem4;
+
+        if (amount < 1000 * 10 ** 18) {
+            //< 1000 100.9914 100111 000000000000000
+            tem = amount / 10 ** 15;
+            tem1 = tem / 100000;
+
+            tem1 = amount / (10 ** 18); //integer
+            tem2 = (((amount / 10 ** 17) % 1000) % 100) % 10; //
+            tem3 = ((((amount / 10 ** 16) % 10000) % 1000) % 100) % 10;
+            tem4 =
+                (((((amount / 10 ** 15) % 100000) % 10000) % 1000) % 100) %
+                10;
+
+            if (tem4 >= 1) {
+                if (tem3 < 9) tem3 += 1;
+                else {
+                    tem3 = 0;
+                    if (tem2 < 9) tem2 += 1;
+                    else {
+                        tem2 = 0;
+                        if (tem1 >= 999)
+                            return string(abi.encodePacked("1.00K"));
+                        else {
+                            tem1 += 1;
+                        }
+                    }
+                }
+            }
+
+            return
+                string(
+                    abi.encodePacked(
+                        uintToString(tem1),
+                        ".",
+                        uintToString(tem2),
+                        uintToString(tem3)
+                    )
+                );
         } else if (
-            amount >= 1000 && amount < 1000000 //>= 1K < 1M
+            //1999.991400000000000000
+            amount >= 1000 * 10 ** 18 && amount < 10 ** 6 * 10 ** 18 //>= 1K < 1M
         ) {
-            tem = amount / 1000;
-            tem1 = amount - tem * 1000;
-            tem2 = tem1 / 100;
-            tem3 = (tem1 - tem2 * 100) / 10;
+            // 1001 00000000000000000
+            tem = amount / (1000 * 10 ** 18);
+            tem1 = (amount / 10 ** 18 - tem * 1000) / 100;
+            tem2 = (amount / 10 ** 18 - tem * 1000 - tem1 * 100) / 10;
+            tem3 = (amount / 10 ** 18 - tem * 1000 - tem1 * 100 - tem2 * 10);
+            if (tem3 >= 1) {
+                if (tem2 < 9) tem2 += 1;
+                else {
+                    tem2 = 0;
+                    if (tem1 < 9) tem1 += 1;
+                    else {
+                        tem1 = 0;
+                        if (tem < 999) tem += 1;
+                        else return string(abi.encodePacked("1.00M"));
+                    }
+                }
+            }
             return
                 string(
                     abi.encodePacked(
                         uintToString(tem),
                         ".",
+                        uintToString(tem1),
                         uintToString(tem2),
-                        uintToString(tem3),
                         "K"
                     )
                 );
-        } else if (amount >= 1000000 && amount < 1000000000) {
+        } else if (
+            amount >= 10 ** 6 * 10 ** 18 && amount < 10 ** 9 * 10 ** 18 // >=1M < 1B
+        ) {
             // >=1M < 1B
-            tem = amount / 1000000;
-            tem1 = amount - tem * 1000000;
-            tem2 = tem1 / 100000;
-            tem3 = (tem1 - tem2 * 100000) / 10000;
+            tem = amount / 10 ** 18;
+            tem1 = amount / 10 ** 18 / 1000000; //integer
+            tem2 = (tem % 1000000) / 100000;
+            tem3 = (tem % 100000) / 10000;
+            tem4 = (tem % 10000) / 1000;
+            // console.log("amount ", amount);
+            // console.log("tem1 ", tem1);
+            // console.log("tem2 ", tem2);
+            // console.log("tem3 ", tem3);
+            // console.log("tem4 ", tem4);
+
+            if (tem4 >= 1) {
+                if (tem3 < 9) tem3 += 1;
+                else {
+                    tem3 = 0;
+                    if (tem2 < 9) tem2 += 1;
+                    else {
+                        tem2 = 0;
+                        if (tem1 < 999) tem += 1;
+                        else return string(abi.encodePacked("1.00B"));
+                    }
+                }
+            }
             return
                 string(
                     abi.encodePacked(
-                        uintToString(tem),
+                        uintToString(tem1),
                         ".",
                         uintToString(tem2),
                         uintToString(tem3),
                         "M"
                     )
                 );
-        } else if (amount >= 1000000000 && amount < 1000000000000) {
+        } else if (
+            amount >= 10 ** 9 * 10 ** 18 && amount < 10 ** 12 * 10 ** 18 // >= 1B < 1T
+        ) {
             // >= 1B < 1T
-            tem = amount / 1000000000;
-            tem1 = amount - tem * 1000000000;
-            tem2 = tem1 / 100000000;
-            tem3 = (tem1 - tem2 * 100000000) / 10000000;
+            tem = amount / 10 ** 18;
+            tem1 = tem / 1000000000; //integer
+            tem2 = (tem % 10 ** 9) / 10 ** 8;
+            tem3 = (tem % 10 ** 8) / 10 ** 7;
+            tem4 = (tem % 10 ** 7) / 10 ** 6;
+
+            // console.log("tem ", tem);
+            // console.log("tem1 ", tem1);
+            // console.log("tem2 ", tem2);
+            // console.log("tem3 ", tem3);
+            // console.log("tem4 ", tem4);
+
+            if (tem4 >= 1) {
+                if (tem3 < 9) tem3 += 1;
+                else {
+                    tem3 = 0;
+                    if (tem2 < 9) tem2 += 1;
+                    else {
+                        tem2 = 0;
+                        if (tem1 < 999) tem1 += 1;
+                        else return string(abi.encodePacked("1.00T"));
+                    }
+                }
+            }
             return
                 string(
                     abi.encodePacked(
-                        uintToString(tem),
+                        uintToString(tem1),
                         ".",
                         uintToString(tem2),
                         uintToString(tem3),
@@ -525,14 +619,34 @@ library NFTDescriptor {
                 );
         } else {
             // >=1T
-            tem = amount / 1000000000000;
-            tem1 = amount - tem * 1000000000000;
-            tem2 = tem1 / 100000000000;
-            tem3 = (tem1 - tem2 * 100000000000) / 10000000000;
+            tem = amount / 10 ** 18;
+            tem1 = tem / 10 ** 12;
+            tem2 = (tem % 10 ** 12) / 10 ** 11;
+            tem3 = (tem % 10 ** 11) / 10 ** 10;
+            tem4 = (tem % 10 ** 10) / 10 ** 9;
+
+            // console.log("tem ", tem);
+            // console.log("tem1 ", tem1);
+            // console.log("tem2 ", tem2);
+            // console.log("tem3 ", tem3);
+            // console.log("tem4 ", tem4);
+
+            if (tem4 >= 1) {
+                if (tem3 < 9) tem3 += 1;
+                else {
+                    tem3 = 0;
+                    if (tem2 < 9) tem2 += 1;
+                    else {
+                        tem2 = 0;
+                        tem1 += 1;
+                    }
+                }
+            }
+
             return
                 string(
                     abi.encodePacked(
-                        uintToString(tem),
+                        uintToString(tem1),
                         ".",
                         uintToString(tem2),
                         uintToString(tem3),
@@ -627,15 +741,19 @@ library NFTDescriptor {
         uint256 interval
     ) internal pure returns (string memory) {
         if (interval == 60 * 60 * 1) {
-            return string(abi.encodePacked("Hour"));
+            return string(abi.encodePacked("Hours"));
         } else if (interval == 60 * 60 * 24) {
-            return string(abi.encodePacked("Day"));
+            return string(abi.encodePacked("Days"));
         } else if (interval == 60 * 60 * 24 * 7) {
-            return string(abi.encodePacked("Week"));
+            return string(abi.encodePacked("Weeks"));
         } else if (interval == 60 * 60 * 24 * 30) {
-            return string(abi.encodePacked("Month"));
+            return string(abi.encodePacked("Months"));
         } else if (interval == 60 * 60 * 24 * 365) {
-            return string(abi.encodePacked("Year"));
+            return string(abi.encodePacked("Years"));
+        } else if (interval == 60) {
+            return string(abi.encodePacked("Minutes"));
+        } else if (interval == 1) {
+            return string(abi.encodePacked("Seconds"));
         } else {
             return string(abi.encodePacked("Unknow"));
         }
@@ -679,13 +797,13 @@ library NFTDescriptor {
         );
     }
 
-    function generateCollctionArributes()
-        internal
-        pure
-        returns (string memory attributes)
-    {
-        attributes = string(abi.encodePacked("[", "]"));
-    }
+    // function generateCollctionArributes()
+    //     internal
+    //     pure
+    //     returns (string memory attributes)
+    // {
+    //     attributes = string(abi.encodePacked("[", "]"));
+    // }
 
     function generateNFTAttribute1(
         string memory symbol,
@@ -739,9 +857,161 @@ library NFTDescriptor {
         );
     }
 
+    function generateReceiptCollectionAttributes(
+        string memory projectName,
+        string memory tokenName,
+        string memory txHash,
+        string memory proposalLink,
+        uint256 myInvestedAmount,
+        uint256 totalInvestedAmount
+    ) internal pure returns (string memory attributes) {
+        attributes = string(
+            abi.encodePacked(
+                "[",
+                generateReceiptAttribute1(projectName, tokenName),
+                generateReceiptAttribute2(
+                    myInvestedAmount,
+                    totalInvestedAmount
+                ),
+                generateReceiptAttribute3(
+                    totalInvestedAmount,
+                    txHash,
+                    proposalLink
+                ),
+                "]"
+            )
+        );
+    }
+
+    function generateReceiptAttribute1(
+        string memory projectName,
+        string memory tokenName
+    ) internal pure returns (string memory attribute) {
+        attribute = string(
+            abi.encodePacked(
+                "{",
+                '"trait_type":"Project Name","value":"',
+                projectName,
+                '"},{',
+                '"trait_type":"Investment Currency","value":"',
+                tokenName,
+                '"},'
+            )
+        );
+    }
+
+    function generateReceiptAttribute2(
+        uint256 myInvestedAmount,
+        uint256 totalInvestedAmount
+    ) internal pure returns (string memory attribute) {
+        string memory percentage = pencentageString(
+            myInvestedAmount,
+            totalInvestedAmount
+        );
+        attribute = string(
+            abi.encodePacked(
+                "{",
+                '"trait_type":"Investor Invested","value":"',
+                integerToString(myInvestedAmount),
+                '"},{',
+                '"trait_type":"% of Total","value":"',
+                percentage,
+                '"},'
+            )
+        );
+    }
+
+    function generateReceiptAttribute3(
+        uint256 totalInvestedAmount,
+        string memory txHash,
+        string memory proposalLink
+    ) internal pure returns (string memory attribute) {
+        attribute = string(
+            abi.encodePacked(
+                "{",
+                '"trait_type":"Total Invested","value":"',
+                integerToString(totalInvestedAmount),
+                '"},{',
+                '"trait_type":"Investment Hash","value":"',
+                txHash,
+                '"},{',
+                '"trait_type":"Proposal Link","value":"',
+                proposalLink,
+                '"}'
+            )
+        );
+    }
+
     function addressToString(
         address addr
     ) internal pure returns (string memory) {
         return Strings.toHexString(uint256(uint160(addr)), 20);
+    }
+
+    function pencentageString(
+        uint256 divisor,
+        uint256 dividend
+    ) internal pure returns (string memory) {
+        uint256 rel = (divisor * 100000) / dividend;
+        uint256 digit1 = rel / 10000;
+        uint256 digit2 = (rel - digit1 * 10000) / 1000;
+        uint256 digit3 = (rel - digit1 * 10000 - digit2 * 1000) / 100;
+        uint256 digit4 = (rel -
+            (digit1 * 10000 + digit2 * 1000 + digit3 * 100)) / 10;
+        uint256 digit5 = rel -
+            (digit1 * 10000 + digit2 * 1000 + digit3 * 100 + digit4 * 10);
+        // console.log(rel);
+        // console.log(digit5);
+        // console.log(digit4);
+        // console.log(digit3);
+        // console.log(digit2);
+        // console.log(digit1);
+
+        if (digit5 > 5) {
+            if (digit4 < 9) digit4 += 1;
+            else {
+                digit4 = 0;
+                if (digit3 < 9) digit3 += 1;
+                else {
+                    digit3 = 0;
+                    if (digit2 < 9) digit2 += 1;
+                    else {
+                        digit2 = 0;
+                        if (digit1 < 9) digit1 += 1;
+                        else {
+                            return
+                                string(
+                                    abi.encodePacked(
+                                        uintToString(100),
+                                        unicode".00%"
+                                    )
+                                );
+                        }
+                    }
+                }
+            }
+        }
+
+        string memory percentage = digit1 == 0
+            ? string(
+                abi.encodePacked(
+                    uintToString(digit2),
+                    unicode".",
+                    uintToString(digit3),
+                    uintToString(digit4),
+                    unicode"%"
+                )
+            )
+            : string(
+                abi.encodePacked(
+                    uintToString(digit1),
+                    uintToString(digit2),
+                    unicode".",
+                    uintToString(digit3),
+                    uintToString(digit4),
+                    unicode"%"
+                )
+            );
+        return percentage;
     }
 }

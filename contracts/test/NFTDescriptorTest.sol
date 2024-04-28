@@ -6,18 +6,82 @@ import "../libraries/NFTDescriptor.sol";
 import "../libraries/NFTSVG.sol";
 import "../libraries/HexStrings.sol";
 import "../libraries/VestingNFTSVG.sol";
+import "../libraries/VestingReceiptNFTSVG.sol";
 
 contract NFTDescriptorTest {
     using HexStrings for uint256;
 
-    function generateSVG(
+    // function pencentageString(
+    //     uint256 a,
+    //     uint256 b
+    // ) public pure returns (string memory pencentage) {
+    //     pencentage = VestingReceiptNFTSVG.pencentageString(a, b);
+    // }
+
+    function generateReceiptCollectionAttributes(
+        string memory projectName,
         string memory tokenName,
-        address tokenAddr,
-        uint256[5] memory uint256Params
-    ) public view returns (string memory svg) {
-        return VestingNFTSVG.generateSVG(tokenName, tokenAddr, uint256Params);
-        // return VestingNFTSVG.generateSVG();
+        string memory txHash,
+        string memory investmentProposalLink,
+        uint256 myInvestedAmount,
+        uint256 totalInvestedAmount
+    ) public view returns (string memory attrs) {
+        attrs = NFTDescriptor.generateReceiptCollectionAttributes(
+            projectName,
+            tokenName,
+            txHash,
+            investmentProposalLink,
+            myInvestedAmount,
+            totalInvestedAmount
+        );
     }
+
+    function generateReceiptSVG(
+        string memory txHash,
+        string memory projectName,
+        string memory symbol,
+        uint256 totalInvestedAmount,
+        uint256 myInvestedAmount
+    ) public view returns (string memory svg) {
+        svg = VestingReceiptNFTSVG.generateSVG(
+            txHash,
+            projectName,
+            symbol,
+            totalInvestedAmount,
+            myInvestedAmount
+        );
+    }
+
+    // function substring(
+    //     string memory str
+    // ) public pure returns (string memory _str) {
+    //     _str = VestingReceiptNFTSVG.substring(str, 0, 10);
+    // }
+
+    // function getInvestmentSVG(
+    //     string memory txHash,
+    //     string memory projectName,
+    //     string memory symbol,
+    //     uint256 totalInvestedAmount,
+    //     uint256 myInvestedAmount
+    // ) public view returns (string memory svg) {
+    //     svg = VestingReceiptNFTSVG.generateSVG(
+    //         txHash,
+    //         projectName,
+    //         symbol,
+    //         totalInvestedAmount,
+    //         myInvestedAmount
+    //     );
+    // }
+
+    // function generateSVG(
+    //     string memory tokenName,
+    //     address tokenAddr,
+    //     uint256[5] memory uint256Params
+    // ) public view returns (string memory svg) {
+    //     return VestingNFTSVG.generateSVG(tokenName, tokenAddr, uint256Params);
+    //     // return VestingNFTSVG.generateSVG();
+    // }
 
     // function constructTokenURI(NFTDescriptor.ConstructTokenURIParams calldata params)
     //     public
@@ -61,11 +125,11 @@ contract NFTDescriptorTest {
     //     return NFTDescriptor.feeToPercentString(fee);
     // }
 
-    function integerToString(
-        uint256 amount
-    ) public pure returns (string memory) {
-        return NFTDescriptor.integerToString(amount);
-    }
+    // function integerToString(
+    //     uint256 amount
+    // ) public pure returns (string memory) {
+    //     return NFTDescriptor.integerToString(amount);
+    // }
 
     // function addressToString(address _address) public pure returns (string memory) {
     //     return NFTDescriptor.addressToString(_address);
@@ -83,17 +147,17 @@ contract NFTDescriptorTest {
     //     return NFTDescriptor.sliceTokenHex(uint256(token), offset);
     // }
 
-    function rangeLocation(
-        int24 tickLower,
-        int24 tickUpper
-    ) public pure returns (string memory, string memory) {
-        return NFTSVG.rangeLocation(tickLower, tickUpper);
-    }
+    // function rangeLocation(
+    //     int24 tickLower,
+    //     int24 tickUpper
+    // ) public pure returns (string memory, string memory) {
+    //     return NFTSVG.rangeLocation(tickLower, tickUpper);
+    // }
 
-    function isRare(
-        uint256 tokenId,
-        address poolAddress
-    ) public pure returns (bool) {
-        return NFTSVG.isRare(tokenId, poolAddress);
-    }
+    // function isRare(
+    //     uint256 tokenId,
+    //     address poolAddress
+    // ) public pure returns (bool) {
+    //     return NFTSVG.isRare(tokenId, poolAddress);
+    // }
 }

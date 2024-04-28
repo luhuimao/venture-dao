@@ -9225,7 +9225,7 @@ describe.only("funding NFT", () => {
         const vestingStartTime = blocktimestamp + 24;
         const vetingEndTime = vestingStartTime + 60 * 60 * 2;
         const vestingCliffEndTime = vestingStartTime + 60 * 60 * 1;
-        const vestingInterval = 60 * 60;
+        const vestingInterval = 60 * 60 * 1;
 
         const vestingCliffLockAmount = hre.ethers.utils.parseEther("0.3");
 
@@ -9415,7 +9415,7 @@ describe.only("funding NFT", () => {
         svg of tokenid 1 :
         ${svg1}
         tokenURI of tokenId 1:
-        ${tokenURI}
+${tokenURI}
         `);
 
         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestInfo2.timeInfo.start) + parseInt(vestInfo1.timeInfo.cliffDuration) + 1])
