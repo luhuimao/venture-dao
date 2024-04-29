@@ -639,7 +639,7 @@ describe("flex investment receipt NFT...", () => {
         );
 
         const projectName = "ABI Finance";
-        const description = "Camelot is an ecosystem-focused and community-driven DEX built on Arbitrum. It has been built as a highly efficient and customizable protocol, allowing both builders and users to leverage our custom infrastructure for deep, sustainable, and adaptable liquidity. Camelot moves beyond the traditional design of DEXs to focus on offering a tailored approach that prioritises composability";
+        const description = "Camelot is an ecosystem-focused and community-driven DEX built on Arbitrum. It has been built as a highly efficient and customizable protocol, allowing both builders and users to leverage our custom infrastructure for deep, sustainable, and adaptable liquidity. Camelot moves beyond the traditional design of DEXs to focus on offering a tailored approach that prioritises composability.";
         await this.flexInvestmentReceiptERC721.
             safeMint(
                 dao.address,
@@ -666,8 +666,8 @@ describe("flex investment receipt NFT...", () => {
         // const svg2 = await this.flexInvestmentReceiptERC721Helper.getSvg(2, this.flexInvestmentReceiptERC721.address);
         console.log(tokenId1);
         console.log(tokenId2);
-        // console.log(tokenURI);
-        console.log(svg);
+        console.log(tokenURI);
+        // console.log(svg);
 
     });
 

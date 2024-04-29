@@ -861,7 +861,6 @@ library NFTDescriptor {
         string memory projectName,
         string memory tokenName,
         string memory txHash,
-        string memory proposalLink,
         uint256 myInvestedAmount,
         uint256 totalInvestedAmount
     ) internal pure returns (string memory attributes) {
@@ -873,11 +872,7 @@ library NFTDescriptor {
                     myInvestedAmount,
                     totalInvestedAmount
                 ),
-                generateReceiptAttribute3(
-                    totalInvestedAmount,
-                    txHash,
-                    proposalLink
-                ),
+                generateReceiptAttribute3(totalInvestedAmount, txHash),
                 "]"
             )
         );
@@ -923,8 +918,7 @@ library NFTDescriptor {
 
     function generateReceiptAttribute3(
         uint256 totalInvestedAmount,
-        string memory txHash,
-        string memory proposalLink
+        string memory txHash
     ) internal pure returns (string memory attribute) {
         attribute = string(
             abi.encodePacked(
@@ -934,9 +928,6 @@ library NFTDescriptor {
                 '"},{',
                 '"trait_type":"Investment Hash","value":"',
                 txHash,
-                '"},{',
-                '"trait_type":"Proposal Link","value":"',
-                proposalLink,
                 '"}'
             )
         );

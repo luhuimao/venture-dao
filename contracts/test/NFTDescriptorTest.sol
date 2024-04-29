@@ -22,7 +22,6 @@ contract NFTDescriptorTest {
         string memory projectName,
         string memory tokenName,
         string memory txHash,
-        string memory investmentProposalLink,
         uint256 myInvestedAmount,
         uint256 totalInvestedAmount
     ) public view returns (string memory attrs) {
@@ -30,7 +29,6 @@ contract NFTDescriptorTest {
             projectName,
             tokenName,
             txHash,
-            investmentProposalLink,
             myInvestedAmount,
             totalInvestedAmount
         );

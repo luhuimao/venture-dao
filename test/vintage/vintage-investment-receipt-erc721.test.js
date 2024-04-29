@@ -725,7 +725,7 @@ describe("vesting...", () => {
         const svg1 = await this.vintageInvestmentReceiptERC721Helper.getSvg(1, this.vintageInvestmentReceiptERC721.address);
         const svg2 = await this.vintageInvestmentReceiptERC721Helper.getSvg(2, this.vintageInvestmentReceiptERC721.address);
 
-        // console.log(tokenURI1);
+        console.log(tokenURI1);
         console.log(svg2);
 
     });

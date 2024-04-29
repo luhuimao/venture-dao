@@ -158,7 +158,6 @@ library LibTokenUri {
                 projectName,
                 symbol,
                 txHash,
-                proposalLink,
                 myInvestedAmount,
                 totalInvestedAmount
             );
@@ -174,6 +173,8 @@ library LibTokenUri {
                                 projectName,
                                 '", "description":"',
                                 description,
+                                "Proposal link: ",
+                                proposalLink,
                                 '", "attributes": ',
                                 attributes,
                                 ', "image": "',
