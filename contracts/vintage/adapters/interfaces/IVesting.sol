@@ -38,6 +38,7 @@ interface IVesting {
     }
 
     struct Vest {
+        address daoAddr;
         bytes32 proposalId;
         uint128 claimed;
         uint256 total;

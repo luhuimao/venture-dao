@@ -157,7 +157,7 @@ describe("Summon A Flex Dao", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -172,6 +172,22 @@ describe("Summon A Flex Dao", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+
+        const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        await flexVestingERC721Helper.deployed();
+        this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        const flexVestingERC721 = await FlexVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.flexVesting.address,
+            this.flexVestingERC721Helper.address
+        );
+        await flexVestingERC721.deployed();
+        this.flexVestingERC721 = flexVestingERC721;
+
 
         this.bentoBoxV1 = adapters.bentoBoxV1.instance;
         // this.managing = this.adapters.managing.instance;
@@ -1214,8 +1230,9 @@ describe("Summon A Flex Dao", () => {
             await hre.network.provider.send("evm_mine");
         }
 
+        let vestBal1 = await flexVestingContract.vestBalance(1)
 
-        await flexVestingContract.withdraw(dao.address, 1);
+        if (vestBal1 > 0) await flexVestingContract.withdraw(dao.address, 1);
 
         createdVestingInfo = await flexVestingContract.vests(1);
         returnTokenBal = await this.testtoken2.balanceOf(this.owner.address);
@@ -1778,8 +1795,8 @@ describe("Summon A Flex Dao", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-
-        await flexVestingContract.connect(this.investor1).withdraw(dao.address, 2);
+        let vestBal2 = await flexVestingContract.vestBalance(2)
+        if (vestBal2 > 0) await flexVestingContract.connect(this.investor1).withdraw(dao.address, 2);
 
         createdVestingInfo = await flexVestingContract.vests(2);
         returnTokenBal = await this.testtoken2.balanceOf(this.investor1.address);
@@ -1794,10 +1811,13 @@ describe("Summon A Flex Dao", () => {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestingEndTime) + 1]);
             await hre.network.provider.send("evm_mine");
         }
+        vestBal2 = await flexVestingContract.vestBalance(2)
+        let vestBal3 = await flexVestingContract.vestBalance(3)
+        let vestBal4 = await flexVestingContract.vestBalance(4)
 
-        await flexVestingContract.connect(this.investor1).withdraw(dao.address, 2);
-        await flexVestingContract.connect(this.investor2).withdraw(dao.address, 3);
-        await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 4);
+        if (vestBal2 > 0) await flexVestingContract.connect(this.investor1).withdraw(dao.address, 2);
+        if (vestBal3 > 0) await flexVestingContract.connect(this.investor2).withdraw(dao.address, 3);
+        if (vestBal4 > 0) await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 4);
 
         returnTokenBal = await this.testtoken2.balanceOf(this.investor1.address);
         returnTokenBal2 = await this.testtoken2.balanceOf(this.investor2.address);
@@ -9227,7 +9247,7 @@ describe("vesting nft...", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -9243,6 +9263,21 @@ describe("vesting nft...", () => {
         this.flexDaoSetAdapterContract = adapters.flexDaoSetAdapterContract.instance;
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
+
+        const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        await flexVestingERC721Helper.deployed();
+        this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        const flexVestingERC721 = await FlexVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.flexVesting.address,
+            this.flexVestingERC721Helper.address
+        );
+        await flexVestingERC721.deployed();
+        this.flexVestingERC721 = flexVestingERC721;
 
         this.summonDao = this.adapters.summonDao.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
@@ -9773,7 +9808,8 @@ describe("vesting nft...", () => {
         tokenURI of tokenId 1 ${tokenURI}
         `);
 
-        await flexVestingContract.withdraw(dao.address, 1);
+        let vestBal1 = await flexVestingContract.vestBalance(1)
+        if (vestBal1 > 0) await flexVestingContract.withdraw(dao.address, 1);
 
         createdVestingInfo = await flexVestingContract.vests(1);
         returnTokenBal = await this.testtoken2.balanceOf(this.owner.address);
@@ -9792,7 +9828,8 @@ describe("vesting nft...", () => {
 
         await this.flexVestingERC721.transferFrom(this.owner.address, this.investor2.address, 1);
         await expectRevert(flexVestingContract.withdraw(dao.address, 1), "revert");
-        await flexVestingContract.connect(this.investor2).withdraw(dao.address, 1);
+        vestBal1 = await flexVestingContract.vestBalance(1)
+        if (vestBal1 > 0) await flexVestingContract.connect(this.investor2).withdraw(dao.address, 1);
         returnTokenBal = await this.testtoken2.balanceOf(this.investor2.address);
         createdVestingInfo = await flexVestingContract.vests(1);
         console.log(`
@@ -10047,8 +10084,8 @@ describe("vesting nft...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-
-        await flexVestingContract.withdraw(dao.address, 2);
+        let vestBal2 = await flexVestingContract.vestBalance(2)
+        if (vestBal2 > 0) await flexVestingContract.withdraw(dao.address, 2);
 
         createdVestingInfo = await flexVestingContract.vests(2);
         returnTokenBal = await this.testtoken2.balanceOf(this.owner.address);
@@ -10066,7 +10103,8 @@ describe("vesting nft...", () => {
         }
 
         await expectRevert(flexVestingContract.connect(this.investor2).withdraw(dao.address, 2), "revert");
-        await flexVestingContract.withdraw(dao.address, 2);
+        vestBal2 = await flexVestingContract.vestBalance(2)
+        if (vestBal2 > 0) await flexVestingContract.withdraw(dao.address, 2);
 
         returnTokenBal = await this.testtoken2.balanceOf(this.owner.address);
         createdVestingInfo = await flexVestingContract.vests(2);
@@ -10146,7 +10184,7 @@ describe("steward allocations...", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -10163,6 +10201,21 @@ describe("steward allocations...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+
+        const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        await flexVestingERC721Helper.deployed();
+        this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        const flexVestingERC721 = await FlexVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.flexVesting.address,
+            this.flexVestingERC721Helper.address
+        );
+        await flexVestingERC721.deployed();
+        this.flexVestingERC721 = flexVestingERC721;
 
         this.summonDao = this.adapters.summonDao.instance;
 
@@ -10548,7 +10601,7 @@ describe("free in...", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -10566,6 +10619,21 @@ describe("free in...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+
+        const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        await flexVestingERC721Helper.deployed();
+        this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        const flexVestingERC721 = await FlexVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.flexVesting.address,
+            this.flexVestingERC721Helper.address
+        );
+        await flexVestingERC721.deployed();
+        this.flexVestingERC721 = flexVestingERC721;
 
         const daoFactoriesAddress = [
             this.daoFactory.address,
@@ -11085,7 +11153,6 @@ describe("free in...", () => {
         escrow refund...
         `);
 
-
         await this.flexFreeInEscrowFundAdapterContract.withdraw(dao.address, proposalId);
         await this.flexFreeInEscrowFundAdapterContract.connect(this.genesis_steward1).withdraw(dao.address, proposalId);
         await this.flexFreeInEscrowFundAdapterContract.connect(this.genesis_steward2).withdraw(dao.address, proposalId);
@@ -11186,7 +11253,7 @@ describe("participant cap...", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -11203,6 +11270,21 @@ describe("participant cap...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+
+        const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        await flexVestingERC721Helper.deployed();
+        this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        const flexVestingERC721 = await FlexVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.flexVesting.address,
+            this.flexVestingERC721Helper.address
+        );
+        await flexVestingERC721.deployed();
+        this.flexVestingERC721 = flexVestingERC721;
 
         this.summonDao = this.adapters.summonDao.instance;
 
@@ -11737,7 +11819,7 @@ describe("return token management fee...", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -11754,6 +11836,21 @@ describe("return token management fee...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+
+        const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        await flexVestingERC721Helper.deployed();
+        this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        const flexVestingERC721 = await FlexVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.flexVesting.address,
+            this.flexVestingERC721Helper.address
+        );
+        await flexVestingERC721.deployed();
+        this.flexVestingERC721 = flexVestingERC721;
 
         this.summonDao = this.adapters.summonDao.instance;
 
@@ -12307,11 +12404,15 @@ describe("return token management fee...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
+        let vestBal1 = await flexVestingContract.vestBalance(1)
+        let vestBal2 = await flexVestingContract.vestBalance(2)
+        let vestBal3 = await flexVestingContract.vestBalance(3)
+        let vestBal4 = await flexVestingContract.vestBalance(4)
 
-        await flexVestingContract.withdraw(dao.address, 1);
-        await flexVestingContract.connect(this.genesis_steward1).withdraw(dao.address, 2);
-        await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 3);
-        await flexVestingContract.connect(this.investor1).withdraw(dao.address, 4);
+        if (vestBal1 > 0) await flexVestingContract.withdraw(dao.address, 1);
+        if (vestBal2 > 0) await flexVestingContract.connect(this.genesis_steward1).withdraw(dao.address, 2);
+        if (vestBal3 > 0) await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 3);
+        if (vestBal4 > 0) await flexVestingContract.connect(this.investor1).withdraw(dao.address, 4);
 
         createdVestingInfo = await flexVestingContract.vests(1);
         createdVestingInfo2 = await flexVestingContract.vests(2);
@@ -12347,10 +12448,15 @@ describe("return token management fee...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await flexVestingContract.withdraw(dao.address, 1);
-        await flexVestingContract.connect(this.genesis_steward1).withdraw(dao.address, 2);
-        await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 3);
-        await flexVestingContract.connect(this.investor1).withdraw(dao.address, 4);
+        vestBal1 = await flexVestingContract.vestBalance(1)
+        vestBal2 = await flexVestingContract.vestBalance(2)
+        vestBal3 = await flexVestingContract.vestBalance(3)
+        vestBal4 = await flexVestingContract.vestBalance(4)
+
+        if (vestBal1 > 0) await flexVestingContract.withdraw(dao.address, 1);
+        if (vestBal2 > 0) await flexVestingContract.connect(this.genesis_steward1).withdraw(dao.address, 2);
+        if (vestBal3 > 0) await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 3);
+        if (vestBal4 > 0) await flexVestingContract.connect(this.investor1).withdraw(dao.address, 4);
 
 
         createdVestingInfo = await flexVestingContract.vests(1);

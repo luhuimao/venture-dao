@@ -149,7 +149,7 @@ describe("daoset proposal...", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -167,6 +167,22 @@ describe("daoset proposal...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+
+        const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        await flexVestingERC721Helper.deployed();
+        this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        const flexVestingERC721 = await FlexVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.flexVesting.address,
+            this.flexVestingERC721Helper.address
+        );
+        await flexVestingERC721.deployed();
+        this.flexVestingERC721 = flexVestingERC721;
+
         const daoFactoriesAddress = [
             this.daoFactory.address,
             this.flexFundingPoolFactory.address
@@ -1495,7 +1511,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -1513,6 +1529,23 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+
+        const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        await flexVestingERC721Helper.deployed();
+        this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        const flexVestingERC721 = await FlexVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.flexVesting.address,
+            this.flexVestingERC721Helper.address
+        );
+        await flexVestingERC721.deployed();
+        this.flexVestingERC721 = flexVestingERC721;
+
+        
         const daoFactoriesAddress = [
             this.daoFactory.address,
             this.flexFundingPoolFactory.address

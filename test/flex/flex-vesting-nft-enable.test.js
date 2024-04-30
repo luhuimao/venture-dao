@@ -158,7 +158,6 @@ describe("funding...", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -175,6 +174,23 @@ describe("funding...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+
+
+
+        const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        await flexVestingERC721Helper.deployed();
+        this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        const flexVestingERC721 = await FlexVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.flexVesting.address,
+            this.flexVestingERC721Helper.address
+        );
+        await flexVestingERC721.deployed();
+        this.flexVestingERC721 = flexVestingERC721;
 
         this.summonDao = this.adapters.summonDao.instance;
 
@@ -687,24 +703,28 @@ describe("funding...", () => {
 
         const vestId = await flexVestingContract.getVestIdByTokenId(nftToken, 1)
         console.log("vestId ", vestId);
+        let createdVestingInfo = await flexVestingContract.vests(1);
+        console.log(" createdVestingInfo", createdVestingInfo);
 
         // const tokenId = await flexVestingContract.tokenIdToVestId(this.flexVestingERC721.address, 1);
         // console.log("tokenId ", tokenId);
 
-        const maxTotalSupply = await this.flexVestingERC721.maxTotalSupply();
-        console.log("maxTotalSupply ", maxTotalSupply);
-        const rel = await flexVestingContract.getRemainingPercentage(nftToken, 1);
-        console.log(rel);
+        // const maxTotalSupply = await this.flexVestingERC721.maxTotalSupply();
+        // console.log("maxTotalSupply ", maxTotalSupply);
+        // const rel = await flexVestingContract.getRemainingPercentage(nftToken, 1);
+        // console.log(rel);
         const uri = await this.flexVestingERC721.tokenURI(1);
         console.log(uri);
         const svg = await this.flexVestingERC721.getSvg(1);
+
+        // const svg = await this.flexVestingERC721Helper.getSvg(1, this.flexVesting.address);
         console.log(`
         svg 
         ${svg}
         `
         );
 
-        let createdVestingInfo = await flexVestingContract.vests(1);
+        // let createdVestingInfo = await flexVestingContract.vests(1);
         let createdVestingInfo2 = await flexVestingContract.vests(2);
         let createdVestingInfo3 = await flexVestingContract.vests(3);
         let createdVestingInfo4 = await flexVestingContract.vests(4);
@@ -747,17 +767,21 @@ describe("funding...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
+        let vestBal1 = flexVestingContract.vestBalance(1)
+        let vestBal2 = flexVestingContract.vestBalance(2)
+        let vestBal3 = flexVestingContract.vestBalance(3)
+        let vestBal4 = flexVestingContract.vestBalance(4)
 
-        await flexVestingContract.withdraw(dao.address, 1);
+        if (vestBal1 > 0) await flexVestingContract.withdraw(dao.address, 1);
         console.log("vest #1 withdraw...");
 
-        await flexVestingContract.connect(this.genesis_steward1).withdraw(dao.address, 2);
+        if (vestBal2 > 0) await flexVestingContract.connect(this.genesis_steward1).withdraw(dao.address, 2);
         console.log("vest #2 withdraw...");
 
-        await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 3);
+        if (vestBal3 > 0) await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 3);
         console.log("vest #3 withdraw...");
 
-        await flexVestingContract.connect(this.investor1).withdraw(dao.address, 4);
+        if (vestBal4 > 0) await flexVestingContract.connect(this.investor1).withdraw(dao.address, 4);
         console.log("vest #4 withdraw...");
 
 

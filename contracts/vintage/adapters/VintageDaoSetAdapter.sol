@@ -174,18 +174,36 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
             DaoHelper.RETURN_DURATION
         );
         //
+        //  require(
+        //     vars.investmentPoolAdapt.daoFundRaisingStates(address(params.dao)) ==
+        //         DaoHelper.FundRaiseState.NOT_STARTED ||
+        //         vars.investmentPoolAdapt.daoFundRaisingStates(
+        //             address(params.dao)
+        //         ) ==
+        //         DaoHelper.FundRaiseState.FAILED ||
+        //         (vars.investmentPoolAdapt.daoFundRaisingStates(
+        //             address(params.dao)
+        //         ) ==
+        //             DaoHelper.FundRaiseState.DONE &&
+        //             block.timestamp >
+        //             vars.lastFundEndTime + vars.refundDuration),
+        //     "not now"
+        // );
         require(
             (state == DaoHelper.FundRaiseState.NOT_STARTED) ||
-                (state == DaoHelper.FundRaiseState.FAILED &&
-                    block.timestamp >
-                    dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) +
-                        returnDuration) ||
+                // (
+                state == DaoHelper.FundRaiseState.FAILED ||
+                // &&
+                //     block.timestamp >
+                //     dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) +
+                //         returnDuration)
                 (state == DaoHelper.FundRaiseState.DONE &&
                     block.timestamp >
                     dao.getConfiguration(DaoHelper.FUND_END_TIME) +
                         returnDuration),
             "FUND_PERIOD"
         );
+        require(fundingPoolAdapt.poolBalance(dao) <= 0, "!clear fund");
     }
 
     function submitInvestorCapProposal(

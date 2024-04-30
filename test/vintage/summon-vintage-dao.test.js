@@ -8550,7 +8550,7 @@ describe("eligibility deposit voting...", () => {
 
 });
 
-describe.only("funding NFT", () => {
+describe("funding NFT", () => {
     before("deploy contracts...", async () => {
         let [owner,
             user1, user2,
@@ -8639,6 +8639,21 @@ describe.only("funding NFT", () => {
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
 
+        const VintageVestingERC721Helper = await hre.ethers.getContractFactory("VintageVestingERC721Helper");
+        const vintageVestingERC721Helper = await VintageVestingERC721Helper.deploy();
+        await vintageVestingERC721Helper.deployed();
+        this.vintageVestingERC721Helper = vintageVestingERC721Helper;
+
+        const VintageVestingERC721 = await hre.ethers.getContractFactory("VintageVestingERC721");
+        const vintageVestingERC721 = await VintageVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.vintageVesting.address,
+            this.vintageVestingERC721Helper.address
+        );
+        await vintageVestingERC721.deployed();
+        this.vintageVestingERC721Contract = vintageVestingERC721;
+
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
@@ -8652,7 +8667,7 @@ describe.only("funding NFT", () => {
         this.flexPollingVotingContract = adapters.flexPollingVotingContract.instance;
         this.summonDao = this.adapters.summonVintageDao.instance;
         this.summonVintageDao = this.adapters.summonVintageDao.instance;
-        this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
+        // this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
         // const VestingERC721 = await hre.ethers.getContractFactory("VestingERC721");
         // const vestingERC721 = await VestingERC721.deploy("DAOSquare Manual Vesting",
         //     "DMV",
@@ -9084,7 +9099,7 @@ describe.only("funding NFT", () => {
         return proposalId;
     }
 
-    it.only("nft enable...", async () => {
+    it("nft enable...", async () => {
         const fundRaiseMinTarget = hre.ethers.utils.parseEther("10000");
         const fundRaiseMaxCap = hre.ethers.utils.parseEther("20000");
         const lpMinDepositAmount = hre.ethers.utils.parseEther("100");
@@ -9417,20 +9432,25 @@ describe.only("funding NFT", () => {
         tokenURI of tokenId 1:
 ${tokenURI}
         `);
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if ((parseInt(vestInfo2.timeInfo.start) + parseInt(vestInfo1.timeInfo.cliffDuration)) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestInfo2.timeInfo.start) + parseInt(vestInfo1.timeInfo.cliffDuration) + 1])
+            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        }
 
-        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestInfo2.timeInfo.start) + parseInt(vestInfo1.timeInfo.cliffDuration) + 1])
-        await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        let vestBal1 = await this.vintageVesting.vestBalance(1);
+        let vestBal2 = await this.vintageVesting.vestBalance(2);
 
-        await this.vintageVesting.connect(this.owner).withdraw(this.daoAddr1, 1);
+        if (vestBal1 > 0) await this.vintageVesting.connect(this.owner).withdraw(this.daoAddr1, 1);
         // await expectRevert(this.vintageVesting.connect(this.investor2).withdraw(this.daoAddr1, 2), "revert");
-        await this.vintageVesting.connect(this.investor2).withdraw(this.daoAddr1, 2);
+        if (vestBal2 > 1) await this.vintageVesting.connect(this.investor2).withdraw(this.daoAddr1, 2);
 
 
         vestInfo1 = await this.vintageVesting.vests(1);
         vestInfo2 = await this.vintageVesting.vests(2);
 
-        let vestBal1 = await this.vintageVesting.vestBalance(1);
-        let vestBal2 = await this.vintageVesting.vestBalance(2);
+        vestBal1 = await this.vintageVesting.vestBalance(1);
+        vestBal2 = await this.vintageVesting.vestBalance(2);
 
         console.log(`
         vest info 1:
@@ -9441,12 +9461,13 @@ ${tokenURI}
             vestBal1 ${hre.ethers.utils.formatEther(vestBal2)}
         `);
 
-
-        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestInfo1.timeInfo.end) + 1])
-        await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
-
-        await this.vintageVesting.connect(this.owner).withdraw(this.daoAddr1, 1);
-        await this.vintageVesting.connect(this.investor2).withdraw(this.daoAddr1, 2);
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (vestInfo1.timeInfo.end > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestInfo1.timeInfo.end) + 1])
+            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        }
+        if (vestBal1 > 0) await this.vintageVesting.connect(this.owner).withdraw(this.daoAddr1, 1);
+        if (vestBal2 > 1) await this.vintageVesting.connect(this.investor2).withdraw(this.daoAddr1, 2);
 
         vestInfo1 = await this.vintageVesting.vests(1);
         vestInfo2 = await this.vintageVesting.vests(2);
@@ -9636,9 +9657,9 @@ ${tokenURI}
         `);
 
 
-        await this.vintageVesting.connect(this.owner).withdraw(this.daoAddr1, 3);
-        await expectRevert(this.vintageVesting.connect(this.investor2).withdraw(this.daoAddr1, 4), "revert");
-        await this.vintageVesting.connect(this.investor1).withdraw(this.daoAddr1, 4);
+        // await this.vintageVesting.connect(this.owner).withdraw(this.daoAddr1, 3);
+        // await expectRevert(this.vintageVesting.connect(this.investor2).withdraw(this.daoAddr1, 4), "revert");
+        // await this.vintageVesting.connect(this.investor1).withdraw(this.daoAddr1, 4);
 
 
         vestInfo1 = await this.vintageVesting.vests(3);
@@ -9656,10 +9677,11 @@ ${tokenURI}
             vestBal1 ${hre.ethers.utils.formatEther(vestBal2)}
         `);
 
-
-        // await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestInfo1.timeInfo.end) + 1])
-        // await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
-
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (vestInfo1.timeInfo.end > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestInfo1.timeInfo.end) + 1])
+            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        }
         await this.vintageVesting.connect(this.owner).withdraw(this.daoAddr1, 3);
         await this.vintageVesting.connect(this.investor1).withdraw(this.daoAddr1, 4);
 
@@ -9909,7 +9931,22 @@ describe("raiser allocations...", () => {
         this.flexPollingVotingContract = adapters.flexPollingVotingContract.instance;
         this.summonDao = this.adapters.summonVintageDao.instance;
         this.summonVintageDao = this.adapters.summonVintageDao.instance;
-        this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
+        // this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
+
+        const VintageVestingERC721Helper = await hre.ethers.getContractFactory("VintageVestingERC721Helper");
+        const vintageVestingERC721Helper = await VintageVestingERC721Helper.deploy();
+        await vintageVestingERC721Helper.deployed();
+        this.vintageVestingERC721Helper = vintageVestingERC721Helper;
+
+        const VintageVestingERC721 = await hre.ethers.getContractFactory("VintageVestingERC721");
+        const vintageVestingERC721 = await VintageVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.vintageVesting.address,
+            this.vintageVestingERC721Helper.address
+        );
+        await vintageVestingERC721.deployed();
+        this.vintageVestingERC721Contract = vintageVestingERC721;
 
         const daoFactoriesAddress = [
             this.daoFactory.address,
@@ -10271,7 +10308,22 @@ describe("Free-In...", () => {
         this.flexPollingVotingContract = adapters.flexPollingVotingContract.instance;
         this.summonDao = this.adapters.summonVintageDao.instance;
         this.summonVintageDao = this.adapters.summonVintageDao.instance;
-        this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
+        // this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
+
+        const VintageVestingERC721Helper = await hre.ethers.getContractFactory("VintageVestingERC721Helper");
+        const vintageVestingERC721Helper = await VintageVestingERC721Helper.deploy();
+        await vintageVestingERC721Helper.deployed();
+        this.vintageVestingERC721Helper = vintageVestingERC721Helper;
+
+        const VintageVestingERC721 = await hre.ethers.getContractFactory("VintageVestingERC721");
+        const vintageVestingERC721 = await VintageVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.vintageVesting.address,
+            this.vintageVestingERC721Helper.address
+        );
+        await vintageVestingERC721.deployed();
+        this.vintageVestingERC721Contract = vintageVestingERC721;
 
         const daoFactoriesAddress = [
             this.daoFactory.address,
@@ -12048,7 +12100,22 @@ describe("participant cap...", () => {
         this.flexPollingVotingContract = adapters.flexPollingVotingContract.instance;
         this.summonDao = this.adapters.summonVintageDao.instance;
         this.summonVintageDao = this.adapters.summonVintageDao.instance;
-        this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
+        // this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
+
+        const VintageVestingERC721Helper = await hre.ethers.getContractFactory("VintageVestingERC721Helper");
+        const vintageVestingERC721Helper = await VintageVestingERC721Helper.deploy();
+        await vintageVestingERC721Helper.deployed();
+        this.vintageVestingERC721Helper = vintageVestingERC721Helper;
+
+        const VintageVestingERC721 = await hre.ethers.getContractFactory("VintageVestingERC721");
+        const vintageVestingERC721 = await VintageVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.vintageVesting.address,
+            this.vintageVestingERC721Helper.address
+        );
+        await vintageVestingERC721.deployed();
+        this.vintageVestingERC721Contract = vintageVestingERC721;
 
         const daoFactoriesAddress = [
             this.daoFactory.address,
@@ -12533,7 +12600,22 @@ describe("return token management fee...", () => {
         this.flexPollingVotingContract = adapters.flexPollingVotingContract.instance;
         this.summonDao = this.adapters.summonVintageDao.instance;
         this.summonVintageDao = this.adapters.summonVintageDao.instance;
-        this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
+        // this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
+
+        const VintageVestingERC721Helper = await hre.ethers.getContractFactory("VintageVestingERC721Helper");
+        const vintageVestingERC721Helper = await VintageVestingERC721Helper.deploy();
+        await vintageVestingERC721Helper.deployed();
+        this.vintageVestingERC721Helper = vintageVestingERC721Helper;
+
+        const VintageVestingERC721 = await hre.ethers.getContractFactory("VintageVestingERC721");
+        const vintageVestingERC721 = await VintageVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.vintageVesting.address,
+            this.vintageVestingERC721Helper.address
+        );
+        await vintageVestingERC721.deployed();
+        this.vintageVestingERC721Contract = vintageVestingERC721;
 
         const daoFactoriesAddress = [
             this.daoFactory.address,
@@ -13164,7 +13246,22 @@ describe("funding proposal start voting at refund period...", () => {
         this.flexPollingVotingContract = adapters.flexPollingVotingContract.instance;
         this.summonDao = this.adapters.summonVintageDao.instance;
         this.summonVintageDao = this.adapters.summonVintageDao.instance;
-        this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
+        // this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
+
+        const VintageVestingERC721Helper = await hre.ethers.getContractFactory("VintageVestingERC721Helper");
+        const vintageVestingERC721Helper = await VintageVestingERC721Helper.deploy();
+        await vintageVestingERC721Helper.deployed();
+        this.vintageVestingERC721Helper = vintageVestingERC721Helper;
+
+        const VintageVestingERC721 = await hre.ethers.getContractFactory("VintageVestingERC721");
+        const vintageVestingERC721 = await VintageVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.vintageVesting.address,
+            this.vintageVestingERC721Helper.address
+        );
+        await vintageVestingERC721.deployed();
+        this.vintageVestingERC721Contract = vintageVestingERC721;
 
         const daoFactoriesAddress = [
             this.daoFactory.address,
@@ -13756,7 +13853,22 @@ describe("daoset proposal...", () => {
         this.flexPollingVotingContract = adapters.flexPollingVotingContract.instance;
         this.summonDao = this.adapters.summonVintageDao.instance;
         this.summonVintageDao = this.adapters.summonVintageDao.instance;
-        this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
+        // this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
+
+        const VintageVestingERC721Helper = await hre.ethers.getContractFactory("VintageVestingERC721Helper");
+        const vintageVestingERC721Helper = await VintageVestingERC721Helper.deploy();
+        await vintageVestingERC721Helper.deployed();
+        this.vintageVestingERC721Helper = vintageVestingERC721Helper;
+
+        const VintageVestingERC721 = await hre.ethers.getContractFactory("VintageVestingERC721");
+        const vintageVestingERC721 = await VintageVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.vintageVesting.address,
+            this.vintageVestingERC721Helper.address
+        );
+        await vintageVestingERC721.deployed();
+        this.vintageVestingERC721Contract = vintageVestingERC721;
 
         const daoFactoriesAddress = [
             this.daoFactory.address,

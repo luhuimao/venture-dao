@@ -475,7 +475,8 @@ library NFTDescriptor {
         uint256 tem4;
 
         if (amount < 1000 * 10 ** 18) {
-            //< 1000 100.9914 100111 000000000000000
+            //< 1000 100.9914 
+            //80919048000000000000
             tem = amount / 10 ** 15;
             tem1 = tem / 100000;
 
@@ -485,6 +486,11 @@ library NFTDescriptor {
             tem4 =
                 (((((amount / 10 ** 15) % 100000) % 10000) % 1000) % 100) %
                 10;
+
+            // console.log("tem1 ", tem1);
+            // console.log("tem2 ", tem2);
+            // console.log("tem3 ", tem3);
+            // console.log("tem4 ", tem4);
 
             if (tem4 >= 1) {
                 if (tem3 < 9) tem3 += 1;

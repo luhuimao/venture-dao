@@ -430,25 +430,36 @@ contract FlexAllocationAdapterContract is AdapterGuard {
                     DaoHelper.FLEX_FREE_IN_ESCROW_FUND_ADAPTER
                 )
             );
-        uint256 executedBlockNum;
+        // uint256 executedBlockNum;
 
-        (, , , , , , , , executedBlockNum) = flexFunding.Proposals(
-            address(dao),
-            proposalId
-        );
+        (
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            IFlexFunding.ProposalStatus state,
+            uint256 executeBlockNum
+        ) = flexFunding.Proposals(address(dao), proposalId);
+        // console.log("executeBlockNum ", executeBlockNum);
         (, uint256 escrowAmount) = freeInCont.getEscrowAmount(
             dao,
             proposalId,
             recipient
         );
+        // console.log("escrowAmount ", escrowAmount);
         uint256 fund = investmentpoolExt.getPriorAmount(
             proposalId,
             recipient,
-            executedBlockNum - 1
+            executeBlockNum - 1
         ) - escrowAmount;
         if (
-            fund > 0 ||
-            vestingInfos[address(dao)][proposalId][recipient].tokenAmount > 0
+            state == IFlexFunding.ProposalStatus.DONE &&
+            (fund > 0 ||
+                vestingInfos[address(dao)][proposalId][recipient].tokenAmount >
+                0)
         ) return true;
         else return false;
     }

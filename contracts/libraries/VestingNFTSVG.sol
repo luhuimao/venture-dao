@@ -176,6 +176,7 @@ library VestingNFTSVG {
             uint256Params[1]
         );
         vars.totalAmount = NFTDescriptor.integerToString(uint256Params[3]);
+        console.log(" vars.totalAmount ", vars.totalAmount);
         (vars.year, vars.month, vars.day) = DateTime.timestampToDate(
             uint256Params[0]
         );

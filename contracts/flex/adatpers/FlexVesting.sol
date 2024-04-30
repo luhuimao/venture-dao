@@ -117,6 +117,7 @@ contract FlexVesting is IFlexVesting {
         }
 
         vests[vars.vestId] = Vest(
+            address(dao),
             proposalId,
             0,
             vars.depositAmount,
@@ -298,10 +299,8 @@ contract FlexVesting is IFlexVesting {
         uint256 total = 0;
         uint256 vestId = getVestIdByTokenId(token, tokenId);
         if (vestId > 0) {
-            remaining =
-                (vests[vestId].total - vests[vestId].claimed) /
-                PERCENTAGE_PRECISION;
-            total = vests[vestId].total / PERCENTAGE_PRECISION;
+            remaining = (vests[vestId].total - vests[vestId].claimed);
+            total = vests[vestId].total;
             percentOfRemaining_Total =
                 ((vests[vestId].total - vests[vestId].claimed) * 100) /
                 vests[vestId].total;

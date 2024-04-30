@@ -28,6 +28,7 @@ library LibTokenUri {
     function tokenURI(
         string memory description,
         string memory symbol,
+        string memory proposalLink,
         address tokenAddr,
         uint256[5] memory uint256Params
     ) internal view returns (string memory) {
@@ -68,6 +69,8 @@ library LibTokenUri {
                                 name,
                                 '", "description":"',
                                 description,
+                                "\\nProposal link: ",
+                                proposalLink,
                                 '", "attributes": ',
                                 attributes,
                                 ', "image": "',
@@ -173,7 +176,7 @@ library LibTokenUri {
                                 projectName,
                                 '", "description":"',
                                 description,
-                                "Proposal link: ",
+                                "\\nProposal link: ",
                                 proposalLink,
                                 '", "attributes": ',
                                 attributes,

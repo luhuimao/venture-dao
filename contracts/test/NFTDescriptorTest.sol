@@ -18,37 +18,37 @@ contract NFTDescriptorTest {
     //     pencentage = VestingReceiptNFTSVG.pencentageString(a, b);
     // }
 
-    function generateReceiptCollectionAttributes(
-        string memory projectName,
-        string memory tokenName,
-        string memory txHash,
-        uint256 myInvestedAmount,
-        uint256 totalInvestedAmount
-    ) public view returns (string memory attrs) {
-        attrs = NFTDescriptor.generateReceiptCollectionAttributes(
-            projectName,
-            tokenName,
-            txHash,
-            myInvestedAmount,
-            totalInvestedAmount
-        );
-    }
+    // function generateReceiptCollectionAttributes(
+    //     string memory projectName,
+    //     string memory tokenName,
+    //     string memory txHash,
+    //     uint256 myInvestedAmount,
+    //     uint256 totalInvestedAmount
+    // ) public view returns (string memory attrs) {
+    //     attrs = NFTDescriptor.generateReceiptCollectionAttributes(
+    //         projectName,
+    //         tokenName,
+    //         txHash,
+    //         myInvestedAmount,
+    //         totalInvestedAmount
+    //     );
+    // }
 
-    function generateReceiptSVG(
-        string memory txHash,
-        string memory projectName,
-        string memory symbol,
-        uint256 totalInvestedAmount,
-        uint256 myInvestedAmount
-    ) public view returns (string memory svg) {
-        svg = VestingReceiptNFTSVG.generateSVG(
-            txHash,
-            projectName,
-            symbol,
-            totalInvestedAmount,
-            myInvestedAmount
-        );
-    }
+    // function generateReceiptSVG(
+    //     string memory txHash,
+    //     string memory projectName,
+    //     string memory symbol,
+    //     uint256 totalInvestedAmount,
+    //     uint256 myInvestedAmount
+    // ) public view returns (string memory svg) {
+    //     svg = VestingReceiptNFTSVG.generateSVG(
+    //         txHash,
+    //         projectName,
+    //         symbol,
+    //         totalInvestedAmount,
+    //         myInvestedAmount
+    //     );
+    // }
 
     // function substring(
     //     string memory str
@@ -72,14 +72,14 @@ contract NFTDescriptorTest {
     //     );
     // }
 
-    // function generateSVG(
-    //     string memory tokenName,
-    //     address tokenAddr,
-    //     uint256[5] memory uint256Params
-    // ) public view returns (string memory svg) {
-    //     return VestingNFTSVG.generateSVG(tokenName, tokenAddr, uint256Params);
-    //     // return VestingNFTSVG.generateSVG();
-    // }
+    function generateSVG(
+        string memory tokenName,
+        address tokenAddr,
+        uint256[5] memory uint256Params
+    ) public view returns (string memory svg) {
+        return VestingNFTSVG.generateSVG(tokenName, tokenAddr, uint256Params);
+        // return VestingNFTSVG.generateSVG();
+    }
 
     // function constructTokenURI(NFTDescriptor.ConstructTokenURIParams calldata params)
     //     public
@@ -123,11 +123,11 @@ contract NFTDescriptorTest {
     //     return NFTDescriptor.feeToPercentString(fee);
     // }
 
-    // function integerToString(
-    //     uint256 amount
-    // ) public pure returns (string memory) {
-    //     return NFTDescriptor.integerToString(amount);
-    // }
+    function integerToString(
+        uint256 amount
+    ) public pure returns (string memory) {
+        return NFTDescriptor.integerToString(amount);
+    }
 
     // function addressToString(address _address) public pure returns (string memory) {
     //     return NFTDescriptor.addressToString(_address);

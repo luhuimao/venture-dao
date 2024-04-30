@@ -186,7 +186,22 @@ describe("fund establishment...", () => {
         this.flexPollingVotingContract = adapters.flexPollingVotingContract.instance;
         this.summonDao = this.adapters.summonVintageDao.instance;
         this.summonVintageDao = this.adapters.summonVintageDao.instance;
-        this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
+        // this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
+
+        const VintageVestingERC721Helper = await hre.ethers.getContractFactory("VintageVestingERC721Helper");
+        const vintageVestingERC721Helper = await VintageVestingERC721Helper.deploy();
+        await vintageVestingERC721Helper.deployed();
+        this.vintageVestingERC721Helper = vintageVestingERC721Helper;
+
+        const VintageVestingERC721 = await hre.ethers.getContractFactory("VintageVestingERC721");
+        const vintageVestingERC721 = await VintageVestingERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.vintageVesting.address,
+            this.vintageVestingERC721Helper.address
+        );
+        await vintageVestingERC721.deployed();
+        this.vintageVestingERC721Contract = vintageVestingERC721;
 
         const daoFactoriesAddress = [
             this.daoFactory.address,

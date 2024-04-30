@@ -19,7 +19,7 @@ library VestingReceiptNFTSVG {
     ) internal pure returns (string memory svg) {
         svg = string(
             abi.encodePacked(
-                generateSVGTop(projectName, symbol, myInvestedAmount),
+                generateSVGTop(symbol, myInvestedAmount),
                 generateSVGScroll(txHash),
                 generateAngleImage(),
                 generateInvestmentAttributes(
@@ -34,7 +34,6 @@ library VestingReceiptNFTSVG {
     }
 
     function generateSVGTop(
-        string memory projectName,
         string memory symbol,
         uint256 myInvestedAmount
     ) internal pure returns (string memory svg) {
@@ -46,7 +45,7 @@ library VestingReceiptNFTSVG {
                 '<svg width="290" height="500" viewBox="0 0 290 500" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">',
                 generateSVGDefs(),
                 generateSVGTopgTag1(symbol),
-                generateSVGTopgTag2(symbol, _myInvestedAmount)
+                generateSVGTopgTag2(_myInvestedAmount)
             )
         );
     }
@@ -88,7 +87,6 @@ library VestingReceiptNFTSVG {
     }
 
     function generateSVGTopgTag2(
-        string memory symbol,
         string memory myInvestedAmount
     ) internal pure returns (string memory svg) {
         // svg = string(

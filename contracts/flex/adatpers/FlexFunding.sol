@@ -436,6 +436,8 @@ contract FlexFundingAdapterContract is
                         )
                     ) {
                         proposal.state = ProposalStatus.FAILED;
+                        proposal.executeBlockNum = block.number;
+
                         emit ProposalExecuted(
                             address(dao),
                             proposalId,
@@ -447,7 +449,7 @@ contract FlexFundingAdapterContract is
                     vars.flexAllocAdapt = FlexAllocationAdapterContract(
                         dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
                     );
-
+                    // console.log("allocateProjectToken");
                     vars.flexAllocAdapt.allocateProjectToken(
                         dao,
                         proposal.investmentInfo.paybackTokenAddr,
@@ -525,6 +527,7 @@ contract FlexFundingAdapterContract is
             } else {
                 // didt meet the min investment amount
                 proposal.state = ProposalStatus.FAILED;
+                proposal.executeBlockNum = block.number;
                 emit ProposalExecuted(address(dao), proposalId, proposal.state);
                 return false;
             }
