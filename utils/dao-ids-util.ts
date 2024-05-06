@@ -25,6 +25,7 @@ export const adaptersIdsMap: Record<string, string> = {
   VINTAGE_SUMMON_DAO: "vintage-summon-dao",
   VINTAGE_ESCROW_FUND_ADAPTER: "vintage-escrow-fund",
   VINTAGE_VESTING_ERC721_ADAPTER: "vintage-vesting-erc721",
+  VINTAGE_VESTING_ERC721_HELPER_ADAPTER: "vintage-vesting-erc721-helper",
   VINTAGE_RAISER_ALLOCATION: "vintage-raiser-allocation",
   VINTAGE_DISTRIBUTE_ADAPTER: "vintage-distribute-adapter",
   VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER: "vintage-funding-return-token-adapter",
@@ -35,6 +36,7 @@ export const adaptersIdsMap: Record<string, string> = {
 
 
   /*******************flex**********************/
+  FLEX_VESTING_ERC721_HELPER_ADAPTER: "flex-vesting-erc721-helper",
   FLEX_VESTING_ERC721_ADAPTER: "flex-vesting-erc721",
   FLEX_STEWARD_MANAGEMENT: "flex-steward-management",
   FLEX_POLLING_VOTING: "flex-polling-voting",

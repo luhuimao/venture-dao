@@ -677,8 +677,9 @@ const deployDao = async (options) => {
     options = {
         ...options,
         vintageVestingContractAddr: adapters["vintageVesting"].instance.address,
-        flexVestingContractAddr: adapters["flexVesting"].instance.address
-
+        // vintageVestingERC721HelperAddr: adapters["vintage-vesting-erc721-helper"].instance.address,
+        flexVestingContractAddr: adapters["flexVesting"].instance.address,
+        // flexVestingERC721HelperAddr: adapters["flex-vesting-erc721-helper"].instance.addAdapters
     }
     // deploy utility contracts
     const utilContracts = await createUtilContracts({ options });

@@ -97,8 +97,8 @@ contract VintageVestingERC721Helper {
                 vestInfo.token,
                 [
                     timeInfo.stepDuration,
-                    remaining_ * 10 ** 18,
-                    total_ * 10 ** 18,
+                    remaining_,
+                    total_,
                     timeInfo.start + timeInfo.cliffDuration,
                     timeInfo.end
                 ]

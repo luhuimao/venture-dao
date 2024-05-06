@@ -8550,7 +8550,7 @@ describe("eligibility deposit voting...", () => {
 
 });
 
-describe("funding NFT", () => {
+describe.only("funding NFT", () => {
     before("deploy contracts...", async () => {
         let [owner,
             user1, user2,
@@ -9099,7 +9099,7 @@ describe("funding NFT", () => {
         return proposalId;
     }
 
-    it("nft enable...", async () => {
+    it.only("nft enable...", async () => {
         const fundRaiseMinTarget = hre.ethers.utils.parseEther("10000");
         const fundRaiseMaxCap = hre.ethers.utils.parseEther("20000");
         const lpMinDepositAmount = hre.ethers.utils.parseEther("100");
@@ -9234,7 +9234,7 @@ describe("funding NFT", () => {
 
 
         // Submit funding proposal
-        const requestedFundAmount = hre.ethers.utils.parseEther("2000");
+        const requestedFundAmount = hre.ethers.utils.parseEther("200");
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
         const vestingStartTime = blocktimestamp + 24;

@@ -97,18 +97,18 @@ describe("to decimal percentage...", () => {
         const nFTDescriptorTest = await NFTDescriptorTest.deploy();
         await nFTDescriptorTest.deployed();
         console.log("deployed...", nFTDescriptorTest.address);
-        const amount = 40;
+        const amount = hre.ethers.utils.parseEther("232.32423");
         const amount1 = 999999;
         const amount2 = 999999999;
         const amount3 = 999999999999;
         const amount4 = 99999999999999;
-        // const rel = await nFTDescriptorTest.integerToString(amount);
+        const rel = await nFTDescriptorTest.integerToString(amount);
         // const rel1 = await nFTDescriptorTest.integerToString(amount1);
         // const rel2 = await nFTDescriptorTest.integerToString(amount2);
         // const rel3 = await nFTDescriptorTest.integerToString(amount3);
         // const rel4 = await nFTDescriptorTest.integerToString(amount4);
 
-        // console.log(amount, rel);
+        console.log(amount, rel);
         // console.log(amount1, rel1);
         // console.log(amount2, rel2);
         // console.log(amount3, rel3);

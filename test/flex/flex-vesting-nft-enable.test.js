@@ -381,7 +381,7 @@ describe("funding...", () => {
         const allocations = [10, 20, 30];
 
         const fundingPollEnable = false; //DIRECT mode
-        const flexDaoFundriaseStyle = 1 // 0 - FCFS 1- Free ink0
+        const flexDaoFundriaseStyle = 0 // 0 - FCFS 1- Free ink0
 
         const flexDaoInfo = {
             name: _daoName, // string name;
@@ -461,10 +461,10 @@ describe("funding...", () => {
 
         let tokenAddress = this.testtoken1.address;
         let minFundingAmount = hre.ethers.utils.parseEther("100");
-        let maxFundingAmount = hre.ethers.utils.parseEther("100");
+        let maxFundingAmount = hre.ethers.utils.parseEther("1000");
         let escrow = true;
         let returnTokenAddr = this.testtoken2.address;
-        let returnTokenAmount = hre.ethers.utils.parseEther("10000");
+        let returnTokenAmount = hre.ethers.utils.parseEther("100000");
         let price = hre.ethers.utils.parseEther("0.01");
         let minReturnAmount = hre.ethers.utils.parseEther("1000000");
         let maxReturnAmount = hre.ethers.utils.parseEther("1000000");
@@ -510,7 +510,7 @@ describe("funding...", () => {
             vestDescription
         ];
 
-        let fundRaiseType = 1;
+        let fundRaiseType = 0;
         let fundRaiseStartTime = blocktimestamp;
         let fundRaiseEndTime = fundRaiseStartTime + 100000;
         let minDepositAmount = hre.ethers.utils.parseEther("1");
@@ -616,8 +616,8 @@ describe("funding...", () => {
         await USDT.connect(this.investor1).approve(flexFundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
 
         await expectRevert(flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("0.1")), "revert");
-        await flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("160"));
-        await flexFundingPoolAdapt.connect(this.investor1).deposit(dao.address, proposalId, hre.ethers.utils.parseEther("15"));
+        await flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("160.243459"));
+        await flexFundingPoolAdapt.connect(this.investor1).deposit(dao.address, proposalId, hre.ethers.utils.parseEther("15.843545"));
 
         const investors = await flexFundingPoolExtContract.getInvestorsByProposalId(proposalId);
         console.log("investors: ", investors);
@@ -704,7 +704,9 @@ describe("funding...", () => {
         const vestId = await flexVestingContract.getVestIdByTokenId(nftToken, 1)
         console.log("vestId ", vestId);
         let createdVestingInfo = await flexVestingContract.vests(1);
-        console.log(" createdVestingInfo", createdVestingInfo);
+        let createdVestingInfo2 = await flexVestingContract.vests(2);
+
+        console.log(" createdVestingInfo", createdVestingInfo2);
 
         // const tokenId = await flexVestingContract.tokenIdToVestId(this.flexVestingERC721.address, 1);
         // console.log("tokenId ", tokenId);
@@ -713,19 +715,20 @@ describe("funding...", () => {
         // console.log("maxTotalSupply ", maxTotalSupply);
         // const rel = await flexVestingContract.getRemainingPercentage(nftToken, 1);
         // console.log(rel);
-        const uri = await this.flexVestingERC721.tokenURI(1);
+        const uri = await this.flexVestingERC721.tokenURI(2);
         console.log(uri);
         const svg = await this.flexVestingERC721.getSvg(1);
+        const svg2 = await this.flexVestingERC721.getSvg(2);
 
         // const svg = await this.flexVestingERC721Helper.getSvg(1, this.flexVesting.address);
         console.log(`
         svg 
-        ${svg}
+        ${svg2}
         `
         );
 
         // let createdVestingInfo = await flexVestingContract.vests(1);
-        let createdVestingInfo2 = await flexVestingContract.vests(2);
+        createdVestingInfo2 = await flexVestingContract.vests(2);
         let createdVestingInfo3 = await flexVestingContract.vests(3);
         let createdVestingInfo4 = await flexVestingContract.vests(4);
 
@@ -803,13 +806,13 @@ describe("funding...", () => {
             total: ${hre.ethers.utils.formatEther(createdVestingInfo.total)}
 
             claimed2: ${hre.ethers.utils.formatEther(createdVestingInfo2.claimed)}
-            total2: ${hre.ethers.utils.formatEther(createdVestingInfo.total)}
+            total2: ${hre.ethers.utils.formatEther(createdVestingInfo2.total)}
 
             claimed3: ${hre.ethers.utils.formatEther(createdVestingInfo3.claimed)}
-            total3: ${hre.ethers.utils.formatEther(createdVestingInfo.total)}
+            total3: ${hre.ethers.utils.formatEther(createdVestingInfo3.total)}
 
             claimed4: ${hre.ethers.utils.formatEther(createdVestingInfo4.claimed)}
-            total4: ${hre.ethers.utils.formatEther(createdVestingInfo.total)}
+            total4: ${hre.ethers.utils.formatEther(createdVestingInfo4.total)}
 
 
             return token balance ${hre.ethers.utils.formatEther(returnTokenBal)}
