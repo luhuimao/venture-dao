@@ -11,6 +11,10 @@ import "../libraries/VestingReceiptNFTSVG.sol";
 contract NFTDescriptorTest {
     using HexStrings for uint256;
 
+    function test() external pure returns (address) {
+        return address(0xDECD);
+    }
+
     // function pencentageString(
     //     uint256 a,
     //     uint256 b

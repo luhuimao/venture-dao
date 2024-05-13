@@ -175,20 +175,37 @@ describe("funding...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
-        const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
-        const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
-        await flexVestingERC721Helper.deployed();
-        this.flexVestingERC721Helper = flexVestingERC721Helper;
+        
+        // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        // await flexVestingERC721Helper.deployed();
+        // this.flexVestingERC721Helper = flexVestingERC721Helper;
 
-        const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
-        const flexVestingERC721 = await FlexVestingERC721.deploy(
-            "DAOSquare Investment Receipt",
-            "DIR",
+        // const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        // const flexVestingERC721 = await FlexVestingERC721.deploy(
+        //     "DAOSquare Investment Receipt",
+        //     "DIR",
+        //     this.flexVesting.address,
+        //     this.flexVestingERC721Helper.address
+        // );
+        // await flexVestingERC721.deployed();
+        // this.flexVestingERC721 = flexVestingERC721;
+
+        const VestingERC721Helper = await hre.ethers.getContractFactory("VestingERC721Helper");
+        const vestingERC721Helper = await VestingERC721Helper.deploy();
+        await vestingERC721Helper.deployed();
+        this.vestingERC721Helper = vestingERC721Helper;
+
+        const VestingERC721 = await hre.ethers.getContractFactory("VestingERC721");
+        const vestingERC721 = await VestingERC721.deploy(
+            "DAOSquare Investment Vesting",
+            "DIV",
             this.flexVesting.address,
-            this.flexVestingERC721Helper.address
+            this.flexVesting.address,
+            this.vestingERC721Helper.address
         );
-        await flexVestingERC721.deployed();
-        this.flexVestingERC721 = flexVestingERC721;
+        await vestingERC721.deployed();
+        this.vestingERC721 = vestingERC721;
 
         this.summonDao = this.adapters.summonDao.instance;
 

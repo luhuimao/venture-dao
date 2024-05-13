@@ -177,20 +177,36 @@ describe("funding...", () => {
 
 
 
-        const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
-        const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
-        await flexVestingERC721Helper.deployed();
-        this.flexVestingERC721Helper = flexVestingERC721Helper;
+        // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        // await flexVestingERC721Helper.deployed();
+        // this.flexVestingERC721Helper = flexVestingERC721Helper;
 
-        const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
-        const flexVestingERC721 = await FlexVestingERC721.deploy(
-            "DAOSquare Investment Receipt",
-            "DIR",
+        // const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        // const flexVestingERC721 = await FlexVestingERC721.deploy(
+        //     "DAOSquare Investment Receipt",
+        //     "DIR",
+        //     this.flexVesting.address,
+        //     this.flexVestingERC721Helper.address
+        // );
+        // await flexVestingERC721.deployed();
+        // this.flexVestingERC721 = flexVestingERC721;
+
+        const VestingERC721Helper = await hre.ethers.getContractFactory("VestingERC721Helper");
+        const vestingERC721Helper = await VestingERC721Helper.deploy();
+        await vestingERC721Helper.deployed();
+        this.vestingERC721Helper = vestingERC721Helper;
+
+        const VestingERC721 = await hre.ethers.getContractFactory("VestingERC721");
+        const vestingERC721 = await VestingERC721.deploy(
+            "DAOSquare Investment Vesting",
+            "DIV",
             this.flexVesting.address,
-            this.flexVestingERC721Helper.address
+            this.flexVesting.address,
+            this.vestingERC721Helper.address
         );
-        await flexVestingERC721.deployed();
-        this.flexVestingERC721 = flexVestingERC721;
+        await vestingERC721.deployed();
+        this.vestingERC721 = vestingERC721;
 
         this.summonDao = this.adapters.summonDao.instance;
 
@@ -494,7 +510,7 @@ describe("funding...", () => {
         let vestingCliffLockAmount = hre.ethers.utils.parseEther("0.1"); // 10%
 
         const vestNFTEnable = true;
-        const nftToken = this.flexVestingERC721.address;
+        const nftToken = this.vestingERC721.address;
         const vestName = "";
         const vestDescription = "NNN DDD iII";
 
@@ -708,17 +724,29 @@ describe("funding...", () => {
 
         console.log(" createdVestingInfo", createdVestingInfo2);
 
-        // const tokenId = await flexVestingContract.tokenIdToVestId(this.flexVestingERC721.address, 1);
-        // console.log("tokenId ", tokenId);
+        const vestId1 = await flexVestingContract.tokenIdToVestId(this.vestingERC721.address, 1);
+        const vestId2 = await flexVestingContract.tokenIdToVestId(this.vestingERC721.address, 2);
+        const vestId3 = await flexVestingContract.tokenIdToVestId(this.vestingERC721.address, 3);
+        const vestId4 = await flexVestingContract.tokenIdToVestId(this.vestingERC721.address, 4);
+
+        const totalSupply = await this.vestingERC721.totalSupply();
+        console.log(`
+        tokenId  ${vestId1}
+        vestId2  ${vestId2}
+        vestId3  ${vestId3}
+        vestId4  ${vestId4}
+
+        totalSupply ${totalSupply}
+        `);
 
         // const maxTotalSupply = await this.flexVestingERC721.maxTotalSupply();
         // console.log("maxTotalSupply ", maxTotalSupply);
         // const rel = await flexVestingContract.getRemainingPercentage(nftToken, 1);
         // console.log(rel);
-        const uri = await this.flexVestingERC721.tokenURI(2);
+        const uri = await this.vestingERC721.tokenURI(2);
         console.log(uri);
-        const svg = await this.flexVestingERC721.getSvg(1);
-        const svg2 = await this.flexVestingERC721.getSvg(2);
+        const svg = await this.vestingERC721.getSvg(1);
+        const svg2 = await this.vestingERC721.getSvg(2);
 
         // const svg = await this.flexVestingERC721Helper.getSvg(1, this.flexVesting.address);
         console.log(`

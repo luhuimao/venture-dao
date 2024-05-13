@@ -108,7 +108,11 @@ contract FlexVesting is IFlexVesting {
         vars.vestId = vestIds++;
 
         if (vars.vestInfo.nftEnable) {
-            vars.newTokenId = FlexVestingERC721(vars.vestInfo.erc721).safeMint(
+            // vars.newTokenId = FlexVestingERC721(vars.vestInfo.erc721).safeMint(
+            //     recipientAddr
+            // );
+
+            vars.newTokenId = VestingERC721(vars.vestInfo.erc721).safeMint(
                 recipientAddr
             );
 

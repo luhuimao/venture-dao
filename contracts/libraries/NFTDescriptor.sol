@@ -475,7 +475,7 @@ library NFTDescriptor {
         uint256 tem4;
 
         if (amount < 1000 * 10 ** 18) {
-            //< 1000 100.9914 
+            //< 1000 100.9914
             //80919048000000000000
             tem = amount / 10 ** 15;
             tem1 = tem / 100000;
@@ -492,7 +492,7 @@ library NFTDescriptor {
             // console.log("tem3 ", tem3);
             // console.log("tem4 ", tem4);
 
-            if (tem4 >= 1) {
+            if (tem4 >= 5) {
                 if (tem3 < 9) tem3 += 1;
                 else {
                     tem3 = 0;
@@ -526,7 +526,7 @@ library NFTDescriptor {
             tem1 = (amount / 10 ** 18 - tem * 1000) / 100;
             tem2 = (amount / 10 ** 18 - tem * 1000 - tem1 * 100) / 10;
             tem3 = (amount / 10 ** 18 - tem * 1000 - tem1 * 100 - tem2 * 10);
-            if (tem3 >= 1) {
+            if (tem3 >= 5) {
                 if (tem2 < 9) tem2 += 1;
                 else {
                     tem2 = 0;
@@ -563,7 +563,7 @@ library NFTDescriptor {
             // console.log("tem3 ", tem3);
             // console.log("tem4 ", tem4);
 
-            if (tem4 >= 1) {
+            if (tem4 >= 5) {
                 if (tem3 < 9) tem3 += 1;
                 else {
                     tem3 = 0;
@@ -601,7 +601,7 @@ library NFTDescriptor {
             // console.log("tem3 ", tem3);
             // console.log("tem4 ", tem4);
 
-            if (tem4 >= 1) {
+            if (tem4 >= 5) {
                 if (tem3 < 9) tem3 += 1;
                 else {
                     tem3 = 0;
@@ -637,7 +637,7 @@ library NFTDescriptor {
             // console.log("tem3 ", tem3);
             // console.log("tem4 ", tem4);
 
-            if (tem4 >= 1) {
+            if (tem4 >= 5) {
                 if (tem3 < 9) tem3 += 1;
                 else {
                     tem3 = 0;

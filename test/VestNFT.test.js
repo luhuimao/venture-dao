@@ -97,7 +97,7 @@ describe("to decimal percentage...", () => {
         const nFTDescriptorTest = await NFTDescriptorTest.deploy();
         await nFTDescriptorTest.deployed();
         console.log("deployed...", nFTDescriptorTest.address);
-        const amount = hre.ethers.utils.parseEther("232.32423");
+        const amount = hre.ethers.utils.parseEther("999019.99023");
         const amount1 = 999999;
         const amount2 = 999999999;
         const amount3 = 999999999999;
@@ -108,7 +108,7 @@ describe("to decimal percentage...", () => {
         // const rel3 = await nFTDescriptorTest.integerToString(amount3);
         // const rel4 = await nFTDescriptorTest.integerToString(amount4);
 
-        console.log(amount, rel);
+        // console.log(amount, rel);
         // console.log(amount1, rel1);
         // console.log(amount2, rel2);
         // console.log(amount3, rel3);
@@ -120,15 +120,19 @@ describe("to decimal percentage...", () => {
         //         uint256Params[2] interval,
         //         uint256Params[3] cliffTime,
         //         uint256Params[4] endTime
+
+        const a = await nFTDescriptorTest.test();
+        console.log(a);
+
         const svg = await nFTDescriptorTest.generateSVG(
             "SDF",
             ZERO_ADDRESS,
             [
-                hre.ethers.utils.parseEther("294.3234"),
-                hre.ethers.utils.parseEther("3294.3234"),
-                3600,
-                1712147224,
-                1712154484
+                hre.ethers.utils.parseEther("500"),
+                hre.ethers.utils.parseEther("500"),
+                1,
+                1715239860,
+                1715247060
             ]
         )
 

@@ -188,20 +188,20 @@ describe("vesting...", () => {
         this.summonVintageDao = this.adapters.summonVintageDao.instance;
         // this.vintageVestingERC721Contract = this.utilContracts.vintageVestingERC721.instance;
 
-        const VintageVestingERC721Helper = await hre.ethers.getContractFactory("VintageVestingERC721Helper");
-        const vintageVestingERC721Helper = await VintageVestingERC721Helper.deploy();
-        await vintageVestingERC721Helper.deployed();
-        this.vintageVestingERC721Helper = vintageVestingERC721Helper;
+        // const VintageVestingERC721Helper = await hre.ethers.getContractFactory("VintageVestingERC721Helper");
+        // const vintageVestingERC721Helper = await VintageVestingERC721Helper.deploy();
+        // await vintageVestingERC721Helper.deployed();
+        // this.vintageVestingERC721Helper = vintageVestingERC721Helper;
 
-        const VintageVestingERC721 = await hre.ethers.getContractFactory("VintageVestingERC721");
-        const vintageVestingERC721 = await VintageVestingERC721.deploy(
-            "DAOSquare Investment Receipt",
-            "DIR",
-            this.vintageVesting.address,
-            this.vintageVestingERC721Helper.address
-        );
-        await vintageVestingERC721.deployed();
-        this.vintageVestingERC721Contract = vintageVestingERC721;
+        // const VintageVestingERC721 = await hre.ethers.getContractFactory("VintageVestingERC721");
+        // const vintageVestingERC721 = await VintageVestingERC721.deploy(
+        //     "DAOSquare Investment Receipt",
+        //     "DIR",
+        //     this.vintageVesting.address,
+        //     this.vintageVestingERC721Helper.address
+        // );
+        // await vintageVestingERC721.deployed();
+        // this.vintageVestingERC721Contract = vintageVestingERC721;
         
 
         const VintageInvestmentReceiptERC721Helper = await hre.ethers.getContractFactory("VintageInvestmentReceiptERC721Helper");
@@ -218,6 +218,22 @@ describe("vesting...", () => {
         );
         await vintageInvestmentReceiptERC721.deployed();
         this.vintageInvestmentReceiptERC721 = vintageInvestmentReceiptERC721;
+
+        const VestingERC721Helper = await hre.ethers.getContractFactory("VestingERC721Helper");
+        const vestingERC721Helper = await VestingERC721Helper.deploy();
+        await vestingERC721Helper.deployed();
+        this.vestingERC721Helper = vestingERC721Helper;
+
+        const VestingERC721 = await hre.ethers.getContractFactory("VestingERC721");
+        const vestingERC721 = await VestingERC721.deploy(
+            "DAOSquare Investment Vesting",
+            "DIV",
+            this.vintageVesting.address,
+            this.vintageVesting.address,
+            this.vestingERC721Helper.address
+        );
+        await vestingERC721.deployed();
+        this.vestingERC721 = vestingERC721;
 
         const daoFactoriesAddress = [
             this.daoFactory.address,

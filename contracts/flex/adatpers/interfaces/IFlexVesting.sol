@@ -10,6 +10,7 @@ import "../FlexAllocation.sol";
 import "../FlexFunding.sol";
 import "./IFlexFunding.sol";
 import "../FlexVestingERC721.sol";
+import "../../../VestingERC721.sol";
 
 interface IFlexVesting {
     function createVesting(

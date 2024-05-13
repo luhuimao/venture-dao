@@ -108,7 +108,10 @@ contract VintageVesting is IVesting {
         vars.vestId = vestIds++;
 
         if (vars.paybackTokenInfo.nftEnable) {
-            vars.newTokenId = VintageVestingERC721(vars.paybackTokenInfo.erc721)
+            // vars.newTokenId = VintageVestingERC721(vars.paybackTokenInfo.erc721)
+            //     .safeMint(recipientAddr);
+
+            vars.newTokenId = VestingERC721(vars.paybackTokenInfo.erc721)
                 .safeMint(recipientAddr);
 
             tokenIdToVestId[vars.paybackTokenInfo.erc721][
@@ -207,7 +210,7 @@ contract VintageVesting is IVesting {
         address recipient = vest.vestInfo.recipient;
         if (vest.nftInfo.nftToken != address(0x0)) {
             if (
-                VintageVestingERC721(vest.nftInfo.nftToken).ownerOf(
+                VestingERC721(vest.nftInfo.nftToken).ownerOf(
                     vest.nftInfo.tokenId
                 ) != msg.sender
             ) revert NotVestReceiver();
