@@ -18,8 +18,8 @@ contract FlexInvestmentReceiptERC721Helper {
         address receiptNFTContrAddress
     ) external view returns (string memory) {
         (
-            address daoAddr,
-            bytes32 proposaId,
+            ,
+            ,
             ,
             string memory executedTxHash,
             uint256 totalInvestedAmount,
@@ -27,7 +27,7 @@ contract FlexInvestmentReceiptERC721Helper {
             FlexInvestmentReceiptERC721.ERC20Info memory erc20,
             string memory projectName,
             ,
-            string memory investmentProposalLink
+
         ) = FlexInvestmentReceiptERC721(receiptNFTContrAddress)
                 .tokenIdToInvestmentProposalInfo(tokenId);
 

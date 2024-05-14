@@ -1,5 +1,6 @@
 pragma solidity ^0.8.0;
 import "../../helpers/DaoHelper.sol";
+import "../extensions/fundingpool/VintageFundingPool.sol";
 
 // SPDX-License-Identifier: MIT
 
@@ -99,5 +100,21 @@ contract VintageFundingPoolAdapterHelperContract {
 
     function getFundEndTime(DaoRegistry dao) external view returns (uint256) {
         return dao.getConfiguration(DaoHelper.FUND_END_TIME);
+    }
+
+    function getAllGorvernorBalance(
+        DaoRegistry dao
+    ) external view returns (uint256) {
+        address[] memory govs = DaoHelper.getAllActiveMember(dao);
+        uint256 bal;
+        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
+        );
+        if (govs.length > 0) {
+            for (uint8 i = 0; i < govs.length; i++) {
+                bal += fundingpool.balanceOf(govs[i]);
+            }
+        }
+        return bal;
     }
 }

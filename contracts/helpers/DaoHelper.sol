@@ -2,6 +2,7 @@ pragma solidity ^0.8.0;
 import "../extensions/bank/Bank.sol";
 // import "../extensions/gpdao/GPDao.sol";
 import "../flex/extensions/FlexFundingPool.sol";
+import "../vintage/extensions/fundingpool/VintageFundingPool.sol";
 import "../core/DaoRegistry.sol";
 import "../core/DaoFactory.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -524,6 +525,22 @@ library DaoHelper {
         DaoRegistry dao
     ) internal view returns (address[] memory) {
         return dao.getAllSteward();
+    }
+
+    function getAllGorvernorBalance(
+        DaoRegistry dao
+    ) internal view returns (uint256) {
+        address[] memory govs = getAllActiveMember(dao);
+        uint256 bal;
+        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
+            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
+        );
+        if (govs.length > 0) {
+            for (uint8 i = 0; i < govs.length; i++) {
+                bal += fundingpool.balanceOf(govs[i]);
+            }
+        }
+        return bal;
     }
 
     function totalTokens(BankExtension bank) internal view returns (uint256) {

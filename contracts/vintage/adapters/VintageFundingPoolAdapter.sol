@@ -51,11 +51,15 @@ contract VintageFundingPoolAdapterContract is
     uint256 public protocolFee = (3 * 1e18) / 1000; // 0.3%
     mapping(address => EnumerableSet.AddressSet) investorMembershipWhiteList;
     mapping(address => mapping(uint256 => EnumerableSet.AddressSet)) fundInvestors;
-
     mapping(address => mapping(bytes32 => uint256))
         public freeINPriorityDeposits; // dao=>new fund proposalid => amount
 
     error MAX_PATICIPANT_AMOUNT_REACH();
+    error ERC20_REQUIRMENT();
+    error ERC721_REQUIRMENT();
+    error ERC1155_REQUIRMENT();
+    error WHITELIST_REQUIRMENT();
+    // error CLEAR_FUND_ERROR();
 
     event OwnerChanged(address oldOwner, address newOwner);
     event Deposit(address daoAddress, uint256 amount, address account);
@@ -98,40 +102,51 @@ contract VintageFundingPoolAdapterContract is
             uint256 tokenId = dao.getConfiguration(
                 DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_TOKENID
             );
-            if (itype == 0) {
-                require(
-                    IERC20(token).balanceOf(account) >= minHolding,
-                    "Vintage Deposit::dont meet min erc20 token holding requirment"
-                );
-            } else if (itype == 1) {
-                require(
-                    IERC721(token).balanceOf(account) >= minHolding,
-                    "Vintage Deposit:dont meet min erc721 token holding requirment"
-                );
-            } else if (itype == 2) {
-                require(
-                    IERC1155(token).balanceOf(account, tokenId) >= minHolding,
-                    "Vintage Deposit:dont meet min erc1155 token holding requirment"
-                );
-            } else if (itype == 3) {
-                require(
-                    ifInvestorMembershipWhiteList(dao, account),
-                    "Vintage Deposit:: not in whitelist"
-                );
+            if (itype == 0 && IERC20(token).balanceOf(account) < minHolding) {
+                revert ERC20_REQUIRMENT();
+                // require(
+                //     IERC20(token).balanceOf(account) >= minHolding,
+                //     "Vintage Deposit::dont meet min erc20 token holding requirment"
+                // );
+            } else if (
+                itype == 1 && IERC721(token).balanceOf(account) < minHolding
+            ) {
+                revert ERC721_REQUIRMENT();
+                // require(
+                //     IERC721(token).balanceOf(account) >= minHolding,
+                //     "Vintage Deposit:dont meet min erc721 token holding requirment"
+                // );
+            } else if (
+                itype == 2 &&
+                IERC1155(token).balanceOf(account, tokenId) < minHolding
+            ) {
+                revert ERC1155_REQUIRMENT();
+                // require(
+                //     IERC1155(token).balanceOf(account, tokenId) >= minHolding,
+                //     "Vintage Deposit:dont meet min erc1155 token holding requirment"
+                // );
+            } else if (
+                itype == 3 && !ifInvestorMembershipWhiteList(dao, account)
+            ) {
+                revert WHITELIST_REQUIRMENT();
+                // require(
+                //     ifInvestorMembershipWhiteList(dao, account),
+                //     "Vintage Deposit:: not in whitelist"
+                // );
             } else {}
         }
         _;
     }
 
-    /**
-     * @notice Updates the DAO registry with the new configurations if valid.
-     * @notice Updated the Bank extension with the new potential tokens if valid.
-     */
-    function configureDao(
-        DaoRegistry dao,
-        uint32 quorum,
-        uint32 superMajority
-    ) external onlyAdapter(dao) {}
+    // /**
+    //  * @notice Updates the DAO registry with the new configurations if valid.
+    //  * @notice Updated the Bank extension with the new potential tokens if valid.
+    //  */
+    // function configureDao(
+    //     DaoRegistry dao,
+    //     uint32 quorum,
+    //     uint32 superMajority
+    // ) external onlyAdapter(dao) {}
 
     function setProtocolFee(
         DaoRegistry dao,
@@ -278,7 +293,7 @@ contract VintageFundingPoolAdapterContract is
                     block.timestamp >
                     dao.getConfiguration(DaoHelper.FUND_END_TIME) +
                         dao.getConfiguration(DaoHelper.RETURN_DURATION)),
-            "FundingPoolAdapter::clearFund::Cant clearFund at this time"
+            "!clearFund"
         );
         VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
@@ -450,25 +465,36 @@ contract VintageFundingPoolAdapterContract is
             daoFundRaisingStates[address(dao)] ==
             DaoHelper.FundRaiseState.IN_PROGRESS
         ) {
-            if (poolBalance(dao) >= fundRaiseTarget) {
-                dao.setConfiguration(
-                    DaoHelper.FUND_START_TIME,
-                    block.timestamp
-                );
-                dao.setConfiguration(
-                    DaoHelper.FUND_END_TIME,
-                    block.timestamp + dao.getConfiguration(DaoHelper.FUND_TERM) //proposalInfo.timesInfo.fundTerm
-                );
-
-                escorwExtraFreeInFund(dao);
-
-                daoFundRaisingStates[address(dao)] = DaoHelper
-                    .FundRaiseState
-                    .DONE;
-            } else
+            if (
+                dao.getConfiguration(DaoHelper.VINTAGE_VOTING_ASSET_TYPE) ==
+                4 &&
+                DaoHelper.getAllGorvernorBalance(dao) <= 0
+            ) {
                 daoFundRaisingStates[address(dao)] = DaoHelper
                     .FundRaiseState
                     .FAILED;
+            } else {
+                if (poolBalance(dao) >= fundRaiseTarget) {
+                    dao.setConfiguration(
+                        DaoHelper.FUND_START_TIME,
+                        block.timestamp
+                    );
+                    dao.setConfiguration(
+                        DaoHelper.FUND_END_TIME,
+                        block.timestamp +
+                            dao.getConfiguration(DaoHelper.FUND_TERM) //proposalInfo.timesInfo.fundTerm
+                    );
+
+                    escorwExtraFreeInFund(dao);
+
+                    daoFundRaisingStates[address(dao)] = DaoHelper
+                        .FundRaiseState
+                        .DONE;
+                } else
+                    daoFundRaisingStates[address(dao)] = DaoHelper
+                        .FundRaiseState
+                        .FAILED;
+            }
 
             VintageFundRaiseAdapterContract fundRaiseContract = VintageFundRaiseAdapterContract(
                     dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
