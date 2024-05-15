@@ -408,7 +408,10 @@ library DaoHelper {
         keccak256("flex-daoset-polling-adapter");
     bytes32 internal constant FLEX_DAO_SET_VOTING_ADAPTER =
         keccak256("flex-daoset-voting-adapter");
-
+    bytes32 internal constant FLEX_DAO_SET_PROPOSER_MEMBERSHIP_ADAPTER =
+        keccak256("flex-daoset-proposer-membership-adapter");
+    bytes32 internal constant FLEX_DAO_SET_INVESTOR_MEMBERSHIP_ADAPTER =
+        keccak256("flex-daoset-investor-membership-adapter");
     //---------------------------------flex---------------------------------
 
     bytes32 internal constant FUND_RAISE = keccak256("fund-raise");

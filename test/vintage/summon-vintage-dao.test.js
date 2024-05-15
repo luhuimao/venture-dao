@@ -9115,7 +9115,7 @@ describe("funding NFT", () => {
         return proposalId;
     }
 
-    it.only("nft enable...", async () => {
+    it("nft enable...", async () => {
         const fundRaiseMinTarget = hre.ethers.utils.parseEther("10000");
         const fundRaiseMaxCap = hre.ethers.utils.parseEther("20000");
         const lpMinDepositAmount = hre.ethers.utils.parseEther("100");
@@ -9446,7 +9446,7 @@ describe("funding NFT", () => {
         vID2    ${vID2}
         `
         );
-       
+
         let svg1 = await this.vestingERC721Contract.getSvg(1);
         let tokenURI = await this.vestingERC721Contract.tokenURI(1);
         console.log(`
@@ -13864,7 +13864,7 @@ describe("funding proposal start voting at refund period...", () => {
 
 });
 
-describe("daoset proposal...", () => {
+describe.only("daoset proposal...", () => {
 
     before("deploy contracts...", async () => {
         let [owner,
@@ -14199,11 +14199,11 @@ describe("daoset proposal...", () => {
     it("create daoset participant cap proposal...", async () => {
         const enable = true;
         const cap = 5;
-        const tx = await this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap);
+        let tx = await this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap);
 
-        const rel = await tx.wait();
+        let rel = await tx.wait();
 
-        const proposalId = rel.events[rel.events.length - 1].args.proposalId
+        let proposalId = rel.events[rel.events.length - 1].args.proposalId
         const proposal = await this.vintageDaoSetAdapterContract.investorCapProposals(
             this.daoAddr1,
             proposalId);
@@ -14426,10 +14426,22 @@ describe("daoset proposal...", () => {
         blocktimestamp ${blocktimestamp}
         `)
 
-        await this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap);
+        tx = await this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap);
         console.log(`
         dao set proposal created...
         `);
+        rel = await tx.wait();
+        proposalId = rel.events[rel.events.length - 1].args.proposalId;
+
+        ProposalInfo = await this.vintageDaoSetAdapterContract.investorCapProposals(this.daoAddr1, proposalId);
+        stopVoteTime = ProposalInfo.stopVoteTime;
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1])
+            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        }
+
+        await this.vintageDaoSetAdapterContract.processInvestorCapProposal(this.daoAddr1, proposalId);
 
     });
 

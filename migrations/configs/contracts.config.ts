@@ -2032,14 +2032,48 @@ export const contracts: Array<ContractConfig> = [
     },
   },
   {
+    id: adaptersIdsMap.VINTAGE_VESTING_ERC721_HELPER_ADAPTER,
+    name: "VintageVestingERC721Helper",
+    alias: "vintageVestingERC721Helper",
+    path: "../../contracts/adapters/VintageVestingERC721Helper",
+    enabled: false,
+    version: "1.0.0",
+    type: ContractType.Util,
+    deploymentArgs: ["vintageVestingNFTName",
+     "vintageVestingNFTSymbol", 
+     "vintageVestingContractAddr",
+      "vintageVestingERC721HelperAddr"
+    ],
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
     id: adaptersIdsMap.VINTAGE_VESTING_ERC721_ADAPTER,
     name: "VintageVestingERC721",
     alias: "vintageVestingERC721",
     path: "../../contracts/adapters/VintageVestingERC721",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Util,
     deploymentArgs: ["vintageVestingNFTName", "vintageVestingNFTSymbol", "vintageVestingContractAddr"],
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_VESTING_ERC721_HELPER_ADAPTER,
+    name: "FlexVestingERC721Helper",
+    alias: "flexVestingERC721Helper",
+    path: "../../contracts/adapters/FlexVestingERC721Helper",
+    enabled: false,
+    version: "1.0.0",
+    type: ContractType.Util,
+    deploymentArgs: [],
     acls: {
       dao: [],
       extensions: {
@@ -2051,10 +2085,10 @@ export const contracts: Array<ContractConfig> = [
     name: "FlexVestingERC721",
     alias: "flexVestingERC721",
     path: "../../contracts/adapters/FlexVestingERC721",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Util,
-    deploymentArgs: ["flexVestingNFTName", "flexVestingNFTSymbol", "flexVestingContractAddr"],
+    deploymentArgs: ["flexVestingNFTName", "flexVestingNFTSymbol", "flexVestingContractAddr","flexVestingERC721HelperAddr"],
     acls: {
       dao: [],
       extensions: {

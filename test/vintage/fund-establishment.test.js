@@ -767,7 +767,7 @@ describe("fund establishment...", () => {
 
     });
 
-    it.only("all governors deposit value == 0 fund raise failed if voting asset set to deposit...", async () => {
+    it("all governors deposit value == 0 fund raise failed if voting asset set to deposit...", async () => {
         const vintageFundingAdapterContract = this.vintageFundingAdapterContract;
         const vintageFundingAdaptHelperContr = this.vintageFundingAdapterHelperContract;
         const vintageGovernorManangementContract = this.vintageRaiserManagementContract;

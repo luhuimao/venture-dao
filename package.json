@@ -27,6 +27,7 @@
     "openzeppelin-solidity-2.3.0": "npm:openzeppelin-solidity@2.3.0"
   },
   "dependencies": {
+    "@eth-optimism/hardhat-ovm": "^0.2.0",
     "@hq20/fixidity": "^0.1.0-alpha.2",
     "@nomiclabs/buidler": "^1.4.8",
     "@openzeppelin/contracts": "4.6.0",
@@ -38,9 +39,14 @@
     "@typechain/hardhat": "^6.0.0",
     "@typechain/truffle-v5": "^8.0.0",
     "@typechain/web3-v1": "^6.0.0",
+    "@uniswap/lib": "^4.0.1-alpha",
+    "@uniswap/v2-core": "1.0.1",
+    "@uniswap/v3-core-optimism": "1.0.0-rc.0",
     "abdk-libraries-solidity": "^3.0.0",
+    "base64-sol": "1.0.1",
     "child_process": "^1.0.2",
     "dotenv": "^8.2.0",
+    "hardhat-watcher": "^2.1.1",
     "solidity-coverage": "^0.7.16",
     "ts-generator": "^0.1.1",
     "ts-mocha": "^8.0.0",
