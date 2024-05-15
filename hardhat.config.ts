@@ -133,9 +133,21 @@ module.exports = {
       ],
     },
     base_sepolia: {
-      url: 'https://base-sepolia-rpc.publicnode.com',
+      // url: 'https://base-sepolia-rpc.publicnode.com',
+      url: 'https://base-sepolia.g.alchemy.com/v2/6lTB2X_wPBmeDrq2AbDjfVQnw47EtVLm',
       chainId: 84532,
       gasPrice: 100000000,
+      accounts: [
+        process.env.TEST_PRIVATE_KEY1,
+        process.env.TEST_PRIVATE_KEY2,
+        process.env.TEST_PRIVATE_KEY3,
+        process.env.TEST_PRIVATE_KEY4,
+        process.env.TEST_PRIVATE_KEY5
+      ],
+    },
+    optimism: {
+      url: 'https://optimism.blockpi.network/v1/rpc/public',
+      chainId: 10,
       accounts: [
         process.env.TEST_PRIVATE_KEY1,
         process.env.TEST_PRIVATE_KEY2,
