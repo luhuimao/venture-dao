@@ -41,6 +41,7 @@ const deploySummonContract = async () => {
 }
 
 async function main() {
+    await getCollectiveAdapterAddress();
     // await getVintageInvestors();
     // await getVintageAdapterAddress();
     // await getFlexDaosetPropsalInfo();
@@ -49,7 +50,7 @@ async function main() {
     // await getFlexEscrowTokenInfo();
     // await createDaosetProposal();
     // await getAdapterAddress();
-    await getDaoConfig();
+    // await getDaoConfig();
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
     // await deploy();
     // await getFlexdaoInvestorWhitelist();
@@ -2536,7 +2537,7 @@ const getDaoConfig = async () => {
     const VOTING_PERIOD = await daoContract.getConfiguration("0x9876c0f0505bfb2b1c38d3bbd25ba13159172cd0868972d76927723f5a9480fc")
     const QUORUM = await daoContract.getConfiguration("0x0324de13a5a6e302ddb95a9fdf81cc736fc8acee2abe558970daac27395904e7")
     const SUPPORT = await daoContract.getConfiguration("0xb4c601c38beae7eebb719eda3438f59fcbfd4c6dd7d38c00665b6fd5b432df32")
- 
+
     console.log(`
     QUORUM   ${QUORUM}
     SUPPORT  ${SUPPORT}
@@ -2664,6 +2665,14 @@ const getVintageAdapterAddress = async () => {
     vintageDaoSetHelperAdapterContract      ${vintageDaoSetHelperAdapterContract}
     vintageFundingPoolFactory               ${vintageFundingPoolFactory}
    `);
+}
+
+const getCollectiveAdapterAddress = async () => { 
+    const daoContrct = (await hre.ethers.
+        getContractFactory("DaoRegistry")).attach("0x10961e5eec16ed5db73889fcc44bfab9ac65bff9");
+    let collectiveGovernorManagmentAdapterContractAddr = await daoContrct.getAdapterAddress("0x1a4f1390baec30049008138e650571a3c4374eba88116bc89dc192f2f9295efe");
+   
+    console.log(collectiveGovernorManagmentAdapterContractAddr);
 }
 
 const getFlexdaoInvestorWhitelist = async () => {
