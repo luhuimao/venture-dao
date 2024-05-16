@@ -308,7 +308,7 @@ contract ColletiveFundingProposalAdapterContract is
             vars.proposerFundReward =
                 (proposal.fundingInfo.totalAmount *
                     dao.getConfiguration(
-                        DaoHelper.VINTAGE_PROPOSER_FUND_REWARD_RADIO
+                        DaoHelper.COLLECTIVE_PROPOSER_FUND_REWARD_RADIO
                     )) /
                 PERCENTAGE_PRECISION;
 
