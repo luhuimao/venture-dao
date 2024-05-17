@@ -64,7 +64,7 @@ async function main() {
     // await getAdapterAddress();
     // await getDaoConfig();
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
-    await deploy();
+    // await deploy();
     // await getFlexdaoInvestorWhitelist();
     // await summonVintageDao();
     // await submitVintageDaosetProposal();
@@ -77,7 +77,7 @@ async function main() {
     // await createFlexFundingProposal("0x2825bd0e22be863c91e5c8bab430a356c76ef5cd");
     // await createVintageFundRaiseProposal("0x6e4cb966280ffdaa3b6ebdc18bcf4d8815ab8979");
     // await createVintageFundingProposal("0xd19e4460b6252acecf593a15271855087b8ec324");
-    // await getFlexVestingInfo();
+    await getFlexVestingInfo("0x3da2bba64ff896ab9883537652439dadbfd602bc", "0x52439dadbfd602bc496e766573746d656e742333000000000000000000000000");
     // await createFlexVesting();
     // await ifFlexVestingElegible();
     // await getVintageSetApproveAmount();
@@ -2191,24 +2191,44 @@ const getVintageSetApproveAmount = async () => {
 
 }
 
-const getFlexVestingInfo = async () => {
-    const flexAllocationAdapterContract = (await hre.ethers.getContractFactory("FlexAllocationAdapterContract")).
-        attach("0x8D0d0f3FDC281Ab1172406015F7306E15f1930e2");
-
+const getFlexVestingInfo = async (daoAddr, investmentProposalId) => {
     const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).
-        attach("0x4eB43d54e2a93B32De7Fe491f005244a11CFb847");
+        attach(daoAddr);
 
+    const flexAllocContrAddr = await daoContract.getAdapterAddress("0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8");
+
+    const flexAllocationAdapterContract = (await hre.ethers.getContractFactory("FlexAllocationAdapterContract")).
+        attach(flexAllocContrAddr);
 
     const managementFee = await daoContract.getConfiguration("0xea659d8e1a730b10af1cecb4f8ee391adf80e75302d6aaeb9642dc8a4a5e5dbb");
     const managementFeeAddress = await daoContract.getAddressConfiguration("0x8987d08c67963e4cacd5e5936c122a968c66853d58299dd822c1942227109839");
-    const shares = await flexAllocationAdapterContract.vestingInfos("0x4eB43d54e2a93B32De7Fe491f005244a11CFb847",
-        "0xf005244a11cfb84746756e64696e672332000000000000000000000000000000",
-        managementFeeAddress);
+    const managementPaybackReward = await flexAllocationAdapterContract.vestingInfos(
+        daoAddr,
+        investmentProposalId,
+        managementFeeAddress
+    );
+
+    const proposerPaybackReward = await flexAllocationAdapterContract.vestingInfos(
+        daoAddr,
+        investmentProposalId,
+        "0x06bc456535ec14669c1b116d339226faba08b429"
+    );
+
+    const investorPaybackReward = await flexAllocationAdapterContract.getInvestmentRewards(
+        daoAddr,
+        investmentProposalId,
+        "0x06bc456535ec14669c1b116d339226faba08b429"
+    )
+
+
     console.log(`
-    managementFee ${managementFee}
-    managementFeeAddress ${managementFeeAddress}
-    shares ${shares[0]}
-    created ${shares[1]}
+    managementFeeAddress        ${managementFeeAddress}
+    managementshares            ${managementPaybackReward[0]}
+    managementcreated           ${managementPaybackReward[1]}
+
+    proposerPaybackRewardAmount ${proposerPaybackReward[0]}
+
+    investorPaybackRewardAmount ${investorPaybackReward}
     `);
 }
 
