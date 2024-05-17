@@ -41,7 +41,8 @@ const deploySummonContract = async () => {
 }
 
 async function main() {
-    await getCollectiveAdapterAddress();
+    // await getCollectiveAdapterAddress();
+    await getCollectiveProtocolFeeAndAccount();
     // await getVintageInvestors();
     // await getVintageAdapterAddress();
     // await getFlexDaosetPropsalInfo();
@@ -2667,11 +2668,11 @@ const getVintageAdapterAddress = async () => {
    `);
 }
 
-const getCollectiveAdapterAddress = async () => { 
+const getCollectiveAdapterAddress = async () => {
     const daoContrct = (await hre.ethers.
         getContractFactory("DaoRegistry")).attach("0x10961e5eec16ed5db73889fcc44bfab9ac65bff9");
     let collectiveGovernorManagmentAdapterContractAddr = await daoContrct.getAdapterAddress("0x1a4f1390baec30049008138e650571a3c4374eba88116bc89dc192f2f9295efe");
-   
+
     console.log(collectiveGovernorManagmentAdapterContractAddr);
 }
 
@@ -2810,9 +2811,27 @@ const getVintageInvestors = async () => {
 
 }
 
-const getVintageFundingApproveInfo = async () => {
-    const vintageInvestmentPaybackTokenAdapterContract = (await hre.ethers.getContractFactory("VintageInvestmentPaybackTokenAdapterContract"))
-        .attach(vintageFundingPoolAdaptAddr);
+const getCollectiveProtocolFeeAndAccount = async () => {
+    const daoContr = (await hre.ethers.getContractFactory("DaoRegistry"))
+        .attach("0x7517e0504b6a8c92469fef86f6c7a6d41539ffcd");
+
+    const fundingPoolAdaptAddr = await daoContr.getAdapterAddress("0x8f5b4aabbdb8527d420a29cc90ae207773ad49b73c632c3cfd2f29eb8776f2ea");
+    const fundingAdaptAddr = await daoContr.getAdapterAddress("0x72894213a5c7f56b36b2947fa6ea18963d6bb1a68746b46d7f552cca76e1a7a8");
+
+    const colletiveFundingPoolAdapterContract = (await hre.ethers.getContractFactory("ColletiveFundingPoolAdapterContract"))
+        .attach(fundingPoolAdaptAddr);
+
+    const colletiveFundingProposalAdapterContract = (await hre.ethers.getContractFactory("ColletiveFundingProposalAdapterContract"))
+        .attach(fundingAdaptAddr);
+
+    const protocolf = await colletiveFundingPoolAdapterContract.protocolFee();
+    const protooclAccount = await colletiveFundingProposalAdapterContract.protocolAddress();
+
+    console.log(`
+        protocolf        ${protocolf}
+        protooclAccount  ${protooclAccount}
+        `);
+
 }
 
 main()
