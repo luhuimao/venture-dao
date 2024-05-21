@@ -176,10 +176,10 @@ contract FlexFundingAdapterContract is
         DaoRegistry dao,
         ProposalParams calldata params
     ) external override reimbursable(dao) onlyProposer(dao) {
-        FlexDaoSetAdapterContract daoset = FlexDaoSetAdapterContract(
-            dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER)
+        FlexDaoSetHelperAdapterContract daosethelper = FlexDaoSetHelperAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
         );
-        require(daoset.isProposalAllDone(dao), "UnDone Daoset Proposal");
+        require(daosethelper.isProposalAllDone(dao), "UnDone Daoset Proposal");
         if (
             (params.investmentInfo.maxInvestmentAmount > 0 &&
                 params.investmentInfo.maxInvestmentAmount <

@@ -5,7 +5,14 @@ pragma solidity ^0.8.0;
 import "../../helpers/DaoHelper.sol";
 import "../../core/DaoRegistry.sol";
 import "./FlexDaoSetAdapter.sol";
+import "./FlexDaoSetFeesAdapter.sol";
+import "./FlexDaoSetGovernorMembershipAdapter.sol";
+import "./FlexDaoSetInvestorMembershipAdapter.sol";
+import "./FlexDaoSetPollingAdapter.sol";
+import "./FlexDaoSetVotingAdapter.sol";
 import "./StewardManagement.sol";
+import "./FlexDaoSetInvestorCapAdapter.sol";
+import "./FlexDaoSetProposerMembershipAdapter.sol";
 import "./FlexFundingPoolAdapter.sol";
 import "./FlexFunding.sol";
 import "./FlexPollingVoting.sol";
@@ -18,7 +25,7 @@ contract FlexDaoSetHelperAdapterContract {
         uint256 cap
     ) external {
         require(
-            msg.sender == dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER),
+            msg.sender == dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_INVESTOR_CAP_ADAPTER),
             "!access"
         );
         dao.setConfiguration(
@@ -39,7 +46,7 @@ contract FlexDaoSetHelperAdapterContract {
         address[] calldata whitelist
     ) external {
         require(
-            msg.sender == dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER),
+            msg.sender == dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_GOVERNOR_MEMBERSHIP_ADAPTER),
             "!access"
         );
         dao.setConfiguration(
@@ -97,7 +104,7 @@ contract FlexDaoSetHelperAdapterContract {
         address[] calldata whitelist
     ) external {
         require(
-            msg.sender == dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER),
+            msg.sender == dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_INVESTOR_MEMBERSHIP_ADAPTER),
             "!access"
         );
         dao.setConfiguration(
@@ -216,7 +223,7 @@ contract FlexDaoSetHelperAdapterContract {
         address managementFeeAddress
     ) external {
         require(
-            msg.sender == dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER),
+            msg.sender == dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_FEES_ADAPTER),
             "!access"
         );
         //1config FLEX_MANAGEMENT_FEE_AMOUNT
@@ -247,7 +254,7 @@ contract FlexDaoSetHelperAdapterContract {
         address[] calldata _whitelist
     ) external {
         require(
-            msg.sender == dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER),
+            msg.sender == dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_PROPOSER_MEMBERSHIP_ADAPTER),
             "!access"
         );
         enable == false
@@ -368,5 +375,81 @@ contract FlexDaoSetHelperAdapterContract {
                 );
             }
         }
+    }
+
+    function isProposalAllDone(DaoRegistry dao) external view returns (bool) {
+        FlexDaoSetFeesAdapterContract feesDaoset = FlexDaoSetFeesAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_FEES_ADAPTER)
+            );
+
+        FlexDaoSetGovernorMembershipAdapterContract governorMembershipDaoset = FlexDaoSetGovernorMembershipAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.FLEX_DAO_SET_GOVERNOR_MEMBERSHIP_ADAPTER
+                )
+            );
+
+        FlexDaoSetInvestorCapAdapterContract investorCapDaoset = FlexDaoSetInvestorCapAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.FLEX_DAO_SET_INVESTOR_CAP_ADAPTER
+                )
+            );
+
+        FlexDaoSetInvestorMembershipAdapterContract investorMembershipDaoset = FlexDaoSetInvestorMembershipAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.FLEX_DAO_SET_INVESTOR_MEMBERSHIP_ADAPTER
+                )
+            );
+
+        FlexDaoSetPollingAdapterContract pollingDaoset = FlexDaoSetPollingAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_POLLING_ADAPTER)
+            );
+
+        FlexDaoSetProposerMembershipAdapterContract proposermembershipDaoset = FlexDaoSetProposerMembershipAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.FLEX_DAO_SET_PROPOSER_MEMBERSHIP_ADAPTER
+                )
+            );
+
+        FlexDaoSetVotingAdapterContract votingDaoset = FlexDaoSetVotingAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_VOTING_ADAPTER)
+            );
+
+        if (
+            investorCapDaoset.ongoingInvestorCapProposal(address(dao)) !=
+            bytes32(0) ||
+            governorMembershipDaoset.ongoingGovernorMembershipProposal(
+                address(dao)
+            ) !=
+            bytes32(0) ||
+            investorMembershipDaoset.ongoingInvstorMembershipProposal(
+                address(dao)
+            ) !=
+            bytes32(0) ||
+            votingDaoset.ongoingVotingProposal(address(dao)) != bytes32(0) ||
+            feesDaoset.ongoingFeesProposal(address(dao)) != bytes32(0) ||
+            proposermembershipDaoset.ongoingProposerMembershipProposal(
+                address(dao)
+            ) !=
+            bytes32(0) ||
+            pollingDaoset.ongoingPollForInvestmentProposal(address(dao)) !=
+            bytes32(0)
+        ) {
+            return false;
+        }
+        return true;
+    }
+
+    function unDoneProposalsCheck(
+        DaoRegistry dao
+    ) external view returns (bool) {
+        FlexFundingAdapterContract funding = FlexFundingAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
+        );
+        StewardManagementContract governor = StewardManagementContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_STEWARD_MANAGEMENT)
+        );
+
+        if (funding.allDone(dao) && governor.allDone(dao)) return true;
+        return false;
     }
 }

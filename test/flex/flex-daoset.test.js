@@ -80,9 +80,10 @@ import {
 import {
     deserialize
 } from "v8";
+import { describe } from "node:test";
 const hre = require("hardhat");
 
-describe("daoset proposal...", () => {
+describe("dao set proposal...", () => {
     before("deploy contracts...", async () => {
         let [
             owner,
@@ -163,10 +164,15 @@ describe("daoset proposal...", () => {
         this.flexFreeInEscrowFundAdapterContract = adapters.flexFreeInEscrowFundAdapterContract.instance;
         this.flexFundingHelperAdapterContract = adapters.flexFundingHelperAdapterContract.instance;
         this.summonDao = this.adapters.summonDao.instance;
-        this.flexDaoSetAdapterContract = adapters.flexDaoSetAdapterContract.instance;
+        // this.flexDaoSetAdapterContract = adapters.flexDaoSetAdapterContract.instance;
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+        this.flexDaoSetFeesAdapterContract = adapters.flexDaoSetFeesAdapterContract.instance;
+        this.flexDaoSetGovernorMembershipAdapterContract = adapters.flexDaoSetGovernorMembershipAdapterContract.instance;
+        this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
+        this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
+        this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
 
         // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
         // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
@@ -207,6 +213,7 @@ describe("daoset proposal...", () => {
         _daoName = "my_flex_dao002";
 
         const creator = this.owner.address;
+
         const enalbeAdapters = [
             {
                 id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
@@ -248,11 +255,6 @@ describe("daoset proposal...", () => {
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
-            // {
-            //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-            //     addr: this.managing.address,
-            //     flags: 59
-            // },
             {
                 id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
                 addr: this.flexStewardMangement.address,
@@ -278,38 +280,65 @@ describe("daoset proposal...", () => {
                 addr: this.flexFundingHelperAdapterContract.address,
                 flags: 0
             },
+            // {
+            //     id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            //     addr: this.flexDaoSetAdapterContract.address,
+            //     flags: 778242
+            // },
             {
-                id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-                addr: this.flexDaoSetAdapterContract.address,
-                flags: 778242
-            },
-            {
-                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
+                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37', //flexDaoSetHelperAdapterContract
                 addr: this.flexDaoSetHelperAdapterContract.address,
                 flags: 8
             },
             {
-                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
+                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',// flexDaoSetPollingAdapterContract
                 addr: this.flexDaoSetPollingAdapterContract.address,
                 flags: 262146
             },
             {
-                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
+                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',//flexDaoSetVotingAdapterContract
                 addr: this.flexDaoSetVotingAdapterContract.address,
                 flags: 65538
+            },
+            {
+                id: '0xc6bb47f9566baa74b5032b5c10e5bf4a1e2382ca337c2de674732f6401d52cc0',//flexDaoSetFeesAdapterContract
+                addr: this.flexDaoSetFeesAdapterContract.address,
+                flags: 131074
+            },
+            {
+                id: '0x869e5d18913d4e9bb387c730a04b58d11e95102194f7217a4b684f6e61dff920',//flexDaoSetGovernorMembershipAdapterContract
+                addr: this.flexDaoSetGovernorMembershipAdapterContract.address,
+                flags: 16386
+            },
+            {
+                id: '0x08f2d2eeda0c9072cdba8b58d442503b4cf9eb6c2f74d75e91dc719111c3189c',//flexDaoSetInvestorCapAdapterContract
+                addr: this.flexDaoSetInvestorCapAdapterContract.address,
+                flags: 8194
+            },
+            {
+                id: '0xe6121cbf77e02f965a1829c382f701ad4cec84fbda84c45378db0768d2e40871',//flexDaoSetInvestorMembershipAdapterContract
+                addr: this.flexDaoSetInvestorMembershipAdapterContract.address,
+                flags: 32770
+            },
+            {
+                id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
+                addr: this.flexDaoSetProposerMembershipAdapterContract.address,
+                flags: 524290
             }
 
         ];
-        const adapters1 = [{
-            id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
-            addr: this.flexFundingPoolAdapterContract.address, //FlexFundingPoolAdapterContract
-            flags: 75
-        },
-        {
-            id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
-            addr: this.flexFundingAdapterContract.address, //FlexFundingAdapterContract
-            flags: 26
-        }
+
+        const adapters1 = [
+            {
+                id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+                addr: this.flexFundingPoolAdapterContract.address, //FlexFundingPoolAdapterContract
+                flags: 75
+            },
+            {
+                id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+                addr: this.flexFundingAdapterContract.address, //FlexFundingAdapterContract
+                flags: 26
+            }
         ];
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
@@ -505,7 +534,7 @@ describe("daoset proposal...", () => {
     it("submit participant cap dao set proposal...", async () => {
         const enableParticipantCap = false;
         const cap = 0;
-        const tx = await this.flexDaoSetAdapterContract
+        const tx = await this.flexDaoSetInvestorCapAdapterContract
             .submitInvestorCapProposal(
                 this.flexDirectdaoAddress,
                 enableParticipantCap,
@@ -514,7 +543,7 @@ describe("daoset proposal...", () => {
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
-        let proposal = await this.flexDaoSetAdapterContract.
+        let proposal = await this.flexDaoSetInvestorCapAdapterContract.
             investorCapProposals(
                 this.flexDirectdaoAddress,
                 proposalId
@@ -534,12 +563,189 @@ describe("daoset proposal...", () => {
         voting...
        `);
 
-        await expectRevert(this.flexDaoSetAdapterContract
+        let enable = true;
+        let name = "daoset-governor-membership-new-name";
+        let varifyType = 1;
+        let minAmount = 4;
+        let tokenAddress = this.testtoken1.address;
+        let tokenId = 0;
+        let whiteList = [this.user1.address, this.user2.address];
+        let params = [
+            this.flexDirectdaoAddress,
+            enable,
+            name,
+            varifyType,
+            minAmount,
+            tokenAddress,
+            tokenId,
+            whiteList
+        ];
+        await expectRevert(this.flexDaoSetGovernorMembershipAdapterContract
+            .submitGovernorMembershipProposal(
+                params
+            ), "revert");
+
+        enable = true;
+        name = "daoset-investor-membership-name";
+        varifyType = 1;
+        minAmount = 4;
+        tokenAddress = this.testtoken1.address;
+        tokenId = 2;
+        whiteList = [this.user1.address, this.user2.address];
+        params = [
+            this.flexDirectdaoAddress,
+            enable,
+            name,
+            varifyType,
+            minAmount,
+            tokenAddress,
+            tokenId,
+            whiteList
+        ];
+
+        await expectRevert(this.flexDaoSetInvestorMembershipAdapterContract
+            .submitInvestorMembershipProposal(
+                params
+            ),
+            "revert");
+
+        let eligibilityType = 0;
+        tokenAddress = this.testtoken1.address;
+        tokenId = 0;
+        let votingWeightedType = 0;
+        let supportType = 0;
+        let quorumType = 0
+        let support = 21;
+        let quorum = 2;
+        let votingPeriod = 60 * 10;
+        let executingPeriod = 60 * 0;
+        let governors = [
+            // this.owner.address,
+            // this.genesis_steward1.address,
+            // this.genesis_steward2.address
+        ];
+        const allocations = [
+            // 500, 200, 300
+        ];
+        params = [
+            this.flexDirectdaoAddress,
+            eligibilityType,
+            tokenAddress,
+            tokenId,
+            votingWeightedType,
+            supportType,
+            quorumType,
+            support,
+            quorum,
+            votingPeriod,
+            executingPeriod,
+            governors,
+            allocations,
+        ];
+        await expectRevert(this.flexDaoSetVotingAdapterContract
+            .submitVotingProposal(
+                params
+            ),
+            "revert");
+
+        let managementFeeAmount = hre.ethers.utils.parseEther("0.002");
+        let returnTokenManagementFeeAmount = hre.ethers.utils.parseEther("0.003");
+        let managementAddress = this.user2.address;
+        await expectRevert(this.flexDaoSetFeesAdapterContract
+            .submitFeesProposal(
+                this.flexDirectdaoAddress,
+                managementFeeAmount,
+                returnTokenManagementFeeAmount,
+                managementAddress
+            ),
+            "revert");
+
+
+        await expectRevert(this.flexDaoSetInvestorCapAdapterContract
             .submitInvestorCapProposal(
                 this.flexDirectdaoAddress,
                 enableParticipantCap,
                 cap),
             "revert");
+
+        let proposerMembershipEnable = false;
+        name = "daoset-proposer-membership-name";
+        varifyType = 3; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
+        let minHolding = 12;
+        tokenAddress = this.testtoken2.address;
+        tokenId = 2;
+        whiteList = [
+            this.investor1.address,
+            this.investor2.address
+        ];
+
+        params = [
+            this.flexDirectdaoAddress,
+            proposerMembershipEnable,
+            name,
+            varifyType,
+            minHolding,
+            tokenAddress,
+            tokenId,
+            whiteList
+        ];
+
+        await expectRevert(this.flexDaoSetProposerMembershipAdapterContract
+            .submitProposerMembershipProposal(
+                params
+            ),
+            "revert");
+
+
+        let pollEnable = true;
+        name = "daoset-pollvoter-memberhsip-name";
+        varifyType = 3; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
+        minHolding = 12;
+        tokenAddress = this.testtoken2.address;
+        tokenId = 2;
+        whiteList = [
+            this.investor1.address,
+            this.investor2.address
+        ];
+
+        let pollingvotingPeriod = 60 * 8;
+        let pollingvotingPower = 2;
+        let pollingsuperMajority = 12;
+        let pollingquorum = 22;
+        let pollingeligibilityType = 2; //0. erc20 1.erc721 2.erc1155 3.allocation
+        let pollingtokenAddress = this.testtoken2.address;
+        let pollingtokenID = 44;
+        let pollingsupportType = 1; // 0. YES - NO > X
+        let pollingquorumType = 0; // 0. YES + NO > X 
+
+        params = [
+            this.flexDirectdaoAddress,
+            pollEnable,
+            [
+                name,
+                varifyType,
+                minHolding,
+                tokenAddress,
+                tokenId,
+                whiteList
+            ],
+            [
+                pollingvotingPeriod,
+                pollingvotingPower,
+                pollingsuperMajority,
+                pollingquorum,
+                pollingeligibilityType,
+                pollingtokenAddress,
+                pollingtokenID,
+                pollingsupportType,
+                pollingquorumType
+            ]
+        ];
+        await expectRevert(this.flexDaoSetPollingAdapterContract
+            .submitPollForInvestmentProposal(
+                params
+            ), "revert");
+
 
         await this.flexVotingContract.submitVote(
             this.flexDirectdaoAddress,
@@ -558,13 +764,13 @@ describe("daoset proposal...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexDaoSetAdapterContract.
+        await this.flexDaoSetInvestorCapAdapterContract.
             processInvestorCapProposal(
                 this.flexDirectdaoAddress,
                 proposalId
             );
 
-        proposal = await this.flexDaoSetAdapterContract.
+        proposal = await this.flexDaoSetInvestorCapAdapterContract.
             investorCapProposals(
                 this.flexDirectdaoAddress,
                 proposalId
@@ -601,7 +807,7 @@ describe("daoset proposal...", () => {
             tokenId,
             whiteList
         ];
-        const tx = await this.flexDaoSetAdapterContract
+        const tx = await this.flexDaoSetGovernorMembershipAdapterContract
             .submitGovernorMembershipProposal(
                 params
             );
@@ -609,7 +815,7 @@ describe("daoset proposal...", () => {
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
-        let proposal = await this.flexDaoSetAdapterContract.
+        let proposal = await this.flexDaoSetGovernorMembershipAdapterContract.
             governorMembershipProposals(
                 this.flexDirectdaoAddress,
                 proposalId
@@ -648,7 +854,7 @@ describe("daoset proposal...", () => {
         voting...
        `);
 
-        await expectRevert(this.flexDaoSetAdapterContract
+        await expectRevert(this.flexDaoSetGovernorMembershipAdapterContract
             .submitGovernorMembershipProposal(
                 params
             ),
@@ -671,13 +877,13 @@ describe("daoset proposal...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexDaoSetAdapterContract.
+        await this.flexDaoSetGovernorMembershipAdapterContract.
             processGovernorMembershipProposal(
                 this.flexDirectdaoAddress,
                 proposalId
             );
 
-        proposal = await this.flexDaoSetAdapterContract.
+        proposal = await this.flexDaoSetGovernorMembershipAdapterContract.
             governorMembershipProposals(
                 this.flexDirectdaoAddress,
                 proposalId
@@ -733,7 +939,7 @@ describe("daoset proposal...", () => {
             whiteList
         ];
 
-        const tx = await this.flexDaoSetAdapterContract
+        const tx = await this.flexDaoSetInvestorMembershipAdapterContract
             .submitInvestorMembershipProposal(
                 params
             );
@@ -741,7 +947,7 @@ describe("daoset proposal...", () => {
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
-        let proposal = await this.flexDaoSetAdapterContract.
+        let proposal = await this.flexDaoSetInvestorMembershipAdapterContract.
             investorMembershipProposals(
                 this.flexDirectdaoAddress,
                 proposalId
@@ -788,7 +994,7 @@ describe("daoset proposal...", () => {
         voting...
        `);
 
-        await expectRevert(this.flexDaoSetAdapterContract
+        await expectRevert(this.flexDaoSetInvestorMembershipAdapterContract
             .submitInvestorMembershipProposal(
                 params
             ),
@@ -812,13 +1018,13 @@ describe("daoset proposal...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexDaoSetAdapterContract.
+        await this.flexDaoSetInvestorMembershipAdapterContract.
             processInvestorMembershipProposal(
                 this.flexDirectdaoAddress,
                 proposalId
             );
 
-        proposal = await this.flexDaoSetAdapterContract.
+        proposal = await this.flexDaoSetInvestorMembershipAdapterContract.
             investorMembershipProposals(
                 this.flexDirectdaoAddress,
                 proposalId
@@ -896,7 +1102,7 @@ describe("daoset proposal...", () => {
             governors,
             allocations,
         ];
-        const tx = await this.flexDaoSetAdapterContract
+        const tx = await this.flexDaoSetVotingAdapterContract
             .submitVotingProposal(
                 params
             );
@@ -962,7 +1168,7 @@ describe("daoset proposal...", () => {
         voting...
        `);
 
-        await expectRevert(this.flexDaoSetAdapterContract
+        await expectRevert(this.flexDaoSetVotingAdapterContract
             .submitVotingProposal(
                 params
             ),
@@ -986,7 +1192,7 @@ describe("daoset proposal...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexDaoSetAdapterContract.
+        await this.flexDaoSetVotingAdapterContract.
             processVotingProposal(
                 this.flexDirectdaoAddress,
                 proposalId
@@ -1049,7 +1255,7 @@ describe("daoset proposal...", () => {
         const managementFeeAmount = hre.ethers.utils.parseEther("0.002");
         const returnTokenManagementFeeAmount = hre.ethers.utils.parseEther("0.003");
         const managementAddress = this.user2.address;
-        const tx = await this.flexDaoSetAdapterContract
+        const tx = await this.flexDaoSetFeesAdapterContract
             .submitFeesProposal(
                 this.flexDirectdaoAddress,
                 managementFeeAmount,
@@ -1060,7 +1266,7 @@ describe("daoset proposal...", () => {
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
-        let proposal = await this.flexDaoSetAdapterContract.
+        let proposal = await this.flexDaoSetFeesAdapterContract.
             feesProposals(
                 this.flexDirectdaoAddress,
                 proposalId
@@ -1082,7 +1288,7 @@ describe("daoset proposal...", () => {
         voting... 
        `);
 
-        await expectRevert(this.flexDaoSetAdapterContract
+        await expectRevert(this.flexDaoSetFeesAdapterContract
             .submitFeesProposal(
                 this.flexDirectdaoAddress,
                 managementFeeAmount,
@@ -1107,12 +1313,12 @@ describe("daoset proposal...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexDaoSetAdapterContract.
+        await this.flexDaoSetFeesAdapterContract.
             processFeesProposal(
                 this.flexDirectdaoAddress,
                 proposalId
             );
-        proposal = await this.flexDaoSetAdapterContract.
+        proposal = await this.flexDaoSetFeesAdapterContract.
             feesProposals(
                 this.flexDirectdaoAddress,
                 proposalId
@@ -1157,7 +1363,7 @@ describe("daoset proposal...", () => {
             whiteList
         ];
 
-        const tx = await this.flexDaoSetAdapterContract
+        const tx = await this.flexDaoSetProposerMembershipAdapterContract
             .submitProposerMembershipProposal(
                 params
             );
@@ -1165,14 +1371,14 @@ describe("daoset proposal...", () => {
         const result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
-        let proposal = await this.flexDaoSetAdapterContract.
+        let proposal = await this.flexDaoSetProposerMembershipAdapterContract.
             proposerMembershipProposals(
                 this.flexDirectdaoAddress,
                 proposalId
             );
         let FLEX_PROPOSER_ENABLE = await this.daoContract
             .getConfiguration("0x2073e6ba5c75026b006fdd165596d94b89cada2e00d8e44a99d422de8ea467e0");
-        const pWhitelist = await this.flexDaoSetAdapterContract.
+        const pWhitelist = await this.flexDaoSetProposerMembershipAdapterContract.
             getProposerMembershipWhitelist(proposalId);
         let currentName = await this.daoContract.
             getStringConfiguration("0xed2fa238da16f9e9bea8f1aa8dc2f0d04c522f8adbda71cc4ea5c11f5a51f32d");
@@ -1203,7 +1409,7 @@ describe("daoset proposal...", () => {
         voting... 
         `);
 
-        await expectRevert(this.flexDaoSetAdapterContract
+        await expectRevert(this.flexDaoSetProposerMembershipAdapterContract
             .submitProposerMembershipProposal(
                 params),
             "revert");
@@ -1225,12 +1431,12 @@ describe("daoset proposal...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexDaoSetAdapterContract.
+        await this.flexDaoSetProposerMembershipAdapterContract.
             processProposerMembershipProposal(
                 this.flexDirectdaoAddress,
                 proposalId
             );
-        proposal = await this.flexDaoSetAdapterContract.
+        proposal = await this.flexDaoSetProposerMembershipAdapterContract.
             proposerMembershipProposals(
                 this.flexDirectdaoAddress,
                 proposalId
@@ -1309,7 +1515,7 @@ describe("daoset proposal...", () => {
                 pollingquorumType
             ]
         ];
-        const tx = await this.flexDaoSetAdapterContract
+        const tx = await this.flexDaoSetPollingAdapterContract
             .submitPollForInvestmentProposal(
                 params
             );
@@ -1325,8 +1531,8 @@ describe("daoset proposal...", () => {
 
         console.log(proposal);
 
-        const pWhitelist = await this.flexDaoSetAdapterContract.
-            getProposerMembershipWhitelist(proposalId);
+        const pWhitelist = await this.flexDaoSetPollingAdapterContract.
+            getWhitelist(proposalId);
         let currentName = await this.daoContract
             .getStringConfiguration("0x7bd63360ec775df97ced77d73875245296c41d88ebf2b52f8e630b4e9a51b448");
         let currentflexDaoPollingVotingPeriod = await this.daoContract
@@ -1378,7 +1584,7 @@ describe("daoset proposal...", () => {
         voting... 
         `);
 
-        await expectRevert(this.flexDaoSetAdapterContract
+        await expectRevert(this.flexDaoSetPollingAdapterContract
             .submitPollForInvestmentProposal(
                 params),
             "revert");
@@ -1400,7 +1606,7 @@ describe("daoset proposal...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexDaoSetAdapterContract.
+        await this.flexDaoSetPollingAdapterContract.
             processPollForInvestmentProposal(
                 this.flexDirectdaoAddress,
                 proposalId
@@ -1459,7 +1665,6 @@ describe("daoset proposal...", () => {
         `);
     });
 });
-
 
 describe("submit daoset proposal during other poposal in progress...", () => {
     before("deploy contracts...", async () => {
@@ -1542,10 +1747,15 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         this.flexFreeInEscrowFundAdapterContract = adapters.flexFreeInEscrowFundAdapterContract.instance;
         this.flexFundingHelperAdapterContract = adapters.flexFundingHelperAdapterContract.instance;
         this.summonDao = this.adapters.summonDao.instance;
-        this.flexDaoSetAdapterContract = adapters.flexDaoSetAdapterContract.instance;
+        // this.flexDaoSetAdapterContract = adapters.flexDaoSetAdapterContract.instance;
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+        this.flexDaoSetFeesAdapterContract = adapters.flexDaoSetFeesAdapterContract.instance;
+        this.flexDaoSetGovernorMembershipAdapterContract = adapters.flexDaoSetGovernorMembershipAdapterContract.instance;
+        this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
+        this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
+        this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
 
         // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
         // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
@@ -1586,6 +1796,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         _daoName = "my_flex_dao002";
 
         const creator = this.owner.address;
+
         const enalbeAdapters = [
             {
                 id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
@@ -1627,11 +1838,6 @@ describe("submit daoset proposal during other poposal in progress...", () => {
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
-            // {
-            //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-            //     addr: this.managing.address,
-            //     flags: 59
-            // },
             {
                 id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
                 addr: this.flexStewardMangement.address,
@@ -1658,27 +1864,47 @@ describe("submit daoset proposal during other poposal in progress...", () => {
                 flags: 0
             },
             {
-                id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-                addr: this.flexDaoSetAdapterContract.address,
-                flags: 778242
-            },
-            {
-                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
+                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37', //flexDaoSetHelperAdapterContract
                 addr: this.flexDaoSetHelperAdapterContract.address,
                 flags: 8
             },
             {
-                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
+                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',// flexDaoSetPollingAdapterContract
                 addr: this.flexDaoSetPollingAdapterContract.address,
                 flags: 262146
             },
             {
-                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
+                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',//flexDaoSetVotingAdapterContract
                 addr: this.flexDaoSetVotingAdapterContract.address,
                 flags: 65538
+            },
+            {
+                id: '0xc6bb47f9566baa74b5032b5c10e5bf4a1e2382ca337c2de674732f6401d52cc0',//flexDaoSetFeesAdapterContract
+                addr: this.flexDaoSetFeesAdapterContract.address,
+                flags: 131074
+            },
+            {
+                id: '0x869e5d18913d4e9bb387c730a04b58d11e95102194f7217a4b684f6e61dff920',//flexDaoSetGovernorMembershipAdapterContract
+                addr: this.flexDaoSetGovernorMembershipAdapterContract.address,
+                flags: 16386
+            },
+            {
+                id: '0x08f2d2eeda0c9072cdba8b58d442503b4cf9eb6c2f74d75e91dc719111c3189c',//flexDaoSetInvestorCapAdapterContract
+                addr: this.flexDaoSetInvestorCapAdapterContract.address,
+                flags: 8194
+            },
+            {
+                id: '0xe6121cbf77e02f965a1829c382f701ad4cec84fbda84c45378db0768d2e40871',//flexDaoSetInvestorMembershipAdapterContract
+                addr: this.flexDaoSetInvestorMembershipAdapterContract.address,
+                flags: 32770
+            },
+            {
+                id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
+                addr: this.flexDaoSetProposerMembershipAdapterContract.address,
+                flags: 524290
             }
-
         ];
+
         const adapters1 = [
             {
                 id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
@@ -1905,7 +2131,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
 
         const enableParticipantCap = false;
         const cap = 0;
-        await expectRevert(this.flexDaoSetAdapterContract
+        await expectRevert(this.flexDaoSetInvestorCapAdapterContract
             .submitInvestorCapProposal(
                 this.flexDirectdaoAddress,
                 enableParticipantCap,
@@ -1938,7 +2164,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         executed...
         `);
 
-        const tx1 = await this.flexDaoSetAdapterContract
+        const tx1 = await this.flexDaoSetInvestorCapAdapterContract
             .submitInvestorCapProposal(
                 this.flexDirectdaoAddress,
                 enableParticipantCap,
@@ -1947,7 +2173,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const result1 = await tx1.wait();
         const proposalId1 = result1.events[result.events.length - 1].args.proposalId;
 
-        let proposal = await this.flexDaoSetAdapterContract.
+        let proposal = await this.flexDaoSetInvestorCapAdapterContract.
             investorCapProposals(
                 this.flexDirectdaoAddress,
                 proposalId1
@@ -1966,7 +2192,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexDaoSetAdapterContract.
+        await this.flexDaoSetInvestorCapAdapterContract.
             processInvestorCapProposal(
                 this.flexDirectdaoAddress,
                 proposalId1
@@ -2012,7 +2238,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
             whiteList
         ];
 
-        await expectRevert(this.flexDaoSetAdapterContract
+        await expectRevert(this.flexDaoSetGovernorMembershipAdapterContract
             .submitGovernorMembershipProposal(
                 params), "revert");
 
@@ -2041,7 +2267,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         executed...
         `);
 
-        const tx1 = await this.flexDaoSetAdapterContract
+        const tx1 = await this.flexDaoSetGovernorMembershipAdapterContract
             .submitGovernorMembershipProposal(
                 params
             );
@@ -2049,7 +2275,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const result1 = await tx1.wait();
         const proposalId1 = result1.events[result.events.length - 1].args.proposalId;
 
-        let proposal = await this.flexDaoSetAdapterContract.
+        let proposal = await this.flexDaoSetGovernorMembershipAdapterContract.
             governorMembershipProposals(
                 this.flexDirectdaoAddress,
                 proposalId1
@@ -2068,7 +2294,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexDaoSetAdapterContract.
+        await this.flexDaoSetGovernorMembershipAdapterContract.
             processGovernorMembershipProposal(
                 this.flexDirectdaoAddress,
                 proposalId1
@@ -2113,7 +2339,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
             whiteList
         ];
 
-        await expectRevert(this.flexDaoSetAdapterContract
+        await expectRevert(this.flexDaoSetInvestorMembershipAdapterContract
             .submitInvestorMembershipProposal(
                 params), "revert");
 
@@ -2142,7 +2368,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         executed...
         `);
 
-        const tx1 = await this.flexDaoSetAdapterContract
+        const tx1 = await this.flexDaoSetInvestorMembershipAdapterContract
             .submitInvestorMembershipProposal(
                 params
             );
@@ -2150,7 +2376,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const result1 = await tx1.wait();
         const proposalId1 = result1.events[result.events.length - 1].args.proposalId;
 
-        let proposal = await this.flexDaoSetAdapterContract.
+        let proposal = await this.flexDaoSetInvestorMembershipAdapterContract.
             investorMembershipProposals(
                 this.flexDirectdaoAddress,
                 proposalId1
@@ -2169,7 +2395,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexDaoSetAdapterContract.
+        await this.flexDaoSetInvestorMembershipAdapterContract.
             processInvestorMembershipProposal(
                 this.flexDirectdaoAddress,
                 proposalId1
@@ -2228,7 +2454,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
             allocations,
         ];
 
-        await expectRevert(this.flexDaoSetAdapterContract
+        await expectRevert(this.flexDaoSetVotingAdapterContract
             .submitVotingProposal(
                 params), "revert");
 
@@ -2257,7 +2483,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         executed...
         `);
 
-        const tx1 = await this.flexDaoSetAdapterContract
+        const tx1 = await this.flexDaoSetVotingAdapterContract
             .submitVotingProposal(
                 params
             );
@@ -2285,7 +2511,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexDaoSetAdapterContract.
+        await this.flexDaoSetVotingAdapterContract.
             processVotingProposal(
                 this.flexDirectdaoAddress,
                 proposalId1
@@ -2316,7 +2542,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const returnTokenManagementFeeAmount = hre.ethers.utils.parseEther("0.003");
         const managementAddress = this.user2.address;
 
-        await expectRevert(this.flexDaoSetAdapterContract
+        await expectRevert(this.flexDaoSetFeesAdapterContract
             .submitFeesProposal(
                 this.flexDirectdaoAddress,
                 managementFeeAmount,
@@ -2349,7 +2575,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         executed...
         `);
 
-        const tx1 = await this.flexDaoSetAdapterContract
+        const tx1 = await this.flexDaoSetFeesAdapterContract
             .submitFeesProposal(
                 this.flexDirectdaoAddress,
                 managementFeeAmount,
@@ -2361,7 +2587,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const proposalId1 = result1.events[result.events.length - 1].
             args.proposalId;
 
-        let proposal = await this.flexDaoSetAdapterContract.
+        let proposal = await this.flexDaoSetFeesAdapterContract.
             feesProposals(
                 this.flexDirectdaoAddress,
                 proposalId1
@@ -2380,7 +2606,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexDaoSetAdapterContract.
+        await this.flexDaoSetFeesAdapterContract.
             processFeesProposal(
                 this.flexDirectdaoAddress,
                 proposalId1
@@ -2429,7 +2655,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
             whiteList
         ];
 
-        await expectRevert(this.flexDaoSetAdapterContract
+        await expectRevert(this.flexDaoSetProposerMembershipAdapterContract
             .submitProposerMembershipProposal(
                 params
             ), "revert");
@@ -2459,7 +2685,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         executed...
         `);
 
-        const tx1 = await this.flexDaoSetAdapterContract
+        const tx1 = await this.flexDaoSetProposerMembershipAdapterContract
             .submitProposerMembershipProposal(
                 params
             );
@@ -2468,7 +2694,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const proposalId1 = result1.events[result.events.length - 1].
             args.proposalId;
 
-        let proposal = await this.flexDaoSetAdapterContract.
+        let proposal = await this.flexDaoSetProposerMembershipAdapterContract.
             proposerMembershipProposals(
                 this.flexDirectdaoAddress,
                 proposalId1
@@ -2487,7 +2713,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexDaoSetAdapterContract.
+        await this.flexDaoSetProposerMembershipAdapterContract.
             processProposerMembershipProposal(
                 this.flexDirectdaoAddress,
                 proposalId1
@@ -2559,7 +2785,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
 
         ];
 
-        await expectRevert(this.flexDaoSetAdapterContract
+        await expectRevert(this.flexDaoSetPollingAdapterContract
             .submitPollForInvestmentProposal(
                 params
             ), "revert");
@@ -2589,7 +2815,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         executed...
         `);
 
-        const tx1 = await this.flexDaoSetAdapterContract
+        const tx1 = await this.flexDaoSetPollingAdapterContract
             .submitPollForInvestmentProposal(
                 params
             );
@@ -2617,10 +2843,11 @@ describe("submit daoset proposal during other poposal in progress...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexDaoSetAdapterContract.
+        await this.flexDaoSetPollingAdapterContract.
             processPollForInvestmentProposal(
                 this.flexDirectdaoAddress,
                 proposalId1
             );
     });
 });
+

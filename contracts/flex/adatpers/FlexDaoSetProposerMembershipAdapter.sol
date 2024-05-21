@@ -1,17 +1,14 @@
 pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 
-import "hardhat/console.sol";
-import "../libraries/LibFlexDaoset.sol";
-import "../../helpers/DaoHelper.sol";
-import "./interfaces/IFlexVoting.sol";
-import "./FlexDaoSetHelperAdapter.sol";
-import "../../helpers/GovernanceHelper.sol";
+import "./interfaces/IFlexDaoset.sol";
 
-import "@openzeppelin/contracts/utils/Strings.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-
-contract FlexDaoSetProposerMembershipAdapterContract {
+contract FlexDaoSetProposerMembershipAdapterContract is
+    IFlexDaoset,
+    GovernorGuard,
+    Reimbursable,
+    MemberGuard
+{
     using EnumerableSet for EnumerableSet.AddressSet;
 
     mapping(address => bytes32) public ongoingProposerMembershipProposal;
@@ -23,13 +20,33 @@ contract FlexDaoSetProposerMembershipAdapterContract {
 
     function submitProposerMembershipProposal(
         FlexDaosetLibrary.ProposerMembershipParams calldata params
-    ) external returns (bytes32) {
+    )
+        external
+        onlyMember(params.dao)
+        reimbursable(params.dao)
+        returns (bytes32)
+    {
+        // require(
+        //     ongoingProposerMembershipProposal[address(params.dao)] ==
+        //         bytes32(0),
+        //     "!submit"
+        // );
         require(
-            msg.sender ==
-                params.dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER),
-            "!access"
+            FlexDaoSetHelperAdapterContract(
+                params.dao.getAdapterAddress(
+                    DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER
+                )
+            ).unDoneProposalsCheck(params.dao),
+            "unDone Proposals"
         );
-
+        require(
+            FlexDaoSetHelperAdapterContract(
+                params.dao.getAdapterAddress(
+                    DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER
+                )
+            ).isProposalAllDone(params.dao),
+            "unDone Daoset Proposal"
+        );
         params.dao.increaseProposerMembershipId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
@@ -67,6 +84,13 @@ contract FlexDaoSetProposerMembershipAdapterContract {
         ongoingProposerMembershipProposal[address(params.dao)] = proposalId;
 
         setProposal(params.dao, proposalId);
+
+        emit ProposalCreated(
+            address(params.dao),
+            proposalId,
+            FlexDaosetLibrary.ProposalType.POLL_FOR_INVESTMENT
+        );
+
         return proposalId;
     }
 
@@ -84,7 +108,11 @@ contract FlexDaoSetProposerMembershipAdapterContract {
     function processProposerMembershipProposal(
         DaoRegistry dao,
         bytes32 proposalId
-    ) external returns (IFlexVoting.VotingState, uint256, uint256, uint128) {
+    )
+        external
+        reimbursable(dao)
+        returns (IFlexVoting.VotingState, uint256, uint256, uint128)
+    {
         FlexDaosetLibrary.ProposerMembershipProposalDetails
             storage proposal = proposerMembershipProposals[address(dao)][
                 proposalId

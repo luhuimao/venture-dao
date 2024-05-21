@@ -8,7 +8,7 @@ import "../../utils/TypeConver.sol";
 import "./FlexVoting.sol";
 import "./interfaces/IFlexVoting.sol";
 import "./FlexStewardAllocation.sol";
-import "./FlexDaoSetAdapter.sol";
+import "./FlexDaoSetHelperAdapter.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "../../guards/FlexStewardGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -101,10 +101,10 @@ contract StewardManagementContract is
     }
 
     function daosetProposalCheck(DaoRegistry dao) internal view returns (bool) {
-        FlexDaoSetAdapterContract daoset = FlexDaoSetAdapterContract(
-            dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER)
+        FlexDaoSetHelperAdapterContract daosethelper = FlexDaoSetHelperAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
         );
-        return daoset.isProposalAllDone(dao);
+        return daosethelper.isProposalAllDone(dao);
     }
 
     function submitGovernorInProposal(

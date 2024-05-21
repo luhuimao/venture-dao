@@ -412,6 +412,12 @@ library DaoHelper {
         keccak256("flex-daoset-proposer-membership-adapter");
     bytes32 internal constant FLEX_DAO_SET_INVESTOR_MEMBERSHIP_ADAPTER =
         keccak256("flex-daoset-investor-membership-adapter");
+    bytes32 internal constant FLEX_DAO_SET_FEES_ADAPTER =
+        keccak256("flex-daoset-fees-adapter");
+    bytes32 internal constant FLEX_DAO_SET_GOVERNOR_MEMBERSHIP_ADAPTER =
+        keccak256("flex-daoset-governor-membership-adapter");
+    bytes32 internal constant FLEX_DAO_SET_INVESTOR_CAP_ADAPTER =
+        keccak256("flex-daoset-investor-cap-adapter");
     //---------------------------------flex---------------------------------
 
     bytes32 internal constant FUND_RAISE = keccak256("fund-raise");

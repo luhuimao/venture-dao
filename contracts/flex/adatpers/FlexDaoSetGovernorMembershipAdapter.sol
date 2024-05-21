@@ -3,23 +3,25 @@ pragma solidity ^0.8.0;
 
 import "./interfaces/IFlexDaoset.sol";
 
-contract FlexDaoSetInvestorMembershipAdapterContract is
+contract FlexDaoSetGovernorMembershipAdapterContract is
     IFlexDaoset,
     GovernorGuard,
     Reimbursable,
     MemberGuard
 {
     using EnumerableSet for EnumerableSet.AddressSet;
-    mapping(address => mapping(bytes32 => FlexDaosetLibrary.InvestorMembershipProposalDetails))
-        public investorMembershipProposals;
-    mapping(address => bytes32) public ongoingInvstorMembershipProposal;
-    mapping(bytes32 => EnumerableSet.AddressSet) investorMembershipWhiteLists;
 
-    function submitInvestorMembershipProposal(
-        FlexDaosetLibrary.InvestorMembershipParams calldata params
-    ) external onlyMember(params.dao) returns (bytes32) {
+    mapping(bytes32 => EnumerableSet.AddressSet) governorMembershipWhitelists;
+    mapping(address => bytes32) public ongoingGovernorMembershipProposal;
+    mapping(address => mapping(bytes32 => FlexDaosetLibrary.GovernorMembershipProposalDetails))
+        public governorMembershipProposals;
+
+    function submitGovernorMembershipProposal(
+        FlexDaosetLibrary.GovernorMembershipParams calldata params
+    ) external onlyMember(params.dao) reimbursable(params.dao) {
         // require(
-        //     ongoingInvstorMembershipProposal[address(params.dao)] == bytes32(0),
+        //     ongoingGovernorMembershipProposal[address(params.dao)] ==
+        //         bytes32(0),
         //     "!submit"
         // );
         require(
@@ -36,21 +38,21 @@ contract FlexDaoSetInvestorMembershipAdapterContract is
             ).isProposalAllDone(params.dao),
             "unDone Daoset Proposal"
         );
-        params.dao.increaseInvstorMembershipId();
+        params.dao.increaseGovernorMembershipId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
                 bytes8(uint64(uint160(address(params.dao)))),
-                "Investor Membership #",
+                "Governor Membership #",
                 Strings.toString(
-                    params.dao.getCurrentInvestorMembershipProposalId()
+                    params.dao.getCurrentGovernorMembershipProposalId()
                 )
             )
         );
 
-        investorMembershipProposals[address(params.dao)][
+        governorMembershipProposals[address(params.dao)][
             proposalId
-        ] = FlexDaosetLibrary.InvestorMembershipProposalDetails(
+        ] = FlexDaosetLibrary.GovernorMembershipProposalDetails(
             params.enable,
             params.name,
             params.varifyType,
@@ -65,45 +67,39 @@ contract FlexDaoSetInvestorMembershipAdapterContract is
 
         if (params.whiteList.length > 0) {
             for (uint8 i = 0; i < params.whiteList.length; i++) {
-                investorMembershipWhiteLists[proposalId].add(
+                governorMembershipWhitelists[proposalId].add(
                     params.whiteList[i]
                 );
             }
         }
 
-        ongoingInvstorMembershipProposal[address(params.dao)] = proposalId;
+        ongoingGovernorMembershipProposal[address(params.dao)] = proposalId;
 
         setProposal(params.dao, proposalId);
+
         emit ProposalCreated(
             address(params.dao),
             proposalId,
-            FlexDaosetLibrary.ProposalType.INVESTOR_CAP
+            FlexDaosetLibrary.ProposalType.GOVERNOR_MEMBERSHIP
         );
-        return proposalId;
     }
 
-    function processInvestorMembershipProposal(
+    function processGovernorMembershipProposal(
         DaoRegistry dao,
         bytes32 proposalId
-    )
-        external
-        reimbursable(dao)
-    // returns (IFlexVoting.VotingState, uint256, uint256, uint128)
-    {
-        FlexDaosetLibrary.InvestorMembershipProposalDetails
-            storage proposal = investorMembershipProposals[address(dao)][
+    ) external reimbursable(dao) {
+        FlexDaosetLibrary.GovernorMembershipProposalDetails
+            storage proposal = governorMembershipProposals[address(dao)][
                 proposalId
             ];
 
-        (
-            IFlexVoting.VotingState voteResult,
-            uint256 nYes,
-            uint256 nNo,
-            uint128 allWeight
-        ) = processProposal(dao, proposalId);
+        (IFlexVoting.VotingState voteResult, , ) = processProposal(
+            dao,
+            proposalId
+        );
 
         if (voteResult == IFlexVoting.VotingState.PASS) {
-            setInvestorMembership(dao, proposalId, proposal);
+            setGovernorMembership(dao, proposalId, proposal);
             proposal.state = FlexDaosetLibrary.ProposalState.Done;
         } else if (
             voteResult == IFlexVoting.VotingState.NOT_PASS ||
@@ -114,37 +110,7 @@ contract FlexDaoSetInvestorMembershipAdapterContract is
             revert FlexDaosetLibrary.VOTING_NOT_FINISH();
         }
 
-        ongoingInvstorMembershipProposal[address(dao)] = bytes32(0);
-
-        emit ProposalProcessed(
-            address(dao),
-            proposalId,
-            uint256(voteResult),
-            allWeight,
-            nYes,
-            nNo
-        );
-        // return (voteResult, nYes, nNo, allWeight);
-    }
-
-    function setInvestorMembership(
-        DaoRegistry dao,
-        bytes32 proposalId,
-        FlexDaosetLibrary.InvestorMembershipProposalDetails storage proposal
-    ) internal {
-        FlexDaoSetHelperAdapterContract daosetHelper = FlexDaoSetHelperAdapterContract(
-                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
-            );
-        daosetHelper.setInvestorMembership(
-            dao,
-            proposal.enable,
-            proposal.name,
-            proposal.varifyType,
-            proposal.minAmount,
-            proposal.tokenAddress,
-            proposal.tokenId,
-            investorMembershipWhiteLists[proposalId].values()
-        );
+        ongoingGovernorMembershipProposal[address(dao)] = bytes32(0);
     }
 
     function setProposal(DaoRegistry dao, bytes32 proposalId) internal {
@@ -161,7 +127,7 @@ contract FlexDaoSetInvestorMembershipAdapterContract is
     function processProposal(
         DaoRegistry dao,
         bytes32 proposalId
-    ) internal returns (IFlexVoting.VotingState, uint256, uint256, uint128) {
+    ) internal returns (IFlexVoting.VotingState, uint256, uint256) {
         dao.processProposal(proposalId);
 
         IFlexVoting votingContract = IFlexVoting(
@@ -177,13 +143,41 @@ contract FlexDaoSetInvestorMembershipAdapterContract is
         ) = votingContract.voteResult(dao, proposalId);
         uint128 allWeight = GovernanceHelper
             .getAllFlexGovernorVotingWeightByProposalId(dao, proposalId);
+        emit ProposalProcessed(
+            address(dao),
+            proposalId,
+            uint256(vs),
+            allWeight,
+            nbYes,
+            nbNo
+        );
 
-        return (vs, nbYes, nbNo, allWeight);
+        return (vs, nbYes, nbNo);
     }
 
-    function getInvestorWhitelist(
+    function setGovernorMembership(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        FlexDaosetLibrary.GovernorMembershipProposalDetails storage proposal
+    ) internal {
+        FlexDaoSetHelperAdapterContract daosetHelper = FlexDaoSetHelperAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
+            );
+        daosetHelper.setGovernorMembership(
+            dao,
+            proposal.enable,
+            proposal.name,
+            proposal.minAmount,
+            proposal.tokenAddress,
+            proposal.tokenId,
+            proposal.varifyType,
+            governorMembershipWhitelists[proposalId].values()
+        );
+    }
+
+    function getGovernorWhitelist(
         bytes32 proposalId
     ) external view returns (address[] memory) {
-        return investorMembershipWhiteLists[proposalId].values();
+        return governorMembershipWhitelists[proposalId].values();
     }
 }
