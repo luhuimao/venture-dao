@@ -9,7 +9,8 @@ import "../../../helpers/DaoHelper.sol";
 import "../VintageAllocationAdapter.sol";
 import "../VintageFundingAdapter.sol";
 import "./IVintageFunding.sol";
-import "../VintageVestingERC721.sol";
+// import "../VintageVestingERC721.sol";
+import "../../../VestingERC721.sol";
 
 interface IVesting {
     function createVesting(
@@ -38,6 +39,7 @@ interface IVesting {
     }
 
     struct Vest {
+        address daoAddr;
         bytes32 proposalId;
         uint128 claimed;
         uint256 total;
@@ -122,4 +124,5 @@ interface IVesting {
 
     error NotOwner();
     error NotVestReceiver();
+    error NotClaimable();
 }

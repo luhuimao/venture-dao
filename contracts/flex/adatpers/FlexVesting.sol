@@ -108,15 +108,20 @@ contract FlexVesting is IFlexVesting {
         vars.vestId = vestIds++;
 
         if (vars.vestInfo.nftEnable) {
-            vars.newTokenId = FlexVestingERC721(vars.vestInfo.erc721).safeMint(
+            // vars.newTokenId = FlexVestingERC721(vars.vestInfo.erc721).safeMint(
+            //     recipientAddr
+            // );
+
+            vars.newTokenId = VestingERC721(vars.vestInfo.erc721).safeMint(
                 recipientAddr
             );
 
-            tokenIdToVestId[vars.vestInfo.erc721][vars.vestId] = vars
-                .newTokenId;
+            tokenIdToVestId[vars.vestInfo.erc721][vars.newTokenId] = vars
+                .vestId;
         }
 
         vests[vars.vestId] = Vest(
+            address(dao),
             proposalId,
             0,
             vars.depositAmount,
@@ -185,7 +190,7 @@ contract FlexVesting is IFlexVesting {
         }
         uint256 canClaim = _balanceOf(vest) - vest.claimed;
 
-        if (canClaim == 0) return;
+        if (canClaim <= 0) revert NotClaimable();
 
         vest.claimed += uint128(canClaim);
 
@@ -298,10 +303,8 @@ contract FlexVesting is IFlexVesting {
         uint256 total = 0;
         uint256 vestId = getVestIdByTokenId(token, tokenId);
         if (vestId > 0) {
-            remaining =
-                (vests[vestId].total - vests[vestId].claimed) /
-                PERCENTAGE_PRECISION;
-            total = vests[vestId].total / PERCENTAGE_PRECISION;
+            remaining = (vests[vestId].total - vests[vestId].claimed);
+            total = vests[vestId].total;
             percentOfRemaining_Total =
                 ((vests[vestId].total - vests[vestId].claimed) * 100) /
                 vests[vestId].total;

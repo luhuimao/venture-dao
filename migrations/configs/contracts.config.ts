@@ -1208,7 +1208,7 @@ export const contracts: Array<ContractConfig> = [
     },
   },
   {
-    id: adaptersIdsMap.FLEX_DAOSET_ADAPTER,
+    id: adaptersIdsMap.FLEX_DAO_SET_ADAPTER,
     name: "FlexDaoSetAdapterContract",
     alias: "flexDaoSetAdapterContract",
     path: "../../contracts/adapters/FlexDaoSetAdapterContract",
@@ -1229,7 +1229,7 @@ export const contracts: Array<ContractConfig> = [
     },
   },
   {
-    id: adaptersIdsMap.FLEX_DAOSET_HELPER_ADAPTER,
+    id: adaptersIdsMap.FLEX_DAO_SET_HELPER_ADAPTER,
     name: "FlexDaoSetHelperAdapterContract",
     alias: "flexDaoSetHelperAdapterContract",
     path: "../../contracts/adapters/FlexDaoSetHelperAdapterContract",
@@ -1239,6 +1239,74 @@ export const contracts: Array<ContractConfig> = [
     acls: {
       dao: [
         daoAccessFlagsMap.SET_CONFIGURATION
+      ],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_DAO_SET_FEES_ADAPTER,
+    name: "FlexDaoSetFeesAdapterContract",
+    alias: "flexDaoSetFeesAdapterContract",
+    path: "../../contracts/adapters/FlexDaoSetFeesAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.INCREASE_FEE_ID
+      ],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_DAO_SET_GOVERNOR_MEMBERSHIP_ADAPTER,
+    name: "FlexDaoSetGovernorMembershipAdapterContract",
+    alias: "flexDaoSetGovernorMembershipAdapterContract",
+    path: "../../contracts/adapters/FlexDaoSetGovernorMembershipAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.INCREASE_GOVERNOR_MEMBERSHIP_ID
+      ],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_DAO_SET_INVESTOR_CAP_ADAPTER,
+    name: "FlexDaoSetInvestorCapAdapterContract",
+    alias: "flexDaoSetInvestorCapAdapterContract",
+    path: "../../contracts/adapters/FlexDaoSetInvestorCapAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.INCREASE_INVESTOR_CAP_ID
+      ],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_DAO_SET_INVESTOR_MEMBERSHIP_ADAPTER,
+    name: "FlexDaoSetInvestorMembershipAdapterContract",
+    alias: "flexDaoSetInvestorMembershipAdapterContract",
+    path: "../../contracts/adapters/FlexDaoSetInvestorMembershipAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.INCREASE_INVESTOR_MEMBERSHIP_ID
       ],
       extensions: {
       },
@@ -1256,6 +1324,23 @@ export const contracts: Array<ContractConfig> = [
       dao: [
         daoAccessFlagsMap.SUBMIT_PROPOSAL,
         daoAccessFlagsMap.INCREASE_POLL_FOR_INVESTMENT_ID
+      ],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_DAO_SET_PROPOSER_MEMBERSHIP_ADAPTER,
+    name: "FlexDaoSetProposerMembershipAdapterContract",
+    alias: "flexDaoSetProposerMembershipAdapterContract",
+    path: "../../contracts/adapters/FlexDaoSetProposerMembershipAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.INCREASE_PROPOSER_MEMBERSHIP
       ],
       extensions: {
       },
@@ -2316,14 +2401,48 @@ export const contracts: Array<ContractConfig> = [
     },
   },
   {
+    id: adaptersIdsMap.VINTAGE_VESTING_ERC721_HELPER_ADAPTER,
+    name: "VintageVestingERC721Helper",
+    alias: "vintageVestingERC721Helper",
+    path: "../../contracts/adapters/VintageVestingERC721Helper",
+    enabled: false,
+    version: "1.0.0",
+    type: ContractType.Util,
+    deploymentArgs: ["vintageVestingNFTName",
+      "vintageVestingNFTSymbol",
+      "vintageVestingContractAddr",
+      "vintageVestingERC721HelperAddr"
+    ],
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
     id: adaptersIdsMap.VINTAGE_VESTING_ERC721_ADAPTER,
     name: "VintageVestingERC721",
     alias: "vintageVestingERC721",
     path: "../../contracts/adapters/VintageVestingERC721",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Util,
     deploymentArgs: ["vintageVestingNFTName", "vintageVestingNFTSymbol", "vintageVestingContractAddr"],
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.FLEX_VESTING_ERC721_HELPER_ADAPTER,
+    name: "FlexVestingERC721Helper",
+    alias: "flexVestingERC721Helper",
+    path: "../../contracts/adapters/FlexVestingERC721Helper",
+    enabled: false,
+    version: "1.0.0",
+    type: ContractType.Util,
+    deploymentArgs: [],
     acls: {
       dao: [],
       extensions: {
@@ -2335,10 +2454,10 @@ export const contracts: Array<ContractConfig> = [
     name: "FlexVestingERC721",
     alias: "flexVestingERC721",
     path: "../../contracts/adapters/FlexVestingERC721",
-    enabled: true,
+    enabled: false,
     version: "1.0.0",
     type: ContractType.Util,
-    deploymentArgs: ["flexVestingNFTName", "flexVestingNFTSymbol", "flexVestingContractAddr"],
+    deploymentArgs: ["flexVestingNFTName", "flexVestingNFTSymbol", "flexVestingContractAddr", "flexVestingERC721HelperAddr"],
     acls: {
       dao: [],
       extensions: {

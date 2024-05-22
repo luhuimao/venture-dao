@@ -108,14 +108,19 @@ contract VintageVesting is IVesting {
         vars.vestId = vestIds++;
 
         if (vars.paybackTokenInfo.nftEnable) {
-            vars.newTokenId = VintageVestingERC721(vars.paybackTokenInfo.erc721)
+            // vars.newTokenId = VintageVestingERC721(vars.paybackTokenInfo.erc721)
+            //     .safeMint(recipientAddr);
+
+            vars.newTokenId = VestingERC721(vars.paybackTokenInfo.erc721)
                 .safeMint(recipientAddr);
 
-            tokenIdToVestId[vars.paybackTokenInfo.erc721][vars.vestId] = vars
-                .newTokenId;
+            tokenIdToVestId[vars.paybackTokenInfo.erc721][
+                vars.newTokenId
+            ] = vars.vestId;
         }
 
         createNewVest(
+            address(dao),
             vars.vestId,
             proposalId,
             [
@@ -161,6 +166,7 @@ contract VintageVesting is IVesting {
     }
 
     function createNewVest(
+        address daoAddr,
         uint256 vestId,
         bytes32 proposalId,
         address[4] memory _addressArgs,
@@ -170,6 +176,7 @@ contract VintageVesting is IVesting {
         string memory vestDescription
     ) internal {
         vests[vestId] = Vest(
+            daoAddr,
             proposalId,
             0,
             _uint256Args[3],
@@ -203,7 +210,7 @@ contract VintageVesting is IVesting {
         address recipient = vest.vestInfo.recipient;
         if (vest.nftInfo.nftToken != address(0x0)) {
             if (
-                VintageVestingERC721(vest.nftInfo.nftToken).ownerOf(
+                VestingERC721(vest.nftInfo.nftToken).ownerOf(
                     vest.nftInfo.tokenId
                 ) != msg.sender
             ) revert NotVestReceiver();
@@ -212,7 +219,7 @@ contract VintageVesting is IVesting {
         }
         uint256 canClaim = _balanceOf(vest) - vest.claimed;
 
-        if (canClaim == 0) return;
+        if (canClaim <= 0) revert NotClaimable();
 
         vest.claimed += uint128(canClaim);
 
@@ -328,10 +335,8 @@ contract VintageVesting is IVesting {
         uint256 total = 0;
         uint256 vestId = getVestIdByTokenId(token, tokenId);
         if (vestId > 0) {
-            remaining =
-                (vests[vestId].total - vests[vestId].claimed) /
-                PERCENTAGE_PRECISION;
-            total = vests[vestId].total / PERCENTAGE_PRECISION;
+            remaining = (vests[vestId].total - vests[vestId].claimed);
+            total = vests[vestId].total;
             percentOfRemaining_Total =
                 ((vests[vestId].total - vests[vestId].claimed) * 100) /
                 vests[vestId].total;

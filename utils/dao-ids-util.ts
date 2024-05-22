@@ -44,6 +44,7 @@ export const adaptersIdsMap: Record<string, string> = {
   VINTAGE_SUMMON_DAO: "vintage-summon-dao",
   VINTAGE_ESCROW_FUND_ADAPTER: "vintage-escrow-fund",
   VINTAGE_VESTING_ERC721_ADAPTER: "vintage-vesting-erc721",
+  VINTAGE_VESTING_ERC721_HELPER_ADAPTER: "vintage-vesting-erc721-helper",
   VINTAGE_RAISER_ALLOCATION: "vintage-raiser-allocation",
   VINTAGE_DISTRIBUTE_ADAPTER: "vintage-distribute-adapter",
   VINTAGE_FUNDING_RETURN_TOKEN_ADAPTER: "vintage-funding-return-token-adapter",
@@ -54,6 +55,7 @@ export const adaptersIdsMap: Record<string, string> = {
 
 
   /*******************flex**********************/
+  FLEX_VESTING_ERC721_HELPER_ADAPTER: "flex-vesting-erc721-helper",
   FLEX_VESTING_ERC721_ADAPTER: "flex-vesting-erc721",
   FLEX_STEWARD_MANAGEMENT: "flex-steward-management",
   FLEX_POLLING_VOTING: "flex-polling-voting",
@@ -68,9 +70,14 @@ export const adaptersIdsMap: Record<string, string> = {
   FLEX_FUNDING_RETURN_TOKEN_ADAPT: "flex-funding-return-token-adapter",
   FLEX_FREE_IN_ESCROW_FUND_ADAPTER: "flex-free-in-escrow-fund-adapter",
   FLEX_FUNDING_HELPER_ADAPTER: "flex-funding-helper-adapter",
-  FLEX_DAOSET_ADAPTER: "flex-daoset-adapter",
-  FLEX_DAOSET_HELPER_ADAPTER: "flex-daoset-helper-adapter",
+  FLEX_DAO_SET_ADAPTER: "flex-daoset-adapter",
+  FLEX_DAO_SET_FEES_ADAPTER: "flex-daoset-fees-adapter",
+  FLEX_DAO_SET_GOVERNOR_MEMBERSHIP_ADAPTER: "flex-daoset-governor-membership-adapter",
+  FLEX_DAO_SET_INVESTOR_CAP_ADAPTER: "flex-daoset-investor-cap-adapter",
+  FLEX_DAO_SET_INVESTOR_MEMBERSHIP_ADAPTER: "flex-daoset-investor-membership-adapter",
+  FLEX_DAO_SET_HELPER_ADAPTER: "flex-daoset-helper-adapter",
   FLEX_DAO_SET_POLLING_ADAPTER: "flex-daoset-polling-adapter",
+  FLEX_DAO_SET_PROPOSER_MEMBERSHIP_ADAPTER: "flex-daoset-proposer-membership-adapter",
   FLEX_DAO_SET_VOTING_ADAPTER: "flex-daoset-voting-adapter",
   /*******************flex end******************/
   FUND_RAISE: "fund-raise",

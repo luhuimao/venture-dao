@@ -157,7 +157,7 @@ describe("Summon A Flex Dao", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -172,6 +172,43 @@ describe("Summon A Flex Dao", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+        this.flexDaoSetFeesAdapterContract = adapters.flexDaoSetFeesAdapterContract.instance;
+        this.flexDaoSetGovernorMembershipAdapterContract = adapters.flexDaoSetGovernorMembershipAdapterContract.instance;
+        this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
+        this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
+        this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+
+        // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        // await flexVestingERC721Helper.deployed();
+        // this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        // const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        // const flexVestingERC721 = await FlexVestingERC721.deploy(
+        //     "DAOSquare Investment Receipt",
+        //     "DIR",
+        //     this.flexVesting.address,
+        //     this.flexVestingERC721Helper.address
+        // );
+        // await flexVestingERC721.deployed();
+        // this.flexVestingERC721 = flexVestingERC721;
+
+        const VestingERC721Helper = await hre.ethers.getContractFactory("VestingERC721Helper");
+        const vestingERC721Helper = await VestingERC721Helper.deploy();
+        await vestingERC721Helper.deployed();
+        this.vestingERC721Helper = vestingERC721Helper;
+
+        const VestingERC721 = await hre.ethers.getContractFactory("VestingERC721");
+        const vestingERC721 = await VestingERC721.deploy(
+            "DAOSquare Investment Vesting",
+            "DIV",
+            this.flexVesting.address,
+            this.flexVesting.address,
+            this.vestingERC721Helper.address
+        );
+        await vestingERC721.deployed();
+        this.vestingERC721 = vestingERC721;
+
 
         this.bentoBoxV1 = adapters.bentoBoxV1.instance;
         // this.managing = this.adapters.managing.instance;
@@ -206,97 +243,120 @@ describe("Summon A Flex Dao", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
-            addr: this.flexVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
-            addr: this.flexERC721.address,
-            flags: 0
-        },
-        {
-            id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
-            addr: this.flexAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
-            addr: this.flexFundingPoolAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
-            addr: this.flexVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
-            addr: this.flexPollingVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
-            addr: this.flexFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        // {
-        //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-        //     addr: this.managing.address,
-        //     flags: 59
-        // },
-        {
-            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
-            addr: this.flexStewardMangement.address,
-            flags: 6338
-        },
-        {
-            id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
-            addr: this.flexStewardAllocation.address,
-            flags: 0
-        },
-        {
-            id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
-            addr: this.flexFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
-            addr: this.flexFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
-            addr: this.flexFundingHelperAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-            addr: this.flexDaoSetAdapterContract.address,
-            flags: 778242
-        },
-        {
-            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-            addr: this.flexDaoSetHelperAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
-            addr: this.flexDaoSetPollingAdapterContract.address,
-            flags: 262146
-        },
-        {
-            id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
-            addr: this.flexDaoSetVotingAdapterContract.address,
-            flags: 65538
-        }
+        const enalbeAdapters = [
+            {
+                id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
+                addr: this.flexVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
+                addr: this.flexERC721.address,
+                flags: 0
+            },
+            {
+                id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
+                addr: this.flexAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
+                addr: this.flexFundingPoolAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
+                addr: this.flexVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
+                addr: this.flexPollingVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
+                addr: this.flexFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
+                addr: this.flexStewardMangement.address,
+                flags: 6338
+            },
+            {
+                id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
+                addr: this.flexStewardAllocation.address,
+                flags: 0
+            },
+            {
+                id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
+                addr: this.flexFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
+                addr: this.flexFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
+                addr: this.flexFundingHelperAdapterContract.address,
+                flags: 0
+            },
+            // {
+            //     id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            //     addr: this.flexDaoSetAdapterContract.address,
+            //     flags: 778242
+            // },
+            {
+                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37', //flexDaoSetHelperAdapterContract
+                addr: this.flexDaoSetHelperAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',// flexDaoSetPollingAdapterContract
+                addr: this.flexDaoSetPollingAdapterContract.address,
+                flags: 262146
+            },
+            {
+                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',//flexDaoSetVotingAdapterContract
+                addr: this.flexDaoSetVotingAdapterContract.address,
+                flags: 65538
+            },
+            {
+                id: '0xc6bb47f9566baa74b5032b5c10e5bf4a1e2382ca337c2de674732f6401d52cc0',//flexDaoSetFeesAdapterContract
+                addr: this.flexDaoSetFeesAdapterContract.address,
+                flags: 131074
+            },
+            {
+                id: '0x869e5d18913d4e9bb387c730a04b58d11e95102194f7217a4b684f6e61dff920',//flexDaoSetGovernorMembershipAdapterContract
+                addr: this.flexDaoSetGovernorMembershipAdapterContract.address,
+                flags: 16386
+            },
+            {
+                id: '0x08f2d2eeda0c9072cdba8b58d442503b4cf9eb6c2f74d75e91dc719111c3189c',//flexDaoSetInvestorCapAdapterContract
+                addr: this.flexDaoSetInvestorCapAdapterContract.address,
+                flags: 8194
+            },
+            {
+                id: '0xe6121cbf77e02f965a1829c382f701ad4cec84fbda84c45378db0768d2e40871',//flexDaoSetInvestorMembershipAdapterContract
+                addr: this.flexDaoSetInvestorMembershipAdapterContract.address,
+                flags: 32770
+            },
+            {
+                id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
+                addr: this.flexDaoSetProposerMembershipAdapterContract.address,
+                flags: 524290
+            }
+
         ];
+
 
         const adapters1 = [{
             id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
@@ -453,97 +513,120 @@ describe("Summon A Flex Dao", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
-            addr: this.flexVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
-            addr: this.flexERC721.address,
-            flags: 0
-        },
-        {
-            id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
-            addr: this.flexAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
-            addr: this.flexFundingPoolAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
-            addr: this.flexVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
-            addr: this.flexPollingVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
-            addr: this.flexFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        // {
-        //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-        //     addr: this.managing.address,
-        //     flags: 59
-        // },
-        {
-            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
-            addr: this.flexStewardMangement.address,
-            flags: 6338
-        },
-        {
-            id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
-            addr: this.flexStewardAllocation.address,
-            flags: 0
-        },
-        {
-            id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
-            addr: this.flexFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
-            addr: this.flexFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
-            addr: this.flexFundingHelperAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-            addr: this.flexDaoSetAdapterContract.address,
-            flags: 778242
-        },
-        {
-            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-            addr: this.flexDaoSetHelperAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
-            addr: this.flexDaoSetPollingAdapterContract.address,
-            flags: 262146
-        },
-        {
-            id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
-            addr: this.flexDaoSetVotingAdapterContract.address,
-            flags: 65538
-        }
+        const enalbeAdapters = [
+            {
+                id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
+                addr: this.flexVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
+                addr: this.flexERC721.address,
+                flags: 0
+            },
+            {
+                id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
+                addr: this.flexAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
+                addr: this.flexFundingPoolAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
+                addr: this.flexVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
+                addr: this.flexPollingVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
+                addr: this.flexFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
+                addr: this.flexStewardMangement.address,
+                flags: 6338
+            },
+            {
+                id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
+                addr: this.flexStewardAllocation.address,
+                flags: 0
+            },
+            {
+                id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
+                addr: this.flexFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
+                addr: this.flexFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
+                addr: this.flexFundingHelperAdapterContract.address,
+                flags: 0
+            },
+            // {
+            //     id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            //     addr: this.flexDaoSetAdapterContract.address,
+            //     flags: 778242
+            // },
+            {
+                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37', //flexDaoSetHelperAdapterContract
+                addr: this.flexDaoSetHelperAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',// flexDaoSetPollingAdapterContract
+                addr: this.flexDaoSetPollingAdapterContract.address,
+                flags: 262146
+            },
+            {
+                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',//flexDaoSetVotingAdapterContract
+                addr: this.flexDaoSetVotingAdapterContract.address,
+                flags: 65538
+            },
+            {
+                id: '0xc6bb47f9566baa74b5032b5c10e5bf4a1e2382ca337c2de674732f6401d52cc0',//flexDaoSetFeesAdapterContract
+                addr: this.flexDaoSetFeesAdapterContract.address,
+                flags: 131074
+            },
+            {
+                id: '0x869e5d18913d4e9bb387c730a04b58d11e95102194f7217a4b684f6e61dff920',//flexDaoSetGovernorMembershipAdapterContract
+                addr: this.flexDaoSetGovernorMembershipAdapterContract.address,
+                flags: 16386
+            },
+            {
+                id: '0x08f2d2eeda0c9072cdba8b58d442503b4cf9eb6c2f74d75e91dc719111c3189c',//flexDaoSetInvestorCapAdapterContract
+                addr: this.flexDaoSetInvestorCapAdapterContract.address,
+                flags: 8194
+            },
+            {
+                id: '0xe6121cbf77e02f965a1829c382f701ad4cec84fbda84c45378db0768d2e40871',//flexDaoSetInvestorMembershipAdapterContract
+                addr: this.flexDaoSetInvestorMembershipAdapterContract.address,
+                flags: 32770
+            },
+            {
+                id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
+                addr: this.flexDaoSetProposerMembershipAdapterContract.address,
+                flags: 524290
+            }
+
         ];
+
 
         const adapters1 = [{
             id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
@@ -1005,7 +1088,9 @@ describe("Summon A Flex Dao", () => {
         let vestingCliffLockAmount = hre.ethers.utils.parseEther("0.1"); // 10%
 
         const vestNFTEnable = false;
-        const nftToken = this.flexVestingERC721.address;
+        // const nftToken = this.flexVestingERC721.address;
+        const nftToken = this.vestingERC721.address;
+
         const vestName = "flex vesting";
         const vestDescription = "a flex vesting";
 
@@ -1214,8 +1299,9 @@ describe("Summon A Flex Dao", () => {
             await hre.network.provider.send("evm_mine");
         }
 
+        let vestBal1 = await flexVestingContract.vestBalance(1)
 
-        await flexVestingContract.withdraw(dao.address, 1);
+        if (vestBal1 > 0) await flexVestingContract.withdraw(dao.address, 1);
 
         createdVestingInfo = await flexVestingContract.vests(1);
         returnTokenBal = await this.testtoken2.balanceOf(this.owner.address);
@@ -1495,7 +1581,9 @@ describe("Summon A Flex Dao", () => {
 
 
         const vestNFTEnable = false;
-        const nftToken = this.flexVestingERC721.address;
+        // const nftToken = this.flexVestingERC721.address;
+        const nftToken = this.vestingERC721.address;
+
         const vestName = "flex vesting";
         const vestDescription = "a flex vesting";
 
@@ -1778,8 +1866,8 @@ describe("Summon A Flex Dao", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-
-        await flexVestingContract.connect(this.investor1).withdraw(dao.address, 2);
+        let vestBal2 = await flexVestingContract.vestBalance(2)
+        if (vestBal2 > 0) await flexVestingContract.connect(this.investor1).withdraw(dao.address, 2);
 
         createdVestingInfo = await flexVestingContract.vests(2);
         returnTokenBal = await this.testtoken2.balanceOf(this.investor1.address);
@@ -1794,10 +1882,13 @@ describe("Summon A Flex Dao", () => {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestingEndTime) + 1]);
             await hre.network.provider.send("evm_mine");
         }
+        vestBal2 = await flexVestingContract.vestBalance(2)
+        let vestBal3 = await flexVestingContract.vestBalance(3)
+        let vestBal4 = await flexVestingContract.vestBalance(4)
 
-        await flexVestingContract.connect(this.investor1).withdraw(dao.address, 2);
-        await flexVestingContract.connect(this.investor2).withdraw(dao.address, 3);
-        await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 4);
+        if (vestBal2 > 0) await flexVestingContract.connect(this.investor1).withdraw(dao.address, 2);
+        if (vestBal3 > 0) await flexVestingContract.connect(this.investor2).withdraw(dao.address, 3);
+        if (vestBal4 > 0) await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 4);
 
         returnTokenBal = await this.testtoken2.balanceOf(this.investor1.address);
         returnTokenBal2 = await this.testtoken2.balanceOf(this.investor2.address);
@@ -1904,6 +1995,11 @@ describe("Steward-In Management", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+        this.flexDaoSetFeesAdapterContract = adapters.flexDaoSetFeesAdapterContract.instance;
+        this.flexDaoSetGovernorMembershipAdapterContract = adapters.flexDaoSetGovernorMembershipAdapterContract.instance;
+        this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
+        this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
+        this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
 
         console.log("flexStewardMangement addr ", this.flexStewardMangement.address);
 
@@ -1914,97 +2010,120 @@ describe("Steward-In Management", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
-            addr: this.flexVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
-            addr: this.flexERC721.address,
-            flags: 0
-        },
-        {
-            id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
-            addr: this.flexAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
-            addr: this.flexFundingPoolAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
-            addr: this.flexVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
-            addr: this.flexPollingVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
-            addr: this.flexFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        // {
-        //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-        //     addr: this.managing.address,
-        //     flags: 59
-        // },
-        {
-            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
-            addr: this.flexStewardMangement.address,
-            flags: 6338
-        },
-        {
-            id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
-            addr: this.flexStewardAllocation.address,
-            flags: 0
-        },
-        {
-            id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
-            addr: this.flexFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
-            addr: this.flexFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
-            addr: this.flexFundingHelperAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-            addr: this.flexDaoSetAdapterContract.address,
-            flags: 778242
-        },
-        {
-            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-            addr: this.flexDaoSetHelperAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
-            addr: this.flexDaoSetPollingAdapterContract.address,
-            flags: 262146
-        },
-        {
-            id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
-            addr: this.flexDaoSetVotingAdapterContract.address,
-            flags: 65538
-        }
+        const enalbeAdapters = [
+            {
+                id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
+                addr: this.flexVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
+                addr: this.flexERC721.address,
+                flags: 0
+            },
+            {
+                id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
+                addr: this.flexAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
+                addr: this.flexFundingPoolAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
+                addr: this.flexVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
+                addr: this.flexPollingVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
+                addr: this.flexFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
+                addr: this.flexStewardMangement.address,
+                flags: 6338
+            },
+            {
+                id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
+                addr: this.flexStewardAllocation.address,
+                flags: 0
+            },
+            {
+                id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
+                addr: this.flexFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
+                addr: this.flexFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
+                addr: this.flexFundingHelperAdapterContract.address,
+                flags: 0
+            },
+            // {
+            //     id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            //     addr: this.flexDaoSetAdapterContract.address,
+            //     flags: 778242
+            // },
+            {
+                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37', //flexDaoSetHelperAdapterContract
+                addr: this.flexDaoSetHelperAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',// flexDaoSetPollingAdapterContract
+                addr: this.flexDaoSetPollingAdapterContract.address,
+                flags: 262146
+            },
+            {
+                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',//flexDaoSetVotingAdapterContract
+                addr: this.flexDaoSetVotingAdapterContract.address,
+                flags: 65538
+            },
+            {
+                id: '0xc6bb47f9566baa74b5032b5c10e5bf4a1e2382ca337c2de674732f6401d52cc0',//flexDaoSetFeesAdapterContract
+                addr: this.flexDaoSetFeesAdapterContract.address,
+                flags: 131074
+            },
+            {
+                id: '0x869e5d18913d4e9bb387c730a04b58d11e95102194f7217a4b684f6e61dff920',//flexDaoSetGovernorMembershipAdapterContract
+                addr: this.flexDaoSetGovernorMembershipAdapterContract.address,
+                flags: 16386
+            },
+            {
+                id: '0x08f2d2eeda0c9072cdba8b58d442503b4cf9eb6c2f74d75e91dc719111c3189c',//flexDaoSetInvestorCapAdapterContract
+                addr: this.flexDaoSetInvestorCapAdapterContract.address,
+                flags: 8194
+            },
+            {
+                id: '0xe6121cbf77e02f965a1829c382f701ad4cec84fbda84c45378db0768d2e40871',//flexDaoSetInvestorMembershipAdapterContract
+                addr: this.flexDaoSetInvestorMembershipAdapterContract.address,
+                flags: 32770
+            },
+            {
+                id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
+                addr: this.flexDaoSetProposerMembershipAdapterContract.address,
+                flags: 524290
+            }
+
         ];
+
 
         const adapters1 = [{
             id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
@@ -2411,96 +2530,118 @@ describe("Steward-In Management", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
-            addr: this.flexVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
-            addr: this.flexERC721.address,
-            flags: 0
-        },
-        {
-            id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
-            addr: this.flexAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
-            addr: this.flexFundingPoolAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
-            addr: this.flexVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
-            addr: this.flexPollingVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
-            addr: this.flexFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        // {
-        //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-        //     addr: this.managing.address,
-        //     flags: 59
-        // },
-        {
-            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
-            addr: this.flexStewardMangement.address,
-            flags: 6338
-        },
-        {
-            id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
-            addr: this.flexStewardAllocation.address,
-            flags: 0
-        },
-        {
-            id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
-            addr: this.flexFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
-            addr: this.flexFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
-            addr: this.flexFundingHelperAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-            addr: this.flexDaoSetAdapterContract.address,
-            flags: 778242
-        },
-        {
-            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-            addr: this.flexDaoSetHelperAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
-            addr: this.flexDaoSetPollingAdapterContract.address,
-            flags: 262146
-        },
-        {
-            id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
-            addr: this.flexDaoSetVotingAdapterContract.address,
-            flags: 65538
-        }
+        const enalbeAdapters = [
+            {
+                id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
+                addr: this.flexVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
+                addr: this.flexERC721.address,
+                flags: 0
+            },
+            {
+                id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
+                addr: this.flexAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
+                addr: this.flexFundingPoolAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
+                addr: this.flexVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
+                addr: this.flexPollingVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
+                addr: this.flexFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
+                addr: this.flexStewardMangement.address,
+                flags: 6338
+            },
+            {
+                id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
+                addr: this.flexStewardAllocation.address,
+                flags: 0
+            },
+            {
+                id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
+                addr: this.flexFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
+                addr: this.flexFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
+                addr: this.flexFundingHelperAdapterContract.address,
+                flags: 0
+            },
+            // {
+            //     id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            //     addr: this.flexDaoSetAdapterContract.address,
+            //     flags: 778242
+            // },
+            {
+                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37', //flexDaoSetHelperAdapterContract
+                addr: this.flexDaoSetHelperAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',// flexDaoSetPollingAdapterContract
+                addr: this.flexDaoSetPollingAdapterContract.address,
+                flags: 262146
+            },
+            {
+                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',//flexDaoSetVotingAdapterContract
+                addr: this.flexDaoSetVotingAdapterContract.address,
+                flags: 65538
+            },
+            {
+                id: '0xc6bb47f9566baa74b5032b5c10e5bf4a1e2382ca337c2de674732f6401d52cc0',//flexDaoSetFeesAdapterContract
+                addr: this.flexDaoSetFeesAdapterContract.address,
+                flags: 131074
+            },
+            {
+                id: '0x869e5d18913d4e9bb387c730a04b58d11e95102194f7217a4b684f6e61dff920',//flexDaoSetGovernorMembershipAdapterContract
+                addr: this.flexDaoSetGovernorMembershipAdapterContract.address,
+                flags: 16386
+            },
+            {
+                id: '0x08f2d2eeda0c9072cdba8b58d442503b4cf9eb6c2f74d75e91dc719111c3189c',//flexDaoSetInvestorCapAdapterContract
+                addr: this.flexDaoSetInvestorCapAdapterContract.address,
+                flags: 8194
+            },
+            {
+                id: '0xe6121cbf77e02f965a1829c382f701ad4cec84fbda84c45378db0768d2e40871',//flexDaoSetInvestorMembershipAdapterContract
+                addr: this.flexDaoSetInvestorMembershipAdapterContract.address,
+                flags: 32770
+            },
+            {
+                id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
+                addr: this.flexDaoSetProposerMembershipAdapterContract.address,
+                flags: 524290
+            }
+
         ];
 
         const adapters1 = [{
@@ -2742,6 +2883,11 @@ describe("voting...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+        this.flexDaoSetFeesAdapterContract = adapters.flexDaoSetFeesAdapterContract.instance;
+        this.flexDaoSetGovernorMembershipAdapterContract = adapters.flexDaoSetGovernorMembershipAdapterContract.instance;
+        this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
+        this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
+        this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
 
         console.log("flexStewardMangement addr ", this.flexStewardMangement.address);
 
@@ -2762,97 +2908,120 @@ describe("voting...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
-            addr: this.flexVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
-            addr: this.flexERC721.address,
-            flags: 0
-        },
-        {
-            id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
-            addr: this.flexAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
-            addr: this.flexFundingPoolAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
-            addr: this.flexVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
-            addr: this.flexPollingVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
-            addr: this.flexFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        // {
-        //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-        //     addr: this.managing.address,
-        //     flags: 59
-        // },
-        {
-            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
-            addr: this.flexStewardMangement.address,
-            flags: 6338
-        },
-        {
-            id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
-            addr: this.flexStewardAllocation.address,
-            flags: 0
-        },
-        {
-            id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
-            addr: this.flexFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
-            addr: this.flexFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
-            addr: this.flexFundingHelperAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-            addr: this.flexDaoSetAdapterContract.address,
-            flags: 778242
-        },
-        {
-            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-            addr: this.flexDaoSetHelperAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
-            addr: this.flexDaoSetPollingAdapterContract.address,
-            flags: 262146
-        },
-        {
-            id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
-            addr: this.flexDaoSetVotingAdapterContract.address,
-            flags: 65538
-        }
+        const enalbeAdapters = [
+            {
+                id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
+                addr: this.flexVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
+                addr: this.flexERC721.address,
+                flags: 0
+            },
+            {
+                id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
+                addr: this.flexAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
+                addr: this.flexFundingPoolAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
+                addr: this.flexVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
+                addr: this.flexPollingVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
+                addr: this.flexFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
+                addr: this.flexStewardMangement.address,
+                flags: 6338
+            },
+            {
+                id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
+                addr: this.flexStewardAllocation.address,
+                flags: 0
+            },
+            {
+                id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
+                addr: this.flexFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
+                addr: this.flexFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
+                addr: this.flexFundingHelperAdapterContract.address,
+                flags: 0
+            },
+            // {
+            //     id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            //     addr: this.flexDaoSetAdapterContract.address,
+            //     flags: 778242
+            // },
+            {
+                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37', //flexDaoSetHelperAdapterContract
+                addr: this.flexDaoSetHelperAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',// flexDaoSetPollingAdapterContract
+                addr: this.flexDaoSetPollingAdapterContract.address,
+                flags: 262146
+            },
+            {
+                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',//flexDaoSetVotingAdapterContract
+                addr: this.flexDaoSetVotingAdapterContract.address,
+                flags: 65538
+            },
+            {
+                id: '0xc6bb47f9566baa74b5032b5c10e5bf4a1e2382ca337c2de674732f6401d52cc0',//flexDaoSetFeesAdapterContract
+                addr: this.flexDaoSetFeesAdapterContract.address,
+                flags: 131074
+            },
+            {
+                id: '0x869e5d18913d4e9bb387c730a04b58d11e95102194f7217a4b684f6e61dff920',//flexDaoSetGovernorMembershipAdapterContract
+                addr: this.flexDaoSetGovernorMembershipAdapterContract.address,
+                flags: 16386
+            },
+            {
+                id: '0x08f2d2eeda0c9072cdba8b58d442503b4cf9eb6c2f74d75e91dc719111c3189c',//flexDaoSetInvestorCapAdapterContract
+                addr: this.flexDaoSetInvestorCapAdapterContract.address,
+                flags: 8194
+            },
+            {
+                id: '0xe6121cbf77e02f965a1829c382f701ad4cec84fbda84c45378db0768d2e40871',//flexDaoSetInvestorMembershipAdapterContract
+                addr: this.flexDaoSetInvestorMembershipAdapterContract.address,
+                flags: 32770
+            },
+            {
+                id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
+                addr: this.flexDaoSetProposerMembershipAdapterContract.address,
+                flags: 524290
+            }
+
         ];
+
 
         const adapters1 = [{
             id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
@@ -4447,6 +4616,11 @@ describe("polling voting...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+        this.flexDaoSetFeesAdapterContract = adapters.flexDaoSetFeesAdapterContract.instance;
+        this.flexDaoSetGovernorMembershipAdapterContract = adapters.flexDaoSetGovernorMembershipAdapterContract.instance;
+        this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
+        this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
+        this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
 
         console.log("flexStewardMangement addr ", this.flexStewardMangement.address);
 
@@ -4467,97 +4641,120 @@ describe("polling voting...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
-            addr: this.flexVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
-            addr: this.flexERC721.address,
-            flags: 0
-        },
-        {
-            id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
-            addr: this.flexAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
-            addr: this.flexFundingPoolAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
-            addr: this.flexVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
-            addr: this.flexPollingVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
-            addr: this.flexFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        // {
-        //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-        //     addr: this.managing.address,
-        //     flags: 59
-        // },
-        {
-            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
-            addr: this.flexStewardMangement.address,
-            flags: 6338
-        },
-        {
-            id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
-            addr: this.flexStewardAllocation.address,
-            flags: 0
-        },
-        {
-            id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
-            addr: this.flexFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
-            addr: this.flexFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
-            addr: this.flexFundingHelperAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-            addr: this.flexDaoSetAdapterContract.address,
-            flags: 778242
-        },
-        {
-            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-            addr: this.flexDaoSetHelperAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
-            addr: this.flexDaoSetPollingAdapterContract.address,
-            flags: 262146
-        },
-        {
-            id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
-            addr: this.flexDaoSetVotingAdapterContract.address,
-            flags: 65538
-        }
+        const enalbeAdapters = [
+            {
+                id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
+                addr: this.flexVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
+                addr: this.flexERC721.address,
+                flags: 0
+            },
+            {
+                id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
+                addr: this.flexAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
+                addr: this.flexFundingPoolAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
+                addr: this.flexVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
+                addr: this.flexPollingVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
+                addr: this.flexFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
+                addr: this.flexStewardMangement.address,
+                flags: 6338
+            },
+            {
+                id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
+                addr: this.flexStewardAllocation.address,
+                flags: 0
+            },
+            {
+                id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
+                addr: this.flexFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
+                addr: this.flexFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
+                addr: this.flexFundingHelperAdapterContract.address,
+                flags: 0
+            },
+            // {
+            //     id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            //     addr: this.flexDaoSetAdapterContract.address,
+            //     flags: 778242
+            // },
+            {
+                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37', //flexDaoSetHelperAdapterContract
+                addr: this.flexDaoSetHelperAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',// flexDaoSetPollingAdapterContract
+                addr: this.flexDaoSetPollingAdapterContract.address,
+                flags: 262146
+            },
+            {
+                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',//flexDaoSetVotingAdapterContract
+                addr: this.flexDaoSetVotingAdapterContract.address,
+                flags: 65538
+            },
+            {
+                id: '0xc6bb47f9566baa74b5032b5c10e5bf4a1e2382ca337c2de674732f6401d52cc0',//flexDaoSetFeesAdapterContract
+                addr: this.flexDaoSetFeesAdapterContract.address,
+                flags: 131074
+            },
+            {
+                id: '0x869e5d18913d4e9bb387c730a04b58d11e95102194f7217a4b684f6e61dff920',//flexDaoSetGovernorMembershipAdapterContract
+                addr: this.flexDaoSetGovernorMembershipAdapterContract.address,
+                flags: 16386
+            },
+            {
+                id: '0x08f2d2eeda0c9072cdba8b58d442503b4cf9eb6c2f74d75e91dc719111c3189c',//flexDaoSetInvestorCapAdapterContract
+                addr: this.flexDaoSetInvestorCapAdapterContract.address,
+                flags: 8194
+            },
+            {
+                id: '0xe6121cbf77e02f965a1829c382f701ad4cec84fbda84c45378db0768d2e40871',//flexDaoSetInvestorMembershipAdapterContract
+                addr: this.flexDaoSetInvestorMembershipAdapterContract.address,
+                flags: 32770
+            },
+            {
+                id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
+                addr: this.flexDaoSetProposerMembershipAdapterContract.address,
+                flags: 524290
+            }
+
         ];
+
 
         const adapters1 = [{
             id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
@@ -7530,6 +7727,11 @@ describe("verify proposer membership...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+        this.flexDaoSetFeesAdapterContract = adapters.flexDaoSetFeesAdapterContract.instance;
+        this.flexDaoSetGovernorMembershipAdapterContract = adapters.flexDaoSetGovernorMembershipAdapterContract.instance;
+        this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
+        this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
+        this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
 
         console.log("flexStewardMangement addr ", this.flexStewardMangement.address);
 
@@ -7550,108 +7752,132 @@ describe("verify proposer membership...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
-            addr: this.flexVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
-            addr: this.flexERC721.address,
-            flags: 0
-        },
-        {
-            id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
-            addr: this.flexAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
-            addr: this.flexFundingPoolAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
-            addr: this.flexVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
-            addr: this.flexPollingVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
-            addr: this.flexFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        // {
-        //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-        //     addr: this.managing.address,
-        //     flags: 59
-        // },
-        {
-            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
-            addr: this.flexStewardMangement.address,
-            flags: 6338
-        },
-        {
-            id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
-            addr: this.flexStewardAllocation.address,
-            flags: 0
-        },
-        {
-            id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
-            addr: this.flexFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
-            addr: this.flexFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
-            addr: this.flexFundingHelperAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-            addr: this.flexDaoSetAdapterContract.address,
-            flags: 778242
-        },
-        {
-            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-            addr: this.flexDaoSetHelperAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
-            addr: this.flexDaoSetPollingAdapterContract.address,
-            flags: 262146
-        },
-        {
-            id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
-            addr: this.flexDaoSetVotingAdapterContract.address,
-            flags: 65538
-        }
+        const enalbeAdapters = [
+            {
+                id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
+                addr: this.flexVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
+                addr: this.flexERC721.address,
+                flags: 0
+            },
+            {
+                id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
+                addr: this.flexAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
+                addr: this.flexFundingPoolAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
+                addr: this.flexVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
+                addr: this.flexPollingVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
+                addr: this.flexFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
+                addr: this.flexStewardMangement.address,
+                flags: 6338
+            },
+            {
+                id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
+                addr: this.flexStewardAllocation.address,
+                flags: 0
+            },
+            {
+                id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
+                addr: this.flexFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
+                addr: this.flexFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
+                addr: this.flexFundingHelperAdapterContract.address,
+                flags: 0
+            },
+            // {
+            //     id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            //     addr: this.flexDaoSetAdapterContract.address,
+            //     flags: 778242
+            // },
+            {
+                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37', //flexDaoSetHelperAdapterContract
+                addr: this.flexDaoSetHelperAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',// flexDaoSetPollingAdapterContract
+                addr: this.flexDaoSetPollingAdapterContract.address,
+                flags: 262146
+            },
+            {
+                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',//flexDaoSetVotingAdapterContract
+                addr: this.flexDaoSetVotingAdapterContract.address,
+                flags: 65538
+            },
+            {
+                id: '0xc6bb47f9566baa74b5032b5c10e5bf4a1e2382ca337c2de674732f6401d52cc0',//flexDaoSetFeesAdapterContract
+                addr: this.flexDaoSetFeesAdapterContract.address,
+                flags: 131074
+            },
+            {
+                id: '0x869e5d18913d4e9bb387c730a04b58d11e95102194f7217a4b684f6e61dff920',//flexDaoSetGovernorMembershipAdapterContract
+                addr: this.flexDaoSetGovernorMembershipAdapterContract.address,
+                flags: 16386
+            },
+            {
+                id: '0x08f2d2eeda0c9072cdba8b58d442503b4cf9eb6c2f74d75e91dc719111c3189c',//flexDaoSetInvestorCapAdapterContract
+                addr: this.flexDaoSetInvestorCapAdapterContract.address,
+                flags: 8194
+            },
+            {
+                id: '0xe6121cbf77e02f965a1829c382f701ad4cec84fbda84c45378db0768d2e40871',//flexDaoSetInvestorMembershipAdapterContract
+                addr: this.flexDaoSetInvestorMembershipAdapterContract.address,
+                flags: 32770
+            },
+            {
+                id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
+                addr: this.flexDaoSetProposerMembershipAdapterContract.address,
+                flags: 524290
+            }
+
         ];
 
-        const adapters1 = [{
-            id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
-            addr: this.flexFundingPoolAdapterContract.address, //FlexFundingPoolAdapterContract
-            flags: 75
-        },
-        {
-            id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
-            addr: this.flexFundingAdapterContract.address, //FlexFundingAdapterContract
-            flags: 26
-        }
+
+        const adapters1 = [
+            {
+                id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+                addr: this.flexFundingPoolAdapterContract.address, //FlexFundingPoolAdapterContract
+                flags: 75
+            },
+            {
+                id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+                addr: this.flexFundingAdapterContract.address, //FlexFundingAdapterContract
+                flags: 26
+            }
         ];
 
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
@@ -9227,7 +9453,7 @@ describe("vesting nft...", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -9243,6 +9469,42 @@ describe("vesting nft...", () => {
         this.flexDaoSetAdapterContract = adapters.flexDaoSetAdapterContract.instance;
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
+        this.flexDaoSetFeesAdapterContract = adapters.flexDaoSetFeesAdapterContract.instance;
+        this.flexDaoSetGovernorMembershipAdapterContract = adapters.flexDaoSetGovernorMembershipAdapterContract.instance;
+        this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
+        this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
+        this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+
+        // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        // await flexVestingERC721Helper.deployed();
+        // this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        // const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        // const flexVestingERC721 = await FlexVestingERC721.deploy(
+        //     "DAOSquare Investment Receipt",
+        //     "DIR",
+        //     this.flexVesting.address,
+        //     this.flexVestingERC721Helper.address
+        // );
+        // await flexVestingERC721.deployed();
+        // this.flexVestingERC721 = flexVestingERC721;
+
+        const VestingERC721Helper = await hre.ethers.getContractFactory("VestingERC721Helper");
+        const vestingERC721Helper = await VestingERC721Helper.deploy();
+        await vestingERC721Helper.deployed();
+        this.vestingERC721Helper = vestingERC721Helper;
+
+        const VestingERC721 = await hre.ethers.getContractFactory("VestingERC721");
+        const vestingERC721 = await VestingERC721.deploy(
+            "DAOSquare Investment Vesting",
+            "DIV",
+            this.flexVesting.address,
+            this.flexVesting.address,
+            this.vestingERC721Helper.address
+        );
+        await vestingERC721.deployed();
+        this.vestingERC721 = vestingERC721;
 
         this.summonDao = this.adapters.summonDao.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
@@ -9260,123 +9522,132 @@ describe("vesting nft...", () => {
 
         const creator = this.owner.address;
 
-        const enalbeAdapters = [{
-            id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
-            addr: this.flexVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
-            addr: this.flexERC721.address,
-            flags: 0
-        },
-        {
-            id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
-            addr: this.flexAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
-            addr: this.flexFundingPoolAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
-            addr: this.flexVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
-            addr: this.flexPollingVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
-            addr: this.flexFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        // {
-        //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-        //     addr: this.managing.address,
-        //     flags: 59
-        // },
-        {
-            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
-            addr: this.flexStewardMangement.address,
-            flags: 6338
-        },
-        {
-            id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
-            addr: this.flexStewardAllocation.address,
-            flags: 0
-        },
-        {
-            id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
-            addr: this.flexFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
-            addr: this.flexFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
-            addr: this.flexFundingHelperAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-            addr: this.flexDaoSetAdapterContract.address,
-            flags: 778242
-        },
-        {
-            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-            addr: this.flexDaoSetHelperAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
-            addr: this.flexDaoSetPollingAdapterContract.address,
-            flags: 262146
-        },
-        {
-            id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
-            addr: this.flexDaoSetVotingAdapterContract.address,
-            flags: 65538
-        }
+        const enalbeAdapters = [
+            {
+                id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
+                addr: this.flexVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
+                addr: this.flexERC721.address,
+                flags: 0
+            },
+            {
+                id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
+                addr: this.flexAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
+                addr: this.flexFundingPoolAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
+                addr: this.flexVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
+                addr: this.flexPollingVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
+                addr: this.flexFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
+                addr: this.flexStewardMangement.address,
+                flags: 6338
+            },
+            {
+                id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
+                addr: this.flexStewardAllocation.address,
+                flags: 0
+            },
+            {
+                id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
+                addr: this.flexFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
+                addr: this.flexFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
+                addr: this.flexFundingHelperAdapterContract.address,
+                flags: 0
+            },
+            // {
+            //     id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            //     addr: this.flexDaoSetAdapterContract.address,
+            //     flags: 778242
+            // },
+            {
+                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37', //flexDaoSetHelperAdapterContract
+                addr: this.flexDaoSetHelperAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',// flexDaoSetPollingAdapterContract
+                addr: this.flexDaoSetPollingAdapterContract.address,
+                flags: 262146
+            },
+            {
+                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',//flexDaoSetVotingAdapterContract
+                addr: this.flexDaoSetVotingAdapterContract.address,
+                flags: 65538
+            },
+            {
+                id: '0xc6bb47f9566baa74b5032b5c10e5bf4a1e2382ca337c2de674732f6401d52cc0',//flexDaoSetFeesAdapterContract
+                addr: this.flexDaoSetFeesAdapterContract.address,
+                flags: 131074
+            },
+            {
+                id: '0x869e5d18913d4e9bb387c730a04b58d11e95102194f7217a4b684f6e61dff920',//flexDaoSetGovernorMembershipAdapterContract
+                addr: this.flexDaoSetGovernorMembershipAdapterContract.address,
+                flags: 16386
+            },
+            {
+                id: '0x08f2d2eeda0c9072cdba8b58d442503b4cf9eb6c2f74d75e91dc719111c3189c',//flexDaoSetInvestorCapAdapterContract
+                addr: this.flexDaoSetInvestorCapAdapterContract.address,
+                flags: 8194
+            },
+            {
+                id: '0xe6121cbf77e02f965a1829c382f701ad4cec84fbda84c45378db0768d2e40871',//flexDaoSetInvestorMembershipAdapterContract
+                addr: this.flexDaoSetInvestorMembershipAdapterContract.address,
+                flags: 32770
+            },
+            {
+                id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
+                addr: this.flexDaoSetProposerMembershipAdapterContract.address,
+                flags: 524290
+            }
+
         ];
 
-        const adapters1 = [{
-            id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
-            addr: this.flexFundingPoolAdapterContract.address, //FlexFundingPoolAdapterContract
-            flags: 75
-        },
-        {
-            id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
-            addr: this.flexFundingAdapterContract.address, //FlexFundingAdapterContract
-            flags: 26
-        },
-        {
-            id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-            addr: this.flexDaoSetAdapterContract.address,
-            flags: 1040394
-        },
-        {
-            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-            addr: this.flexDaoSetHelperAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-            addr: this.flexDaoSetHelperAdapterContract.address,
-            flags: 8
-        }
+
+        const adapters1 = [
+            {
+                id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+                addr: this.flexFundingPoolAdapterContract.address, //FlexFundingPoolAdapterContract
+                flags: 75
+            },
+            {
+                id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+                addr: this.flexFundingAdapterContract.address, //FlexFundingAdapterContract
+                flags: 26
+            }
         ];
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
@@ -9563,7 +9834,9 @@ describe("vesting nft...", () => {
         let vestingCliffLockAmount = hre.ethers.utils.parseEther("0.1"); // 10%
 
         const vestNFTEnable = true;
-        const nftToken = this.flexVestingERC721.address;
+        // const nftToken = this.flexVestingERC721.address;
+        const nftToken = this.vestingERC721.address;
+
         const vestName = "flex vesting";
         const vestDescription = "a flex vesting";
 
@@ -9766,14 +10039,19 @@ describe("vesting nft...", () => {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vestingCliffEndTime) + 1]);
             await hre.network.provider.send("evm_mine");
         }
-        let svg1 = await this.flexVestingERC721.getSvg(1);
-        let tokenURI = await this.flexVestingERC721.tokenURI(1);
+        // let svg1 = await this.flexVestingERC721.getSvg(1);
+        let svg1 = await this.vestingERC721.getSvg(1);
+
+        // let tokenURI = await this.flexVestingERC721.tokenURI(1);
+        let tokenURI = await this.vestingERC721.tokenURI(1);
+
         console.log(`
         svg of tokenid 1 ${svg1}
         tokenURI of tokenId 1 ${tokenURI}
         `);
 
-        await flexVestingContract.withdraw(dao.address, 1);
+        let vestBal1 = await flexVestingContract.vestBalance(1)
+        if (vestBal1 > 0) await flexVestingContract.withdraw(dao.address, 1);
 
         createdVestingInfo = await flexVestingContract.vests(1);
         returnTokenBal = await this.testtoken2.balanceOf(this.owner.address);
@@ -9790,9 +10068,12 @@ describe("vesting nft...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexVestingERC721.transferFrom(this.owner.address, this.investor2.address, 1);
+        // await this.flexVestingERC721.transferFrom(this.owner.address, this.investor2.address, 1);
+        await this.vestingERC721.transferFrom(this.owner.address, this.investor2.address, 1);
+
         await expectRevert(flexVestingContract.withdraw(dao.address, 1), "revert");
-        await flexVestingContract.connect(this.investor2).withdraw(dao.address, 1);
+        vestBal1 = await flexVestingContract.vestBalance(1)
+        if (vestBal1 > 0) await flexVestingContract.connect(this.investor2).withdraw(dao.address, 1);
         returnTokenBal = await this.testtoken2.balanceOf(this.investor2.address);
         createdVestingInfo = await flexVestingContract.vests(1);
         console.log(`
@@ -10047,8 +10328,8 @@ describe("vesting nft...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-
-        await flexVestingContract.withdraw(dao.address, 2);
+        let vestBal2 = await flexVestingContract.vestBalance(2)
+        if (vestBal2 > 0) await flexVestingContract.withdraw(dao.address, 2);
 
         createdVestingInfo = await flexVestingContract.vests(2);
         returnTokenBal = await this.testtoken2.balanceOf(this.owner.address);
@@ -10066,7 +10347,8 @@ describe("vesting nft...", () => {
         }
 
         await expectRevert(flexVestingContract.connect(this.investor2).withdraw(dao.address, 2), "revert");
-        await flexVestingContract.withdraw(dao.address, 2);
+        vestBal2 = await flexVestingContract.vestBalance(2)
+        if (vestBal2 > 0) await flexVestingContract.withdraw(dao.address, 2);
 
         returnTokenBal = await this.testtoken2.balanceOf(this.owner.address);
         createdVestingInfo = await flexVestingContract.vests(2);
@@ -10146,7 +10428,7 @@ describe("steward allocations...", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -10163,6 +10445,42 @@ describe("steward allocations...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+        this.flexDaoSetFeesAdapterContract = adapters.flexDaoSetFeesAdapterContract.instance;
+        this.flexDaoSetGovernorMembershipAdapterContract = adapters.flexDaoSetGovernorMembershipAdapterContract.instance;
+        this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
+        this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
+        this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+
+        // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        // await flexVestingERC721Helper.deployed();
+        // this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        // const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        // const flexVestingERC721 = await FlexVestingERC721.deploy(
+        //     "DAOSquare Investment Receipt",
+        //     "DIR",
+        //     this.flexVesting.address,
+        //     this.flexVestingERC721Helper.address
+        // );
+        // await flexVestingERC721.deployed();
+        // this.flexVestingERC721 = flexVestingERC721;
+
+        const VestingERC721Helper = await hre.ethers.getContractFactory("VestingERC721Helper");
+        const vestingERC721Helper = await VestingERC721Helper.deploy();
+        await vestingERC721Helper.deployed();
+        this.vestingERC721Helper = vestingERC721Helper;
+
+        const VestingERC721 = await hre.ethers.getContractFactory("VestingERC721");
+        const vestingERC721 = await VestingERC721.deploy(
+            "DAOSquare Investment Vesting",
+            "DIV",
+            this.flexVesting.address,
+            this.flexVesting.address,
+            this.vestingERC721Helper.address
+        );
+        await vestingERC721.deployed();
+        this.vestingERC721 = vestingERC721;
 
         this.summonDao = this.adapters.summonDao.instance;
 
@@ -10173,97 +10491,121 @@ describe("steward allocations...", () => {
         _daoName = "my_flex_dao002";
 
         const creator = this.owner.address;
-        const enalbeAdapters = [{
-            id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
-            addr: this.flexVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
-            addr: this.flexERC721.address,
-            flags: 0
-        },
-        {
-            id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
-            addr: this.flexAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
-            addr: this.flexFundingPoolAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
-            addr: this.flexVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
-            addr: this.flexPollingVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
-            addr: this.flexFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        // {
-        //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-        //     addr: this.managing.address,
-        //     flags: 59
-        // },
-        {
-            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
-            addr: this.flexStewardMangement.address,
-            flags: 6338
-        },
-        {
-            id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
-            addr: this.flexStewardAllocation.address,
-            flags: 0
-        },
-        {
-            id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
-            addr: this.flexFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
-            addr: this.flexFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
-            addr: this.flexFundingHelperAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-            addr: this.flexDaoSetAdapterContract.address,
-            flags: 778242
-        },
-        {
-            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-            addr: this.flexDaoSetHelperAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
-            addr: this.flexDaoSetPollingAdapterContract.address,
-            flags: 262146
-        },
-        {
-            id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
-            addr: this.flexDaoSetVotingAdapterContract.address,
-            flags: 65538
-        }
+
+        const enalbeAdapters = [
+            {
+                id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
+                addr: this.flexVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
+                addr: this.flexERC721.address,
+                flags: 0
+            },
+            {
+                id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
+                addr: this.flexAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
+                addr: this.flexFundingPoolAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
+                addr: this.flexVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
+                addr: this.flexPollingVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
+                addr: this.flexFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
+                addr: this.flexStewardMangement.address,
+                flags: 6338
+            },
+            {
+                id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
+                addr: this.flexStewardAllocation.address,
+                flags: 0
+            },
+            {
+                id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
+                addr: this.flexFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
+                addr: this.flexFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
+                addr: this.flexFundingHelperAdapterContract.address,
+                flags: 0
+            },
+            // {
+            //     id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            //     addr: this.flexDaoSetAdapterContract.address,
+            //     flags: 778242
+            // },
+            {
+                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37', //flexDaoSetHelperAdapterContract
+                addr: this.flexDaoSetHelperAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',// flexDaoSetPollingAdapterContract
+                addr: this.flexDaoSetPollingAdapterContract.address,
+                flags: 262146
+            },
+            {
+                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',//flexDaoSetVotingAdapterContract
+                addr: this.flexDaoSetVotingAdapterContract.address,
+                flags: 65538
+            },
+            {
+                id: '0xc6bb47f9566baa74b5032b5c10e5bf4a1e2382ca337c2de674732f6401d52cc0',//flexDaoSetFeesAdapterContract
+                addr: this.flexDaoSetFeesAdapterContract.address,
+                flags: 131074
+            },
+            {
+                id: '0x869e5d18913d4e9bb387c730a04b58d11e95102194f7217a4b684f6e61dff920',//flexDaoSetGovernorMembershipAdapterContract
+                addr: this.flexDaoSetGovernorMembershipAdapterContract.address,
+                flags: 16386
+            },
+            {
+                id: '0x08f2d2eeda0c9072cdba8b58d442503b4cf9eb6c2f74d75e91dc719111c3189c',//flexDaoSetInvestorCapAdapterContract
+                addr: this.flexDaoSetInvestorCapAdapterContract.address,
+                flags: 8194
+            },
+            {
+                id: '0xe6121cbf77e02f965a1829c382f701ad4cec84fbda84c45378db0768d2e40871',//flexDaoSetInvestorMembershipAdapterContract
+                addr: this.flexDaoSetInvestorMembershipAdapterContract.address,
+                flags: 32770
+            },
+            {
+                id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
+                addr: this.flexDaoSetProposerMembershipAdapterContract.address,
+                flags: 524290
+            }
+
         ];
+
 
         const adapters1 = [{
             id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
@@ -10548,7 +10890,7 @@ describe("free in...", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -10566,6 +10908,42 @@ describe("free in...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+        this.flexDaoSetFeesAdapterContract = adapters.flexDaoSetFeesAdapterContract.instance;
+        this.flexDaoSetGovernorMembershipAdapterContract = adapters.flexDaoSetGovernorMembershipAdapterContract.instance;
+        this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
+        this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
+        this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+
+        // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        // await flexVestingERC721Helper.deployed();
+        // this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        // const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        // const flexVestingERC721 = await FlexVestingERC721.deploy(
+        //     "DAOSquare Investment Receipt",
+        //     "DIR",
+        //     this.flexVesting.address,
+        //     this.flexVestingERC721Helper.address
+        // );
+        // await flexVestingERC721.deployed();
+        // this.flexVestingERC721 = flexVestingERC721;
+
+        const VestingERC721Helper = await hre.ethers.getContractFactory("VestingERC721Helper");
+        const vestingERC721Helper = await VestingERC721Helper.deploy();
+        await vestingERC721Helper.deployed();
+        this.vestingERC721Helper = vestingERC721Helper;
+
+        const VestingERC721 = await hre.ethers.getContractFactory("VestingERC721");
+        const vestingERC721 = await VestingERC721.deploy(
+            "DAOSquare Investment Vesting",
+            "DIV",
+            this.flexVesting.address,
+            this.flexVesting.address,
+            this.vestingERC721Helper.address
+        );
+        await vestingERC721.deployed();
+        this.vestingERC721 = vestingERC721;
 
         const daoFactoriesAddress = [
             this.daoFactory.address,
@@ -10574,97 +10952,121 @@ describe("free in...", () => {
         _daoName = "my_flex_dao002";
 
         const creator = this.owner.address;
-        const enalbeAdapters = [{
-            id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
-            addr: this.flexVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
-            addr: this.flexERC721.address,
-            flags: 0
-        },
-        {
-            id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
-            addr: this.flexAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
-            addr: this.flexFundingPoolAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
-            addr: this.flexVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
-            addr: this.flexPollingVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
-            addr: this.flexFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        // {
-        //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-        //     addr: this.managing.address,
-        //     flags: 59
-        // },
-        {
-            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
-            addr: this.flexStewardMangement.address,
-            flags: 6338
-        },
-        {
-            id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
-            addr: this.flexStewardAllocation.address,
-            flags: 0
-        },
-        {
-            id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
-            addr: this.flexFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
-            addr: this.flexFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
-            addr: this.flexFundingHelperAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-            addr: this.flexDaoSetAdapterContract.address,
-            flags: 778242
-        },
-        {
-            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-            addr: this.flexDaoSetHelperAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
-            addr: this.flexDaoSetPollingAdapterContract.address,
-            flags: 262146
-        },
-        {
-            id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
-            addr: this.flexDaoSetVotingAdapterContract.address,
-            flags: 65538
-        }
+
+        const enalbeAdapters = [
+            {
+                id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
+                addr: this.flexVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
+                addr: this.flexERC721.address,
+                flags: 0
+            },
+            {
+                id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
+                addr: this.flexAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
+                addr: this.flexFundingPoolAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
+                addr: this.flexVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
+                addr: this.flexPollingVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
+                addr: this.flexFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
+                addr: this.flexStewardMangement.address,
+                flags: 6338
+            },
+            {
+                id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
+                addr: this.flexStewardAllocation.address,
+                flags: 0
+            },
+            {
+                id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
+                addr: this.flexFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
+                addr: this.flexFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
+                addr: this.flexFundingHelperAdapterContract.address,
+                flags: 0
+            },
+            // {
+            //     id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            //     addr: this.flexDaoSetAdapterContract.address,
+            //     flags: 778242
+            // },
+            {
+                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37', //flexDaoSetHelperAdapterContract
+                addr: this.flexDaoSetHelperAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',// flexDaoSetPollingAdapterContract
+                addr: this.flexDaoSetPollingAdapterContract.address,
+                flags: 262146
+            },
+            {
+                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',//flexDaoSetVotingAdapterContract
+                addr: this.flexDaoSetVotingAdapterContract.address,
+                flags: 65538
+            },
+            {
+                id: '0xc6bb47f9566baa74b5032b5c10e5bf4a1e2382ca337c2de674732f6401d52cc0',//flexDaoSetFeesAdapterContract
+                addr: this.flexDaoSetFeesAdapterContract.address,
+                flags: 131074
+            },
+            {
+                id: '0x869e5d18913d4e9bb387c730a04b58d11e95102194f7217a4b684f6e61dff920',//flexDaoSetGovernorMembershipAdapterContract
+                addr: this.flexDaoSetGovernorMembershipAdapterContract.address,
+                flags: 16386
+            },
+            {
+                id: '0x08f2d2eeda0c9072cdba8b58d442503b4cf9eb6c2f74d75e91dc719111c3189c',//flexDaoSetInvestorCapAdapterContract
+                addr: this.flexDaoSetInvestorCapAdapterContract.address,
+                flags: 8194
+            },
+            {
+                id: '0xe6121cbf77e02f965a1829c382f701ad4cec84fbda84c45378db0768d2e40871',//flexDaoSetInvestorMembershipAdapterContract
+                addr: this.flexDaoSetInvestorMembershipAdapterContract.address,
+                flags: 32770
+            },
+            {
+                id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
+                addr: this.flexDaoSetProposerMembershipAdapterContract.address,
+                flags: 524290
+            }
+
         ];
+
 
         const adapters1 = [{
             id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
@@ -11085,7 +11487,6 @@ describe("free in...", () => {
         escrow refund...
         `);
 
-
         await this.flexFreeInEscrowFundAdapterContract.withdraw(dao.address, proposalId);
         await this.flexFreeInEscrowFundAdapterContract.connect(this.genesis_steward1).withdraw(dao.address, proposalId);
         await this.flexFreeInEscrowFundAdapterContract.connect(this.genesis_steward2).withdraw(dao.address, proposalId);
@@ -11186,7 +11587,7 @@ describe("participant cap...", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -11203,6 +11604,42 @@ describe("participant cap...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+        this.flexDaoSetFeesAdapterContract = adapters.flexDaoSetFeesAdapterContract.instance;
+        this.flexDaoSetGovernorMembershipAdapterContract = adapters.flexDaoSetGovernorMembershipAdapterContract.instance;
+        this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
+        this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
+        this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+
+        // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        // await flexVestingERC721Helper.deployed();
+        // this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        // const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        // const flexVestingERC721 = await FlexVestingERC721.deploy(
+        //     "DAOSquare Investment Receipt",
+        //     "DIR",
+        //     this.flexVesting.address,
+        //     this.flexVestingERC721Helper.address
+        // );
+        // await flexVestingERC721.deployed();
+        // this.flexVestingERC721 = flexVestingERC721;
+
+        const VestingERC721Helper = await hre.ethers.getContractFactory("VestingERC721Helper");
+        const vestingERC721Helper = await VestingERC721Helper.deploy();
+        await vestingERC721Helper.deployed();
+        this.vestingERC721Helper = vestingERC721Helper;
+
+        const VestingERC721 = await hre.ethers.getContractFactory("VestingERC721");
+        const vestingERC721 = await VestingERC721.deploy(
+            "DAOSquare Investment Vesting",
+            "DIV",
+            this.flexVesting.address,
+            this.flexVesting.address,
+            this.vestingERC721Helper.address
+        );
+        await vestingERC721.deployed();
+        this.vestingERC721 = vestingERC721;
 
         this.summonDao = this.adapters.summonDao.instance;
 
@@ -11213,98 +11650,120 @@ describe("participant cap...", () => {
         _daoName = "my_flex_dao002";
 
         const creator = this.owner.address;
-        const enalbeAdapters = [{
-            id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
-            addr: this.flexVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
-            addr: this.flexERC721.address,
-            flags: 0
-        },
-        {
-            id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
-            addr: this.flexAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
-            addr: this.flexFundingPoolAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
-            addr: this.flexVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
-            addr: this.flexPollingVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
-            addr: this.flexFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        // {
-        //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-        //     addr: this.managing.address,
-        //     flags: 59
-        // },
-        {
-            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
-            addr: this.flexStewardMangement.address,
-            flags: 6338
-        },
-        {
-            id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
-            addr: this.flexStewardAllocation.address,
-            flags: 0
-        },
-        {
-            id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
-            addr: this.flexFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
-            addr: this.flexFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
-            addr: this.flexFundingHelperAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-            addr: this.flexDaoSetAdapterContract.address,
-            flags: 778242
-        },
-        {
-            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-            addr: this.flexDaoSetHelperAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
-            addr: this.flexDaoSetPollingAdapterContract.address,
-            flags: 262146
-        },
-        {
-            id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
-            addr: this.flexDaoSetVotingAdapterContract.address,
-            flags: 65538
-        }
-        ];
 
+        const enalbeAdapters = [
+            {
+                id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
+                addr: this.flexVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
+                addr: this.flexERC721.address,
+                flags: 0
+            },
+            {
+                id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
+                addr: this.flexAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
+                addr: this.flexFundingPoolAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
+                addr: this.flexVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
+                addr: this.flexPollingVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
+                addr: this.flexFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
+                addr: this.flexStewardMangement.address,
+                flags: 6338
+            },
+            {
+                id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
+                addr: this.flexStewardAllocation.address,
+                flags: 0
+            },
+            {
+                id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
+                addr: this.flexFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
+                addr: this.flexFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
+                addr: this.flexFundingHelperAdapterContract.address,
+                flags: 0
+            },
+            // {
+            //     id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            //     addr: this.flexDaoSetAdapterContract.address,
+            //     flags: 778242
+            // },
+            {
+                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37', //flexDaoSetHelperAdapterContract
+                addr: this.flexDaoSetHelperAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',// flexDaoSetPollingAdapterContract
+                addr: this.flexDaoSetPollingAdapterContract.address,
+                flags: 262146
+            },
+            {
+                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',//flexDaoSetVotingAdapterContract
+                addr: this.flexDaoSetVotingAdapterContract.address,
+                flags: 65538
+            },
+            {
+                id: '0xc6bb47f9566baa74b5032b5c10e5bf4a1e2382ca337c2de674732f6401d52cc0',//flexDaoSetFeesAdapterContract
+                addr: this.flexDaoSetFeesAdapterContract.address,
+                flags: 131074
+            },
+            {
+                id: '0x869e5d18913d4e9bb387c730a04b58d11e95102194f7217a4b684f6e61dff920',//flexDaoSetGovernorMembershipAdapterContract
+                addr: this.flexDaoSetGovernorMembershipAdapterContract.address,
+                flags: 16386
+            },
+            {
+                id: '0x08f2d2eeda0c9072cdba8b58d442503b4cf9eb6c2f74d75e91dc719111c3189c',//flexDaoSetInvestorCapAdapterContract
+                addr: this.flexDaoSetInvestorCapAdapterContract.address,
+                flags: 8194
+            },
+            {
+                id: '0xe6121cbf77e02f965a1829c382f701ad4cec84fbda84c45378db0768d2e40871',//flexDaoSetInvestorMembershipAdapterContract
+                addr: this.flexDaoSetInvestorMembershipAdapterContract.address,
+                flags: 32770
+            },
+            {
+                id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
+                addr: this.flexDaoSetProposerMembershipAdapterContract.address,
+                flags: 524290
+            }
+
+        ];
         const adapters1 = [{
             id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
             addr: this.flexFundingPoolAdapterContract.address, //FlexFundingPoolAdapterContract
@@ -11737,7 +12196,7 @@ describe("return token management fee...", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -11754,6 +12213,42 @@ describe("return token management fee...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+        this.flexDaoSetFeesAdapterContract = adapters.flexDaoSetFeesAdapterContract.instance;
+        this.flexDaoSetGovernorMembershipAdapterContract = adapters.flexDaoSetGovernorMembershipAdapterContract.instance;
+        this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
+        this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
+        this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+
+        // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        // await flexVestingERC721Helper.deployed();
+        // this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        // const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        // const flexVestingERC721 = await FlexVestingERC721.deploy(
+        //     "DAOSquare Investment Receipt",
+        //     "DIR",
+        //     this.flexVesting.address,
+        //     this.flexVestingERC721Helper.address
+        // );
+        // await flexVestingERC721.deployed();
+        // this.flexVestingERC721 = flexVestingERC721;
+
+        const VestingERC721Helper = await hre.ethers.getContractFactory("VestingERC721Helper");
+        const vestingERC721Helper = await VestingERC721Helper.deploy();
+        await vestingERC721Helper.deployed();
+        this.vestingERC721Helper = vestingERC721Helper;
+
+        const VestingERC721 = await hre.ethers.getContractFactory("VestingERC721");
+        const vestingERC721 = await VestingERC721.deploy(
+            "DAOSquare Investment Vesting",
+            "DIV",
+            this.flexVesting.address,
+            this.flexVesting.address,
+            this.vestingERC721Helper.address
+        );
+        await vestingERC721.deployed();
+        this.vestingERC721 = vestingERC721;
 
         this.summonDao = this.adapters.summonDao.instance;
 
@@ -11764,96 +12259,119 @@ describe("return token management fee...", () => {
         _daoName = "my_flex_dao002";
 
         const creator = this.owner.address;
-        const enalbeAdapters = [{
-            id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
-            addr: this.flexVesting.address,
-            flags: 0
-        },
-        {
-            id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
-            addr: this.flexERC721.address,
-            flags: 0
-        },
-        {
-            id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
-            addr: this.flexAllocationAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
-            addr: this.flexFundingPoolAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
-            addr: this.flexVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
-            addr: this.flexPollingVotingContract.address,
-            flags: 258
-        },
-        {
-            id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
-            addr: this.flexFundingAdapterContract.address,
-            flags: 770
-        },
-        {
-            id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
-            addr: this.bentoBoxV1.address,
-            flags: 0
-        },
-        // {
-        //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-        //     addr: this.managing.address,
-        //     flags: 59
-        // },
-        {
-            id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
-            addr: this.flexStewardMangement.address,
-            flags: 6338
-        },
-        {
-            id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
-            addr: this.flexStewardAllocation.address,
-            flags: 0
-        },
-        {
-            id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
-            addr: this.flexFundingReturnTokenAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
-            addr: this.flexFreeInEscrowFundAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
-            addr: this.flexFundingHelperAdapterContract.address,
-            flags: 0
-        },
-        {
-            id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-            addr: this.flexDaoSetAdapterContract.address,
-            flags: 778242
-        },
-        {
-            id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
-            addr: this.flexDaoSetHelperAdapterContract.address,
-            flags: 8
-        },
-        {
-            id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
-            addr: this.flexDaoSetPollingAdapterContract.address,
-            flags: 262146
-        },
-        {
-            id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
-            addr: this.flexDaoSetVotingAdapterContract.address,
-            flags: 65538
-        }
+
+        const enalbeAdapters = [
+            {
+                id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
+                addr: this.flexVesting.address,
+                flags: 0
+            },
+            {
+                id: '0xfacef1ff9551e6c96f09b108d715442c90dfae3b4f77a7691c0ddff9cef28d35', //FlexERC721
+                addr: this.flexERC721.address,
+                flags: 0
+            },
+            {
+                id: '0xb0326f8dfc913f537596953a938551c86ac8fe0da74c9a8cd0ee660e627dccc8', //FlexAllocationAdapterContract
+                addr: this.flexAllocationAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x2207fd6117465cefcba0abc867150698c0464aa41a293ec29ca01b67a6350c3c', //FlexFundingPoolAdapterContract
+                addr: this.flexFundingPoolAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x0d479c38716a0298633b1dbf1ce145a3fbd1d79ca4527de172afc3bad04a2ba7', //FlexVotingContract
+                addr: this.flexVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x6f48e16963713446db50a1503860d8e1fc3c888da56a85afcaa6dc29503cc610', //FlexPollingVotingContract
+                addr: this.flexPollingVotingContract.address,
+                flags: 258
+            },
+            {
+                id: '0x7a8526bca00f0726b2fab8c3bfd5b00bfa84d07f111e48263b13de605eefcdda', //FlexFundingAdapterContract
+                addr: this.flexFundingAdapterContract.address,
+                flags: 770
+            },
+            {
+                id: '0xdfea78be99560632cc4c199ca1b0d68ffe0bbbb07b685976cefc8820374ac73a', // ben to box
+                addr: this.bentoBoxV1.address,
+                flags: 0
+            },
+            {
+                id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
+                addr: this.flexStewardMangement.address,
+                flags: 6338
+            },
+            {
+                id: '0x37cbe06c1044f98864ea25736326bc1d488e24e5e23781ea2ad64c4069cb9e6e', //flexStewardAllocationAdapter
+                addr: this.flexStewardAllocation.address,
+                flags: 0
+            },
+            {
+                id: '0x43f8439a5cef099d0d9a92b15a64e34ff49963bb29d65f63204eda6591b810a1', //flexFundingReturnTokenAdapter
+                addr: this.flexFundingReturnTokenAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xeae11da953333a83b6467e2193334fb302549e1a42ad5797082aea1ab6be9120', //flexFreeInEscrowFundAdapterContract
+                addr: this.flexFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0xc8e81510cbc5ec7970040e233b001587da1ea4484a9f7b8710d3322429c2df23', //flexFundingHelperAdapterContract
+                addr: this.flexFundingHelperAdapterContract.address,
+                flags: 0
+            },
+            // {
+            //     id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            //     addr: this.flexDaoSetAdapterContract.address,
+            //     flags: 778242
+            // },
+            {
+                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37', //flexDaoSetHelperAdapterContract
+                addr: this.flexDaoSetHelperAdapterContract.address,
+                flags: 8
+            },
+            {
+                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',// flexDaoSetPollingAdapterContract
+                addr: this.flexDaoSetPollingAdapterContract.address,
+                flags: 262146
+            },
+            {
+                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',//flexDaoSetVotingAdapterContract
+                addr: this.flexDaoSetVotingAdapterContract.address,
+                flags: 65538
+            },
+            {
+                id: '0xc6bb47f9566baa74b5032b5c10e5bf4a1e2382ca337c2de674732f6401d52cc0',//flexDaoSetFeesAdapterContract
+                addr: this.flexDaoSetFeesAdapterContract.address,
+                flags: 131074
+            },
+            {
+                id: '0x869e5d18913d4e9bb387c730a04b58d11e95102194f7217a4b684f6e61dff920',//flexDaoSetGovernorMembershipAdapterContract
+                addr: this.flexDaoSetGovernorMembershipAdapterContract.address,
+                flags: 16386
+            },
+            {
+                id: '0x08f2d2eeda0c9072cdba8b58d442503b4cf9eb6c2f74d75e91dc719111c3189c',//flexDaoSetInvestorCapAdapterContract
+                addr: this.flexDaoSetInvestorCapAdapterContract.address,
+                flags: 8194
+            },
+            {
+                id: '0xe6121cbf77e02f965a1829c382f701ad4cec84fbda84c45378db0768d2e40871',//flexDaoSetInvestorMembershipAdapterContract
+                addr: this.flexDaoSetInvestorMembershipAdapterContract.address,
+                flags: 32770
+            },
+            {
+                id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
+                addr: this.flexDaoSetProposerMembershipAdapterContract.address,
+                flags: 524290
+            }
+
         ];
 
         const adapters1 = [{
@@ -12307,11 +12825,15 @@ describe("return token management fee...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
+        let vestBal1 = await flexVestingContract.vestBalance(1)
+        let vestBal2 = await flexVestingContract.vestBalance(2)
+        let vestBal3 = await flexVestingContract.vestBalance(3)
+        let vestBal4 = await flexVestingContract.vestBalance(4)
 
-        await flexVestingContract.withdraw(dao.address, 1);
-        await flexVestingContract.connect(this.genesis_steward1).withdraw(dao.address, 2);
-        await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 3);
-        await flexVestingContract.connect(this.investor1).withdraw(dao.address, 4);
+        if (vestBal1 > 0) await flexVestingContract.withdraw(dao.address, 1);
+        if (vestBal2 > 0) await flexVestingContract.connect(this.genesis_steward1).withdraw(dao.address, 2);
+        if (vestBal3 > 0) await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 3);
+        if (vestBal4 > 0) await flexVestingContract.connect(this.investor1).withdraw(dao.address, 4);
 
         createdVestingInfo = await flexVestingContract.vests(1);
         createdVestingInfo2 = await flexVestingContract.vests(2);
@@ -12347,10 +12869,15 @@ describe("return token management fee...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await flexVestingContract.withdraw(dao.address, 1);
-        await flexVestingContract.connect(this.genesis_steward1).withdraw(dao.address, 2);
-        await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 3);
-        await flexVestingContract.connect(this.investor1).withdraw(dao.address, 4);
+        vestBal1 = await flexVestingContract.vestBalance(1)
+        vestBal2 = await flexVestingContract.vestBalance(2)
+        vestBal3 = await flexVestingContract.vestBalance(3)
+        vestBal4 = await flexVestingContract.vestBalance(4)
+
+        if (vestBal1 > 0) await flexVestingContract.withdraw(dao.address, 1);
+        if (vestBal2 > 0) await flexVestingContract.connect(this.genesis_steward1).withdraw(dao.address, 2);
+        if (vestBal3 > 0) await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 3);
+        if (vestBal4 > 0) await flexVestingContract.connect(this.investor1).withdraw(dao.address, 4);
 
 
         createdVestingInfo = await flexVestingContract.vests(1);

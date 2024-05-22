@@ -86,7 +86,13 @@ contract FlexDaoSetAdapterContract is GovernorGuard, Reimbursable, MemberGuard {
             ongoingInvestorCapProposal[address(dao)] == bytes32(0),
             "!submit"
         );
-        require(unDoneProposalsCheck(dao), "unDone Proposals");
+        require(
+            FlexDaoSetHelperAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
+            ).unDoneProposalsCheck(dao),
+            "unDone Proposals"
+        );
+
         dao.increaseInvestorCapId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
@@ -108,7 +114,6 @@ contract FlexDaoSetAdapterContract is GovernorGuard, Reimbursable, MemberGuard {
         ongoingInvestorCapProposal[address(dao)] = proposalId;
 
         setProposal(dao, proposalId);
-
         emit ProposalCreated(
             address(dao),
             proposalId,
@@ -431,34 +436,34 @@ contract FlexDaoSetAdapterContract is GovernorGuard, Reimbursable, MemberGuard {
         ongoingGovernorMembershipProposal[address(dao)] = bytes32(0);
     }
 
-    function processInvestorMembershipProposal(
-        DaoRegistry dao,
-        bytes32 proposalId
-    ) external reimbursable(dao) {
-        FlexDaosetLibrary.InvestorMembershipProposalDetails
-            storage proposal = investorMembershipProposals[address(dao)][
-                proposalId
-            ];
+    // function processInvestorMembershipProposal(
+    //     DaoRegistry dao,
+    //     bytes32 proposalId
+    // ) external reimbursable(dao) {
+    //     FlexDaosetLibrary.InvestorMembershipProposalDetails
+    //         storage proposal = investorMembershipProposals[address(dao)][
+    //             proposalId
+    //         ];
 
-        (IFlexVoting.VotingState voteResult, , ) = processProposal(
-            dao,
-            proposalId
-        );
+    //     (IFlexVoting.VotingState voteResult, , ) = processProposal(
+    //         dao,
+    //         proposalId
+    //     );
 
-        if (voteResult == IFlexVoting.VotingState.PASS) {
-            setInvestorMembership(dao, proposalId, proposal);
-            proposal.state = FlexDaosetLibrary.ProposalState.Done;
-        } else if (
-            voteResult == IFlexVoting.VotingState.NOT_PASS ||
-            voteResult == IFlexVoting.VotingState.TIE
-        ) {
-            proposal.state = FlexDaosetLibrary.ProposalState.Failed;
-        } else {
-            revert FlexDaosetLibrary.VOTING_NOT_FINISH();
-        }
+    //     if (voteResult == IFlexVoting.VotingState.PASS) {
+    //         setInvestorMembership(dao, proposalId, proposal);
+    //         proposal.state = FlexDaosetLibrary.ProposalState.Done;
+    //     } else if (
+    //         voteResult == IFlexVoting.VotingState.NOT_PASS ||
+    //         voteResult == IFlexVoting.VotingState.TIE
+    //     ) {
+    //         proposal.state = FlexDaosetLibrary.ProposalState.Failed;
+    //     } else {
+    //         revert FlexDaosetLibrary.VOTING_NOT_FINISH();
+    //     }
 
-        ongoingInvstorMembershipProposal[address(dao)] = bytes32(0);
-    }
+    //     ongoingInvstorMembershipProposal[address(dao)] = bytes32(0);
+    // }
 
     function processVotingProposal(
         DaoRegistry dao,
@@ -540,28 +545,28 @@ contract FlexDaoSetAdapterContract is GovernorGuard, Reimbursable, MemberGuard {
         ongoingProposerMembershipProposal[address(dao)] = bytes32(0);
     }
 
-    function processPollForInvestmentProposal(
-        DaoRegistry dao,
-        bytes32 proposalId
-    ) external reimbursable(dao) {
-        FlexDaoSetPollingAdapterContract pollingDaoset = FlexDaoSetPollingAdapterContract(
-                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_POLLING_ADAPTER)
-            );
-        (
-            IFlexVoting.VotingState vs,
-            uint256 nbYes,
-            uint256 nbNo,
-            uint128 allWeight
-        ) = pollingDaoset.processPollForInvestmentProposal(dao, proposalId);
-        emit ProposalProcessed(
-            address(dao),
-            proposalId,
-            uint256(vs),
-            allWeight,
-            nbYes,
-            nbNo
-        );
-    }
+    // function processPollForInvestmentProposal(
+    //     DaoRegistry dao,
+    //     bytes32 proposalId
+    // ) external reimbursable(dao) {
+    //     FlexDaoSetPollingAdapterContract pollingDaoset = FlexDaoSetPollingAdapterContract(
+    //             dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_POLLING_ADAPTER)
+    //         );
+    //     (
+    //         IFlexVoting.VotingState vs,
+    //         uint256 nbYes,
+    //         uint256 nbNo,
+    //         uint128 allWeight
+    //     ) = pollingDaoset.processPollForInvestmentProposal(dao, proposalId);
+    //     emit ProposalProcessed(
+    //         address(dao),
+    //         proposalId,
+    //         uint256(vs),
+    //         allWeight,
+    //         nbYes,
+    //         nbNo
+    //     );
+    // }
 
     function processProposal(
         DaoRegistry dao,

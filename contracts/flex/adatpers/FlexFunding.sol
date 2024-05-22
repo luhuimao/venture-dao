@@ -176,10 +176,10 @@ contract FlexFundingAdapterContract is
         DaoRegistry dao,
         ProposalParams calldata params
     ) external override reimbursable(dao) onlyProposer(dao) {
-        FlexDaoSetAdapterContract daoset = FlexDaoSetAdapterContract(
-            dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER)
+        FlexDaoSetHelperAdapterContract daosethelper = FlexDaoSetHelperAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
         );
-        require(daoset.isProposalAllDone(dao), "UnDone Daoset Proposal");
+        require(daosethelper.isProposalAllDone(dao), "UnDone Daoset Proposal");
         if (
             (params.investmentInfo.maxInvestmentAmount > 0 &&
                 params.investmentInfo.maxInvestmentAmount <
@@ -407,15 +407,25 @@ contract FlexFundingAdapterContract is
 
                 if (proposal.investmentInfo.escrow) {
                     // calculate && update payback token amount
-                    proposal.investmentInfo.paybackTokenAmount = (((vars
-                        .poolBalance -
+                    vars.paybackTokenAmount = (((vars.poolBalance -
                         vars.protocolFee -
                         vars.managementFee -
                         vars.proposerReward) * RETRUN_TOKEN_AMOUNT_PRECISION) /
                         proposal.investmentInfo.price);
-                    vars.paybackTokenAmount = proposal
-                        .investmentInfo
+                    if (
+                        vars.paybackTokenAmount >
+                        (proposal.investmentInfo.maxInvestmentAmount *
+                            RETRUN_TOKEN_AMOUNT_PRECISION) /
+                            proposal.investmentInfo.price
+                    )
+                        vars.paybackTokenAmount =
+                            (proposal.investmentInfo.maxInvestmentAmount *
+                                RETRUN_TOKEN_AMOUNT_PRECISION) /
+                            proposal.investmentInfo.price;
+
+                    proposal.investmentInfo.paybackTokenAmount = vars
                         .paybackTokenAmount;
+
                     if (
                         !_escrowToken(
                             dao,
@@ -426,6 +436,8 @@ contract FlexFundingAdapterContract is
                         )
                     ) {
                         proposal.state = ProposalStatus.FAILED;
+                        proposal.executeBlockNum = block.number;
+
                         emit ProposalExecuted(
                             address(dao),
                             proposalId,
@@ -437,7 +449,7 @@ contract FlexFundingAdapterContract is
                     vars.flexAllocAdapt = FlexAllocationAdapterContract(
                         dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
                     );
-
+                    // console.log("allocateProjectToken");
                     vars.flexAllocAdapt.allocateProjectToken(
                         dao,
                         proposal.investmentInfo.paybackTokenAddr,
@@ -515,6 +527,7 @@ contract FlexFundingAdapterContract is
             } else {
                 // didt meet the min investment amount
                 proposal.state = ProposalStatus.FAILED;
+                proposal.executeBlockNum = block.number;
                 emit ProposalExecuted(address(dao), proposalId, proposal.state);
                 return false;
             }
@@ -600,51 +613,6 @@ contract FlexFundingAdapterContract is
             ) priorityDepositWhitelist[dao][proposalId].add(whitelist[i]);
         }
     }
-
-    // function isPriorityDepositer(
-    //     DaoRegistry dao,
-    //     bytes32 proposalId,
-    //     address account
-    // ) public view returns (bool) {
-    //     ProposalInfo storage proposal = Proposals[address(dao)][proposalId];
-    //     if (proposal.fundRaiseInfo.priorityDepositInfo.enable == true) {
-    //         PriorityDepositType ptype = proposal
-    //             .fundRaiseInfo
-    //             .priorityDepositInfo
-    //             .pType;
-    //         address token = proposal.fundRaiseInfo.priorityDepositInfo.token;
-    //         uint256 tokenAmount = proposal
-    //             .fundRaiseInfo
-    //             .priorityDepositInfo
-    //             .amount;
-    //         uint256 tokenId = proposal
-    //             .fundRaiseInfo
-    //             .priorityDepositInfo
-    //             .tokenId;
-    //         if (
-    //             ptype == PriorityDepositType.ERC20 &&
-    //             IERC20(token).balanceOf(account) >= tokenAmount
-    //         ) return true;
-    //         else if (
-    //             ptype == PriorityDepositType.ERC721 &&
-    //             IERC721(token).balanceOf(account) >= tokenAmount
-    //         ) return true;
-    //         else if (
-    //             ptype == PriorityDepositType.ERC1155 &&
-    //             IERC1155(token).balanceOf(account, tokenId) >= tokenAmount
-    //         ) return true;
-    //         else if (
-    //             ptype == PriorityDepositType.WHITE_LIST &&
-    //             priorityDepositWhitelist[address(dao)][proposalId].contains(
-    //                 account
-    //             )
-    //         ) return true;
-    //         else {
-    //             return false;
-    //         }
-    //     }
-    //     return false;
-    // }
 
     function getPriorityDepositedWhitelist(
         DaoRegistry dao,

@@ -65,6 +65,7 @@ contract FlexInvestmentPoolAdapterContract is
     mapping(address => EnumerableSet.AddressSet) priorityDepositWhitelist;
     mapping(address => mapping(bytes32 => uint256))
         public freeINPriorityDeposits;
+    mapping(address => mapping(bytes32 => uint256)) public freeInExtraAmount;
     struct InvestorMembershipInfo {
         bool created;
         uint8 varifyType;
@@ -453,7 +454,7 @@ contract FlexInvestmentPoolAdapterContract is
                 }
 
                 if (vars.extraFund > 0) {
-                    console.log("extraFund ", vars.extraFund);
+                    // console.log("extraFund ", vars.extraFund);
                     //1. escrow Fund From Funding Pool
                     vars.freeInEscrowFundAdapter.escrowFundFromFundingPool(
                         dao,
@@ -476,6 +477,9 @@ contract FlexInvestmentPoolAdapterContract is
                     );
                 }
             }
+            freeInExtraAmount[address(dao)][proposalId] =
+                vars.poolFunds -
+                balanceOf(dao, proposalId, DaoHelper.TOTAL);
         }
     }
 

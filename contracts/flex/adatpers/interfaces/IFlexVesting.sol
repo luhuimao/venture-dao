@@ -10,6 +10,7 @@ import "../FlexAllocation.sol";
 import "../FlexFunding.sol";
 import "./IFlexFunding.sol";
 import "../FlexVestingERC721.sol";
+import "../../../VestingERC721.sol";
 
 interface IFlexVesting {
     function createVesting(
@@ -38,6 +39,7 @@ interface IFlexVesting {
     }
 
     struct Vest {
+        address daoAddr;
         bytes32 proposalId;
         uint128 claimed;
         uint256 total;
@@ -130,4 +132,5 @@ interface IFlexVesting {
     error NotVestReceiver();
     error InvalidVestingAmountSetting();
     error InvalidVestingTimeSetting();
+    error NotClaimable();
 }

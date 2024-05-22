@@ -1,17 +1,14 @@
 pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 
-import "hardhat/console.sol";
-import "../libraries/LibFlexDaoset.sol";
-import "../../helpers/DaoHelper.sol";
-import "./interfaces/IFlexVoting.sol";
-import "./FlexDaoSetHelperAdapter.sol";
-import "../../helpers/GovernanceHelper.sol";
+import "./interfaces/IFlexDaoset.sol";
 
-import "@openzeppelin/contracts/utils/Strings.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-
-contract FlexDaoSetPollingAdapterContract {
+contract FlexDaoSetPollingAdapterContract is
+    IFlexDaoset,
+    GovernorGuard,
+    Reimbursable,
+    MemberGuard
+{
     using EnumerableSet for EnumerableSet.AddressSet;
 
     mapping(address => bytes32) public ongoingPollForInvestmentProposal;
@@ -22,15 +19,31 @@ contract FlexDaoSetPollingAdapterContract {
 
     function submitPollForInvestmentProposal(
         FlexDaosetLibrary.PollForInvestmentParams calldata params
-    ) external returns (bytes32) {
+    )
+        external
+        onlyMember(params.dao)
+        reimbursable(params.dao)
+        returns (bytes32)
+    {
+        // require(
+        //     ongoingPollForInvestmentProposal[address(params.dao)] == bytes32(0),
+        //     "!submit"
+        // );
         require(
-            msg.sender ==
-                params.dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER),
-            "!access"
+            FlexDaoSetHelperAdapterContract(
+                params.dao.getAdapterAddress(
+                    DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER
+                )
+            ).unDoneProposalsCheck(params.dao),
+            "unDone Proposals"
         );
         require(
-            ongoingPollForInvestmentProposal[address(params.dao)] == bytes32(0),
-            "!submit"
+            FlexDaoSetHelperAdapterContract(
+                params.dao.getAdapterAddress(
+                    DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER
+                )
+            ).isProposalAllDone(params.dao),
+            "unDone Daoset Proposal"
         );
 
         params.dao.increasePollForInvestmentId();
@@ -86,6 +99,12 @@ contract FlexDaoSetPollingAdapterContract {
 
         setProposal(params.dao, proposalId);
 
+        emit ProposalCreated(
+            address(params.dao),
+            proposalId,
+            FlexDaosetLibrary.ProposalType.POLL_FOR_INVESTMENT
+        );
+
         return proposalId;
     }
 
@@ -102,12 +121,8 @@ contract FlexDaoSetPollingAdapterContract {
 
     function processPollForInvestmentProposal(
         DaoRegistry dao,
-        bytes32 proposalId
-    ) external returns (IFlexVoting.VotingState, uint256, uint256, uint128) {
-        require(
-            msg.sender == dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_ADAPTER),
-            "!access"
-        );
+        bytes32 proposalId // returns (IFlexVoting.VotingState, uint256, uint256, uint128)
+    ) external reimbursable(dao) {
         FlexDaosetLibrary.PollForInvestmentProposalDetails
             storage proposal = pollForInvestmentProposals[address(dao)][
                 proposalId
@@ -133,7 +148,16 @@ contract FlexDaoSetPollingAdapterContract {
         }
 
         ongoingPollForInvestmentProposal[address(dao)] = bytes32(0);
-        return (voteResult, nYes, nNo, allWeight);
+        // return (voteResult, nYes, nNo, allWeight);
+
+        emit ProposalProcessed(
+            address(dao),
+            proposalId,
+            uint256(voteResult),
+            allWeight,
+            nYes,
+            nNo
+        );
     }
 
     function setPollForInvestment(
