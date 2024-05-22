@@ -41,8 +41,12 @@ const deploySummonContract = async () => {
 }
 
 async function main() {
+    await submitCollectiveInvestorCapDaosetProposal("0xb5f7af74f8429f36153d28281fa2bf9476450189");
+    // await getCollectiveGovernorManagementProposalInfo("0x27762325832a2a05b8c5867e41595452beb65d10",
+    //     "0x41595452beb65d10476f7665726e6f722d496e23310000000000000000000000"
+    // );
     // await getCollectiveAdapterAddress();
-    await getCollectiveProtocolFeeAndAccount();
+    // await getCollectiveProtocolFeeAndAccount();
     // await getVintageInvestors();
     // await getVintageAdapterAddress();
     // await getFlexDaosetPropsalInfo();
@@ -2831,6 +2835,47 @@ const getCollectiveProtocolFeeAndAccount = async () => {
         protocolf        ${protocolf}
         protooclAccount  ${protooclAccount}
         `);
+
+}
+
+const getCollectiveGovernorManagementProposalInfo = async (daoAddr, proposalId) => {
+    const daoContr = (await hre.ethers.getContractFactory("DaoRegistry"))
+        .attach(daoAddr);
+
+    const governorMangementContrAddr = await daoContr.getAdapterAddress("0x1a4f1390baec30049008138e650571a3c4374eba88116bc89dc192f2f9295efe");
+    const governorMangementContr = (await hre.ethers.getContractFactory("ColletiveGovernorManagementAdapterContract"))
+        .attach(governorMangementContrAddr);
+
+    const proposal = await governorMangementContr.proposals(daoAddr, proposalId);
+
+    console.log(proposal);
+}
+
+const submitCollectiveInvestorCapDaosetProposal = async (daoAddr) => {
+
+    const daoContr = (await hre.ethers.getContractFactory("DaoRegistry"))
+        .attach(daoAddr);
+
+    const governorMangementContrAddr = await daoContr.getAdapterAddress("0xdac6d9ce728ebc92a61253866b4e5a4c73b76ba0aa11e7297a633f6232f54237");
+
+    const colletiveDaoSetProposalAdapterContract = (await hre.ethers.getContractFactory("ColletiveDaoSetProposalAdapterContract"))
+        .attach(governorMangementContrAddr);
+
+    const enable = true;
+    const cap = 4;
+    const tx = await colletiveDaoSetProposalAdapterContract.submitInvestorCapProposal(
+        daoAddr,
+        enable,
+        cap
+    );
+
+    const rel = await tx.wait();
+
+    const proposalId = rel.events[rel.events.length - 1].args.proposalId;
+
+    console.log(
+        `proposalId  ${proposalId}`
+    );
 
 }
 

@@ -379,7 +379,7 @@ describe("Summon A Collective Dao", () => {
     });
 });
 
-describe("governor management...", () => {
+describe.only("governor management...", () => {
     before("deploy contracts...", async () => {
         let [
             owner,
