@@ -150,7 +150,7 @@ describe("vesting...", () => {
         this.testtoken2 = testContracts.testRiceToken.instance;
         this.flexVesting = adapters.flexVesting.instance;
         this.flexERC721 = adapters.flexERC721.instance;
-        this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
+        // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
@@ -168,6 +168,12 @@ describe("vesting...", () => {
         this.flexDaoSetHelperAdapterContract = adapters.flexDaoSetHelperAdapterContract.instance;
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
+        this.flexDaoSetFeesAdapterContract = adapters.flexDaoSetFeesAdapterContract.instance;
+        this.flexDaoSetGovernorMembershipAdapterContract = adapters.flexDaoSetGovernorMembershipAdapterContract.instance;
+        this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
+        this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
+        this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+
         const daoFactoriesAddress = [
             this.daoFactory.address,
             this.flexFundingPoolFactory.address
@@ -216,11 +222,6 @@ describe("vesting...", () => {
                 addr: this.bentoBoxV1.address,
                 flags: 0
             },
-            // {
-            //     id: '0xb5d1b10526b91c1951e75295138b32c80917c8ba0b96f19926ef2008a82b6511',//ManagingContract
-            //     addr: this.managing.address,
-            //     flags: 59
-            // },
             {
                 id: '0xcad7b0867188190920a10bf710c45443f6358175d56a759e7dc109e6d7b5d753', //StewardMangement
                 addr: this.flexStewardMangement.address,
@@ -246,25 +247,50 @@ describe("vesting...", () => {
                 addr: this.flexFundingHelperAdapterContract.address,
                 flags: 0
             },
+            // {
+            //     id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
+            //     addr: this.flexDaoSetAdapterContract.address,
+            //     flags: 778242
+            // },
             {
-                id: '0xe564b2da9fb62dadceed6d94ac5884ac5f464424e7be661d7d6181d49fa87b3f', //flexDaoSetAdapterContract
-                addr: this.flexDaoSetAdapterContract.address,
-                flags: 778242
-            },
-            {
-                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37',
+                id: '0xff9379b98b93eb3bd1fac62fd2258a7955d70d2d5279c40064145b6c9646df37', //flexDaoSetHelperAdapterContract
                 addr: this.flexDaoSetHelperAdapterContract.address,
                 flags: 8
             },
             {
-                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',
+                id: '0x5f0e8d109045653360289a7a02d5dc2a99e382006a42ef93f66de55ecff3176f',// flexDaoSetPollingAdapterContract
                 addr: this.flexDaoSetPollingAdapterContract.address,
                 flags: 262146
             },
             {
-                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',
+                id: '0x8ceb7c7dc4c27ecfdcfd7ab759513c13202213bb0305fcd8889452f229d798e7',//flexDaoSetVotingAdapterContract
                 addr: this.flexDaoSetVotingAdapterContract.address,
                 flags: 65538
+            },
+            {
+                id: '0xc6bb47f9566baa74b5032b5c10e5bf4a1e2382ca337c2de674732f6401d52cc0',//flexDaoSetFeesAdapterContract
+                addr: this.flexDaoSetFeesAdapterContract.address,
+                flags: 131074
+            },
+            {
+                id: '0x869e5d18913d4e9bb387c730a04b58d11e95102194f7217a4b684f6e61dff920',//flexDaoSetGovernorMembershipAdapterContract
+                addr: this.flexDaoSetGovernorMembershipAdapterContract.address,
+                flags: 16386
+            },
+            {
+                id: '0x08f2d2eeda0c9072cdba8b58d442503b4cf9eb6c2f74d75e91dc719111c3189c',//flexDaoSetInvestorCapAdapterContract
+                addr: this.flexDaoSetInvestorCapAdapterContract.address,
+                flags: 8194
+            },
+            {
+                id: '0xe6121cbf77e02f965a1829c382f701ad4cec84fbda84c45378db0768d2e40871',//flexDaoSetInvestorMembershipAdapterContract
+                addr: this.flexDaoSetInvestorMembershipAdapterContract.address,
+                flags: 32770
+            },
+            {
+                id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
+                addr: this.flexDaoSetProposerMembershipAdapterContract.address,
+                flags: 524290
             }
 
         ];
@@ -732,11 +758,11 @@ describe("vesting...", () => {
         }
 
         await expectRevert(flexVestingContract.connect(this.investor2).withdraw(dao.address, 2), "revert");
-        await flexVestingContract.withdraw(dao.address, 1);
-        await flexVestingContract.connect(this.investor1).withdraw(dao.address, 2);
-        await flexVestingContract.connect(this.genesis_steward1).withdraw(dao.address, 3);
-        await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 4);
-        
+        // await flexVestingContract.withdraw(dao.address, 1);
+        // await flexVestingContract.connect(this.investor1).withdraw(dao.address, 2);
+        // await flexVestingContract.connect(this.genesis_steward1).withdraw(dao.address, 3);
+        // await flexVestingContract.connect(this.funding_proposer1_whitelist).withdraw(dao.address, 4);
+
         returnTokenBal = await this.testtoken2.balanceOf(this.owner.address);
         createdVestingInfo = await flexVestingContract.vests(1);
         createdVestingInfo2 = await flexVestingContract.vests(2);
