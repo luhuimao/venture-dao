@@ -54,6 +54,13 @@ contract ColletiveGovernorManagementAdapterContract is
         uint256 stopVoteTime,
         ProposalType pType
     );
+    event StartVoting(
+        address daoAddr,
+        bytes32 proposalId,
+        ProposalState state,
+        uint256 startVoteTime,
+        uint256 stopVoteTime
+    );
     event ProposalProcessed(
         address daoAddr,
         bytes32 proposalId,
@@ -200,15 +207,15 @@ contract ColletiveGovernorManagementAdapterContract is
     ) external returns (bool) {
         ProposalDetails storage proposal = proposals[dao][proposalId];
         require(proposal.state == ProposalState.Submitted, "!Submitted");
-        console.log(
-            IERC20(proposal.tokenAddress).allowance(
-                proposal.account,
-                dao.getAdapterAddress(
-                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
-                )
-            )
-        );
-        console.log(proposal.depositAmount);
+        // console.log(
+        //     IERC20(proposal.tokenAddress).allowance(
+        //         proposal.account,
+        //         dao.getAdapterAddress(
+        //             DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+        //         )
+        //     )
+        // );
+        // console.log(proposal.depositAmount);
 
         if (
             // IERC20(proposal.tokenAddress).balanceOf(proposal.account) <
@@ -239,6 +246,13 @@ contract ColletiveGovernorManagementAdapterContract is
             proposal.startVoteTime +
             dao.getConfiguration(DaoHelper.VOTING_PERIOD);
 
+        emit StartVoting(
+            address(dao),
+            proposalId,
+            proposal.state,
+            proposal.startVoteTime,
+            proposal.stopVoteTime
+        );
         return true;
     }
 

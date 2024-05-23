@@ -5,7 +5,7 @@ import "./interfaces/IFlexDaoset.sol";
 
 contract FlexDaoSetInvestorCapAdapterContract is
     IFlexDaoset,
-    GovernorGuard,
+    // GovernorGuard,
     Reimbursable,
     MemberGuard
 {

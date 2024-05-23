@@ -650,25 +650,9 @@ library DaoHelper {
         return bal;
     }
 
-    function getAllGorvernorBalance(
-        DaoRegistry dao
-    ) internal view returns (uint256) {
-        address[] memory govs = getAllActiveMember(dao);
-        uint256 bal;
-        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
-        );
-        if (govs.length > 0) {
-            for (uint8 i = 0; i < govs.length; i++) {
-                bal += fundingpool.balanceOf(govs[i]);
-            }
-        }
-        return bal;
-    }
-
-    function totalTokens(BankExtension bank) internal view returns (uint256) {
-        return memberTokens(bank, TOTAL) - memberTokens(bank, GUILD); //GUILD is accounted for twice otherwise
-    }
+    // function totalTokens(BankExtension bank) internal view returns (uint256) {
+    //     return memberTokens(bank, TOTAL) - memberTokens(bank, GUILD); //GUILD is accounted for twice otherwise
+    // }
 
     /**
      * @notice calculates the total number of units.

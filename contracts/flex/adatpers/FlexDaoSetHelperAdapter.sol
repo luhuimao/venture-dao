@@ -14,6 +14,7 @@ import "./StewardManagement.sol";
 import "./FlexDaoSetInvestorCapAdapter.sol";
 import "./FlexDaoSetProposerMembershipAdapter.sol";
 import "./FlexFundingPoolAdapter.sol";
+import "./FlexStewardAllocation.sol";
 import "./FlexFunding.sol";
 import "./FlexPollingVoting.sol";
 import "hardhat/console.sol";

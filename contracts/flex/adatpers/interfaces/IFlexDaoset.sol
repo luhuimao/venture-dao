@@ -10,6 +10,7 @@ import "../../../helpers/DaoHelper.sol";
 import "../FlexDaoSetHelperAdapter.sol";
 import "../StewardManagement.sol";
 import "../../../helpers/GovernanceHelper.sol";
+import "../../../adapters/modifiers/Reimbursable.sol";
 
 interface IFlexDaoset {
     event ProposalCreated(
