@@ -273,7 +273,17 @@ contract CollectiveVotingAdapterContract is
     function getAllGovernorWeight(
         DaoRegistry dao
     ) public view returns (uint128) {
-        uint128 allWeight = GovernanceHelper.getAllCollectiveGovernorVotingWeight(dao);
+        uint128 allWeight = GovernanceHelper
+            .getAllCollectiveGovernorVotingWeight(dao);
+        return allWeight;
+    }
+
+    function getAllGovernorWeightByProposalId(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) public view returns (uint128) {
+        uint128 allWeight = GovernanceHelper
+            .getCollectiveAllGovernorVotingWeightByProposalId(dao, proposalId);
         return allWeight;
     }
 

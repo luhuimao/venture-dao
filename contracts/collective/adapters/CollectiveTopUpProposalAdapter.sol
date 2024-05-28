@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/ICollectiveVoting.sol";
 import "../../helpers/GovernanceHelper.sol";
 import "./CollectiveFundingPoolAdapter.sol";
+import "./CollectiveDaoSetProposalAdapter.sol";
 import "./CollectiveFundingProposalAdapter.sol";
 
 contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
@@ -49,16 +50,30 @@ contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
     mapping(address => mapping(bytes32 => ProposalDetail)) public proposals;
     mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
 
+    function daosetProposalCheck(DaoRegistry dao) internal view returns (bool) {
+        ColletiveDaoSetProposalAdapterContract daoset = ColletiveDaoSetProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
+            );
+        return daoset.isProposalAllDone(dao);
+        // return true;
+    }
+
     function summbitProposal(
         DaoRegistry dao,
         address token,
         uint256 amount
     ) external onlyGovernor(dao) reimbursable(dao) {
-        ColletiveFundingProposalAdapterContract fundingContr = ColletiveFundingProposalAdapterContract(
+        require(
+            ColletiveDaoSetProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
+            ).isProposalAllDone(dao),
+            "DaoSet Proposal Undone"
+        );
+        if (
+            ColletiveFundingProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
-            );
-        if (fundingContr.ongoingProposal(address(dao)) != bytes32(0))
-            revert UNDONE_FUNDING_PROPOSAL();
+            ).ongoingProposal(address(dao)) != bytes32(0)
+        ) revert UNDONE_FUNDING_PROPOSAL();
         dao.increaseTopupId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(

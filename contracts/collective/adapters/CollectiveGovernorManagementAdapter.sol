@@ -79,6 +79,8 @@ contract ColletiveGovernorManagementAdapterContract is
         public proposals;
     mapping(address => EnumerableSet.AddressSet) governorWhiteList;
     mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
+    mapping(address => mapping(bytes32 => mapping(address => mapping(address => uint256))))
+        public approvedInfos; // dao => funding proposal => approver => erc20 => amount
 
     modifier governorMembershipVarify(DaoRegistry dao, address account) {
         if (
@@ -201,31 +203,37 @@ contract ColletiveGovernorManagementAdapterContract is
         return vars.proposalId;
     }
 
+    function setGovernorInApprove(
+        address dao,
+        bytes32 proposalId,
+        address erc20,
+        uint256 amount
+    ) external returns (bool) {
+        approvedInfos[dao][proposalId][msg.sender][erc20] = amount;
+        return true;
+    }
+
     function startVoting(
         DaoRegistry dao,
         bytes32 proposalId
     ) external returns (bool) {
         ProposalDetails storage proposal = proposals[dao][proposalId];
         require(proposal.state == ProposalState.Submitted, "!Submitted");
-        // console.log(
-        //     IERC20(proposal.tokenAddress).allowance(
-        //         proposal.account,
-        //         dao.getAdapterAddress(
-        //             DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
-        //         )
-        //     )
-        // );
-        // console.log(proposal.depositAmount);
 
         if (
-            // IERC20(proposal.tokenAddress).balanceOf(proposal.account) <
-            // amount ||
+            IERC20(proposal.tokenAddress).balanceOf(proposal.account) <
+            proposal.depositAmount ||
             IERC20(proposal.tokenAddress).allowance(
                 proposal.account,
                 dao.getAdapterAddress(
                     DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
                 )
-            ) < proposal.depositAmount
+            ) <
+            proposal.depositAmount ||
+            approvedInfos[address(dao)][proposalId][proposal.account][
+                proposal.tokenAddress
+            ] <
+            proposal.depositAmount
         ) {
             proposal.state = ProposalState.Failed;
             return false;
@@ -387,6 +395,7 @@ contract ColletiveGovernorManagementAdapterContract is
             ),
             "proposal already processed"
         );
+        require(proposal.state == ProposalState.Voting,"already processed");
         ICollectiveVoting collectiveVotingContract = ICollectiveVoting(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
         );
@@ -413,18 +422,30 @@ contract ColletiveGovernorManagementAdapterContract is
             address applicant = proposal.account;
 
             if (proposal.pType == ProposalType.GOVERNOR_IN) {
-                dao.potentialNewMember(applicant);
                 ColletiveFundingPoolAdapterContract fundingPoolAdapt = ColletiveFundingPoolAdapterContract(
                         dao.getAdapterAddress(
                             DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
                         )
                     );
-                fundingPoolAdapt.transferFromNewGovernor(
-                    dao,
-                    proposal.tokenAddress,
-                    proposal.account,
-                    proposal.depositAmount
-                );
+
+                if (
+                    fundingPoolAdapt.transferFromNewGovernor(
+                        dao,
+                        proposal.tokenAddress,
+                        proposal.account,
+                        proposal.depositAmount
+                    )
+                ) dao.potentialNewMember(applicant);
+                else {
+                    proposal.state = ProposalState.Failed;
+                }
+
+                // fundingPoolAdapt.transferFromNewGovernor(
+                //     dao,
+                //     proposal.tokenAddress,
+                //     proposal.account,
+                //     proposal.depositAmount
+                // );
             }
 
             if (proposal.pType == ProposalType.GOVERNOR_OUT) {
@@ -435,9 +456,9 @@ contract ColletiveGovernorManagementAdapterContract is
                         )
                     );
                 fundingpoolAdapt.returnFundToQuitGovernor(dao, msg.sender);
-            }
 
-            proposal.state = ProposalState.Done;
+                proposal.state = ProposalState.Done;
+            }
         } else if (
             voteResult == ICollectiveVoting.VotingState.NOT_PASS ||
             voteResult == ICollectiveVoting.VotingState.TIE

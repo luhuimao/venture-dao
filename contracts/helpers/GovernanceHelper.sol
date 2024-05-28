@@ -485,7 +485,15 @@ library GovernanceHelper {
 
     function getAllCollectiveGovernorVotingWeight(
         DaoRegistry dao
-    ) internal view returns (uint128) {}
+    ) internal view returns (uint128) {
+        address[] memory governors = dao.getAllSteward();
+
+        uint128 allStewardweight;
+        for (uint8 i = 0; i < governors.length; i++) {
+            allStewardweight += getCollectiveVotingWeight(dao, governors[i]);
+        }
+        return allStewardweight;
+    }
 
     function getCollectiveAllGovernorVotingWeightByProposalId(
         DaoRegistry dao,

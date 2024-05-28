@@ -51,8 +51,9 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
     enum ProposalType {
         INVESTOR_CAP,
         GOVERNOR_MEMBERSHIP,
-        INVESTOR_MEMBERSHIP,
-        VOTING
+        PROPOSER_REWARD,
+        VOTING,
+        FEES
     }
 
     struct FeesProposalDetails {
@@ -84,6 +85,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
     struct GovernorMembershipProposalDetails {
         bytes32 proposalId;
         bool enable;
+        string name;
         uint8 varifyType;
         uint256 minAmount;
         address tokenAddress;
@@ -115,6 +117,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
     struct VotingTimeInfo {
         uint256 votingPeriod;
         uint256 executingPeriod;
+        uint256 gracePeriod;
         uint256 creationTime;
         uint256 stopVoteTime;
     }
@@ -137,6 +140,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         uint256 quorum;
         uint256 votingPeriod;
         uint256 executingPeriod;
+        uint256 gracePeriod;
     }
 
     event ProposalCreated(
@@ -219,10 +223,11 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         uint256 cap
     ) external onlyGovernor(dao) reimbursable(dao) {
         undoneProposalsCheck(dao);
-        require(
-            ongoingInvestorCapProposal[address(dao)] == bytes32(0),
-            "last cap proposal not finalized"
-        );
+        // require(
+        //     ongoingInvestorCapProposal[address(dao)] == bytes32(0),
+        //     "last cap proposal not finalized"
+        // );
+        require(isProposalAllDone(dao), "daoset proposals undone");
         dao.increaseInvestorCapId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
@@ -256,16 +261,19 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
     function submitGovernorMembershpProposal(
         DaoRegistry dao,
         bool enable,
+        string memory name,
         uint8 varifyType,
         uint256 minAmount,
         address tokenAddress,
         uint256 tokenId,
         address[] calldata whiteList
     ) external onlyGovernor(dao) reimbursable(dao) {
-        require(
-            ongoingGovernorMembershipProposal[address(dao)] == bytes32(0),
-            "last GovernorMembership proposal not finalized"
-        );
+        // require(
+        //     ongoingGovernorMembershipProposal[address(dao)] == bytes32(0),
+        //     "last GovernorMembership proposal not finalized"
+        // );
+        require(isProposalAllDone(dao), "daoset proposals undone");
+
         undoneProposalsCheck(dao);
 
         dao.increaseGovernorMembershipId();
@@ -282,6 +290,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         ] = GovernorMembershipProposalDetails(
             proposalId,
             enable,
+            name,
             varifyType,
             minAmount,
             tokenAddress,
@@ -312,10 +321,12 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         DaoRegistry dao,
         VotingParams calldata params
     ) external onlyGovernor(dao) reimbursable(dao) {
-        require(
-            ongoingVotingProposal[address(dao)] == bytes32(0),
-            "last voting proposal not finalized"
-        );
+        // require(
+        //     ongoingVotingProposal[address(dao)] == bytes32(0),
+        //     "last voting proposal not finalized"
+        // );
+        require(isProposalAllDone(dao), "daoset proposals undone");
+
         undoneProposalsCheck(dao);
         dao.increaseVotingId();
 
@@ -343,6 +354,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
             VotingTimeInfo(
                 params.votingPeriod,
                 params.executingPeriod,
+                params.gracePeriod,
                 block.timestamp,
                 block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD)
             ),
@@ -358,10 +370,12 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         uint256 redemtionFee
     ) external onlyGovernor(dao) reimbursable(dao) {
         undoneProposalsCheck(dao);
-        require(
-            ongoingFeesProposal[address(dao)] == bytes32(0),
-            "last cap proposal not finalized"
-        );
+        // require(
+        //     ongoingFeesProposal[address(dao)] == bytes32(0),
+        //     "last cap proposal not finalized"
+        // );
+        require(isProposalAllDone(dao), "daoset proposals undone");
+
         dao.increaseFeesId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
@@ -382,11 +396,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
 
         setProposal(dao, proposalId);
 
-        emit ProposalCreated(
-            address(dao),
-            proposalId,
-            ProposalType.INVESTOR_CAP
-        );
+        emit ProposalCreated(address(dao), proposalId, ProposalType.FEES);
     }
 
     function submitProposerRewardProposal(
@@ -395,10 +405,12 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         uint256 paybackTokenFromInvestorAmount
     ) external onlyGovernor(dao) reimbursable(dao) {
         undoneProposalsCheck(dao);
-        require(
-            ongoingProposerRewardProposal[address(dao)] == bytes32(0),
-            "last cap proposal not finalized"
-        );
+        // require(
+        //     ongoingProposerRewardProposal[address(dao)] == bytes32(0),
+        //     "last cap proposal not finalized"
+        // );
+        require(isProposalAllDone(dao), "daoset proposals undone");
+
         dao.increaseProposerRewardId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
@@ -425,7 +437,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         emit ProposalCreated(
             address(dao),
             proposalId,
-            ProposalType.INVESTOR_CAP
+            ProposalType.PROPOSER_REWARD
         );
     }
 
@@ -617,7 +629,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
             revert VOTING_NOT_FINISH();
         }
 
-        ongoingVotingProposal[address(dao)] = bytes32(0);
+        ongoingFeesProposal[address(dao)] = bytes32(0);
 
         uint128 allGPsWeight = GovernanceHelper
             .getCollectiveAllGovernorVotingWeightByProposalId(dao, proposalId);
@@ -673,7 +685,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
             revert VOTING_NOT_FINISH();
         }
 
-        ongoingVotingProposal[address(dao)] = bytes32(0);
+        ongoingProposerRewardProposal[address(dao)] = bytes32(0);
 
         uint128 allGPsWeight = GovernanceHelper
             .getCollectiveAllGovernorVotingWeightByProposalId(dao, proposalId);
@@ -785,6 +797,11 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
             DaoHelper.SUPER_MAJORITY,
             proposal.supportInfo.support
         );
+
+        dao.setConfiguration(
+            DaoHelper.COLLECTIVE_VOTING_GRACE_PERIOD,
+            proposal.timeInfo.gracePeriod
+        );
         dao.setConfiguration(
             DaoHelper.VOTING_PERIOD,
             proposal.timeInfo.votingPeriod
@@ -801,7 +818,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
     //     return governorMembershipWhitelists[proposalId].values();
     // }
 
-    function isProposalAllDone(DaoRegistry dao) external view returns (bool) {
+    function isProposalAllDone(DaoRegistry dao) public view returns (bool) {
         if (
             ongoingInvestorCapProposal[address(dao)] != bytes32(0) ||
             ongoingGovernorMembershipProposal[address(dao)] != bytes32(0) ||

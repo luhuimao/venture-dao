@@ -201,7 +201,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         address token,
         address account,
         uint256 amount
-    ) external {
+    ) external returns (bool) {
         require(
             msg.sender ==
                 dao.getAdapterAddress(
@@ -209,14 +209,18 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                 ),
             "Access Deny"
         );
-        require(
-            IERC20(token).balanceOf(account) >= amount,
-            "insufficient fund"
-        );
-        require(
-            IERC20(token).allowance(account, address(this)) >= amount,
-            "insufficient allowance"
-        );
+        // require(
+        //     IERC20(token).balanceOf(account) >= amount,
+        //     "insufficient fund"
+        // );
+        // require(
+        //     IERC20(token).allowance(account, address(this)) >= amount,
+        //     "insufficient allowance"
+        // );
+        if (
+            IERC20(token).balanceOf(account) < amount ||
+            IERC20(token).allowance(account, address(this)) < amount
+        ) return false;
         IERC20(token).transferFrom(account, address(this), amount);
         IERC20(token).approve(
             dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT),
@@ -229,6 +233,8 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             );
         fundingPoolExt.addToBalance(account, token, amount);
         _addFundInvestor(dao, account);
+
+        return true;
     }
 
     function topupFunds(

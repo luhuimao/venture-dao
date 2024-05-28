@@ -9,6 +9,7 @@ import "./CollectiveFundingProposalAdapter.sol";
 import "./CollectiveFundRaiseProposalAdapter.sol";
 import "./CollectiveGovernorManagementAdapter.sol";
 import "./CollectiveTopUpProposalAdapter.sol";
+import "./CollectiveDaoSetProposalAdapter.sol";
 import "../extensions/CollectiveFundingPool.sol";
 import "./interfaces/ICollectiveVoting.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
@@ -57,12 +58,26 @@ contract ColletiveExpenseProposalAdapterContract is
     error INSUFFICIENT_FUND();
     error UNDONE_PROPOSALS();
 
+    function daosetProposalCheck(DaoRegistry dao) internal view returns (bool) {
+        ColletiveDaoSetProposalAdapterContract daoset = ColletiveDaoSetProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
+            );
+        return daoset.isProposalAllDone(dao);
+    }
+
     function summbitProposal(
         DaoRegistry dao,
         address token,
         address receiver,
         uint256 amount
     ) external onlyGovernor(dao) reimbursable(dao) {
+        require(
+            ColletiveDaoSetProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
+            ).isProposalAllDone(dao),
+            "DaoSet Proposal Undone"
+        );
+
         undoneProposalsCheck(dao);
         CollectiveInvestmentPoolExtension poolExt = CollectiveInvestmentPoolExtension(
                 dao.getExtensionAddress(
