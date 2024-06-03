@@ -9,6 +9,7 @@ import "../../../helpers/DaoHelper.sol";
 import "../CollectiveAllocationAdapter.sol";
 import "../CollectiveFundingProposalAdapter.sol";
 import "./ICollectiveFunding.sol";
+import "../../../VestingERC721.sol";
 // import "../VintageVestingERC721.sol";
 
 interface ICollectiveVesting {
@@ -38,6 +39,7 @@ interface ICollectiveVesting {
     }
 
     struct Vest {
+        address daoAddr;
         bytes32 proposalId;
         uint128 claimed;
         uint256 total;

@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./flex/libraries/LibTokenUri.sol";
 import "./flex/adatpers/FlexVesting.sol";
 import "./vintage/adapters/VintageVesting.sol";
+import "./collective/adapters/CollectiveVestingAdapter.sol";
 import "./flex/adatpers/interfaces/IFlexVesting.sol";
 import "./vintage/adapters/interfaces/IVesting.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -22,6 +23,7 @@ contract VestingERC721 is ERC721 {
     address public _owner;
     address public flexVestContrAddress;
     address public vintageVestContrAddress;
+    address public collectiveVestContrAddress;
     address public vestingNFTHelper;
     /// @dev Global max total supply of NFTs.
     uint256 public maxTotalSupply;
@@ -34,11 +36,13 @@ contract VestingERC721 is ERC721 {
         string memory symbol,
         address _flexvestAddr,
         address _vintageVestAddr,
+        address _collectiveVestAddr,
         address _vestingNFTHelper
     ) ERC721(name, symbol) {
         _owner = msg.sender;
         flexVestContrAddress = _flexvestAddr;
         vintageVestContrAddress = _vintageVestAddr;
+        collectiveVestContrAddress = _collectiveVestAddr;
         vestingNFTHelper = _vestingNFTHelper;
     }
 
@@ -72,8 +76,15 @@ contract VestingERC721 is ERC721 {
         ) {
             vestAddr = vintageVestContrAddress;
             vestContrFlag = 2;
+        } else if (
+            CollectiveVestingAdapterContract(collectiveVestContrAddress).tokenIdToVestId(
+                address(this),
+                _tokenId
+            ) > 0
+        ) {
+            vestAddr = collectiveVestContrAddress;
+            vestContrFlag = 3;
         } else {}
-        // console.log("vestContrFlag ", vestContrFlag);
         return
             VestingERC721Helper(vestingNFTHelper).getTokenURI(
                 _tokenId,
@@ -95,7 +106,7 @@ contract VestingERC721 is ERC721 {
     function getSvg(uint256 tokenId) external view returns (string memory) {
         address vestAddr;
         uint8 vestContrFlag;
-       
+
         if (
             FlexVesting(flexVestContrAddress).tokenIdToVestId(
                 address(this),
@@ -112,8 +123,15 @@ contract VestingERC721 is ERC721 {
         ) {
             vestAddr = vintageVestContrAddress;
             vestContrFlag = 2;
+        } else if (
+            CollectiveVestingAdapterContract(collectiveVestContrAddress).tokenIdToVestId(
+                address(this),
+                tokenId
+            ) > 0
+        ) {
+            vestAddr = collectiveVestContrAddress;
+            vestContrFlag = 3;
         } else {}
-        // console.log("vestContrFlag ", vestContrFlag);
         return
             VestingERC721Helper(vestingNFTHelper).getSvg(
                 tokenId,

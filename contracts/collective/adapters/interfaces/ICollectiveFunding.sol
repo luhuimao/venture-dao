@@ -42,8 +42,12 @@ interface ICollectiveFunding {
         uint256 startTime;
         uint256 endTime;
         uint256 cliffEndTime;
-        uint256 cliffVestingAmount;
+        uint256 cliffVestingAmount; // percentage
         uint256 vestingInterval;
+        bool nftEnable;
+        address erc721;
+        string vestName;
+        string vestDescription;
     }
 
     struct ProposalParams {

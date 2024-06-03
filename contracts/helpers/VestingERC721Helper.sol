@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../flex/libraries/LibTokenUri.sol";
 import "../flex/adatpers/FlexVesting.sol";
+import "../collective/adapters/CollectiveVestingAdapter.sol";
+import "../collective/adapters/interfaces/ICollectiveVesting.sol";
 import "../flex/adatpers/interfaces/IFlexVesting.sol";
 import "../vintage/adapters/VintageVesting.sol";
 import "../vintage/adapters/interfaces/IVesting.sol";
@@ -63,6 +65,29 @@ contract VestingERC721Helper {
                 vestingNFTAddress,
                 tokenId
             );
+        } else if (flag == 3) {
+            CollectiveVestingAdapterContract vest = CollectiveVestingAdapterContract(
+                    vestingContAdddr
+                );
+            uint256 vestId = vest.getVestIdByTokenId(
+                vestingNFTAddress,
+                tokenId
+            );
+
+            (, , , , , vars.ctimeInfo, , vars.cvestInfo) = vest.vests(vestId);
+
+            vars.claimInterval = vars.ctimeInfo.stepDuration;
+            vars.claimStartTime =
+                vars.ctimeInfo.start +
+                vars.ctimeInfo.cliffDuration;
+            vars.claimEndTime = vars.ctimeInfo.end;
+            // vars.description = vars.vestInfo.description;
+            vars.vestToken = vars.cvestInfo.token;
+
+            (, vars.remaining_, vars.total_) = vest.getRemainingPercentage(
+                vestingNFTAddress,
+                tokenId
+            );
         } else {}
 
         // console.log("vestInfo.token ", vestInfo.token);
@@ -96,6 +121,8 @@ contract VestingERC721Helper {
         IFlexVesting.VestInfo vestInfo;
         IVesting.TimeInfo vtimeInfo;
         IVesting.VestInfo vvestInfo;
+        ICollectiveVesting.TimeInfo ctimeInfo;
+        ICollectiveVesting.VestInfo cvestInfo;
     }
 
     function getTokenURI(
@@ -160,6 +187,38 @@ contract VestingERC721Helper {
             vars.claimEndTime = vars.timeInfo.end;
             vars.description = vars.vestInfo.description;
             vars.vestToken = vars.vestInfo.token;
+
+            (, vars.remaining_, vars.total_) = vest.getRemainingPercentage(
+                vestingNFTAddress,
+                _tokenId
+            );
+        } else if (flag == 3) {
+            CollectiveVestingAdapterContract vest = CollectiveVestingAdapterContract(
+                    vestAddress
+                );
+            uint256 vestId = vest.getVestIdByTokenId(
+                vestingNFTAddress,
+                _tokenId
+            );
+
+            (
+                vars.daoAddr,
+                vars.proposalId,
+                ,
+                ,
+                ,
+                vars.ctimeInfo,
+                ,
+                vars.cvestInfo
+            ) = vest.vests(vestId);
+
+            vars.claimInterval = vars.ctimeInfo.stepDuration;
+            vars.claimStartTime =
+                vars.ctimeInfo.start +
+                vars.ctimeInfo.cliffDuration;
+            vars.claimEndTime = vars.timeInfo.end;
+            vars.description = vars.cvestInfo.description;
+            vars.vestToken = vars.cvestInfo.token;
 
             (, vars.remaining_, vars.total_) = vest.getRemainingPercentage(
                 vestingNFTAddress,

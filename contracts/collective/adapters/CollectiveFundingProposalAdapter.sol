@@ -111,7 +111,11 @@ contract ColletiveFundingProposalAdapterContract is
                 params.vestingInfo.endTime,
                 params.vestingInfo.cliffEndTime,
                 params.vestingInfo.cliffVestingAmount,
-                params.vestingInfo.vestingInterval
+                params.vestingInfo.vestingInterval,
+                params.vestingInfo.nftEnable,
+                params.vestingInfo.erc721,
+                params.vestingInfo.vestName,
+                params.vestingInfo.vestDescription
             ),
             TimeInfo(0, 0),
             msg.sender,

@@ -7,7 +7,7 @@ import "hardhat/console.sol";
 
 contract CollectiveVestingAdapterContract is ICollectiveVesting {
     mapping(uint256 => Vest) public vests;
-    // mapping(address => mapping(uint256 => uint256)) public tokenIdToVestId; //erc721 address => tokenId => vestId
+    mapping(address => mapping(uint256 => uint256)) public tokenIdToVestId; //erc721 address => tokenId => vestId
 
     uint256 public vestIds;
 
@@ -104,18 +104,20 @@ contract CollectiveVestingAdapterContract is ICollectiveVesting {
 
         vars.vestId = vestIds++;
 
-        // if (vars.paybackTokenInfo.nftEnable) {
-        //     vars.newTokenId = VintageVestingERC721(vars.paybackTokenInfo.erc721)
-        //         .safeMint(recipientAddr);
+        if (vars.vestInfo.nftEnable) {
+            vars.newTokenId = VestingERC721(vars.vestInfo.erc721).safeMint(
+                recipientAddr
+            );
 
-        //     tokenIdToVestId[vars.paybackTokenInfo.erc721][vars.vestId] = vars
-        //         .newTokenId;
-        // }
+            tokenIdToVestId[vars.vestInfo.erc721][vars.newTokenId] = vars
+                .vestId;
+        }
 
         createNewVest(
             vars.vestId,
             proposalId,
             [
+                address(dao),
                 msg.sender,
                 recipientAddr,
                 vars.paybackTokenInfo.paybackToken,
@@ -158,13 +160,14 @@ contract CollectiveVestingAdapterContract is ICollectiveVesting {
     function createNewVest(
         uint256 vestId,
         bytes32 proposalId,
-        address[4] memory _addressArgs,
+        address[5] memory _addressArgs,
         uint256[9] memory _uint256Args,
         bool nftEnable,
         string memory vestName,
         string memory vestDescription
     ) internal {
         vests[vestId] = Vest(
+            _addressArgs[0],
             proposalId,
             0,
             _uint256Args[3],
@@ -180,15 +183,15 @@ contract CollectiveVestingAdapterContract is ICollectiveVesting {
                 uint32(_uint256Args[7])
             ),
             VestNFTInfo(
-                nftEnable == true ? _addressArgs[3] : address(0x0),
+                nftEnable == true ? _addressArgs[4] : address(0x0),
                 _uint256Args[8]
             ),
             VestInfo(
                 vestName,
                 vestDescription,
-                _addressArgs[0],
                 _addressArgs[1],
-                _addressArgs[2]
+                _addressArgs[2],
+                _addressArgs[3]
             )
         );
     }
@@ -196,15 +199,17 @@ contract CollectiveVestingAdapterContract is ICollectiveVesting {
     function withdraw(DaoRegistry dao, uint256 vestId) external override {
         Vest storage vest = vests[vestId];
         address recipient = vest.vestInfo.recipient;
-        // if (vest.nftInfo.nftToken != address(0x0)) {
-        //     if (
-        //         VintageVestingERC721(vest.nftInfo.nftToken).ownerOf(
-        //             vest.nftInfo.tokenId
-        //         ) != msg.sender
-        //     ) revert NotVestReceiver();
-        // } else {
-        if (recipient != msg.sender) revert NotVestReceiver();
-        // }
+
+        if (vest.nftInfo.nftToken != address(0x0)) {
+            if (
+                VestingERC721(vest.nftInfo.nftToken).ownerOf(
+                    vest.nftInfo.tokenId
+                ) != msg.sender
+            ) revert NotVestReceiver();
+        } else {
+            if (recipient != msg.sender) revert NotVestReceiver();
+        }
+
         uint256 canClaim = _balanceOf(vest) - vest.claimed;
 
         if (canClaim == 0) return;
@@ -304,30 +309,28 @@ contract CollectiveVestingAdapterContract is ICollectiveVesting {
         }
     }
 
-    // function getVestIdByTokenId(
-    //     address token,
-    //     uint256 tokenId
-    // ) public view returns (uint256) {
-    //     return tokenIdToVestId[token][tokenId];
-    // }
+    function getVestIdByTokenId(
+        address token,
+        uint256 tokenId
+    ) public view returns (uint256) {
+        return tokenIdToVestId[token][tokenId];
+    }
 
-    // function getRemainingPercentage(
-    //     address token,
-    //     uint256 tokenId
-    // ) external view returns (uint256, uint256, uint256) {
-    //     uint256 percentOfRemaining_Total = 0;
-    //     uint256 remaining = 0;
-    //     uint256 total = 0;
-    //     uint256 vestId = getVestIdByTokenId(token, tokenId);
-    //     if (vestId > 0) {
-    //         remaining =
-    //             (vests[vestId].total - vests[vestId].claimed) /
-    //             PERCENTAGE_PRECISION;
-    //         total = vests[vestId].total / PERCENTAGE_PRECISION;
-    //         percentOfRemaining_Total =
-    //             ((vests[vestId].total - vests[vestId].claimed) * 100) /
-    //             vests[vestId].total;
-    //     }
-    //     return (percentOfRemaining_Total, remaining, total);
-    // }
+    function getRemainingPercentage(
+        address token,
+        uint256 tokenId
+    ) external view returns (uint256, uint256, uint256) {
+        uint256 percentOfRemaining_Total = 0;
+        uint256 remaining = 0;
+        uint256 total = 0;
+        uint256 vestId = getVestIdByTokenId(token, tokenId);
+        if (vestId > 0) {
+            remaining = (vests[vestId].total - vests[vestId].claimed);
+            total = vests[vestId].total;
+            percentOfRemaining_Total =
+                ((vests[vestId].total - vests[vestId].claimed) * 100) /
+                vests[vestId].total;
+        }
+        return (percentOfRemaining_Total, remaining, total);
+    }
 }

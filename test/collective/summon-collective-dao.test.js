@@ -2294,7 +2294,7 @@ describe("clear fund...", () => {
     });
 });
 
-describe.only("daoset...", () => {
+describe("daoset...", () => {
     before("deploy contracts...", async () => {
         let [
             owner,
