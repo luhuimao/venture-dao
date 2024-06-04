@@ -101,4 +101,6 @@ interface ICollectiveFunding {
     event StartVoting(address daoAddr, bytes32 proposalId);
 
     error INVESTMENT_PROPOSAL_NOT_FINALIZED();
+    error GRACE_PERIOD();
+    error VOTING_PERIOD();
 }

@@ -236,23 +236,24 @@ contract ColletiveGovernorManagementAdapterContract is
             proposal.depositAmount
         ) {
             proposal.state = ProposalState.Failed;
-            return false;
+            // return false;
+        } else {
+            ICollectiveVoting collectiveVotingContract = ICollectiveVoting(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
+            );
+
+            collectiveVotingContract.startNewVotingForProposal(
+                dao,
+                proposalId,
+                bytes("")
+            );
+            proposal.state = ProposalState.Voting;
+
+            proposal.startVoteTime = block.timestamp;
+            proposal.stopVoteTime =
+                proposal.startVoteTime +
+                dao.getConfiguration(DaoHelper.VOTING_PERIOD);
         }
-        ICollectiveVoting collectiveVotingContract = ICollectiveVoting(
-            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
-        );
-
-        collectiveVotingContract.startNewVotingForProposal(
-            dao,
-            proposalId,
-            bytes("")
-        );
-        proposal.state = ProposalState.Voting;
-
-        proposal.startVoteTime = block.timestamp;
-        proposal.stopVoteTime =
-            proposal.startVoteTime +
-            dao.getConfiguration(DaoHelper.VOTING_PERIOD);
 
         emit StartVoting(
             address(dao),
@@ -395,7 +396,7 @@ contract ColletiveGovernorManagementAdapterContract is
             ),
             "proposal already processed"
         );
-        require(proposal.state == ProposalState.Voting,"already processed");
+        require(proposal.state == ProposalState.Voting, "already processed");
         ICollectiveVoting collectiveVotingContract = ICollectiveVoting(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
         );

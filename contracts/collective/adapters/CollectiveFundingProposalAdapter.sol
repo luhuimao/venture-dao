@@ -22,7 +22,6 @@ contract ColletiveFundingProposalAdapterContract is
 
     mapping(address => mapping(bytes32 => ProposalDetails)) public proposals;
 
-    // mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
     mapping(address => DoubleEndedQueue.Bytes32Deque) public proposalQueue;
     // Keeps track of all the locked token amount per DAO.
     mapping(address => mapping(bytes32 => mapping(address => uint256)))
@@ -68,7 +67,7 @@ contract ColletiveFundingProposalAdapterContract is
                 ColletiveFundingPoolAdapterContract.FundState.DONE &&
                 block.timestamp >
                 params.dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END),
-            "Only can submit proposal in investing period"
+            "!investing period"
         );
 
         params.dao.increaseInvestmentId();
@@ -256,14 +255,23 @@ contract ColletiveFundingProposalAdapterContract is
         }
         ProposalDetails storage proposal = proposals[address(dao)][proposalId];
 
-        require(
-            block.timestamp >
-                proposal.timeInfo.stopVotingTime +
-                    dao.getConfiguration(
-                        DaoHelper.COLLECTIVE_VOTING_GRACE_PERIOD
-                    ),
-            "In Voting Period"
-        );
+        // require(
+        //     block.timestamp >
+        //         proposal.timeInfo.stopVotingTime +
+        //             dao.getConfiguration(
+        //                 DaoHelper.COLLECTIVE_VOTING_GRACE_PERIOD
+        //             ),
+        //     "In Voting Period"
+        // );
+
+        if (block.timestamp < proposal.timeInfo.stopVotingTime)
+            revert VOTING_PERIOD();
+        if (
+            block.timestamp > proposal.timeInfo.stopVotingTime &&
+            block.timestamp <
+            proposal.timeInfo.stopVotingTime +
+                dao.getConfiguration(DaoHelper.COLLECTIVE_VOTING_GRACE_PERIOD)
+        ) revert GRACE_PERIOD();
 
         require(
             proposal.state != ProposalState.IN_EXECUTE_PROGRESS,

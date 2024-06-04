@@ -122,7 +122,8 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         if (balanceOf(dao, msg.sender) <= 0) {
             _removeFundInvestor(dao, msg.sender);
         }
-        distributeRedemptionFee(dao, tokenAddr, redemptionFee);
+        if (redemptionFee > 0)
+            distributeRedemptionFee(dao, tokenAddr, redemptionFee);
         emit WithDraw(address(dao), amount - redemptionFee, msg.sender);
     }
 
@@ -300,7 +301,8 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         fundingpoolExt.subtractFromBalance(account, tokenAddr, depositedBal);
         _removeFundInvestor(dao, account);
 
-        distributeRedemptionFee(dao, tokenAddr, redemptionFee);
+        if (redemptionFee > 0)
+            distributeRedemptionFee(dao, tokenAddr, redemptionFee);
 
         return true;
     }
@@ -391,14 +393,20 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                             DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
                         )
                     );
-                console.log(redemptionFee);
-                fundingpool.distributeFunds(governors[i], token, redemptionFee);
+                // console.log(redemptionFee);
+                if (redemptionFee > 0) {
+                    fundingpool.distributeFunds(
+                        governors[i],
+                        token,
+                        redemptionFee
+                    );
 
-                emit DistributeRedemptionFee(
-                    address(dao),
-                    governors[i],
-                    redemptionFee
-                );
+                    emit DistributeRedemptionFee(
+                        address(dao),
+                        governors[i],
+                        redemptionFee
+                    );
+                }
             }
         }
     }
