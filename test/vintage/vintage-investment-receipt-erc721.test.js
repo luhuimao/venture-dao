@@ -163,6 +163,8 @@ describe("vesting...", () => {
         this.vintageFundingPoolAdapterContract = adapters.vintageFundingPoolAdapterContract.instance;
         this.vintageVotingAdapterContract = adapters.vintageVotingContract.instance;
         this.vintageFundingAdapterContract = adapters.vintageFundingAdapterContract.instance;
+        this.flexFundingAdapterContract = adapters.flexFundingAdapterContract.instance;
+        this.colletiveFundingProposalContract = adapters.colletiveFundingProposalContract.instance;
         this.vintageVesting = adapters.vintageVesting.instance;
         this.vintageAllocationAdapterContract = adapters.vintageAllocationAdapterContract.instance;
         this.vintageEscrowFundAdapterContract = adapters.vintageEscrowFundAdapterContract.instance;
@@ -202,18 +204,20 @@ describe("vesting...", () => {
         // );
         // await vintageVestingERC721.deployed();
         // this.vintageVestingERC721Contract = vintageVestingERC721;
-        
 
-        const VintageInvestmentReceiptERC721Helper = await hre.ethers.getContractFactory("VintageInvestmentReceiptERC721Helper");
+
+        const VintageInvestmentReceiptERC721Helper = await hre.ethers.getContractFactory("InvestmentReceiptERC721Helper");
         const vintageInvestmentReceiptERC721Helper = await VintageInvestmentReceiptERC721Helper.deploy();
         await vintageInvestmentReceiptERC721Helper.deployed();
         this.vintageInvestmentReceiptERC721Helper = vintageInvestmentReceiptERC721Helper;
 
-        const VintageInvestmentReceiptERC721 = await hre.ethers.getContractFactory("VintageInvestmentReceiptERC721");
+        const VintageInvestmentReceiptERC721 = await hre.ethers.getContractFactory("InvestmentReceiptERC721");
         const vintageInvestmentReceiptERC721 = await VintageInvestmentReceiptERC721.deploy(
             "DAOSquare Investment Receipt",
             "DIR",
+            this.flexFundingAdapterContract.address,
             this.vintageFundingAdapterContract.address,
+            this.colletiveFundingProposalContract.address,
             this.vintageInvestmentReceiptERC721Helper.address
         );
         await vintageInvestmentReceiptERC721.deployed();
@@ -228,6 +232,7 @@ describe("vesting...", () => {
         const vestingERC721 = await VestingERC721.deploy(
             "DAOSquare Investment Vesting",
             "DIV",
+            this.vintageVesting.address,
             this.vintageVesting.address,
             this.vintageVesting.address,
             this.vestingERC721Helper.address
@@ -733,9 +738,11 @@ describe("vesting...", () => {
         state ${fundingProposalInfo.status}
         `);
 
+        const mode = 1;
         await this.vintageInvestmentReceiptERC721.safeMint(
             this.daoAddr1,
             proposalId,
+            mode,
             tx1.hash,
             "jjjjjjjj",
             "ssssssssssssssss"
@@ -744,6 +751,7 @@ describe("vesting...", () => {
         await this.vintageInvestmentReceiptERC721.connect(this.investor1).safeMint(
             this.daoAddr1,
             proposalId,
+            mode,
             tx1.hash,
             "jjjjjjjj",
             "ssssssssssssssss"

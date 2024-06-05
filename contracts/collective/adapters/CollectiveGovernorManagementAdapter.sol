@@ -436,8 +436,10 @@ contract ColletiveGovernorManagementAdapterContract is
                         proposal.account,
                         proposal.depositAmount
                     )
-                ) dao.potentialNewMember(applicant);
-                else {
+                ) {
+                    dao.potentialNewMember(applicant);
+                    proposal.state = ProposalState.Done;
+                } else {
                     proposal.state = ProposalState.Failed;
                 }
 
