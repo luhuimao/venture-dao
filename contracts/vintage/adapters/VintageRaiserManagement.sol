@@ -7,6 +7,7 @@ import "../../utils/TypeConver.sol";
 import "./VintageVoting.sol";
 import "./VintageFundingPoolAdapter.sol";
 import "./VintageRaiserAllocation.sol";
+import "./VintageDaoSetAdapter.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
@@ -14,7 +15,8 @@ import "hardhat/console.sol";
 
 contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
     using EnumerableSet for EnumerableSet.AddressSet;
-
+    using EnumerableSet for EnumerableSet.Bytes32Set;
+    
     enum ProposalState {
         Voting,
         Executing,
@@ -59,6 +61,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
     mapping(DaoRegistry => mapping(bytes32 => ProposalDetails))
         public proposals;
     mapping(address => EnumerableSet.AddressSet) governorWhiteList;
+    mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
 
     modifier onlyGovernor(DaoRegistry dao, address account) {
         if (
@@ -168,6 +171,13 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
             DaoHelper.isNotReservedAddress(applicant),
             "applicant is reserved address"
         );
+
+        require(
+            VintageDaoSetAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER)
+            ).isProposalAllDone(address(dao)),
+            "DaoSet Proposal Undone"
+        );
         dao.increaseGovenorInId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -191,6 +201,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         );
 
         _sponsorProposal(dao, proposalId, bytes(""));
+        unDoneProposals[address(dao)].add(proposalId);
 
         emit ProposalCreated(
             address(dao),
@@ -208,6 +219,12 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         address applicant
     ) external onlyMember(dao) reimbursable(dao) returns (bytes32) {
         require(dao.isMember(applicant), "applicant isnt governor");
+        require(
+            VintageDaoSetAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER)
+            ).isProposalAllDone(address(dao)),
+            "DaoSet Proposal Undone"
+        );
         dao.increaseGovenorOutId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -230,6 +247,7 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         );
 
         _sponsorProposal(dao, proposalId, bytes(""));
+        unDoneProposals[address(dao)].add(proposalId);
 
         emit ProposalCreated(
             address(dao),
@@ -394,6 +412,8 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         } else {
             revert("proposal has not been voted on yet");
         }
+        if (unDoneProposals[address(dao)].contains(proposalId))
+            unDoneProposals[address(dao)].remove(proposalId);
 
         emit ProposalProcessed(
             address(dao),
@@ -441,5 +461,9 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
         DaoRegistry dao
     ) external view returns (address[] memory) {
         return DaoHelper.getAllActiveMember(dao);
+    }
+
+    function allDone(DaoRegistry dao) external view returns (bool) {
+        return unDoneProposals[address(dao)].length() > 0 ? false : true;
     }
 }

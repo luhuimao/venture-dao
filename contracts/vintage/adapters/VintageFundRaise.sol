@@ -53,6 +53,7 @@ contract VintageFundRaiseAdapterContract is
     Reimbursable
 {
     using EnumerableSet for EnumerableSet.AddressSet;
+    using EnumerableSet for EnumerableSet.Bytes32Set;
 
     /*
      * PUBLIC VARIABLES
@@ -62,6 +63,7 @@ contract VintageFundRaiseAdapterContract is
     mapping(address => uint256) public createdFundCounter;
     mapping(address => bytes32) public lastProposalIds;
     mapping(address => mapping(bytes32 => EnumerableSet.AddressSet)) priorityDepositeWhiteList;
+    mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
 
     /*
      * STRUCTURES
@@ -89,10 +91,15 @@ contract VintageFundRaiseAdapterContract is
             vars.daosetAdapt.isProposalAllDone(address(params.dao)),
             "DaoSet Proposal Undone"
         );
-        vars.investmentContract = VintageFundingAdapterContract(params.dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_ADAPTER));
-        require(vars.investmentContract.getQueueLength(params.dao) <= 0 &&
-            vars.investmentContract.ongoingProposal(address(params.dao)) == bytes32(0), 
-            "Undone Investment Proposal");
+        vars.investmentContract = VintageFundingAdapterContract(
+            params.dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_ADAPTER)
+        );
+        require(
+            vars.investmentContract.getQueueLength(params.dao) <= 0 &&
+                vars.investmentContract.ongoingProposal(address(params.dao)) ==
+                bytes32(0),
+            "Undone Investment Proposal"
+        );
         vars.lastFundEndTime = params.dao.getConfiguration(
             DaoHelper.FUND_END_TIME
         );
@@ -100,14 +107,18 @@ contract VintageFundRaiseAdapterContract is
             DaoHelper.RETURN_DURATION
         );
         vars.investmentPoolAdapt = VintageFundingPoolAdapterContract(
-            params.dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
+            params.dao.getAdapterAddress(
+                DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT
+            )
         );
         require(
             vars.investmentPoolAdapt.poolBalance(params.dao) <= 0,
             "!clear fund"
         );
         require(
-            vars.investmentPoolAdapt.daoFundRaisingStates(address(params.dao)) ==
+            vars.investmentPoolAdapt.daoFundRaisingStates(
+                address(params.dao)
+            ) ==
                 DaoHelper.FundRaiseState.NOT_STARTED ||
                 vars.investmentPoolAdapt.daoFundRaisingStates(
                     address(params.dao)
@@ -163,7 +174,9 @@ contract VintageFundRaiseAdapterContract is
             abi.encodePacked(
                 bytes8(uint64(uint160(address(params.dao)))),
                 "FundEstablishment#",
-                Strings.toString(params.dao.getCurrentFundEstablishmentProposalId())
+                Strings.toString(
+                    params.dao.getCurrentFundEstablishmentProposalId()
+                )
             )
         );
 
@@ -236,6 +249,7 @@ contract VintageFundRaiseAdapterContract is
             vars.proposalId,
             address(vars.votingContract)
         );
+        unDoneProposals[address(params.dao)].add(vars.proposalId);
 
         lastProposalIds[address(params.dao)] = vars.proposalId;
         emit ProposalCreated(address(params.dao), vars.proposalId);
@@ -298,6 +312,8 @@ contract VintageFundRaiseAdapterContract is
         } else {
             revert VOTING_NOT_FINISH();
         }
+        if (unDoneProposals[address(dao)].contains(proposalId))
+            unDoneProposals[address(dao)].remove(proposalId);
 
         uint128 allGPsWeight = GovernanceHelper
             .getVintageAllGovernorVotingWeightByProposalId(dao, proposalId);
@@ -576,5 +592,9 @@ contract VintageFundRaiseAdapterContract is
             }
         }
         return false;
+    }
+
+    function allDone(DaoRegistry dao) external view returns (bool) {
+        return unDoneProposals[address(dao)].length() > 0 ? false : true;
     }
 }

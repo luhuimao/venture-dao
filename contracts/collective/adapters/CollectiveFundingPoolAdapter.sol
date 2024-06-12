@@ -30,8 +30,12 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         uint256 totalRaised
     );
     event ClearFund(address daoAddress, uint256 escrowAmount, address executer);
+
     error MAX_PATICIPANT_AMOUNT_REACH();
     error INVESTMENT_GRACE_PERIOD();
+    error FUNDRAISE_ENDTIME_NOT_UP();
+    error EXECUTED_ALREADY();
+    
     mapping(address => EnumerableSet.AddressSet) fundInvestors;
     mapping(address => FundState) public fundState;
 
@@ -427,10 +431,10 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         uint256 fundRaiseEndTime = dao.getConfiguration(
             DaoHelper.FUND_RAISING_WINDOW_END
         );
-        if (
-            block.timestamp > fundRaiseEndTime &&
-            fundState[address(dao)] == FundState.IN_PROGRESS
-        ) {
+        if (block.timestamp <= fundRaiseEndTime)
+            revert FUNDRAISE_ENDTIME_NOT_UP();
+
+        if (fundState[address(dao)] == FundState.IN_PROGRESS) {
             if (poolBalance(dao) >= fundRaiseTarget) {
                 // dao.setConfiguration(
                 //     DaoHelper.FUND_START_TIME,
@@ -451,7 +455,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                 fundState[address(dao)],
                 poolBalance(dao)
             );
-        }
+        } else revert EXECUTED_ALREADY();
         return true;
     }
 

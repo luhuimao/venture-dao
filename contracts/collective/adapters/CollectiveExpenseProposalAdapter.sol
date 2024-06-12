@@ -57,6 +57,8 @@ contract ColletiveExpenseProposalAdapterContract is
 
     error INSUFFICIENT_FUND();
     error UNDONE_PROPOSALS();
+    error UNDONE_DAOSET_PROPOSALS();
+    error FUND_RAISE_PROPOSAL_UNEXECUTE();
 
     function daosetProposalCheck(DaoRegistry dao) internal view returns (bool) {
         ColletiveDaoSetProposalAdapterContract daoset = ColletiveDaoSetProposalAdapterContract(
@@ -71,12 +73,11 @@ contract ColletiveExpenseProposalAdapterContract is
         address receiver,
         uint256 amount
     ) external onlyGovernor(dao) reimbursable(dao) {
-        require(
-            ColletiveDaoSetProposalAdapterContract(
+        if (
+            !ColletiveDaoSetProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
-            ).isProposalAllDone(dao),
-            "DaoSet Proposal Undone"
-        );
+            ).isProposalAllDone(dao)
+        ) revert UNDONE_DAOSET_PROPOSALS();
 
         undoneProposalsCheck(dao);
         CollectiveInvestmentPoolExtension poolExt = CollectiveInvestmentPoolExtension(
@@ -213,9 +214,9 @@ contract ColletiveExpenseProposalAdapterContract is
         ColletiveFundingProposalAdapterContract fundingContr = ColletiveFundingProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
             );
-        ColletiveFundRaiseProposalAdapterContract fundRaiseContrc = ColletiveFundRaiseProposalAdapterContract(
-                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
-            );
+        // ColletiveFundRaiseProposalAdapterContract fundRaiseContrc = ColletiveFundRaiseProposalAdapterContract(
+        //         dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
+        //     );
         ColletiveGovernorManagementAdapterContract governorContrc = ColletiveGovernorManagementAdapterContract(
                 dao.getAdapterAddress(
                     DaoHelper.COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPTER
@@ -226,8 +227,17 @@ contract ColletiveExpenseProposalAdapterContract is
             );
 
         if (
+            ColletiveFundingPoolAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+                )
+            ).fundState(address(dao)) ==
+            ColletiveFundingPoolAdapterContract.FundState.IN_PROGRESS
+        ) revert FUND_RAISE_PROPOSAL_UNEXECUTE();
+
+        if (
             !fundingContr.allDone(dao) ||
-            !fundRaiseContrc.allDone(dao) ||
+            // !fundRaiseContrc.allDone(dao) ||
             !governorContrc.allDone(dao) ||
             !topupContrc.allDone(dao)
         ) revert UNDONE_PROPOSALS();

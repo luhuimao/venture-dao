@@ -92,4 +92,5 @@ interface ICollectiveFundRaise {
 
     error LAST_NEW_FUND_PROPOSAL_NOT_FINISH();
     error INVALID_PARAM();
+    error UNEXECUTE();
 }

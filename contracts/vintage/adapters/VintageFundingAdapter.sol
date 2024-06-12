@@ -144,6 +144,12 @@ contract VintageFundingAdapterContract is
         DaoRegistry dao,
         InvestmentProposalParams calldata params
     ) external override onlyGovernor(dao) reimbursable(dao) {
+        require(
+            VintageDaoSetAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER)
+            ).isProposalAllDone(address(dao)),
+            "DaoSet Proposal Undone"
+        );
         SubmitProposalLocalVars memory vars;
         dao.increaseInvestmentId();
         vars.proposalId = TypeConver.bytesToBytes32(

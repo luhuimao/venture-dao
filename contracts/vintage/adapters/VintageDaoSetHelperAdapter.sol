@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 import "../../core/DaoRegistry.sol";
 import "../../helpers/DaoHelper.sol";
 import "./VintageRaiserManagement.sol";
+import "./VintageFundingAdapter.sol";
+import "./VintageFundRaise.sol";
 
 contract VintageDaoSetHelperAdapterContract {
     modifier OnlyDaoSet(DaoRegistry dao) {
@@ -212,5 +214,28 @@ contract VintageDaoSetHelperAdapterContract {
                 raiserAlloc.setAllocation(dao, governors[i], allocs[i]);
             }
         }
+    }
+
+    function unDoneOperationProposalsCheck(
+        DaoRegistry dao
+    ) external view returns (bool) {
+        VintageFundingAdapterContract funding = VintageFundingAdapterContract(
+            dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_ADAPTER)
+        );
+        VintageFundRaiseAdapterContract fundRaise = VintageFundRaiseAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
+            );
+
+        VintageRaiserManagementContract governor = VintageRaiserManagementContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_GOVERNOR_MANAGEMENT)
+            );
+
+        if (
+            fundRaise.allDone(dao) &&
+            governor.allDone(dao) &&
+            funding.getQueueLength(dao) <= 0 &&
+            funding.ongoingProposal(address(dao)) == bytes32(0)
+        ) return true;
+        return false;
     }
 }

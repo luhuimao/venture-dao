@@ -53,6 +53,31 @@ contract ColletiveFundingProposalAdapterContract is
         return daoset.isProposalAllDone(dao);
     }
 
+    function operationProposalsCheck(DaoRegistry dao) internal view {
+        ColletiveExpenseProposalAdapterContract expenseContr = ColletiveExpenseProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_EXPENSE_ADAPTER)
+            );
+
+        // ColletiveFundRaiseProposalAdapterContract fundRaiseContrc = ColletiveFundRaiseProposalAdapterContract(
+        //         dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
+        //     );
+        ColletiveGovernorManagementAdapterContract governorContrc = ColletiveGovernorManagementAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPTER
+                )
+            );
+        ColletiveTopUpProposalAdapterContract topupContrc = ColletiveTopUpProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_TOPUP_ADAPTER)
+            );
+
+        if (
+            !expenseContr.allDone(dao) ||
+            // !fundRaiseContrc.allDone(dao) ||
+            !governorContrc.allDone(dao) ||
+            !topupContrc.allDone(dao)
+        ) revert UNDONE_OPERATION_PROPOSALS();
+    }
+
     function submitProposal(
         ProposalParams calldata params
     ) external reimbursable(params.dao) onlyMember(params.dao) returns (bool) {
@@ -61,14 +86,18 @@ contract ColletiveFundingProposalAdapterContract is
                     DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
                 )
             );
-        investmentPoolAdapt.processFundRaise(params.dao);
-        require(
+        // investmentPoolAdapt.processFundRaise(params.dao);
+        if (!daosetProposalCheck(params.dao)) revert DAOSET_PROPOSALS_UNDONE();
+
+        if (
             investmentPoolAdapt.fundState(address(params.dao)) ==
-                ColletiveFundingPoolAdapterContract.FundState.DONE &&
-                block.timestamp >
-                params.dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END),
-            "!investing period"
-        );
+            ColletiveFundingPoolAdapterContract.FundState.IN_PROGRESS
+            // &&
+            // block.timestamp <
+            // params.dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END)
+        ) revert FUND_RAISE_UNEXECUTE();
+
+        operationProposalsCheck(params.dao);
 
         params.dao.increaseInvestmentId();
         SubmitProposalLocalVars memory vars;
@@ -469,7 +498,10 @@ contract ColletiveFundingProposalAdapterContract is
     function isPrposalInGracePeriod(
         DaoRegistry dao
     ) public view returns (bool) {
-        if (ongoingProposal[address(dao)] == bytes32(0)) return true;
+        if (
+            getQueueLength(dao) <= 0 &&
+            ongoingProposal[address(dao)] == bytes32(0)
+        ) return true;
         ProposalDetails storage proposal = proposals[address(dao)][
             ongoingProposal[address(dao)]
         ];

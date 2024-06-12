@@ -160,6 +160,8 @@ describe("collective investment receipt NFT...", () => {
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
         this.vintageFundingAdapterContract = adapters.vintageFundingAdapterContract.instance;
+
+
         this.colletiveGovernorManagementContract = adapters.colletiveGovernorManagementContract.instance;
         this.colletiveDaoSetProposalContract = adapters.colletiveDaoSetProposalContract.instance;
         this.colletiveFundingProposalContract = adapters.colletiveFundingProposalContract.instance;
@@ -171,6 +173,9 @@ describe("collective investment receipt NFT...", () => {
         this.collectiveAllocationAdapterContract = this.adapters.collectiveAllocationAdapterContract.instance;
         this.collectiveDistributeAdatperContract = this.adapters.collectiveDistributeAdatperContract.instance;
         this.collectiveVestingContract = this.adapters.collectiveVestingContract.instance;
+        this.collectiveEscrowFundAdapterContract = this.adapters.collectiveEscrowFundAdapterContract.instance;
+        this.colletiveTopUpProposalContract = this.adapters.colletiveTopUpProposalContract.instance;
+        this.colletiveExpenseProposalContract = this.adapters.colletiveExpenseProposalContract.instance;
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 
         const VestingERC721Helper = await hre.ethers.getContractFactory("VestingERC721Helper");
@@ -216,6 +221,7 @@ describe("collective investment receipt NFT...", () => {
         _daoName = "my_collective_dao002";
 
         const creator = this.owner.address;
+
         const enalbeAdapters = [
             {
                 id: '0xdac6d9ce728ebc92a61253866b4e5a4c73b76ba0aa11e7297a633f6232f54237', //colletiveDaoSetProposalContract
@@ -272,7 +278,22 @@ describe("collective investment receipt NFT...", () => {
                 addr: this.collectiveVestingContract.address,
                 flags: 0
             },
+            {
+                id: '0x372fda66f626a705d3a459960a1457403a7c3564acccedc00092ea70262b7083', // collectiveEscrowFundAdapterContract
+                addr: this.collectiveEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x3b4de3360220463b2e1b681516ac7919070009f0544e8465d80dc511828dae5b', // colletiveTopUpProposalContract
+                addr: this.colletiveTopUpProposalContract.address,
+                flags: 4194306
+            }, {
+                id: '0xd0e09561b13ad01191fc8f65f6fc85651e4f495d3f9ab93d95010ea58382434b', // colletiveExpenseProposalContract
+                addr: this.colletiveExpenseProposalContract.address,
+                flags: 2097162
+            },
         ];
+
 
         const adapters1 = [
             {
@@ -522,6 +543,8 @@ describe("collective investment receipt NFT...", () => {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(endTime) + 1]);
             await hre.network.provider.send("evm_mine");
         }
+
+        await this.colletiveFundingPoolContract.processFundRaise(this.collectiveDirectdaoAddress);
         let currentBlockNum = (await hre.ethers.provider.getBlock("latest")).number;
 
         let depositBal1 = await collectiveFundingPoolExtContract.getPriorAmount(

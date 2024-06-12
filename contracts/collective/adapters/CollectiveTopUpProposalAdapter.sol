@@ -46,7 +46,8 @@ contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
     );
 
     error VOTE_NOT_START();
-    error UNDONE_FUNDING_PROPOSAL();
+    error UNDONE_INVESTMENT_PROPOSAL();
+
     mapping(address => mapping(bytes32 => ProposalDetail)) public proposals;
     mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
 
@@ -70,10 +71,11 @@ contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
             "DaoSet Proposal Undone"
         );
         if (
-            ColletiveFundingProposalAdapterContract(
+            !ColletiveFundingProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
-            ).ongoingProposal(address(dao)) != bytes32(0)
-        ) revert UNDONE_FUNDING_PROPOSAL();
+            ).allDone(dao)
+        ) revert UNDONE_INVESTMENT_PROPOSAL();
+
         dao.increaseTopupId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -128,6 +130,8 @@ contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
                 dao.getConfiguration(DaoHelper.VOTING_PERIOD);
         } else {
             proposal.state = ProposalState.Failed;
+            if (unDoneProposals[address(dao)].contains(proposalId))
+                unDoneProposals[address(dao)].remove(proposalId);
         }
 
         emit StartVoting(address(dao), proposalId, proposal.state);

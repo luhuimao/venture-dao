@@ -159,7 +159,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
     );
 
     error VOTING_NOT_FINISH();
-    error UNDONE_PROPOSALS();
+    error UNDONE_OPERATION_PROPOSALS();
 
     function fundPeriodCheck(DaoRegistry dao) internal view {
         ColletiveFundingPoolAdapterContract fundingPoolAdapt = ColletiveFundingPoolAdapterContract(
@@ -214,7 +214,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
             !fundRaiseContrc.allDone(dao) ||
             !governorContrc.allDone(dao) ||
             !topupContrc.allDone(dao)
-        ) revert UNDONE_PROPOSALS();
+        ) revert UNDONE_OPERATION_PROPOSALS();
     }
 
     function submitInvestorCapProposal(
@@ -223,10 +223,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         uint256 cap
     ) external onlyGovernor(dao) reimbursable(dao) {
         undoneProposalsCheck(dao);
-        // require(
-        //     ongoingInvestorCapProposal[address(dao)] == bytes32(0),
-        //     "last cap proposal not finalized"
-        // );
+
         require(isProposalAllDone(dao), "daoset proposals undone");
         dao.increaseInvestorCapId();
 

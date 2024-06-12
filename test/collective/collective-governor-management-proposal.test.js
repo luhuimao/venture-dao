@@ -167,6 +167,7 @@ describe("governor management...", () => {
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
 
+       
         this.colletiveGovernorManagementContract = adapters.colletiveGovernorManagementContract.instance;
         this.colletiveDaoSetProposalContract = adapters.colletiveDaoSetProposalContract.instance;
         this.colletiveFundingProposalContract = adapters.colletiveFundingProposalContract.instance;
@@ -179,7 +180,10 @@ describe("governor management...", () => {
         this.collectiveDistributeAdatperContract = this.adapters.collectiveDistributeAdatperContract.instance;
         this.collectiveVestingContract = this.adapters.collectiveVestingContract.instance;
         this.collectiveEscrowFundAdapterContract = this.adapters.collectiveEscrowFundAdapterContract.instance;
+        this.colletiveTopUpProposalContract = this.adapters.colletiveTopUpProposalContract.instance;
+        this.colletiveExpenseProposalContract = this.adapters.colletiveExpenseProposalContract.instance;
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
+
         const ERC721 = await hre.ethers.getContractFactory("PixelNFT");
         const erc721 = await ERC721.deploy(2);
         await erc721.deployed();
@@ -263,7 +267,17 @@ describe("governor management...", () => {
                 addr: this.collectiveEscrowFundAdapterContract.address,
                 flags: 0
             },
+            {
+                id: '0x3b4de3360220463b2e1b681516ac7919070009f0544e8465d80dc511828dae5b', // colletiveTopUpProposalContract
+                addr: this.colletiveTopUpProposalContract.address,
+                flags: 4194306
+            }, {
+                id: '0xd0e09561b13ad01191fc8f65f6fc85651e4f495d3f9ab93d95010ea58382434b', // colletiveExpenseProposalContract
+                addr: this.colletiveExpenseProposalContract.address,
+                flags: 2097162
+            },
         ];
+
 
         const adapters1 = [
             {

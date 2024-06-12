@@ -156,13 +156,9 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
     );
 
     error VOTING_NOT_FINISH();
-    // error LAST_CAP_NOT_FINALIZED();
-    // error LAST_GOVERNOR_MEMBERSHIP_NOT_FINALIZED();
-    // error LAST_INVESOTR_MEMBERHISP_NOT_FINALIZED();
-    // error LAST_VOTING_NOT_FINALIZED();
     error INVALID_ALLOC_PARAMS();
     error DAO_SET_PROPOSAL_NOT_FINALIZED();
-
+    error OPERATION_PROPOSALS_NOT_DONE();
     modifier undonePrposalCheck(DaoRegistry dao) {
         if (
             ongoingInvestorCapProposal[address(dao)] != bytes32(0) ||
@@ -184,30 +180,10 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
         uint256 returnDuration = dao.getConfiguration(
             DaoHelper.RETURN_DURATION
         );
-        //
-        //  require(
-        //     vars.investmentPoolAdapt.daoFundRaisingStates(address(params.dao)) ==
-        //         DaoHelper.FundRaiseState.NOT_STARTED ||
-        //         vars.investmentPoolAdapt.daoFundRaisingStates(
-        //             address(params.dao)
-        //         ) ==
-        //         DaoHelper.FundRaiseState.FAILED ||
-        //         (vars.investmentPoolAdapt.daoFundRaisingStates(
-        //             address(params.dao)
-        //         ) ==
-        //             DaoHelper.FundRaiseState.DONE &&
-        //             block.timestamp >
-        //             vars.lastFundEndTime + vars.refundDuration),
-        //     "not now"
-        // );
+
         require(
             (state == DaoHelper.FundRaiseState.NOT_STARTED) ||
-                // (
                 state == DaoHelper.FundRaiseState.FAILED ||
-                // &&
-                //     block.timestamp >
-                //     dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) +
-                //         returnDuration)
                 (state == DaoHelper.FundRaiseState.DONE &&
                     block.timestamp >
                     dao.getConfiguration(DaoHelper.FUND_END_TIME) +
@@ -223,8 +199,12 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
         uint256 cap
     ) external onlyGovernor(dao) undonePrposalCheck(dao) reimbursable(dao) {
         fundPeriodCheck(dao);
-        // if (ongoingInvestorCapProposal[address(dao)] != bytes32(0))
-        //     revert LAST_CAP_NOT_FINALIZED();
+        if (
+            !VintageDaoSetHelperAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_HELPER_ADAPTER)
+            ).unDoneOperationProposalsCheck(dao)
+        ) revert OPERATION_PROPOSALS_NOT_DONE();
+
         dao.increaseInvestorCapId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
@@ -273,11 +253,14 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
         undonePrposalCheck(params.dao)
         reimbursable(params.dao)
     {
-        // if (
-        //     ongoingGovernorMembershipProposal[address(params.dao)] != bytes32(0)
-        // ) revert LAST_GOVERNOR_MEMBERSHIP_NOT_FINALIZED();
         fundPeriodCheck(params.dao);
-
+        if (
+            !VintageDaoSetHelperAdapterContract(
+                params.dao.getAdapterAddress(
+                    DaoHelper.VINTAGE_DAO_SET_HELPER_ADAPTER
+                )
+            ).unDoneOperationProposalsCheck(params.dao)
+        ) revert OPERATION_PROPOSALS_NOT_DONE();
         params.dao.increaseGovernorMembershipId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
@@ -343,8 +326,13 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
         undonePrposalCheck(params.dao)
         reimbursable(params.dao)
     {
-        // if (ongoingInvstorMembershipProposal[address(params.dao)] != bytes32(0))
-        //     revert LAST_INVESOTR_MEMBERHISP_NOT_FINALIZED();
+        if (
+            !VintageDaoSetHelperAdapterContract(
+                params.dao.getAdapterAddress(
+                    DaoHelper.VINTAGE_DAO_SET_HELPER_ADAPTER
+                )
+            ).unDoneOperationProposalsCheck(params.dao)
+        ) revert OPERATION_PROPOSALS_NOT_DONE();
         fundPeriodCheck(params.dao);
 
         params.dao.increaseInvstorMembershipId();
@@ -397,8 +385,11 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
         DaoRegistry dao,
         VotingParams calldata params
     ) external onlyGovernor(dao) undonePrposalCheck(dao) reimbursable(dao) {
-        // if (ongoingVotingProposal[address(dao)] != bytes32(0))
-        //     revert LAST_VOTING_NOT_FINALIZED();
+        if (
+            !VintageDaoSetHelperAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_HELPER_ADAPTER)
+            ).unDoneOperationProposalsCheck(dao)
+        ) revert OPERATION_PROPOSALS_NOT_DONE();
 
         if (params.governors.length != params.allocations.length)
             revert INVALID_ALLOC_PARAMS();

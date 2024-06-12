@@ -103,4 +103,8 @@ interface ICollectiveFunding {
     error INVESTMENT_PROPOSAL_NOT_FINALIZED();
     error GRACE_PERIOD();
     error VOTING_PERIOD();
+    error DAOSET_PROPOSALS_UNDONE();
+    error NOT_INVESTMENT_PERIOD();
+    error FUND_RAISE_UNEXECUTE();
+    error UNDONE_OPERATION_PROPOSALS();
 }

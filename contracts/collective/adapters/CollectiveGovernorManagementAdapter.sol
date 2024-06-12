@@ -72,7 +72,7 @@ contract ColletiveGovernorManagementAdapterContract is
     );
     event GovernorQuit(address daoAddr, address governor);
     error UNDONE_INVESTMET_PROPOSAL();
-    error GRACE_PERIOD();
+    error NOT_GRACE_PERIOD();
     error SUMMONOR_CANT_QUIT();
     // proposals per dao
     mapping(DaoRegistry => mapping(bytes32 => ProposalDetails))
@@ -166,8 +166,7 @@ contract ColletiveGovernorManagementAdapterContract is
         ColletiveFundingProposalAdapterContract fundingCont = ColletiveFundingProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
             );
-        if (fundingCont.ongoingProposal(address(dao)) != bytes32(0))
-            revert UNDONE_INVESTMET_PROPOSAL();
+        if (!fundingCont.allDone(dao)) revert UNDONE_INVESTMET_PROPOSAL();
         dao.increaseGovenorInId();
         vars.proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -274,8 +273,7 @@ contract ColletiveGovernorManagementAdapterContract is
         ColletiveFundingProposalAdapterContract fundingCont = ColletiveFundingProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
             );
-        if (fundingCont.ongoingProposal(address(dao)) != bytes32(0))
-            revert UNDONE_INVESTMET_PROPOSAL();
+        if (!fundingCont.allDone(dao)) revert UNDONE_INVESTMET_PROPOSAL();
         dao.increaseGovenorOutId();
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -490,11 +488,8 @@ contract ColletiveGovernorManagementAdapterContract is
                     dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
                 );
 
-            // if (
-            //     fundingProposalAdapt.ongoingProposal(address(dao)) != bytes32(0)
-            // ) revert UNDONE_INVESTMET_PROPOSAL();
             if (!fundingProposalAdapt.isPrposalInGracePeriod(dao))
-                revert GRACE_PERIOD();
+                revert NOT_GRACE_PERIOD();
             if (dao.daoCreator() == msg.sender) revert SUMMONOR_CANT_QUIT();
             ColletiveFundingPoolAdapterContract fundingpoolAdapt = ColletiveFundingPoolAdapterContract(
                     dao.getAdapterAddress(
