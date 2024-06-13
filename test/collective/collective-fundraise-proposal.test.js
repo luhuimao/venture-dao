@@ -406,72 +406,7 @@ describe("fund raise proposal...", () => {
         // console.log(allGovernros);
     });
 
-    const sommonCollectiveDao = async (summonDaoContract, daoFactoryContract, collectiveDaoParams) => {
-        let tx = await summonDaoContract.summonCollectiveDao(collectiveDaoParams);
-        let result = await tx.wait();
-        const len = collectiveDaoParams.length;
-        const daoAddr = await daoFactoryContract.getDaoAddress(collectiveDaoParams[len - 1][0]);
-        const daoName = await daoFactoryContract.daos(daoAddr);
 
-        return {
-            daoAddr: daoAddr,
-            daoName: daoName
-        };
-    };
-
-    const submitFundRaiseProposal = async () => {
-        const dao = this.collectiveDirectdaoAddress;
-        const tokenAddress = this.testtoken1.address;
-        const miniTarget = hre.ethers.utils.parseEther("1000");
-        const maxCap = hre.ethers.utils.parseEther("2000");
-        const miniDeposit = hre.ethers.utils.parseEther("10");
-        const maxDeposit = hre.ethers.utils.parseEther("1000");
-
-        const fundInfo = [
-            tokenAddress,
-            miniTarget,
-            maxCap,
-            miniDeposit,
-            maxDeposit
-        ];
-
-        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-
-        const startTime = blocktimestamp + 60 * 10;
-        const endTime = startTime + 60 * 30;
-        const timeInfo = [startTime, endTime];
-
-        const enable = true;
-        const valifyType = 0;
-        const priorityTokenAddress = this.testtoken2.address;
-        const tokenId = 0;
-        const miniHolding = hre.ethers.utils.parseEther("100");
-        const whitelist = [];
-
-        const priorityDepositor = [
-            enable,
-            valifyType,
-            priorityTokenAddress,
-            tokenId,
-            miniHolding,
-            whitelist
-        ];
-
-        const fundRaiseType = 0;
-        const params = [
-            dao,
-            fundRaiseType,
-            fundInfo,
-            timeInfo,
-            priorityDepositor
-        ];
-
-        const tx = await this.colletiveFundRaiseProposalContract.submitProposal(params);
-        const rel = await tx.wait();
-
-        const proposalId = rel.events[rel.events.length - 1].args.proposalId;
-        return proposalId;
-    }
 
     it("create fund raise proposal...", async () => {
 
@@ -513,6 +448,14 @@ describe("fund raise proposal...", () => {
         state ${proposalDetail.state}
         `);
 
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(proposalDetail.timeInfo.startTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.timeInfo.startTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+        await this.testtoken1.approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
+        await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1000"));
     });
 
     it("cant submit new fund raise proposal if fund raise not execute...", async () => {
@@ -587,7 +530,58 @@ describe("fund raise proposal...", () => {
             this.collectiveDirectdaoAddress,
             daosetProposalId);
 
-        await submitFundRaiseProposal();
+        const fundRaiseProposalId = await submitFundRaiseProposal();
+
+        let proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(
+            this.collectiveDirectdaoAddress,
+            fundRaiseProposalId
+        );
+
+        await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
+            fundRaiseProposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+            fundRaiseProposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+            fundRaiseProposalId,
+            1
+        );
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(proposalDetail.stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.stopVoteTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+
+        await this.colletiveFundRaiseProposalContract.processProposal(this.collectiveDirectdaoAddress, fundRaiseProposalId);
+
+        const accumulateRaiseAmount = await this.colletiveFundingPoolContract.accumulateRaiseAmount(this.collectiveDirectdaoAddress);
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(proposalDetail.timeInfo.startTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.timeInfo.startTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+        let bal1 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.owner.address);
+        const poolBal1 = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
+        await this.testtoken1.approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("20000"));
+        await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("2000"));
+        let bal2 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.owner.address);
+        const poolBal2 = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
+
+        console.log(
+            `accumulateRaiseAmount ${accumulateRaiseAmount}
+            bal1                   ${bal1}
+            bal2                   ${bal2}
+            poolBal1               ${poolBal1}
+            poolBal2               ${poolBal2}
+            `
+        );
+
+
     });
 
 
@@ -657,6 +651,73 @@ describe("fund raise proposal...", () => {
             this.collectiveDirectdaoAddress,
             enable,
             cap);
+        const rel = await tx.wait();
+
+        const proposalId = rel.events[rel.events.length - 1].args.proposalId;
+        return proposalId;
+    }
+
+    const sommonCollectiveDao = async (summonDaoContract, daoFactoryContract, collectiveDaoParams) => {
+        let tx = await summonDaoContract.summonCollectiveDao(collectiveDaoParams);
+        let result = await tx.wait();
+        const len = collectiveDaoParams.length;
+        const daoAddr = await daoFactoryContract.getDaoAddress(collectiveDaoParams[len - 1][0]);
+        const daoName = await daoFactoryContract.daos(daoAddr);
+
+        return {
+            daoAddr: daoAddr,
+            daoName: daoName
+        };
+    };
+
+    const submitFundRaiseProposal = async () => {
+        const dao = this.collectiveDirectdaoAddress;
+        const tokenAddress = this.testtoken1.address;
+        const miniTarget = hre.ethers.utils.parseEther("1000");
+        const maxCap = hre.ethers.utils.parseEther("2000");
+        const miniDeposit = hre.ethers.utils.parseEther("10");
+        const maxDeposit = hre.ethers.utils.parseEther("20000");
+
+        const fundInfo = [
+            tokenAddress,
+            miniTarget,
+            maxCap,
+            miniDeposit,
+            maxDeposit
+        ];
+
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        const startTime = blocktimestamp + 60 * 10;
+        const endTime = startTime + 60 * 30;
+        const timeInfo = [startTime, endTime];
+
+        const enable = true;
+        const valifyType = 0;
+        const priorityTokenAddress = this.testtoken2.address;
+        const tokenId = 0;
+        const miniHolding = hre.ethers.utils.parseEther("100");
+        const whitelist = [];
+
+        const priorityDepositor = [
+            enable,
+            valifyType,
+            priorityTokenAddress,
+            tokenId,
+            miniHolding,
+            whitelist
+        ];
+
+        const fundRaiseType = 0;
+        const params = [
+            dao,
+            fundRaiseType,
+            fundInfo,
+            timeInfo,
+            priorityDepositor
+        ];
+
+        const tx = await this.colletiveFundRaiseProposalContract.submitProposal(params);
         const rel = await tx.wait();
 
         const proposalId = rel.events[rel.events.length - 1].args.proposalId;

@@ -32,16 +32,6 @@ contract ColletiveFundRaiseProposalAdapterContract is
     function submitProposal(
         ProposalParams calldata params
     ) external reimbursable(params.dao) onlyMember(params.dao) returns (bool) {
-        // if (
-        //     lastProposalIds[address(params.dao)] != bytes32(0x0) &&
-        //     (proposals[params.dao][lastProposalIds[address(params.dao)]]
-        //         .state ==
-        //         ProposalState.Voting ||
-        //         proposals[params.dao][lastProposalIds[address(params.dao)]]
-        //             .state ==
-        //         ProposalState.Executing)
-        // ) revert LAST_NEW_FUND_PROPOSAL_NOT_FINISH();
-
         SubmitProposalLocalVars memory vars;
 
         vars.daosetAdapt = ColletiveDaoSetProposalAdapterContract(
@@ -61,37 +51,18 @@ contract ColletiveFundRaiseProposalAdapterContract is
                 bytes32(0),
             "Undone Investment Proposal"
         );
-        // vars.lastFundEndTime = params.dao.getConfiguration(
-        //     DaoHelper.FUND_END_TIME
-        // );
-        // vars.refundDuration = params.dao.getConfiguration(
-        //     DaoHelper.RETURN_DURATION
-        // );
+
         vars.investmentPoolAdapt = ColletiveFundingPoolAdapterContract(
             params.dao.getAdapterAddress(
                 DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
             )
         );
-        // require(
-        //     vars.investmentPoolAdapt.poolBalance(params.dao) <= 0,
-        //     "!clear fund"
-        // );
+
         //fund state check
         if (
             vars.investmentPoolAdapt.fundState(address(params.dao)) ==
             ColletiveFundingPoolAdapterContract.FundState.IN_PROGRESS
         ) revert UNEXECUTE();
-        // require(
-        //     vars.investmentPoolAdapt.fundState(address(params.dao)) ==
-        //         ColletiveFundingPoolAdapterContract.FundState.NOT_STARTED ||
-        //         vars.investmentPoolAdapt.fundState(address(params.dao)) ==
-        //         ColletiveFundingPoolAdapterContract.FundState.FAILED ||
-        //         (vars.investmentPoolAdapt.fundState(address(params.dao)) ==
-        //             ColletiveFundingPoolAdapterContract.FundState.DONE &&
-        //             block.timestamp >
-        //             vars.lastFundEndTime + vars.refundDuration),
-        //     "not now"
-        // );
 
         // params check
         vars.protocolFeeRatio = vars.investmentPoolAdapt.protocolFee();

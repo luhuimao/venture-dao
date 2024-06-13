@@ -35,9 +35,11 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
     error INVESTMENT_GRACE_PERIOD();
     error FUNDRAISE_ENDTIME_NOT_UP();
     error EXECUTED_ALREADY();
-    
+
     mapping(address => EnumerableSet.AddressSet) fundInvestors;
     mapping(address => FundState) public fundState;
+    mapping(address => uint256) public accumulateRaiseAmount;
+    mapping(address => uint256) public resetFundStateBlockNum;
 
     uint256 public protocolFee = (3 * 1e18) / 1000; // 0.3%
 
@@ -149,7 +151,20 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         }
         if (vars.maxDepositAmount > 0) {
             require(
-                amount + balanceOf(dao, msg.sender) <= vars.maxDepositAmount,
+                amount +
+                    (balanceOf(dao, msg.sender) -
+                        CollectiveInvestmentPoolExtension(
+                            dao.getExtensionAddress(
+                                DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
+                            )
+                        ).getPriorAmount(
+                                msg.sender,
+                                dao.getAddressConfiguration(
+                                    DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+                                ),
+                                resetFundStateBlockNum[address(dao)]
+                            )) <=
+                    vars.maxDepositAmount,
                 "> max deposit amount"
             );
         }
@@ -169,7 +184,9 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         ) {
             //FCFS
             require(
-                poolBalance(dao) + amount <= vars.fundRaiseCap,
+                (poolBalance(dao) + amount) -
+                    accumulateRaiseAmount[address(dao)] <=
+                    vars.fundRaiseCap,
                 "> Fundraise max amount"
             );
         }
@@ -177,7 +194,6 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         vars.fundingpool = CollectiveInvestmentPoolExtension(
             dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
         );
-        // vars.fundRounds += 1;
         // investor cap
         if (
             dao.getConfiguration(DaoHelper.MAX_INVESTORS_ENABLE) == 1 &&
@@ -422,6 +438,9 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             "Access deny"
         );
         fundState[address(dao)] = FundState.IN_PROGRESS;
+
+        accumulateRaiseAmount[address(dao)] += poolBalance(dao);
+        resetFundStateBlockNum[address(dao)] = block.number;
     }
 
     function processFundRaise(DaoRegistry dao) public returns (bool) {
