@@ -167,7 +167,7 @@ describe("governor management...", () => {
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
 
-       
+
         this.colletiveGovernorManagementContract = adapters.colletiveGovernorManagementContract.instance;
         this.colletiveDaoSetProposalContract = adapters.colletiveDaoSetProposalContract.instance;
         this.colletiveFundingProposalContract = adapters.colletiveFundingProposalContract.instance;
@@ -882,10 +882,16 @@ describe("governor management...", () => {
             depositAmount
         );
 
+        await expectRevert(this.colletiveGovernorManagementContract.connect(this.project_team1).startVoting(
+            this.collectiveDirectdaoAddress4,
+            proposalId
+        ), "revert");
+
         await this.colletiveGovernorManagementContract.startVoting(
             this.collectiveDirectdaoAddress4,
             proposalId
         );
+
         let proposalDetail = await this.colletiveGovernorManagementContract.proposals(this.collectiveDirectdaoAddress4, proposalId);
         console.log(`
         state ${proposalDetail.state}

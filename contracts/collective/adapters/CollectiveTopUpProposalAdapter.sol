@@ -104,7 +104,10 @@ contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
         emit ProposalCreated(address(dao), proposalId);
     }
 
-    function startVoting(DaoRegistry dao, bytes32 proposalId) external {
+    function startVoting(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external onlyGovernor(dao) {
         ProposalDetail storage proposal = proposals[address(dao)][proposalId];
         require(proposal.state == ProposalState.Submitted, "!Submitted");
 

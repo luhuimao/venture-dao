@@ -744,8 +744,12 @@ describe("funding proposal...", () => {
         paybackAmount ${paybackAmount}
         start voting...
         `);
+        await expectRevert(this.colletiveFundingProposalContract.connect(this.project_team1).startVotingProcess(dao,
+            proposalId), "revert");
+
         await this.colletiveFundingProposalContract.startVotingProcess(dao,
             proposalId);
+
         proposalDetail = await this.colletiveFundingProposalContract.proposals(dao, proposalId);
         const escrowedPaybackAmount = await this.colletiveFundingProposalContract.escrowPaybackTokens(
             dao,

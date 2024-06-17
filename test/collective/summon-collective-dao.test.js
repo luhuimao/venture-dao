@@ -1630,6 +1630,10 @@ describe("topup proposal...", () => {
             start voting...
         `);
 
+        await expect(this.colletiveTopUpProposalContract.connect(this.project_team1).startVoting(this.collectiveDirectdaoAddress,
+            proposalId
+        ), "revert");
+
         await this.colletiveTopUpProposalContract.startVoting(this.collectiveDirectdaoAddress,
             proposalId
         );

@@ -215,7 +215,7 @@ contract ColletiveGovernorManagementAdapterContract is
     function startVoting(
         DaoRegistry dao,
         bytes32 proposalId
-    ) external returns (bool) {
+    ) external onlyMember(dao) returns (bool) {
         ProposalDetails storage proposal = proposals[dao][proposalId];
         require(proposal.state == ProposalState.Submitted, "!Submitted");
 
