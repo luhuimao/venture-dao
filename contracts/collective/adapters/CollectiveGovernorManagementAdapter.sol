@@ -235,6 +235,9 @@ contract ColletiveGovernorManagementAdapterContract is
             proposal.depositAmount
         ) {
             proposal.state = ProposalState.Failed;
+
+            if (unDoneProposals[address(dao)].contains(proposalId))
+                unDoneProposals[address(dao)].remove(proposalId);
             // return false;
         } else {
             ICollectiveVoting collectiveVotingContract = ICollectiveVoting(

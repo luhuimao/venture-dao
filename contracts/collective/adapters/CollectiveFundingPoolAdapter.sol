@@ -327,7 +327,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         return true;
     }
 
-    function clearFund(DaoRegistry dao) external reimbursable(dao) {
+    function clearFund(DaoRegistry dao) public reimbursable(dao) {
         require(
             (fundState[address(dao)] == FundState.FAILED &&
                 block.timestamp >
@@ -454,25 +454,22 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             revert FUNDRAISE_ENDTIME_NOT_UP();
 
         if (fundState[address(dao)] == FundState.IN_PROGRESS) {
-            if (poolBalance(dao) >= fundRaiseTarget) {
-                // dao.setConfiguration(
-                //     DaoHelper.FUND_START_TIME,
-                //     block.timestamp
-                // );
-                // dao.setConfiguration(
-                //     DaoHelper.FUND_END_TIME,
-                //     block.timestamp + dao.getConfiguration(DaoHelper.FUND_TERM) //proposalInfo.timesInfo.fundTerm
-                // );
-
+            uint256 raisedAmount = poolBalance(dao) -
+                accumulateRaiseAmount[address(dao)];
+            if (raisedAmount >= fundRaiseTarget) {
                 // escorwExtraFreeInFund(dao);
 
                 fundState[address(dao)] = FundState.DONE;
-            } else fundState[address(dao)] = FundState.FAILED;
+            } else {
+                fundState[address(dao)] = FundState.FAILED;
+
+                if (raisedAmount > 0) clearFund(dao);
+            }
 
             emit ProcessFundRaise(
                 address(dao),
                 fundState[address(dao)],
-                poolBalance(dao)
+                raisedAmount
             );
         } else revert EXECUTED_ALREADY();
         return true;

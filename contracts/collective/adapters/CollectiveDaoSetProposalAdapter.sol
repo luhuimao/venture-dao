@@ -809,11 +809,11 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         );
     }
 
-    // function getGovernorMembershipWhitelist(
-    //     bytes32 proposalId
-    // ) external view returns (address[] memory) {
-    //     return governorMembershipWhitelists[proposalId].values();
-    // }
+    function getGovernorMembershipWhitelist(
+        bytes32 proposalId
+    ) external view returns (address[] memory) {
+        return governorMembershipWhitelists[proposalId].values();
+    }
 
     function isProposalAllDone(DaoRegistry dao) public view returns (bool) {
         if (
