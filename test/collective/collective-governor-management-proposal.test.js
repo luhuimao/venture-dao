@@ -182,6 +182,7 @@ describe("governor management...", () => {
         this.collectiveEscrowFundAdapterContract = this.adapters.collectiveEscrowFundAdapterContract.instance;
         this.colletiveTopUpProposalContract = this.adapters.colletiveTopUpProposalContract.instance;
         this.colletiveExpenseProposalContract = this.adapters.colletiveExpenseProposalContract.instance;
+        this.collectiveFreeInEscrowFundAdapterContract = this.adapters.collectiveFreeInEscrowFundAdapterContract.instance;
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 
         const ERC721 = await hre.ethers.getContractFactory("PixelNFT");
@@ -275,7 +276,11 @@ describe("governor management...", () => {
                 id: '0xd0e09561b13ad01191fc8f65f6fc85651e4f495d3f9ab93d95010ea58382434b', // colletiveExpenseProposalContract
                 addr: this.colletiveExpenseProposalContract.address,
                 flags: 2097162
-            },
+            }, {
+                id: '0x4bb6d123745fe9358fe205a70b7a4aae2a445c56d4bc19c9a123a9259ff615a1', // colletiveExpenseProposalContract
+                addr: this.collectiveFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            }
         ];
 
 

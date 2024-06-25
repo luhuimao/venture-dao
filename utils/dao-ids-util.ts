@@ -29,6 +29,7 @@ export const adaptersIdsMap: Record<string, string> = {
   COLLECTIVE_ESCROW_FUND_ADAPTER: "collective-escrow-fund-adapter",
   COLLECTIVE_ENPENSE_ADAPTER: "collective-expense-adapter",
   COLLECTIVE_TOP_UP_ADAPTER: "collective-topup-adapter",
+  COLLECTIVE_FREE_IN_ESCROW_FUND_ADAPTER: "collective-free-in-escrow-fund-adapter",
   /*******************collective end**********************/
 
   /*******************vintage**********************/

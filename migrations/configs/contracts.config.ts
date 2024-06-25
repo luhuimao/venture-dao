@@ -1615,6 +1615,20 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
+  {
+    id: adaptersIdsMap.COLLECTIVE_FREE_IN_ESCROW_FUND_ADAPTER,
+    name: "CollectiveFreeInEscrowFundAdapterContract",
+    alias: "collectiveFreeInEscrowFundAdapterContract",
+    path: "../../contracts/adapters/CollectiveFreeInEscrowFundAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [],
+      extensions: {
+      },
+    },
+  },
   /*****************************************************collective end*******************************************************/
 
   {

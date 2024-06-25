@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract CollectibveFreeInEscrowFundAdapterContract is Reimbursable {
+contract CollectiveFreeInEscrowFundAdapterContract is Reimbursable {
     using SafeERC20 for IERC20;
 
     //dao => fund raise proposalId => account => amount
@@ -66,7 +66,7 @@ contract CollectibveFreeInEscrowFundAdapterContract is Reimbursable {
     ) external {
         require(
             msg.sender ==
-                dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT),
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER),
             "!access"
         );
         escrowFunds[address(dao)][fundRaiseProposalId][account].amount += uint128(amount);

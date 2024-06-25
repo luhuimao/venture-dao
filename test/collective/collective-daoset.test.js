@@ -182,6 +182,7 @@ describe("daoset...", () => {
         this.collectiveEscrowFundAdapterContract = this.adapters.collectiveEscrowFundAdapterContract.instance;
         this.colletiveTopUpProposalContract = this.adapters.colletiveTopUpProposalContract.instance;
         this.colletiveExpenseProposalContract = this.adapters.colletiveExpenseProposalContract.instance;
+        this.collectiveFreeInEscrowFundAdapterContract = this.adapters.collectiveFreeInEscrowFundAdapterContract.instance;
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 
 
@@ -281,6 +282,11 @@ describe("daoset...", () => {
                 addr: this.colletiveExpenseProposalContract.address,
                 flags: 2097162
             },
+            {
+                id: '0x4bb6d123745fe9358fe205a70b7a4aae2a445c56d4bc19c9a123a9259ff615a1', // collectiveFreeInEscrowFundAdapterContract
+                addr: this.collectiveFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            }
         ];
 
         const adapters1 = [

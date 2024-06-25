@@ -34,6 +34,16 @@ contract ColletiveFundRaiseProposalAdapterContract is
     ) external reimbursable(params.dao) onlyMember(params.dao) returns (bool) {
         SubmitProposalLocalVars memory vars;
 
+        if (
+            lastProposalIds[address(params.dao)] != bytes32(0x0) &&
+            (proposals[params.dao][lastProposalIds[address(params.dao)]]
+                .state ==
+                ProposalState.Voting ||
+                proposals[params.dao][lastProposalIds[address(params.dao)]]
+                    .state ==
+                ProposalState.Executing)
+        ) revert LAST_NEW_FUND_PROPOSAL_NOT_FINISH();
+
         vars.daosetAdapt = ColletiveDaoSetProposalAdapterContract(
             params.dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
         );
@@ -331,5 +341,47 @@ contract ColletiveFundRaiseProposalAdapterContract is
 
     function allDone(DaoRegistry dao) external view returns (bool) {
         return unDoneProposals[address(dao)].length() > 0 ? false : true;
+    }
+
+    function isPriorityDepositer(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        address account
+    ) public view returns (bool) {
+        if (
+            dao.getConfiguration(
+                DaoHelper.COLLECTIVE_PRIORITY_DEPOSITE_ENABLE
+            ) == 1
+        ) {
+            uint256 vtype = dao.getConfiguration(
+                DaoHelper.COLLECTIVE_PRIORITY_DEPOSITE_TYPE
+            );
+            address token = dao.getAddressConfiguration(
+                DaoHelper.COLLECTIVE_PRIORITY_DEPOSITE_TOKEN_ADDRESS
+            );
+            uint256 tokenAmount = dao.getConfiguration(
+                DaoHelper.COLLECTIVE_PRIORITY_DEPOSITE_AMOUNT
+            );
+            uint256 tokenId = dao.getConfiguration(
+                DaoHelper.COLLECTIVE_PRIORITY_DEPOSITE_TOKENID
+            );
+            if (vtype == 0 && IERC20(token).balanceOf(account) >= tokenAmount)
+                return true;
+            else if (
+                vtype == 1 && IERC721(token).balanceOf(account) >= tokenAmount
+            ) return true;
+            else if (
+                vtype == 2 &&
+                IERC1155(token).balanceOf(account, tokenId) >= tokenAmount
+            ) return true;
+            else if (
+                vtype == 3 &&
+                priorityDepositorWhitelist[dao][proposalId].contains(account)
+            ) return true;
+            else {
+                return false;
+            }
+        }
+        return false;
     }
 }

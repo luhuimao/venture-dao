@@ -340,6 +340,7 @@ library DaoHelper {
         keccak256("COLLECTIVE_PAYBACK_TOKEN_MANAGEMENT_FEE_AMOUNT");
     bytes32 internal constant COLLECTIVE_PROPOSER_FUND_REWARD_RADIO =
         keccak256("COLLECTIVE_PROPOSER_FUND_REWARD_RADIO");
+
     /*********************************
     COLLECTIVE SETTING 
     *********************************/
@@ -508,6 +509,8 @@ library DaoHelper {
         keccak256("collective-expense-adapter");
     bytes32 internal constant COLLECTIVE_ESCROW_FUND_ADAPTER =
         keccak256("collective-escrow-fund-adapter");
+    bytes32 internal constant COLLECTIVE_FREE_IN_ESCROW_FUND_ADAPTER =
+        keccak256("collective-free-in-escrow-fund-adapter");
     //---------------------------------collective---------------------------------
     bytes32 internal constant FUND_RAISE = keccak256("fund-raise");
     bytes32 internal constant VESTWING = keccak256("vesting");
