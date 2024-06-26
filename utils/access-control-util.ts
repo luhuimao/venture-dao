@@ -41,6 +41,7 @@ export const daoAccessFlagsMap: Record<string, string> = {
   INCREASE_PROPOSER_REWARD_ID: "INCREASE_PROPOSER_REWARD_ID",
   INCREASE_EXPENSE_ID: "INCREASE_EXPENSE_ID",
   INCREASE_TOPUP_ID: "INCREASE_TOPUP_ID",
+  INCREASE_CLEAR_FUND_ID: "INCREASE_CLEAR_FUND_ID",
 };
 
 export const daoAccessFlags: Array<string> = Object.values(daoAccessFlagsMap);

@@ -405,8 +405,7 @@ describe("governor management...", () => {
             currency,
             redemptionFee,
             proposerInvestTokenReward,
-            proposerPaybackTokenReward,
-            collectiveDaoGenesisGovernor
+            proposerPaybackTokenReward
         ];
         const CollectiveDaoInfo2 = [
             daoName2,
@@ -414,8 +413,7 @@ describe("governor management...", () => {
             currency,
             redemptionFee,
             proposerInvestTokenReward,
-            proposerPaybackTokenReward,
-            collectiveDaoGenesisGovernor
+            proposerPaybackTokenReward
         ];
         const CollectiveDaoInfo3 = [
             daoName3,
@@ -423,8 +421,7 @@ describe("governor management...", () => {
             currency,
             redemptionFee,
             proposerInvestTokenReward,
-            proposerPaybackTokenReward,
-            collectiveDaoGenesisGovernor
+            proposerPaybackTokenReward
         ];
         const CollectiveDaoInfo4 = [
             daoName4,
@@ -432,8 +429,7 @@ describe("governor management...", () => {
             currency,
             redemptionFee,
             proposerInvestTokenReward,
-            proposerPaybackTokenReward,
-            collectiveDaoGenesisGovernor
+            proposerPaybackTokenReward
         ];
 
         const collectiveDaoParams1 = [
@@ -583,14 +579,14 @@ describe("governor management...", () => {
             proposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress1,
-            proposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress1,
-            proposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress1,
+        //     proposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress1,
+        //     proposalId,
+        //     1
+        // );
 
         const allWeights = await this.collectiveVotingContract.getAllGovernorWeight(this.collectiveDirectdaoAddress1
         );
@@ -702,14 +698,14 @@ describe("governor management...", () => {
             proposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress2,
-            proposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress2,
-            proposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress2,
+        //     proposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress2,
+        //     proposalId,
+        //     1
+        // );
 
 
         console.log(`
@@ -803,14 +799,14 @@ describe("governor management...", () => {
             proposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress3,
-            proposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress3,
-            proposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress3,
+        //     proposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress3,
+        //     proposalId,
+        //     1
+        // );
 
         console.log(`
         new governor approval...
@@ -905,14 +901,14 @@ describe("governor management...", () => {
             proposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress4,
-            proposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress4,
-            proposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress4,
+        //     proposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress4,
+        //     proposalId,
+        //     1
+        // );
 
         console.log(`
         approved...
@@ -967,14 +963,14 @@ describe("governor management...", () => {
             proposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress1,
-            proposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress1,
-            proposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress1,
+        //     proposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress1,
+        //     proposalId,
+        //     1
+        // );
 
         await this.collectiveVotingContract.connect(this.user1).submitVote(this.collectiveDirectdaoAddress1,
             proposalId,

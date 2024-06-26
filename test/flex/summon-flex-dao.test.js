@@ -9501,6 +9501,7 @@ describe("vesting nft...", () => {
             "DIV",
             this.flexVesting.address,
             this.flexVesting.address,
+            this.flexVesting.address,
             this.vestingERC721Helper.address
         );
         await vestingERC721.deployed();
@@ -10477,6 +10478,7 @@ describe("steward allocations...", () => {
             "DIV",
             this.flexVesting.address,
             this.flexVesting.address,
+            this.flexVesting.address,
             this.vestingERC721Helper.address
         );
         await vestingERC721.deployed();
@@ -10938,6 +10940,7 @@ describe("free in...", () => {
         const vestingERC721 = await VestingERC721.deploy(
             "DAOSquare Investment Vesting",
             "DIV",
+            this.flexVesting.address,
             this.flexVesting.address,
             this.flexVesting.address,
             this.vestingERC721Helper.address
@@ -11636,6 +11639,7 @@ describe("participant cap...", () => {
             "DIV",
             this.flexVesting.address,
             this.flexVesting.address,
+            this.flexVesting.address,
             this.vestingERC721Helper.address
         );
         await vestingERC721.deployed();
@@ -12243,6 +12247,7 @@ describe("return token management fee...", () => {
         const vestingERC721 = await VestingERC721.deploy(
             "DAOSquare Investment Vesting",
             "DIV",
+            this.flexVesting.address,
             this.flexVesting.address,
             this.flexVesting.address,
             this.vestingERC721Helper.address

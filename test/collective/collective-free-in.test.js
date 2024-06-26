@@ -375,8 +375,7 @@ describe("fund raise proposal...", () => {
             currency,
             redemptionFee,
             proposerInvestTokenReward,
-            proposerPaybackTokenReward,
-            collectiveDaoGenesisGovernor
+            proposerPaybackTokenReward
         ];
 
         const collectiveDaoParams = [
@@ -481,14 +480,14 @@ describe("fund raise proposal...", () => {
             fundRaiseProposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+        //     fundRaiseProposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+        //     fundRaiseProposalId,
+        //     1
+        // );
         console.log("voted, execute...");
         let proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(this.collectiveDirectdaoAddress, fundRaiseProposalId);
         let stopVoteTime = proposalDetail.stopVoteTime;
@@ -603,14 +602,14 @@ describe("fund raise proposal...", () => {
             fundRaiseProposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+        //     fundRaiseProposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+        //     fundRaiseProposalId,
+        //     1
+        // );
         await this.collectiveVotingContract.connect(this.user1).submitVote(this.collectiveDirectdaoAddress,
             fundRaiseProposalId,
             1

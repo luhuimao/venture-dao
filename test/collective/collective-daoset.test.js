@@ -373,8 +373,7 @@ describe("daoset...", () => {
             currency,
             redemptionFee,
             proposerInvestTokenReward,
-            proposerPaybackTokenReward,
-            collectiveDaoGenesisGovernor
+            proposerPaybackTokenReward
         ];
 
         const collectiveDaoParams = [
@@ -472,14 +471,14 @@ describe("daoset...", () => {
             proposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
-            proposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
-            proposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+        //     proposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+        //     proposalId,
+        //     1
+        // );
 
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(proposalDetail.stopVoteTime) > blocktimestamp) {
@@ -592,14 +591,14 @@ describe("daoset...", () => {
             proposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
-            proposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
-            proposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+        //     proposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+        //     proposalId,
+        //     1
+        // );
 
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(proposalDetail.timeInfo.stopVoteTime) > blocktimestamp) {
@@ -673,14 +672,14 @@ describe("daoset...", () => {
             proposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
-            proposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
-            proposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+        //     proposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+        //     proposalId,
+        //     1
+        // );
 
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(proposalDetail.stopVoteTime) > blocktimestamp) {
@@ -733,14 +732,14 @@ describe("daoset...", () => {
             proposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
-            proposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
-            proposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+        //     proposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+        //     proposalId,
+        //     1
+        // );
 
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(proposalDetail.stopVoteTime) > blocktimestamp) {
@@ -799,14 +798,14 @@ describe("daoset...", () => {
             proposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
-            proposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
-            proposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+        //     proposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+        //     proposalId,
+        //     1
+        // );
 
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(proposalDetail.stopVoteTime) > blocktimestamp) {
@@ -1045,14 +1044,14 @@ describe("daoset...", () => {
             proposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
-            proposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
-            proposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+        //     proposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+        //     proposalId,
+        //     1
+        // );
         console.log("voted, execute...");
         const stopVoteTime = proposalDetail.stopVoteTime;
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;

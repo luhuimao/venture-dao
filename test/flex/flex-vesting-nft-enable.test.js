@@ -206,6 +206,7 @@ describe("funding...", () => {
         const vestingERC721 = await VestingERC721.deploy(
             "DAOSquare Investment Vesting",
             "DIV",
+            this.flexVesting.address, 
             this.flexVesting.address,
             this.flexVesting.address,
             this.vestingERC721Helper.address

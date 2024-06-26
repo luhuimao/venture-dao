@@ -354,7 +354,15 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         return true;
     }
 
-    function clearFund(DaoRegistry dao) public reimbursable(dao) {
+    function clearFund(DaoRegistry dao) public {
+        require(
+            msg.sender ==
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_CLEAR_FUND_ADAPTER
+                ) ||
+                msg.sender == address(this),
+            "Access Denied"
+        );
         require(
             (fundState[address(dao)] == FundState.FAILED &&
                 block.timestamp >
@@ -404,6 +412,8 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                     );
                     escrwoAmount += bal;
                 }
+
+                _removeFundInvestor(dao, allInvestors[i]);
             }
 
             fundState[address(dao)] = FundState.NOT_STARTED;
@@ -421,7 +431,8 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
     function _removeFundInvestor(DaoRegistry dao, address account) internal {
         fundInvestors[address(dao)].remove(account);
 
-        if (dao.isMember(account)) dao.removeMember(account);
+        if (dao.isMember(account) && dao.daoCreator() != account)
+            dao.removeMember(account);
     }
 
     function distributeRedemptionFee(
@@ -585,7 +596,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         }
     }
 
-    function processFundRaise(DaoRegistry dao) public returns (bool) {
+    function processFundRaise(DaoRegistry dao) external returns (bool) {
         uint256 fundRaiseTarget = dao.getConfiguration(
             DaoHelper.FUND_RAISING_TARGET
         );
@@ -605,7 +616,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             } else {
                 fundState[address(dao)] = FundState.FAILED;
 
-                if (raisedAmount > 0) clearFund(dao);
+                if (poolBalance(dao) > 0) this.clearFund(dao);
             }
 
             emit ProcessFundRaise(

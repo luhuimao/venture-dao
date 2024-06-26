@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "./CollectivePaybackTokenAdapter.sol";
 import "./CollectiveDistributeAdapter.sol";
 import "./CollectiveAllocationAdapter.sol";
+import "./CollectiveExpenseProposalAdapter.sol";
 
 contract ColletiveFundingProposalAdapterContract is
     ICollectiveFunding,

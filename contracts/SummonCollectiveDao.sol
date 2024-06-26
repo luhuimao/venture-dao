@@ -51,7 +51,7 @@ contract SummonCollectiveDao {
         uint256 redemptionFee;
         uint256 proposerInvestTokenReward;
         uint256 proposerPaybackTokenReward;
-        address[] collectiveDaoGenesisGovernor;
+        // address[] collectiveDaoGenesisGovernor;
     }
 
     struct CollectiveDaoParams {
@@ -325,15 +325,15 @@ contract SummonCollectiveDao {
     }
 
     //registerGenesisGovernors
-    function summonCollectiveDao9(
-        address newDaoAddr,
-        address[] calldata genesisGovernors
-    ) external returns (bool) {
-        DaoRegistry newDao = DaoRegistry(newDaoAddr);
-        require(address(this) == msg.sender);
-        registerGenesisGovernors(newDao, genesisGovernors);
-        return true;
-    }
+    // function summonCollectiveDao9(
+    //     address newDaoAddr
+    //     // address[] calldata genesisGovernors
+    // ) external returns (bool) {
+    //     DaoRegistry newDao = DaoRegistry(newDaoAddr);
+    //     require(address(this) == msg.sender);
+    //     registerGenesisGovernors(newDao, genesisGovernors);
+    //     return true;
+    // }
 
     function summonCollectiveDao10(address newDaoAddr) external returns (bool) {
         DaoRegistry dao = DaoRegistry(newDaoAddr);
@@ -358,7 +358,7 @@ contract SummonCollectiveDao {
         bytes callData;
     }
 
-    function multiCall(Call[9] memory calls) public {
+    function multiCall(Call[8] memory calls) public {
         // console.log("caller:", msg.sender);
         for (uint256 i = 0; i < calls.length; i++) {
             (bool success, ) = calls[i].target.call(calls[i].callData);
@@ -384,12 +384,12 @@ contract SummonCollectiveDao {
         bytes summonCollectiveDao6Payload;
         bytes summonCollectiveDao7Payload;
         bytes summonCollectiveDao8Payload;
-        bytes summonCollectiveDao9Payload;
+        // bytes summonCollectiveDao9Payload;
         bytes summonCollectiveDao10Payload;
         bool success;
         bytes ret;
         address newDaoAddr;
-        Call[9] calls;
+        Call[8] calls;
     }
 
     modifier ParamCheck(CollectiveDaoParams calldata params) {
@@ -501,11 +501,15 @@ contract SummonCollectiveDao {
             params.governorMembership.whiteList
         );
 
-        vars.summonCollectiveDao9Payload = abi.encodeWithSignature(
-            "summonCollectiveDao9(address,address[])",
-            vars.newDaoAddr,
-            params.collectiveDaoInfo.collectiveDaoGenesisGovernor
-        );
+        // vars.summonCollectiveDao9Payload = abi.encodeWithSignature(
+        //     "summonCollectiveDao9(address,address[])",
+        //     vars.newDaoAddr,
+        //     params.collectiveDaoInfo.collectiveDaoGenesisGovernor
+        // );
+        // vars.summonCollectiveDao9Payload = abi.encodeWithSignature(
+        //     "summonCollectiveDao9(address)",
+        //     vars.newDaoAddr
+        // );
         vars.summonCollectiveDao10Payload = abi.encodeWithSignature(
             "summonCollectiveDao10(address)",
             vars.newDaoAddr
@@ -517,8 +521,8 @@ contract SummonCollectiveDao {
         vars.calls[4] = Call(address(this), vars.summonCollectiveDao6Payload);
         vars.calls[5] = Call(address(this), vars.summonCollectiveDao7Payload);
         vars.calls[6] = Call(address(this), vars.summonCollectiveDao8Payload);
-        vars.calls[7] = Call(address(this), vars.summonCollectiveDao9Payload);
-        vars.calls[8] = Call(address(this), vars.summonCollectiveDao10Payload);
+        // vars.calls[7] = Call(address(this), vars.summonCollectiveDao9Payload);
+        vars.calls[7] = Call(address(this), vars.summonCollectiveDao10Payload);
 
         multiCall(vars.calls);
 

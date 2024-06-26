@@ -375,7 +375,6 @@ describe("funding proposal...", () => {
             redemptionFee,
             proposerInvestTokenReward,
             proposerPaybackTokenReward,
-            collectiveDaoGenesisGovernor
         ];
 
         const collectiveDaoParams = [
@@ -604,14 +603,14 @@ describe("funding proposal...", () => {
             proposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
-            proposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
-            proposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+        //     proposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+        //     proposalId,
+        //     1
+        // );
         console.log("voted, execute...");
         const stopVoteTime = proposalDetail.stopVoteTime;
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
@@ -771,14 +770,14 @@ describe("funding proposal...", () => {
             proposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(dao,
-            proposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(dao,
-            proposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(dao,
+        //     proposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(dao,
+        //     proposalId,
+        //     1
+        // );
 
         console.log(`
         voted...
@@ -931,14 +930,14 @@ describe("funding proposal...", () => {
             fundraiseProposalId,
             1
         );
-        await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
-            fundraiseProposalId,
-            1
-        );
-        await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
-            fundraiseProposalId,
-            1
-        );
+        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
+        //     fundraiseProposalId,
+        //     1
+        // );
+        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
+        //     fundraiseProposalId,
+        //     1
+        // );
 
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(stopVoteTime) > blocktimestamp) {
@@ -1009,20 +1008,20 @@ describe("funding proposal...", () => {
             fundingProposalId);
     });
 
-    it("cant submit funding proposal if governor out proposal undone...", async () => {
-        const governorOutProposalId = await submitGovernorOutProposal();
-        await expectRevert(submitFundingProposal(), "revert");
+    // it("cant submit funding proposal if governor out proposal undone...", async () => {
+    //     const governorOutProposalId = await submitGovernorOutProposal();
+    //     await expectRevert(submitFundingProposal(), "revert");
 
-        let proposalDetail = await this.colletiveGovernorManagementContract.proposals(this.collectiveDirectdaoAddress, governorOutProposalId);
-        const stopVoteTime = proposalDetail.stopVoteTime;
+    //     let proposalDetail = await this.colletiveGovernorManagementContract.proposals(this.collectiveDirectdaoAddress, governorOutProposalId);
+    //     const stopVoteTime = proposalDetail.stopVoteTime;
 
-        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        if (parseInt(stopVoteTime) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1]);
-            await hre.network.provider.send("evm_mine");
-        }
-        await this.colletiveGovernorManagementContract.processProposal(this.collectiveDirectdaoAddress, governorOutProposalId);
+    //     let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+    //     if (parseInt(stopVoteTime) > blocktimestamp) {
+    //         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1]);
+    //         await hre.network.provider.send("evm_mine");
+    //     }
+    //     await this.colletiveGovernorManagementContract.processProposal(this.collectiveDirectdaoAddress, governorOutProposalId);
 
-        await submitFundingProposal();
-    });
+    //     await submitFundingProposal();
+    // });
 });

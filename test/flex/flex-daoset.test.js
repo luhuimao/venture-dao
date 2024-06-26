@@ -200,6 +200,7 @@ describe("dao set proposal...", () => {
             "DIV",
             this.flexVesting.address,
             this.flexVesting.address,
+            this.flexVesting.address,
             this.vestingERC721Helper.address
         );
         await vestingERC721.deployed();
@@ -1782,6 +1783,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const vestingERC721 = await VestingERC721.deploy(
             "DAOSquare Investment Vesting",
             "DIV",
+            this.flexVesting.address,
             this.flexVesting.address,
             this.flexVesting.address,
             this.vestingERC721Helper.address

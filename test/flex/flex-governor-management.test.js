@@ -198,6 +198,7 @@ describe("governor management...", () => {
             "DIV",
             this.flexVesting.address,
             this.flexVesting.address,
+            this.flexVesting.address,
             this.vestingERC721Helper.address
         );
         await vestingERC721.deployed();
