@@ -47,6 +47,8 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
     mapping(address => uint256) public resetFundStateBlockNum;
     mapping(address => mapping(bytes32 => uint256))
         public freeINPriorityDeposits; // dao=>new fund proposalid => amount
+    mapping(address => mapping(bytes32 => uint256))
+        public fundRaisedByProposalId;
 
     uint256 public protocolFee = (3 * 1e18) / 1000; // 0.3%
 
@@ -130,6 +132,9 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             fundRaiseContract.lastProposalIds(address(dao))
         ][msg.sender] -= amount;
 
+        fundRaisedByProposalId[address(dao)][
+            fundRaiseContract.lastProposalIds(address(dao))
+        ] -= amount;
         emit WithDraw(address(dao), amount - redemptionFee, msg.sender);
     }
 
@@ -241,6 +246,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             msg.sender
         ] += amount;
 
+        fundRaisedByProposalId[address(dao)][fundRaiseProposalId] += amount;
         emit Deposit(address(dao), amount, msg.sender);
     }
 

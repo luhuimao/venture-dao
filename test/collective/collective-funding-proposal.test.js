@@ -184,6 +184,7 @@ describe("funding proposal...", () => {
         this.colletiveTopUpProposalContract = this.adapters.colletiveTopUpProposalContract.instance;
         this.colletiveExpenseProposalContract = this.adapters.colletiveExpenseProposalContract.instance;
         this.collectiveFreeInEscrowFundAdapterContract = this.adapters.collectiveFreeInEscrowFundAdapterContract.instance;
+        this.colletiveClearFundProposalAdapterContract = this.adapters.colletiveClearFundProposalAdapterContract.instance;
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 
 
@@ -287,6 +288,11 @@ describe("funding proposal...", () => {
                 id: '0x4bb6d123745fe9358fe205a70b7a4aae2a445c56d4bc19c9a123a9259ff615a1', // colletiveExpenseProposalContract
                 addr: this.collectiveFreeInEscrowFundAdapterContract.address,
                 flags: 0
+            },
+            {
+                id: '0x851d65965a45a40b902ee7de04ff05b19ff7fde56dd486fd3108dc5cd9249f06',//colletiveClearFundProposalAdapterContract
+                addr: this.colletiveClearFundProposalAdapterContract.address,
+                flags: 8388618
             }
         ];
 
@@ -641,9 +647,17 @@ describe("funding proposal...", () => {
         console.log(`
         blocktimestamp ${blocktimestamp}
         `);
+
+        let fundRaisedAmount = await this.colletiveFundingPoolContract.fundRaisedByProposalId(this.collectiveDirectdaoAddress, proposalId);
+        console.log(`
+        fundRaisedAmount    ${hre.ethers.utils.formatEther(fundRaisedAmount)}
+        `);
         await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1000"));
         await this.colletiveFundingPoolContract.connect(this.investor1).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("500"));
-
+        fundRaisedAmount = await this.colletiveFundingPoolContract.fundRaisedByProposalId(this.collectiveDirectdaoAddress, proposalId);
+        console.log(`
+        fundRaisedAmount    ${hre.ethers.utils.formatEther(fundRaisedAmount)}
+        `);
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(endTime) > blocktimestamp) {

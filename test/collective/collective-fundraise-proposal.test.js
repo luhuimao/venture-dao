@@ -620,10 +620,11 @@ describe("fund raise proposal...", () => {
         daoCreator      ${daoCreator}
         depositBal      ${hre.ethers.utils.formatEther(depositBal)}
         `);
+        // await this.colletiveFundingPoolContract.clearFund(this.collectiveDirectdaoAddress);
+
         await this.colletiveFundingPoolContract.processFundRaise(this.collectiveDirectdaoAddress);
         const fundState = await this.colletiveFundingPoolContract.fundState(this.collectiveDirectdaoAddress);
 
-        // await this.colletiveFundingPoolContract.clearFund(this.collectiveDirectdaoAddress);
         gov = await this.daoContract.isMember(this.owner.address);
         allInvestors = await this.colletiveFundingPoolContract.getAllInvestors(this.collectiveDirectdaoAddress);
 
