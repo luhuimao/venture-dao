@@ -513,6 +513,8 @@ library DaoHelper {
         keccak256("collective-free-in-escrow-fund-adapter");
     bytes32 internal constant COLLECTIVE_CLEAR_FUND_ADAPTER =
         keccak256("collective-clear-fund-adapter");
+    bytes32 internal constant COLLECTIVE_REDEMPTION_FEE_ESCROW_ADAPTER =
+        keccak256("collective-redemption-fee-escrow-adapter");
     //---------------------------------collective---------------------------------
     bytes32 internal constant FUND_RAISE = keccak256("fund-raise");
     bytes32 internal constant VESTWING = keccak256("vesting");
