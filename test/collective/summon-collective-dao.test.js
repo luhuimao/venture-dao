@@ -474,6 +474,9 @@ describe("deposit, withdraw...", () => {
         this.collectiveVestingContract = this.adapters.collectiveVestingContract.instance;
         this.collectiveEscrowFundAdapterContract = this.adapters.collectiveEscrowFundAdapterContract.instance;
         this.collectiveFreeInEscrowFundAdapterContract = this.adapters.collectiveFreeInEscrowFundAdapterContract.instance;
+        this.colletiveClearFundProposalAdapterContract = this.adapters.colletiveClearFundProposalAdapterContract.instance;
+        this.collectiveRedemptionFeeEscrowAdapterContract = this.adapters.collectiveRedemptionFeeEscrowAdapterContract.instance;
+
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 
         const daoFactoriesAddress = [
@@ -547,6 +550,16 @@ describe("deposit, withdraw...", () => {
             }, {
                 id: '0x4bb6d123745fe9358fe205a70b7a4aae2a445c56d4bc19c9a123a9259ff615a1', // colletiveExpenseProposalContract
                 addr: this.collectiveFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x851d65965a45a40b902ee7de04ff05b19ff7fde56dd486fd3108dc5cd9249f06',//colletiveClearFundProposalAdapterContract
+                addr: this.colletiveClearFundProposalAdapterContract.address,
+                flags: 8388618
+            },
+            {
+                id: '0x1ec3ab9b73a5166bb51de3096776c3fb06df7dc0a5e2df3038eb0588fad3adbc', // collectiveRedemptionFeeEscrowAdapterContract
+                addr: this.collectiveRedemptionFeeEscrowAdapterContract.address,
                 flags: 0
             }
         ];
@@ -940,6 +953,9 @@ describe("clear fund...", () => {
         this.collectiveVestingContract = this.adapters.collectiveVestingContract.instance;
         this.collectiveEscrowFundAdapterContract = this.adapters.collectiveEscrowFundAdapterContract.instance;
         this.collectiveFreeInEscrowFundAdapterContract = this.adapters.collectiveFreeInEscrowFundAdapterContract.instance;
+        this.colletiveClearFundProposalAdapterContract = this.adapters.colletiveClearFundProposalAdapterContract.instance;
+        this.collectiveRedemptionFeeEscrowAdapterContract = this.adapters.collectiveRedemptionFeeEscrowAdapterContract.instance;
+
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 
         const daoFactoriesAddress = [
@@ -1012,6 +1028,16 @@ describe("clear fund...", () => {
             }, {
                 id: '0x4bb6d123745fe9358fe205a70b7a4aae2a445c56d4bc19c9a123a9259ff615a1', // colletiveExpenseProposalContract
                 addr: this.collectiveFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x851d65965a45a40b902ee7de04ff05b19ff7fde56dd486fd3108dc5cd9249f06',//colletiveClearFundProposalAdapterContract
+                addr: this.colletiveClearFundProposalAdapterContract.address,
+                flags: 8388618
+            },
+            {
+                id: '0x1ec3ab9b73a5166bb51de3096776c3fb06df7dc0a5e2df3038eb0588fad3adbc', // collectiveRedemptionFeeEscrowAdapterContract
+                addr: this.collectiveRedemptionFeeEscrowAdapterContract.address,
                 flags: 0
             }
         ];
@@ -1402,6 +1428,9 @@ describe("topup proposal...", () => {
         this.colletiveTopUpProposalContract = this.adapters.colletiveTopUpProposalContract.instance;
         this.colletiveExpenseProposalContract = this.adapters.colletiveExpenseProposalContract.instance;
         this.collectiveFreeInEscrowFundAdapterContract = this.adapters.collectiveFreeInEscrowFundAdapterContract.instance;
+        this.colletiveClearFundProposalAdapterContract = this.adapters.colletiveClearFundProposalAdapterContract.instance;
+        this.collectiveRedemptionFeeEscrowAdapterContract = this.adapters.collectiveRedemptionFeeEscrowAdapterContract.instance;
+
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 
         const daoFactoriesAddress = [
@@ -1483,6 +1512,16 @@ describe("topup proposal...", () => {
             }, {
                 id: '0x4bb6d123745fe9358fe205a70b7a4aae2a445c56d4bc19c9a123a9259ff615a1', // colletiveExpenseProposalContract
                 addr: this.collectiveFreeInEscrowFundAdapterContract.address,
+                flags: 0
+            },
+            {
+                id: '0x851d65965a45a40b902ee7de04ff05b19ff7fde56dd486fd3108dc5cd9249f06',//colletiveClearFundProposalAdapterContract
+                addr: this.colletiveClearFundProposalAdapterContract.address,
+                flags: 8388618
+            },
+            {
+                id: '0x1ec3ab9b73a5166bb51de3096776c3fb06df7dc0a5e2df3038eb0588fad3adbc', // collectiveRedemptionFeeEscrowAdapterContract
+                addr: this.collectiveRedemptionFeeEscrowAdapterContract.address,
                 flags: 0
             }
         ];

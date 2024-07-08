@@ -1629,6 +1629,40 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
+  {
+    id: adaptersIdsMap.COLLECTIVE_CLEAR_FUND_ADAPTER,
+    name: "ColletiveClearFundProposalAdapterContract",
+    alias: "colletiveClearFundProposalAdapterContract",
+    path: "../../contracts/adapters/ColletiveClearFundProposalAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.SET_CONFIGURATION,
+        daoAccessFlagsMap.INCREASE_CLEAR_FUND_ID],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.COLLECTIVE_REDEMPTION_FEE_ESCROW_ADAPTER,
+    name: "CollectiveRedemptionFeeEscrowAdapterContract",
+    alias: "collectiveRedemptionFeeEscrowAdapterContract",
+    path: "../../contracts/adapters/CollectiveRedemptionFeeEscrowAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.SET_CONFIGURATION,
+        daoAccessFlagsMap.INCREASE_CLEAR_FUND_ID],
+      extensions: {
+      },
+    },
+  },
   /*****************************************************collective end*******************************************************/
 
   {

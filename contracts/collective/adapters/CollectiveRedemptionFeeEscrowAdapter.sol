@@ -6,6 +6,7 @@ import "../../core/DaoRegistry.sol";
 import "../extensions/CollectiveFundingPool.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "hardhat/console.sol";
 
 contract CollectiveRedemptionFeeEscrowAdapterContract {
     using EnumerableSet for EnumerableSet.UintSet;
@@ -109,14 +110,20 @@ contract CollectiveRedemptionFeeEscrowAdapterContract {
                     tem[i]
                 );
                 uint256 redemptionFee;
-                if (paPool > 0)
-                    redemptionFee =
-                        (pa *
-                            escrowedRedemptionFeeByBlockNum[address(dao)][
-                                tem[i]
-                            ]) /
-                        paPool;
-
+                if (dao.getAllSteward().length == 1) {
+                    redemptionFee = escrowedRedemptionFeeByBlockNum[
+                        address(dao)
+                    ][tem[i]];
+                } else {
+                    if (paPool > 0) {
+                        redemptionFee =
+                            (pa *
+                                escrowedRedemptionFeeByBlockNum[address(dao)][
+                                    tem[i]
+                                ]) /
+                            paPool;
+                    }
+                }
                 total += redemptionFee;
             }
         }

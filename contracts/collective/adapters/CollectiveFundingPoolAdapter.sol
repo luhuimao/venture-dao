@@ -43,6 +43,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
     error INSUFFICIENT_FUND();
     error INSUFFICIENT_ALLOWANCE();
     error LESS_MIN_DEPOSIT_AMOUNT();
+    error GREATER_MAX_DEPOSIT_AMOUNT();
     error GREATER_MAX_FUND_RAISE_AMOUNT();
     error NOT_IN_FUND_RAISE_WINDOW();
 
@@ -163,39 +164,43 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         vars.minDepositAmount = dao.getConfiguration(
             DaoHelper.FUND_RAISING_MIN_INVESTMENT_AMOUNT_OF_LP
         );
+
+        bytes32 fundRaiseProposalId = vars.fundRaiseContract.lastProposalIds(
+            address(dao)
+        );
+
         vars.fundRaiseCap = dao.getConfiguration(DaoHelper.FUND_RAISING_MAX);
         if (vars.minDepositAmount > 0) {
-            // require(amount >= vars.minDepositAmount, "< min deposit amount");
             if (amount < vars.minDepositAmount)
                 revert LESS_MIN_DEPOSIT_AMOUNT();
         }
         if (vars.maxDepositAmount > 0) {
-            require(
-                amount +
-                    (balanceOf(dao, msg.sender) -
-                        CollectiveInvestmentPoolExtension(
-                            dao.getExtensionAddress(
-                                DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
-                            )
-                        ).getPriorAmount(
-                                msg.sender,
-                                dao.getAddressConfiguration(
-                                    DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
-                                ),
-                                resetFundStateBlockNum[address(dao)]
-                            )) <=
-                    vars.maxDepositAmount,
-                "> max deposit amount"
-            );
-        }
+            // require(
+            //     amount +
+            //         (balanceOf(dao, msg.sender) -
+            //             CollectiveInvestmentPoolExtension(
+            //                 dao.getExtensionAddress(
+            //                     DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
+            //                 )
+            //             ).getPriorAmount(
+            //                     msg.sender,
+            //                     dao.getAddressConfiguration(
+            //                         DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+            //                     ),
+            //                     resetFundStateBlockNum[address(dao)]
+            //                 )) <=
+            //         vars.maxDepositAmount,
+            //     "> max deposit amount"
+            // );
 
-        // require(
-        //     dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN) <
-        //         block.timestamp &&
-        //         dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) >
-        //         block.timestamp,
-        //     "!fundraising window"
-        // );
+            if (
+                amount +
+                    investorsDepositAmountByFundRaise[address(dao)][
+                        fundRaiseProposalId
+                    ][msg.sender] >
+                vars.maxDepositAmount
+            ) revert GREATER_MAX_DEPOSIT_AMOUNT();
+        }
 
         if (
             dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN) >
@@ -203,20 +208,21 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) <
             block.timestamp
         ) revert NOT_IN_FUND_RAISE_WINDOW();
+
         if (
             dao.getConfiguration(DaoHelper.COLLECTIVE_FUNDRAISE_STYLE) == 0 &&
             vars.fundRaiseCap > 0
         ) {
             //FCFS
-            // require(
+            // if (
             //     (poolBalance(dao) + amount) -
-            //         accumulateRaiseAmount[address(dao)] <=
-            //         vars.fundRaiseCap,
-            //     "> Fundraise max amount"
-            // );
+            //         accumulateRaiseAmount[address(dao)] >
+            //     vars.fundRaiseCap
+            // ) revert GREATER_MAX_FUND_RAISE_AMOUNT();
+
             if (
-                (poolBalance(dao) + amount) -
-                    accumulateRaiseAmount[address(dao)] >
+                fundRaisedByProposalId[address(dao)][fundRaiseProposalId] +
+                    amount >
                 vars.fundRaiseCap
             ) revert GREATER_MAX_FUND_RAISE_AMOUNT();
         }
@@ -225,23 +231,20 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
         );
         // investor cap
-
         if (
             dao.getConfiguration(DaoHelper.MAX_INVESTORS_ENABLE) == 1 &&
             fundInvestors[address(dao)].length() >=
             dao.getConfiguration(DaoHelper.MAX_INVESTORS) &&
             !fundInvestors[address(dao)].contains(msg.sender)
         ) revert MAX_PATICIPANT_AMOUNT_REACH();
+
         address token = vars.fundingpool.getFundRaisingTokenAddress();
-        // require(IERC20(token).balanceOf(msg.sender) >= amount, "!fund");
         if (IERC20(token).balanceOf(msg.sender) < amount)
             revert INSUFFICIENT_FUND();
-        // require(
-        //     IERC20(token).allowance(msg.sender, address(this)) >= amount,
-        //     "!allowance"
-        // );
+
         if (IERC20(token).allowance(msg.sender, address(this)) < amount)
             revert INSUFFICIENT_ALLOWANCE();
+
         IERC20(token).transferFrom(msg.sender, address(this), amount);
         IERC20(token).approve(
             dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT),
@@ -250,9 +253,6 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         vars.fundingpool.addToBalance(msg.sender, amount);
         _addFundInvestor(dao, msg.sender);
 
-        bytes32 fundRaiseProposalId = vars.fundRaiseContract.lastProposalIds(
-            address(dao)
-        );
         if (
             !investorsByFundRaise[address(dao)][fundRaiseProposalId].contains(
                 msg.sender

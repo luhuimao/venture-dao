@@ -185,6 +185,8 @@ describe("funding proposal...", () => {
         this.colletiveExpenseProposalContract = this.adapters.colletiveExpenseProposalContract.instance;
         this.collectiveFreeInEscrowFundAdapterContract = this.adapters.collectiveFreeInEscrowFundAdapterContract.instance;
         this.colletiveClearFundProposalAdapterContract = this.adapters.colletiveClearFundProposalAdapterContract.instance;
+        this.collectiveRedemptionFeeEscrowAdapterContract = this.adapters.collectiveRedemptionFeeEscrowAdapterContract.instance;
+
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 
 
@@ -293,6 +295,11 @@ describe("funding proposal...", () => {
                 id: '0x851d65965a45a40b902ee7de04ff05b19ff7fde56dd486fd3108dc5cd9249f06',//colletiveClearFundProposalAdapterContract
                 addr: this.colletiveClearFundProposalAdapterContract.address,
                 flags: 8388618
+            },
+            {
+                id: '0x1ec3ab9b73a5166bb51de3096776c3fb06df7dc0a5e2df3038eb0588fad3adbc', // collectiveRedemptionFeeEscrowAdapterContract
+                addr: this.collectiveRedemptionFeeEscrowAdapterContract.address,
+                flags: 0
             }
         ];
 

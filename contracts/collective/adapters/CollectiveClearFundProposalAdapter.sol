@@ -102,7 +102,7 @@ contract ColletiveClearFundProposalAdapterContract is
             abi.encodePacked(
                 bytes8(uint64(uint160(address(dao)))),
                 "ClearFund#",
-                Strings.toString(dao.getCurrentTopupProposalId())
+                Strings.toString(dao.getCurrentCleaerFundProposalId())
             )
         );
         proposals[address(dao)][proposalId] = ClearFundProposalDatail(
