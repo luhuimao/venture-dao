@@ -431,8 +431,10 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         //     "Cant clearFund at this time"
         // );
         if (
-            fundState[address(dao)] == FundState.NOT_STARTED ||
-            fundState[address(dao)] == FundState.IN_PROGRESS
+            block.timestamp <
+            dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) &&
+            (fundState[address(dao)] == FundState.NOT_STARTED ||
+                fundState[address(dao)] == FundState.IN_PROGRESS)
         ) revert NOT_CLEAR_FUND_TIME();
 
         CollectiveInvestmentPoolExtension fundingpool = CollectiveInvestmentPoolExtension(
@@ -591,9 +593,16 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
 
     function escorwExtraFreeInFund(DaoRegistry dao) internal {
         EscrowFreeInFundLocalVars memory vars;
+
+        vars.fundRaiseContract = ColletiveFundRaiseProposalAdapterContract(
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
+        );
+        vars.fundRaiseProposalId = vars.fundRaiseContract.lastProposalIds(
+            address(dao)
+        );
         if (
             dao.getConfiguration(DaoHelper.COLLECTIVE_FUNDRAISE_STYLE) == 1 &&
-            poolBalance(dao) - accumulateRaiseAmount[address(dao)] >
+            fundRaisedByProposalId[address(dao)][vars.fundRaiseProposalId] >
             dao.getConfiguration(DaoHelper.FUND_RAISING_MAX)
         ) {
             vars.fundingpool = CollectiveInvestmentPoolExtension(
@@ -601,12 +610,12 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                     DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
                 )
             );
-            vars.fundRaiseContract = ColletiveFundRaiseProposalAdapterContract(
-                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
-            );
-            vars.fundRaiseProposalId = vars.fundRaiseContract.lastProposalIds(
-                address(dao)
-            );
+            // vars.fundRaiseContract = ColletiveFundRaiseProposalAdapterContract(
+            //     dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
+            // );
+            // vars.fundRaiseProposalId = vars.fundRaiseContract.lastProposalIds(
+            //     address(dao)
+            // );
             address[] memory allInvestors = investorsByFundRaise[address(dao)][
                 vars.fundRaiseProposalId
             ].values();
@@ -626,9 +635,9 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             vars.priorityFunds = freeINPriorityDeposits[address(dao)][
                 vars.fundRaiseProposalId
             ];
-            vars.poolFunds =
-                poolBalance(dao) -
-                accumulateRaiseAmount[address(dao)];
+            vars.poolFunds = fundRaisedByProposalId[address(dao)][
+                vars.fundRaiseProposalId
+            ];
             for (uint8 i = 0; i < allInvestors.length; i++) {
                 vars.fundRaiseBal = investorsDepositAmountByFundRaise[
                     address(dao)
@@ -763,9 +772,16 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         if (block.timestamp <= fundRaiseEndTime)
             revert FUNDRAISE_ENDTIME_NOT_UP();
 
+        ColletiveFundRaiseProposalAdapterContract fundRaiseContract = ColletiveFundRaiseProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
+            );
+        bytes32 fundRaiseProposalId = fundRaiseContract.lastProposalIds(
+            address(dao)
+        );
         if (fundState[address(dao)] == FundState.IN_PROGRESS) {
-            uint256 raisedAmount = poolBalance(dao) -
-                accumulateRaiseAmount[address(dao)];
+            uint256 raisedAmount = fundRaisedByProposalId[address(dao)][
+                fundRaiseProposalId
+            ];
             if (raisedAmount >= fundRaiseTarget) {
                 escorwExtraFreeInFund(dao);
 
