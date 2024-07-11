@@ -478,6 +478,8 @@ library DaoHelper {
         keccak256("flex-daoset-governor-membership-adapter");
     bytes32 internal constant FLEX_DAO_SET_INVESTOR_CAP_ADAPTER =
         keccak256("flex-daoset-investor-cap-adapter");
+    bytes32 internal constant FLEX_GOV_VOT_ASSET_ALLOC_ADAPTER =
+        keccak256("flex-gov-vot-asset-alloc-adapter");
     //---------------------------------flex---------------------------------
 
     //---------------------------------collective---------------------------------

@@ -91,7 +91,7 @@ describe("fund raise proposal...", () => {
         let [
             owner,
             user1, user2,
-            investor1, investor2, investor3, investor4, investor5,
+            investor1, investor2, investor3, investor4, investor5, investor6,
             gp1, gp2,
             project_team1, project_team2,
             genesis_steward1, genesis_steward2,
@@ -110,6 +110,7 @@ describe("fund raise proposal...", () => {
         this.investor3 = investor3;
         this.investor4 = investor4;
         this.investor5 = investor5;
+        this.investor6 = investor6;
 
         this.gp1 = gp1;
         this.gp2 = gp2;
@@ -713,7 +714,7 @@ describe("fund raise proposal...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1000"));
+        // await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1000"));
         await this.colletiveFundingPoolContract.connect(this.investor1).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100"));
         await this.colletiveFundingPoolContract.connect(this.investor2).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100"));
 
@@ -726,7 +727,8 @@ describe("fund raise proposal...", () => {
         await this.colletiveFundingPoolContract.processFundRaise(this.collectiveDirectdaoAddress);
 
 
-        let allInvestors = await this.colletiveFundingPoolContract.getAllInvestors(this.collectiveDirectdaoAddress);
+        let allInvestors = await this.daoContract.getAllSteward()
+
         console.log(`
         allInvestors   ${allInvestors}
         `);
@@ -762,10 +764,12 @@ describe("fund raise proposal...", () => {
         await this.testtoken1.connect(this.investor3).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
         await this.testtoken1.connect(this.investor4).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
         await this.testtoken1.connect(this.investor5).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
+        await this.testtoken1.connect(this.investor6).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
 
         await this.testtoken1.transfer(this.investor3.address, hre.ethers.utils.parseEther("2000"));
         await this.testtoken1.transfer(this.investor4.address, hre.ethers.utils.parseEther("2000"));
         await this.testtoken1.transfer(this.investor5.address, hre.ethers.utils.parseEther("2000"));
+        await this.testtoken1.transfer(this.investor6.address, hre.ethers.utils.parseEther("2000"));
 
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
@@ -776,12 +780,14 @@ describe("fund raise proposal...", () => {
 
         await this.colletiveFundingPoolContract.connect(this.investor3).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100"));
         await this.colletiveFundingPoolContract.connect(this.investor4).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100"));
+        // await this.colletiveFundingPoolContract.connect(this.investor6).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100"));
+
         await expectRevert(this.colletiveFundingPoolContract.connect(this.investor5).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100")), "revert");
 
-
-        allInvestors = await this.colletiveFundingPoolContract.getAllInvestors(this.collectiveDirectdaoAddress);
+        allInvestors = await this.daoContract.getAllSteward()
+        // allInvestors = await this.colletiveFundingPoolContract.getAllInvestors(this.collectiveDirectdaoAddress);
         console.log(`
-        allInvestors   ${allInvestors.length}
+        allInvestors   ${allInvestors}
         `);
     });
 

@@ -233,9 +233,9 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         // investor cap
         if (
             dao.getConfiguration(DaoHelper.MAX_INVESTORS_ENABLE) == 1 &&
-            fundInvestors[address(dao)].length() >=
+            dao.getAllSteward().length >=
             dao.getConfiguration(DaoHelper.MAX_INVESTORS) &&
-            !fundInvestors[address(dao)].contains(msg.sender)
+            !dao.isMember(msg.sender)
         ) revert MAX_PATICIPANT_AMOUNT_REACH();
 
         address token = vars.fundingpool.getFundRaisingTokenAddress();

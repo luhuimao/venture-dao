@@ -82,6 +82,7 @@ export const adaptersIdsMap: Record<string, string> = {
   FLEX_DAO_SET_POLLING_ADAPTER: "flex-daoset-polling-adapter",
   FLEX_DAO_SET_PROPOSER_MEMBERSHIP_ADAPTER: "flex-daoset-proposer-membership-adapter",
   FLEX_DAO_SET_VOTING_ADAPTER: "flex-daoset-voting-adapter",
+  FLEX_GOV_VOT_ASSET_ALLOC_ADAPTER:"flex-gov-vot-asset-alloc-adapter",
   /*******************flex end******************/
   FUND_RAISE: "fund-raise",
   VESTING: "vesting",

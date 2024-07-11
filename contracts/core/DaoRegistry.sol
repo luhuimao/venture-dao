@@ -81,30 +81,31 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     }
 
     enum AclFlag {
-        REPLACE_ADAPTER,
-        SUBMIT_PROPOSAL,
-        UPDATE_DELEGATE_KEY,
-        SET_CONFIGURATION,
-        ADD_EXTENSION,
-        REMOVE_EXTENSION,
-        NEW_MEMBER,
-        REMOVE_MEMBER,
-        SET_VOTE_TYPE,
-        INCREASE_FUNDING_ID,
-        INCREASE_NEW_FUND_ID,
-        INCREASE_GOVENOR_IN_ID,
-        INCREASE_GOVENOR_OUT_ID,
-        INCREASE_INVESTOR_CAP_ID,
-        INCREASE_GOVERNOR_MEMBERSHIP_ID,
-        INCREASE_INVESTOR_MEMBERSHIP_ID,
-        INCREASE_VOTING_ID,
-        INCREASE_FEE_ID,
-        INCREASE_POLL_FOR_INVESTMENT_ID,
-        INCREASE_PROPOSER_MEMBERSHIP_ID,
-        INCREASE_PROPOSER_REWARD_ID,
-        INCREASE_EXPENSE_ID,
-        INCREASE_TOPUP_ID,
-        INCREASE_CLEAR_FUND_ID
+        REPLACE_ADAPTER, //1
+        SUBMIT_PROPOSAL, //2
+        UPDATE_DELEGATE_KEY, //3
+        SET_CONFIGURATION, //4
+        ADD_EXTENSION, //5
+        REMOVE_EXTENSION, //6
+        NEW_MEMBER, //7
+        REMOVE_MEMBER, //8
+        SET_VOTE_TYPE, //9
+        INCREASE_FUNDING_ID, //10
+        INCREASE_NEW_FUND_ID, //11
+        INCREASE_GOVENOR_IN_ID, //12
+        INCREASE_GOVENOR_OUT_ID, //13
+        INCREASE_INVESTOR_CAP_ID, //14
+        INCREASE_GOVERNOR_MEMBERSHIP_ID, //15
+        INCREASE_INVESTOR_MEMBERSHIP_ID, //16
+        INCREASE_VOTING_ID, //17
+        INCREASE_FEE_ID, //18
+        INCREASE_POLL_FOR_INVESTMENT_ID, //19
+        INCREASE_PROPOSER_MEMBERSHIP_ID, //20
+        INCREASE_PROPOSER_REWARD_ID, //21
+        INCREASE_EXPENSE_ID, //22
+        INCREASE_TOPUP_ID, //23
+        INCREASE_CLEAR_FUND_ID, //24
+        INCREASE_Gov_Vot_ASSET_ALLOC_ID //25
     }
     enum VoteType {
         SIMPLE_MAJORITY,
@@ -199,6 +200,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     Counters.Counter private _expenseProposalIds;
     Counters.Counter private _topupProposalIds;
     Counters.Counter private _clearFundProposalIds;
+    Counters.Counter private _governorVotingAssetAllocationProposalIds;
 
     /// @notice The map that keeps track of all proposasls submitted to the DAO
     mapping(bytes32 => Proposal) public proposals;
@@ -631,6 +633,13 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         hasAccess(this, AclFlag.INCREASE_CLEAR_FUND_ID)
     {
         _clearFundProposalIds.increment();
+    }
+
+    function increaseGovernorVotingAssetAllocationId()
+        external
+        hasAccess(this, AclFlag.INCREASE_Gov_Vot_ASSET_ALLOC_ID)
+    {
+        _governorVotingAssetAllocationProposalIds.increment();
     }
 
     /**
@@ -1067,6 +1076,14 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
 
     function getCurrentCleaerFundProposalId() external view returns (uint256) {
         return _clearFundProposalIds.current();
+    }
+
+    function getCurrentGovernorVotingAssetAllocationId()
+        external
+        view
+        returns (uint256)
+    {
+        return _governorVotingAssetAllocationProposalIds.current();
     }
 
     /**
