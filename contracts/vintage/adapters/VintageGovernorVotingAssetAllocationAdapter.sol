@@ -3,20 +3,19 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./interfaces/IFlexFunding.sol";
+import "./interfaces/IVintageFunding.sol";
 import "../../helpers/DaoHelper.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
-import "../../guards/FlexStewardGuard.sol";
+import "../../guards/RaiserGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "../../helpers/DaoHelper.sol";
 import "../../helpers/GovernanceHelper.sol";
 import "hardhat/console.sol";
 
-contract FlexGovernorVotingAssetAllocationProposalAdapterContract is
+contract VintageGovernorVotingAssetAllocationProposalAdapterContract is
     Reimbursable,
-    MemberGuard,
-    FlexStewardGuard
+    GovernorGuard
 {
     enum ProposalState {
         Voting,
@@ -83,17 +82,17 @@ contract FlexGovernorVotingAssetAllocationProposalAdapterContract is
         DaoRegistry dao,
         address[] calldata govs,
         uint256[] calldata allocs
-    ) external reimbursable(dao) onlyMember(dao) {
+    ) external reimbursable(dao) onlyGovernor(dao) {
         if (govs.length != allocs.length) revert INVALID_PARAMS();
         varifyGovernor(dao, govs);
-        dao.increaseGovernorVotingAssetAllocationId();
+        dao.increaseVinGovernorVotingAssetAllocationId();
 
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
                 bytes8(uint64(uint160(address(dao)))),
-                "Governor Allocation #",
+                "Vintage Governor Allocation #",
                 Strings.toString(
-                    dao.getCurrentGovernorVotingAssetAllocationId()
+                    dao.getCurrentVinGovernorVotingAssetAllocationId()
                 )
             )
         );
@@ -116,18 +115,19 @@ contract FlexGovernorVotingAssetAllocationProposalAdapterContract is
 
         ongoingProposal[dao] = proposalId;
 
-        IFlexVoting flexVotingContract = IFlexVoting(
-            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
+        IVintageVoting flexVotingContract = IVintageVoting(
+            dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
         dao.submitProposal(proposalId);
 
         dao.sponsorProposal(
             proposalId,
-            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
+            dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
         flexVotingContract.startNewVotingForProposal(
             dao,
             proposalId,
+            block.timestamp,
             bytes("")
         );
 
@@ -145,14 +145,14 @@ contract FlexGovernorVotingAssetAllocationProposalAdapterContract is
 
         if (dao.getProposalFlag(proposalId, DaoRegistry.ProposalFlag.PROCESSED))
             revert PROPOSAL_ALREADY_PROCESSED();
-        IFlexVoting flexVotingContract = IFlexVoting(
-            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
+        IVintageVoting flexVotingContract = IVintageVoting(
+            dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
 
         if (address(flexVotingContract) == address(0))
             revert ADAPTER_NOT_FUND();
 
-        IFlexVoting.VotingState voteResult;
+        IVintageVoting.VotingState voteResult;
         uint256 nbYes;
         uint256 nbNo;
         (voteResult, nbYes, nbNo) = flexVotingContract.voteResult(
@@ -160,19 +160,19 @@ contract FlexGovernorVotingAssetAllocationProposalAdapterContract is
             proposalId
         );
         uint128 allWeight = GovernanceHelper
-            .getAllFlexGovernorVotingWeightByProposalId(dao, proposalId);
+            .getVintageAllGovernorVotingWeightByProposalId(dao, proposalId);
 
         dao.processProposal(proposalId);
 
-        if (voteResult == IFlexVoting.VotingState.PASS) {
+        if (voteResult == IVintageVoting.VotingState.PASS) {
             proposal.state = ProposalState.Executing;
 
             updateVotingAssetAllocation(dao, proposalId);
 
             proposal.state = ProposalState.Done;
         } else if (
-            voteResult == IFlexVoting.VotingState.NOT_PASS ||
-            voteResult == IFlexVoting.VotingState.TIE
+            voteResult == IVintageVoting.VotingState.NOT_PASS ||
+            voteResult == IVintageVoting.VotingState.TIE
         ) {
             proposal.state = ProposalState.Failed;
         } else {
@@ -197,9 +197,9 @@ contract FlexGovernorVotingAssetAllocationProposalAdapterContract is
         ProposalDetail storage proposal = proposals[dao][proposalId];
 
         if (proposal.govs.governors.length > 0) {
-            FlexStewardAllocationAdapter governorAlloc = FlexStewardAllocationAdapter(
+            VintageRaiserAllocationAdapter governorAlloc = VintageRaiserAllocationAdapter(
                     dao.getAdapterAddress(
-                        DaoHelper.FLEX_STEWARD_ALLOCATION_ADAPT
+                        DaoHelper.VINTAGE_GOVERNOR_ALLOCATION_ADAPTER
                     )
                 );
             for (uint8 i = 0; i < proposal.govs.governors.length; i++) {

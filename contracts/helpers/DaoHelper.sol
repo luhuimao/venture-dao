@@ -433,7 +433,8 @@ library DaoHelper {
         keccak256("vintage-daoset-adapter");
     bytes32 internal constant VINTAGE_DAO_SET_HELPER_ADAPTER =
         keccak256("vintage-daoset-helper-adapter");
-
+    bytes32 internal constant VINTAGE_GOV_VOT_ASSET_ALLOC_ADAPTER =
+        keccak256("vin-gov-vot-asset-alloc-adapter");
     /* 
     vintage Adapters **************************************************************************************************
      */

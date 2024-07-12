@@ -201,6 +201,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     Counters.Counter private _topupProposalIds;
     Counters.Counter private _clearFundProposalIds;
     Counters.Counter private _governorVotingAssetAllocationProposalIds;
+    Counters.Counter private _vinGovernorVotingAssetAllocationProposalIds;
 
     /// @notice The map that keeps track of all proposasls submitted to the DAO
     mapping(bytes32 => Proposal) public proposals;
@@ -640,6 +641,13 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         hasAccess(this, AclFlag.INCREASE_Gov_Vot_ASSET_ALLOC_ID)
     {
         _governorVotingAssetAllocationProposalIds.increment();
+    }
+
+    function increaseVinGovernorVotingAssetAllocationId()
+        external
+        hasAccess(this, AclFlag.INCREASE_Gov_Vot_ASSET_ALLOC_ID)
+    {
+        _vinGovernorVotingAssetAllocationProposalIds.increment();
     }
 
     /**
@@ -1084,6 +1092,14 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         returns (uint256)
     {
         return _governorVotingAssetAllocationProposalIds.current();
+    }
+
+       function getCurrentVinGovernorVotingAssetAllocationId()
+        external
+        view
+        returns (uint256)
+    {
+        return _vinGovernorVotingAssetAllocationProposalIds.current();
     }
 
     /**
