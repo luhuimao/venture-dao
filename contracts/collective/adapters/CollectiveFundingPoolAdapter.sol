@@ -110,9 +110,19 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         require(amount > 0, "!amount");
         // require(amount <= balance, ">balance");
         if (amount > balance) revert INSUFFICIENT_FUND();
-        uint256 redemptionFee = (amount *
-            dao.getConfiguration(DaoHelper.COLLECTIVE_REDEMPT_FEE_AMOUNT)) /
-            1e18;
+        uint256 redemptionFee;
+
+        if (
+            block.timestamp >
+            dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END)
+        ) {
+            redemptionFee =
+                (amount *
+                    dao.getConfiguration(
+                        DaoHelper.COLLECTIVE_REDEMPT_FEE_AMOUNT
+                    )) /
+                1e18;
+        }
 
         fundingpool.withdraw(msg.sender, tokenAddr, amount - redemptionFee);
         fundingpool.subtractFromBalance(msg.sender, tokenAddr, amount);
@@ -125,26 +135,38 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         ColletiveFundRaiseProposalAdapterContract fundRaiseContract = ColletiveFundRaiseProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
             );
+
+        bytes32 lastFundRaiseProposalId = fundRaiseContract.lastProposalIds(
+            address(dao)
+        );
         if (
             fundRaiseContract.isPriorityDepositer(
                 dao,
-                fundRaiseContract.lastProposalIds(address(dao)),
+                lastFundRaiseProposalId,
                 msg.sender
             ) &&
             block.timestamp <
             dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END)
         )
             freeINPriorityDeposits[address(dao)][
-                fundRaiseContract.lastProposalIds(address(dao))
+                lastFundRaiseProposalId
             ] -= amount;
 
-        investorsDepositAmountByFundRaise[address(dao)][
-            fundRaiseContract.lastProposalIds(address(dao))
-        ][msg.sender] -= amount;
+        if (
+            balanceOf(dao, msg.sender) <=
+            investorsDepositAmountByFundRaise[address(dao)][
+                lastFundRaiseProposalId
+            ][msg.sender]
+        ) {
+            investorsDepositAmountByFundRaise[address(dao)][
+                lastFundRaiseProposalId
+            ][msg.sender] -= amount;
 
-        fundRaisedByProposalId[address(dao)][
-            fundRaiseContract.lastProposalIds(address(dao))
-        ] -= amount;
+            fundRaisedByProposalId[address(dao)][
+                lastFundRaiseProposalId
+            ] -= amount;
+        }
+
         emit WithDraw(address(dao), amount - redemptionFee, msg.sender);
     }
 
@@ -283,32 +305,24 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         address account,
         uint256 amount
     ) external returns (bool) {
-        // require(
-        //     msg.sender ==
-        //         dao.getAdapterAddress(
-        //             DaoHelper.COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPTER
-        //         ),
-        //     "Access Deny"
-        // );
-
         if (
             msg.sender !=
             dao.getAdapterAddress(
                 DaoHelper.COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPTER
             )
         ) revert ACCESS_DENIED();
-        // require(
-        //     IERC20(token).balanceOf(account) >= amount,
-        //     "insufficient fund"
-        // );
-        // require(
-        //     IERC20(token).allowance(account, address(this)) >= amount,
-        //     "insufficient allowance"
-        // );
+
         if (
             IERC20(token).balanceOf(account) < amount ||
             IERC20(token).allowance(account, address(this)) < amount
         ) return false;
+
+        if (
+            dao.getConfiguration(DaoHelper.MAX_INVESTORS_ENABLE) == 1 &&
+            dao.getAllSteward().length >=
+            dao.getConfiguration(DaoHelper.MAX_INVESTORS)
+        ) return false;
+        
         IERC20(token).transferFrom(account, address(this), amount);
         IERC20(token).approve(
             dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT),
@@ -363,6 +377,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                 )
             );
         fundingPoolExt.addToBalance(account, token, amount);
+        _addFundInvestor(dao, account);
     }
 
     function returnFundToQuitGovernor(

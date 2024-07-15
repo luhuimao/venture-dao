@@ -991,6 +991,24 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
+  {
+    id: adaptersIdsMap.VINTAGE_GOV_VOT_ASSET_ALLOC_ADAPTER,
+    name: "VintageGovernorVotingAssetAllocationProposalAdapterContract",
+    alias: "vintageGovernorVotingAssetAllocationProposalAdapterContract",
+    path: "../../contracts/adapters/VintageGovernorVotingAssetAllocationProposalAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.SET_CONFIGURATION,
+        daoAccessFlagsMap.INCREASE_Gov_Vot_ASSET_ALLOC_ID
+      ],
+      extensions: {
+      },
+    }
+  },
   /***********************************vintage end********************************/
   // flex
   {

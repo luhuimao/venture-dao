@@ -325,7 +325,7 @@ describe("funding proposal...", () => {
 
         const collectiveDaoIvestorCapInfo = [
             true, //bool enable;
-            2 //uint256 maxParticipantsAmount;
+            3 //uint256 maxParticipantsAmount;
         ];
 
         const enable = true;

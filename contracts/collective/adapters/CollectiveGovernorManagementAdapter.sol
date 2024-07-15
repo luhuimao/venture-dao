@@ -71,9 +71,13 @@ contract ColletiveGovernorManagementAdapterContract is
         uint256 voteResult
     );
     event GovernorQuit(address daoAddr, address governor);
+
     error UNDONE_INVESTMET_PROPOSAL();
     error NOT_GRACE_PERIOD();
     error SUMMONOR_CANT_QUIT();
+    error MEMBER_ALREDAY();
+    error DAO_SET_PROPOSAL_UNDONE();
+    error MAX_MEMBER_AMOUNT_REACH();
     // proposals per dao
     mapping(DaoRegistry => mapping(bytes32 => ProposalDetails))
         public proposals;
@@ -160,13 +164,21 @@ contract ColletiveGovernorManagementAdapterContract is
         returns (bytes32)
     {
         SubmitGovernorInLocalParams memory vars;
-        require(!dao.isMember(applicant), "Is Governor already");
-
-        require(daosetProposalCheck(dao), "UnDone Daoset Proposal");
+        // require(!dao.isMember(applicant), "Is Governor already");
+        if (dao.isMember(applicant)) revert MEMBER_ALREDAY();
+        // require(daosetProposalCheck(dao), "UnDone Daoset Proposal");
+        if (!daosetProposalCheck(dao)) revert DAO_SET_PROPOSAL_UNDONE();
         ColletiveFundingProposalAdapterContract fundingCont = ColletiveFundingProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
             );
         if (!fundingCont.allDone(dao)) revert UNDONE_INVESTMET_PROPOSAL();
+
+        if (
+            dao.getConfiguration(DaoHelper.MAX_INVESTORS_ENABLE) == 1 &&
+            dao.getAllSteward().length >=
+            dao.getConfiguration(DaoHelper.MAX_INVESTORS)
+        ) revert MAX_MEMBER_AMOUNT_REACH();
+
         dao.increaseGovenorInId();
         vars.proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -443,13 +455,6 @@ contract ColletiveGovernorManagementAdapterContract is
                 } else {
                     proposal.state = ProposalState.Failed;
                 }
-
-                // fundingPoolAdapt.transferFromNewGovernor(
-                //     dao,
-                //     proposal.tokenAddress,
-                //     proposal.account,
-                //     proposal.depositAmount
-                // );
             }
 
             if (proposal.pType == ProposalType.GOVERNOR_OUT) {

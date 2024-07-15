@@ -189,7 +189,7 @@ describe("governor management...", () => {
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 
         const ERC721 = await hre.ethers.getContractFactory("PixelNFT");
-        const erc721 = await ERC721.deploy(2);
+        const erc721 = await ERC721.deploy(4);
         await erc721.deployed();
         this.testERC721 = erc721;
 
@@ -319,7 +319,7 @@ describe("governor management...", () => {
 
         const collectiveDaoIvestorCapInfo = [
             true, //bool enable;
-            5 //uint256 maxParticipantsAmount;
+            3 //uint256 maxParticipantsAmount;
         ];
 
         const enable = true;
@@ -507,6 +507,9 @@ describe("governor management...", () => {
 
         this.collectiveDirectdaoAddress4 = daoinfo4.daoAddr;
         this.daoContract4 = daoContract4;
+
+        const mems = await this.daoContract2.getAllSteward();
+        console.log(mems);
         // let allGovernros = await this.colletiveGovernorManagementContract.getAllGovernor(this.collectiveDirectdaoAddress);
         // console.log("owner addr", this.owner.address);
         // console.log("genesis1 addr", this.genesis_steward1.address);
@@ -937,7 +940,7 @@ describe("governor management...", () => {
         const votingRel = await this.collectiveVotingContract.voteResult(this.collectiveDirectdaoAddress4, proposalId);
         await this.colletiveGovernorManagementContract.processProposal(this.collectiveDirectdaoAddress4, proposalId);
         allGovernros = await this.colletiveGovernorManagementContract.getAllGovernor(this.collectiveDirectdaoAddress4);
-        const newGovernorDepositedAmount = await this.colletiveFundingPoolContract.balanceOfToken(
+        let newGovernorDepositedAmount = await this.colletiveFundingPoolContract.balanceOfToken(
             this.collectiveDirectdaoAddress4,
             this.testtoken1.address,
             applicant
@@ -950,6 +953,17 @@ describe("governor management...", () => {
         proposal state ${proposalDetail.state}
         allGovernros ${allGovernros}
         `);
+
+        await this.colletiveFundingPoolContract.connect(this.governor2).withdraw(this.collectiveDirectdaoAddress4, hre.ethers.utils.parseEther("100"));
+        newGovernorDepositedAmount = await this.colletiveFundingPoolContract.balanceOfToken(this.collectiveDirectdaoAddress4,
+            this.testtoken1.address,
+            applicant
+        );
+
+        console.log(`
+            newGovernorDepositedAmount ${hre.ethers.utils.formatEther(newGovernorDepositedAmount)}
+            `)
+
     });
 
     it("governor out...", async () => {
@@ -1041,6 +1055,139 @@ describe("governor management...", () => {
         console.log(`
         deposite bal ${hre.ethers.utils.formatEther(bal)}
         tt1 bal ${hre.ethers.utils.formatEther(TT1Bal)}
+        `);
+    });
+
+    it("member limit check....", async () => {
+        let members = await this.daoContract2.getAllSteward();
+        console.log(`
+        memberAmount   ${members.length}
+        `);
+
+        const applicant = this.project_team1.address;
+        const applicant2 = this.project_team2.address;
+
+        const depositAmount = hre.ethers.utils.parseEther("200");
+        let newGovernorErc721Bal = await this.testERC721.balanceOf(applicant);
+        let newGovernorErc721Bal2 = await this.testERC721.balanceOf(applicant2);
+
+        console.log(`
+        newGovernorBal ${newGovernorErc721Bal}
+        newGovernorBal2 ${newGovernorErc721Bal2}
+
+        `);
+
+        await this.testERC721.mintPixel(applicant, 1, 0);
+        await this.testERC721.mintPixel(applicant, 1, 1);
+
+        await this.testERC721.mintPixel(applicant2, 2, 0);
+        await this.testERC721.mintPixel(applicant2, 2, 1);
+
+        newGovernorErc721Bal = await this.testERC721.balanceOf(applicant);
+        newGovernorErc721Bal2 = await this.testERC721.balanceOf(applicant2);
+
+        console.log(`
+        newGovernorBal ${newGovernorErc721Bal}
+        newGovernorBal2 ${newGovernorErc721Bal2}
+
+        `);
+        const tx1 = await this.colletiveGovernorManagementContract.submitGovernorInProposal(
+            this.collectiveDirectdaoAddress2,
+            applicant,
+            depositAmount
+        );
+
+        const tx2 = await this.colletiveGovernorManagementContract.submitGovernorInProposal(
+            this.collectiveDirectdaoAddress2,
+            applicant2,
+            depositAmount
+        );
+
+        const rel1 = await tx1.wait();
+        const proposalId1 = rel1.events[rel1.events.length - 1].args.proposalId;
+
+        const rel2 = await tx2.wait();
+        const proposalId2 = rel2.events[rel2.events.length - 1].args.proposalId;
+
+        await this.testtoken1.transfer(applicant, depositAmount);
+        await this.testtoken1.connect(this.project_team1).approve(this.colletiveFundingPoolContract.address, depositAmount);
+
+        await this.testtoken1.transfer(applicant2, depositAmount);
+        await this.testtoken1.connect(this.project_team2).approve(this.colletiveFundingPoolContract.address, depositAmount);
+
+        await this.colletiveGovernorManagementContract.connect(this.project_team1).setGovernorInApprove(
+            this.collectiveDirectdaoAddress2,
+            proposalId1,
+            this.testtoken1.address,
+            depositAmount
+        );
+
+        await this.colletiveGovernorManagementContract.connect(this.project_team2).setGovernorInApprove(
+            this.collectiveDirectdaoAddress2,
+            proposalId2,
+            this.testtoken1.address,
+            depositAmount
+        );
+
+        await this.colletiveGovernorManagementContract.startVoting(
+            this.collectiveDirectdaoAddress2,
+            proposalId1
+        );
+
+        await this.colletiveGovernorManagementContract.startVoting(
+            this.collectiveDirectdaoAddress2,
+            proposalId2
+        );
+
+        await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress2,
+            proposalId1,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.user2).submitVote(this.collectiveDirectdaoAddress2,
+            proposalId1,
+            1
+        );
+
+        await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress2,
+            proposalId2,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.user2).submitVote(this.collectiveDirectdaoAddress2,
+            proposalId2,
+            1
+        );
+
+        let proposalDetail = await this.colletiveGovernorManagementContract.proposals(this.collectiveDirectdaoAddress2, proposalId1);
+        let stopVoteTime = proposalDetail.stopVoteTime;
+
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+        await this.colletiveGovernorManagementContract.processProposal(this.collectiveDirectdaoAddress2, proposalId1);
+        proposalDetail = await this.colletiveGovernorManagementContract.proposals(this.collectiveDirectdaoAddress2, proposalId1);
+        console.log(`
+        state ${proposalDetail.state}
+        `);
+
+        proposalDetail = await this.colletiveGovernorManagementContract.proposals(this.collectiveDirectdaoAddress2, proposalId2);
+        stopVoteTime = proposalDetail.stopVoteTime;
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+        await this.colletiveGovernorManagementContract.processProposal(this.collectiveDirectdaoAddress2, proposalId2);
+        proposalDetail = await this.colletiveGovernorManagementContract.proposals(this.collectiveDirectdaoAddress2, proposalId2);
+        console.log(`
+        state ${proposalDetail.state}
+        `);
+
+        members = await this.daoContract2.getAllSteward();
+        console.log(`
+        memberAmount   ${members.length}
         `);
     });
 });

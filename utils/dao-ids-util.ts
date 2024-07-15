@@ -54,6 +54,7 @@ export const adaptersIdsMap: Record<string, string> = {
   VINTAGE_FREE_IN_ESCORW_FUND_ADAPTER: "vintage-free-in-escrow-fund-adapter",
   VINTAGE_DAOSET_ADAPTER: "vintage-daoset-adapter",
   VINTAGE_DAOSET_HELPER_ADAPTER: "vintage-daoset-helper-adapter",
+  VINTAGE_GOV_VOT_ASSET_ALLOC_ADAPTER:"vin-gov-vot-asset-alloc-adapter",
   /*******************vintage end******************/
 
 

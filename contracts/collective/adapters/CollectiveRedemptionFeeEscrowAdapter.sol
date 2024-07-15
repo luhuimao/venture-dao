@@ -62,8 +62,8 @@ contract CollectiveRedemptionFeeEscrowAdapterContract {
         DaoRegistry dao,
         address tokenAddr
     ) external {
-        if (withdrawAmount[address(dao)][tokenAddr][msg.sender] > 0)
-            revert WITHDRAW_ALREADY();
+        // if (withdrawAmount[address(dao)][tokenAddr][msg.sender] > 0)
+        //     revert WITHDRAW_ALREADY();
         uint256 redemptionFeeAmount = getRedemptionFeeAmount(
             dao,
             tokenAddr,
@@ -76,7 +76,7 @@ contract CollectiveRedemptionFeeEscrowAdapterContract {
         escrowedRedemptionFees[address(dao)][tokenAddr] -= redemptionFeeAmount;
         withdrawAmount[address(dao)][tokenAddr][
             msg.sender
-        ] = redemptionFeeAmount;
+        ] += redemptionFeeAmount;
 
         emit Withdraw(address(dao), tokenAddr, redemptionFeeAmount);
     }
@@ -99,6 +99,7 @@ contract CollectiveRedemptionFeeEscrowAdapterContract {
 
         if (tem.length > 0) {
             for (uint8 i = 0; i < tem.length; i++) {
+                if (tem[i] >= block.number) break;
                 uint256 pa = fundingpool.getPriorAmount(
                     account,
                     tokenAddr,
