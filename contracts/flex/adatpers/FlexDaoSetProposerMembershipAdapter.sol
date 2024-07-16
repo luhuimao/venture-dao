@@ -88,7 +88,7 @@ contract FlexDaoSetProposerMembershipAdapterContract is
         emit ProposalCreated(
             address(params.dao),
             proposalId,
-            FlexDaosetLibrary.ProposalType.POLL_FOR_INVESTMENT
+            FlexDaosetLibrary.ProposalType.PROPOSER_MEMBERHSIP
         );
 
         return proposalId;

@@ -204,6 +204,7 @@ describe("Summon A Flex Dao", () => {
             "DIV",
             this.flexVesting.address,
             this.flexVesting.address,
+            this.flexVesting.address,
             this.vestingERC721Helper.address
         );
         await vestingERC721.deployed();

@@ -107,7 +107,7 @@ contract FlexDaoSetVotingAdapterContract is
         emit ProposalCreated(
             address(params.dao),
             proposalId,
-            FlexDaosetLibrary.ProposalType.POLL_FOR_INVESTMENT
+            FlexDaosetLibrary.ProposalType.VOTING
         );
 
         return proposalId;

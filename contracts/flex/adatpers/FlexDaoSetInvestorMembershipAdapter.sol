@@ -77,7 +77,7 @@ contract FlexDaoSetInvestorMembershipAdapterContract is
         emit ProposalCreated(
             address(params.dao),
             proposalId,
-            FlexDaosetLibrary.ProposalType.INVESTOR_CAP
+            FlexDaosetLibrary.ProposalType.INVESTOR_MEMBERSHIP
         );
         return proposalId;
     }

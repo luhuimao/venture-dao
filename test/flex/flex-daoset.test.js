@@ -216,7 +216,7 @@ describe("dao set proposal...", () => {
         const creator = this.owner.address;
 
         const enalbeAdapters = [
-            
+
             {
                 id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
                 addr: this.flexVesting.address,
@@ -1110,6 +1110,7 @@ describe("dao set proposal...", () => {
             );
 
         const result = await tx.wait();
+        console.log(result);
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
         let proposal = await this.flexDaoSetVotingAdapterContract.
@@ -1801,7 +1802,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
         const creator = this.owner.address;
 
         const enalbeAdapters = [
-            
+
             {
                 id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
                 addr: this.flexVesting.address,
