@@ -399,6 +399,9 @@ describe("expense...", () => {
 
         this.collectiveDirectdaoAddress = daoAddr;
         this.daoContract = daoContract;
+
+        this.collectiveFundingPoolExtContract = (await hre.ethers.getContractFactory("CollectiveInvestmentPoolExtension")).attach((await this.daoContract.getExtensionAddress("0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab")))
+
     });
 
     const sommonCollectiveDao = async (summonDaoContract, daoFactoryContract, collectiveDaoParams) => {
@@ -536,16 +539,22 @@ describe("expense...", () => {
             proposalId1
         );
         let receiverUSDBal = await this.testtoken1.balanceOf(receiver);
-        let depositBal1 = await this.colletiveFundingPoolContract.balanceOfToken(
-            this.collectiveDirectdaoAddress,
-            this.testtoken1.address,
-            this.owner.address
-        );
-        let depositBal2 = await this.colletiveFundingPoolContract.balanceOfToken(
-            this.collectiveDirectdaoAddress,
-            this.testtoken1.address,
-            this.investor1.address
-        );
+        // let depositBal1 = await this.colletiveFundingPoolContract.balanceOfToken(
+        //     this.collectiveDirectdaoAddress,
+        //     this.testtoken1.address,
+        //     this.owner.address
+        // );
+        // let depositBal2 = await this.colletiveFundingPoolContract.balanceOfToken(
+        //     this.collectiveDirectdaoAddress,
+        //     this.testtoken1.address,
+        //     this.investor1.address
+        // );
+
+        let depositBal1 = await this.collectiveFundingPoolExtContract.balanceOfToken(this.testtoken1.address,
+            this.owner.address);
+
+        let depositBal2 = await this.collectiveFundingPoolExtContract.balanceOfToken(this.testtoken1.address,
+            this.investor1.address);
         let poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
 
         console.log(`
@@ -586,16 +595,21 @@ describe("expense...", () => {
             this.collectiveDirectdaoAddress,
             proposalId1);
         receiverUSDBal = await this.testtoken1.balanceOf(receiver);
-        depositBal1 = await this.colletiveFundingPoolContract.balanceOfToken(
-            this.collectiveDirectdaoAddress,
-            this.testtoken1.address,
-            this.owner.address
-        );
-        depositBal2 = await this.colletiveFundingPoolContract.balanceOfToken(
-            this.collectiveDirectdaoAddress,
-            this.testtoken1.address,
-            this.investor1.address
-        );
+        // depositBal1 = await this.colletiveFundingPoolContract.balanceOfToken(
+        //     this.collectiveDirectdaoAddress,
+        //     this.testtoken1.address,
+        //     this.owner.address
+        // );
+        depositBal1 = await this.collectiveFundingPoolExtContract.balanceOfToken(this.testtoken1.address,
+            this.owner.address);
+
+        // depositBal2 = await this.colletiveFundingPoolContract.balanceOfToken(
+        //     this.collectiveDirectdaoAddress,
+        //     this.testtoken1.address,
+        //     this.investor1.address
+        // );
+        depositBal2 = await this.collectiveFundingPoolExtContract.balanceOfToken(this.testtoken1.address,
+            this.investor1.address);
         poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
         console.log(`
         executed...

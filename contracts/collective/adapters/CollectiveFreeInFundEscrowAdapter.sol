@@ -33,6 +33,7 @@ contract CollectiveFreeInEscrowFundAdapterContract is Reimbursable {
         address account,
         uint256 amount
     );
+    error ACCESS_DENIED();
 
     function withdraw(
         DaoRegistry dao,
@@ -64,15 +65,23 @@ contract CollectiveFreeInEscrowFundAdapterContract is Reimbursable {
         address account,
         uint256 amount
     ) external {
-        require(
-            msg.sender ==
-                dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER),
-            "!access"
-        );
-        escrowFunds[address(dao)][fundRaiseProposalId][account].amount += uint128(amount);
+        if (
+            msg.sender !=
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER)
+        ) revert ACCESS_DENIED();
+
+        escrowFunds[address(dao)][fundRaiseProposalId][account]
+            .amount += uint128(amount);
+            
         escrowFunds[address(dao)][fundRaiseProposalId][account].token = token;
 
-        emit EscrowFund(address(dao), fundRaiseProposalId, token, account, amount);
+        emit EscrowFund(
+            address(dao),
+            fundRaiseProposalId,
+            token,
+            account,
+            amount
+        );
     }
 
     function getEscrowAmount(
@@ -80,7 +89,9 @@ contract CollectiveFreeInEscrowFundAdapterContract is Reimbursable {
         bytes32 fundRaiseProposalId,
         address account
     ) public view returns (address, uint256) {
-        Checkpoint storage ck = escrowFunds[address(dao)][fundRaiseProposalId][account];
+        Checkpoint storage ck = escrowFunds[address(dao)][fundRaiseProposalId][
+            account
+        ];
         return (ck.token, ck.amount);
     }
 }

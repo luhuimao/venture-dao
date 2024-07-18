@@ -22,6 +22,8 @@ contract ColletiveFundRaiseProposalAdapterContract is
     mapping(address => EnumerableSet.Bytes32Set) unDoneProposals;
     mapping(address => bytes32) public lastProposalIds;
 
+    mapping(address => uint256) public fundRaisingId;
+
     function daosetProposalCheck(DaoRegistry dao) internal view returns (bool) {
         ColletiveDaoSetProposalAdapterContract daoset = ColletiveDaoSetProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
@@ -182,7 +184,7 @@ contract ColletiveFundRaiseProposalAdapterContract is
             proposalDetails.state = ProposalState.Executing;
             // set dao configuration
             setFundRaiseConfiguration(dao, proposalDetails);
-
+            fundRaisingId[address(dao)] += 1;
             //reset fund raise state
             vars.investmentPoolAdapt.resetFundRaiseState(dao);
             proposalDetails.state = ProposalState.Done;
