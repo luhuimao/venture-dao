@@ -587,4 +587,64 @@ library GovernanceHelper {
             return 0;
         }
     }
+
+    function getCollectiveVotingWeight(
+        DaoRegistry dao,
+        address account,
+        uint256 amount
+    ) internal view returns (uint128) {
+        uint256 etype = dao.getConfiguration(
+            DaoHelper.COLLECTIVE_VOTING_ASSET_TYPE
+        ); // 0. deposit
+        uint256 votingWeightedType = dao.getConfiguration(
+            DaoHelper.COLLECTIVE_VOTING_WEIGHTED_TYPE
+        ); // 0. quantity 1. log2 2. 1 voter 1 vote
+        ColletiveFundingPoolAdapterContract fundingiPoolAdapt = ColletiveFundingPoolAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+                )
+            );
+
+        if (fundingiPoolAdapt.poolBalance(dao) <= 0 && dao.isMember(account)) {
+            return 1;
+        }
+
+        if (votingWeightedType == 1) {
+            uint256 bal = 0;
+            if (etype == 0) {
+                //0 deposit
+                bal = amount / 10 ** 18;
+            } else {
+                return 0;
+            }
+            if (bal <= 0) return 0;
+            if (bal >= 9223372036854775807) return 50;
+            uint128 votingWeight = ABDKMath64x64.toUInt(
+                ABDKMath64x64.log_2(ABDKMath64x64.fromUInt(bal))
+            );
+            return votingWeight;
+        } else if (votingWeightedType == 2) {
+            //1 voter 1 vote
+            uint128 votingWeight = 0;
+            if (etype == 0) {
+                //0 deposit
+                votingWeight = amount > 0 ? 1 : 0;
+            } else {
+                return 0;
+            }
+            return votingWeight;
+        } else if (votingWeightedType == 0) {
+            //quantity
+            uint256 bal = 0;
+            if (etype == 0) {
+                //0 deposit
+                bal = amount / 10 ** 18;
+            } else {
+                return 0;
+            }
+            return uint128(bal);
+        } else {
+            return 0;
+        }
+    }
 }
