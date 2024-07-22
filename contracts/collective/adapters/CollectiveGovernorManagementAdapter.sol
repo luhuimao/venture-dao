@@ -464,7 +464,7 @@ contract ColletiveGovernorManagementAdapterContract is
                             DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
                         )
                     );
-                fundingpoolAdapt.returnFundToQuitGovernor(dao, msg.sender);
+                fundingpoolAdapt.returnFundToQuitGovernor(dao, applicant);
 
                 proposal.state = ProposalState.Done;
             }

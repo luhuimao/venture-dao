@@ -193,10 +193,10 @@ contract ColletiveClearFundProposalAdapterContract is
             address(dao),
             proposalId,
             proposal.state,
+            uint256(voteResult),
             allWeight,
             nbYes,
-            nbNo,
-            uint256(voteResult)
+            nbNo
         );
     }
 }
