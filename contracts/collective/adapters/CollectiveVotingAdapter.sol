@@ -296,9 +296,8 @@ contract CollectiveVotingAdapterContract is
 
     function getVotingWeightByDepositAmount(
         DaoRegistry dao,
-        address account,
         uint256 amount
     ) public view returns (uint128) {
-        return GovernanceHelper.getCollectiveVotingWeight(dao, account, amount);
+        return GovernanceHelper.getVotingWeightByDepositAmount(dao, amount);
     }
 }

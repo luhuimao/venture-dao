@@ -204,7 +204,8 @@ contract VintageFundRaiseAdapterContract is
                 params.proposalFeeInfo.paybackTokenManagementFeeRatio,
                 params.proposalFeeInfo.redepmtFeeRatio,
                 vars.protocolFeeRatio,
-                params.proposalAddressInfo.managementFeeAddress
+                params.proposalAddressInfo.managementFeeAddress,
+                params.proposalAddressInfo.redemptionFeeReceiver
             ),
             ProoserReward(
                 params.proposerReward.fundFromInverstor,
@@ -359,6 +360,7 @@ contract VintageFundRaiseAdapterContract is
             dao,
             [
                 proposalInfo.feeInfo.managementFeeAddress,
+                proposalInfo.feeInfo.redemptionFeeReceiver,
                 proposalInfo.acceptTokenAddr
             ]
         );
@@ -455,7 +457,7 @@ contract VintageFundRaiseAdapterContract is
 
     function setAddresses(
         DaoRegistry dao,
-        address[2] memory addressArgs
+        address[3] memory addressArgs
     ) internal {
         //16 management fee address
         dao.setAddressConfiguration(
@@ -465,7 +467,11 @@ contract VintageFundRaiseAdapterContract is
         //17 token address
         dao.setAddressConfiguration(
             DaoHelper.FUND_RAISING_CURRENCY_ADDRESS,
-            addressArgs[1] //  proposalInfo.acceptTokenAddr
+            addressArgs[2] //  proposalInfo.acceptTokenAddr
+        );
+        dao.setAddressConfiguration(
+            DaoHelper.REDEMPTION_FEE_RECEIVER,
+            addressArgs[1] //  proposalInfo.feeInfo.redemptionFeeReceiver
         );
     }
 

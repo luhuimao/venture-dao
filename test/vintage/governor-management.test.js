@@ -215,6 +215,7 @@ describe("raiser allocations...", () => {
             "DIV",
             this.vintageVesting.address,
             this.vintageVesting.address,
+            this.vintageVesting.address,
             this.vestingERC721Helper.address
         );
         await vestingERC721.deployed();

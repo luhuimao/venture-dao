@@ -499,9 +499,12 @@ describe("vesting...", () => {
         ];
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 

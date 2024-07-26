@@ -588,9 +588,8 @@ library GovernanceHelper {
         }
     }
 
-    function getCollectiveVotingWeight(
+    function getVotingWeightByDepositAmount(
         DaoRegistry dao,
-        address account,
         uint256 amount
     ) internal view returns (uint128) {
         uint256 etype = dao.getConfiguration(
@@ -599,15 +598,6 @@ library GovernanceHelper {
         uint256 votingWeightedType = dao.getConfiguration(
             DaoHelper.COLLECTIVE_VOTING_WEIGHTED_TYPE
         ); // 0. quantity 1. log2 2. 1 voter 1 vote
-        ColletiveFundingPoolAdapterContract fundingiPoolAdapt = ColletiveFundingPoolAdapterContract(
-                dao.getAdapterAddress(
-                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
-                )
-            );
-
-        if (fundingiPoolAdapt.poolBalance(dao) <= 0 && dao.isMember(account)) {
-            return 1;
-        }
 
         if (votingWeightedType == 1) {
             uint256 bal = 0;

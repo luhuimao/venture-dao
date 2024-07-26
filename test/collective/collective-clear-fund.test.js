@@ -710,6 +710,14 @@ describe("clear fund proposal...", () => {
             1
         );
 
+        let votingweight1 = await this.collectiveVotingContract.getVotingWeight(this.collectiveDirectdaoAddress, this.owner.address);
+        let votingweight2 = await this.collectiveVotingContract.getVotingWeightByDepositAmount(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100000"));
+
+        console.log(`
+        votingweight1    ${votingweight1}
+        votingweight2    ${votingweight2}
+
+        `);
         // await this.collectiveVotingContract.connect(this.user1).submitVote(this.collectiveDirectdaoAddress,
         //     proposalId,
         //     1
@@ -732,6 +740,15 @@ describe("clear fund proposal...", () => {
         await this.colletiveClearFundProposalAdapterContract.processClearFundProposal(
             this.collectiveDirectdaoAddress
             , proposalId);
+
+        votingweight1 = await this.collectiveVotingContract.getVotingWeight(this.collectiveDirectdaoAddress, this.owner.address);
+        votingweight2 = await this.collectiveVotingContract.getVotingWeightByDepositAmount(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100000"));
+
+        console.log(`
+            votingweight1    ${votingweight1}
+            votingweight2    ${votingweight2}
+    
+            `);
     });
 
     const submitFundingProposal = async () => {

@@ -410,6 +410,7 @@ describe("Summon A Vintage Dao", () => {
 
         const proposalAddressInfo = [
             this.user1.address, // address managementFeeAddress;
+            this.user2.address, // redemption fee receiver
             this.testtoken1.address // address fundRaiseTokenAddress;
         ]
 
@@ -4487,7 +4488,7 @@ describe("voting....", () => {
     });
 });
 
-describe("fund term...", () => {
+describe.only("fund term...", () => {
     before("deploy contracts...", async () => {
         let [owner,
             user1, user2,
@@ -4829,9 +4830,11 @@ describe("fund term...", () => {
 
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -4912,11 +4915,17 @@ describe("fund term...", () => {
         process fund raise...
         `);
 
+        if (parseInt(endTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(endTime) + 1])
+            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        }
+
         await vintageFundingPoolAdapterContract.processFundRaise(this.daoAddr1);
-        fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, fundRaiserProposalId);
+        const fundState = await await vintageFundingPoolAdapterContract.daoFundRaisingStates(this.daoAddr1);
+        // fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, fundRaiserProposalId);
         console.log(`
         processed...
-        state ${fundRaiseProposalInfo.state}
+        fundState  ${fundState}
         `);
 
         const fundStartTime = await vintageFundingPoolAdapterHelperContract.getFundStartTime(this.daoAddr1);
@@ -4924,7 +4933,7 @@ describe("fund term...", () => {
         const redemptionEndTime = parseInt(fundStartTime) + parseInt(redemptInterval);
         const redemptionStartTime = parseInt(redemptionEndTime) - parseInt(redemptPeriod);
         const GPAddr = await dao.getAddressConfiguration(sha3("GP_ADDRESS"));
-
+        const redempitonFeeReceiver = await dao.getAddressConfiguration(sha3("REDEMPTION_FEE_RECEIVER"));
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(redemptionStartTime) > blocktimestamp) {
@@ -4951,11 +4960,13 @@ describe("fund term...", () => {
         bal1 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.investor1.address);
         let USDTBal = await this.testtoken1.balanceOf(this.investor1.address);
         let USDTBal2 = await this.testtoken1.balanceOf(GPAddr);
+        let USDTBal3 = await this.testtoken1.balanceOf(redempitonFeeReceiver);
         console.log(`
         withdrawed...
         bal1 ${hre.ethers.utils.formatEther(bal1)}
         USDTBal ${hre.ethers.utils.formatEther(USDTBal)}
         managementFee ${hre.ethers.utils.formatEther(USDTBal2)}
+        redemptionFee ${hre.ethers.utils.formatEther(USDTBal3)}
         `);
 
     });
@@ -5522,9 +5533,11 @@ describe("funding...", () => {
 
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -6243,9 +6256,12 @@ describe("funding...", () => {
 
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -6990,9 +7006,12 @@ describe("investor membership...", () => {
 
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -7125,9 +7144,12 @@ describe("investor membership...", () => {
 
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -7278,9 +7300,12 @@ describe("investor membership...", () => {
 
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -7431,9 +7456,12 @@ describe("investor membership...", () => {
 
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -7583,9 +7611,12 @@ describe("investor membership...", () => {
 
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -8269,9 +8300,12 @@ describe("eligibility deposit voting...", () => {
 
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -8449,9 +8483,12 @@ describe("eligibility deposit voting...", () => {
 
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -8664,6 +8701,7 @@ describe("funding NFT", () => {
             "DAOSquare Investment Vesting",
             "DIV",
             this.flexVesting.address,
+            this.vintageVesting.address,
             this.vintageVesting.address,
             this.vestingERC721Helper.address
         );
@@ -9159,9 +9197,12 @@ describe("funding NFT", () => {
 
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -9982,6 +10023,7 @@ describe("raiser allocations...", () => {
             "DIV",
             this.vintageVesting.address,
             this.vintageVesting.address,
+            this.vintageVesting.address,
             this.vestingERC721Helper.address
         );
         await vestingERC721.deployed();
@@ -10375,6 +10417,7 @@ describe("Free-In...", () => {
             "DIV",
             this.vintageVesting.address,
             this.vintageVesting.address,
+            this.vintageVesting.address,
             this.vestingERC721Helper.address
         );
         await vestingERC721.deployed();
@@ -10630,9 +10673,12 @@ describe("Free-In...", () => {
         ];
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -10824,9 +10870,12 @@ describe("Free-In...", () => {
         ];
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -11038,9 +11087,12 @@ describe("Free-In...", () => {
         ];
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -11250,9 +11302,12 @@ describe("Free-In...", () => {
         ];
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -11463,9 +11518,12 @@ describe("Free-In...", () => {
         ];
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -11678,9 +11736,12 @@ describe("Free-In...", () => {
         ];
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -11891,9 +11952,12 @@ describe("Free-In...", () => {
         ];
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -12183,6 +12247,7 @@ describe("participant cap...", () => {
             "DIV",
             this.vintageVesting.address,
             this.vintageVesting.address,
+            this.vintageVesting.address,
             this.vestingERC721Helper.address
         );
         await vestingERC721.deployed();
@@ -12439,9 +12504,12 @@ describe("participant cap...", () => {
         ];
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -12697,6 +12765,7 @@ describe("return token management fee...", () => {
         const vestingERC721 = await VestingERC721.deploy(
             "DAOSquare Investment Vesting",
             "DIV",
+            this.vintageVesting.address,
             this.vintageVesting.address,
             this.vintageVesting.address,
             this.vestingERC721Helper.address
@@ -12958,9 +13027,12 @@ describe("return token management fee...", () => {
         ];
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -13361,6 +13433,7 @@ describe("funding proposal start voting at refund period...", () => {
             "DIV",
             this.vintageVesting.address,
             this.vintageVesting.address,
+            this.vintageVesting.address,
             this.vestingERC721Helper.address
         );
         await vestingERC721.deployed();
@@ -13621,9 +13694,12 @@ describe("funding proposal start voting at refund period...", () => {
         ];
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
+
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 

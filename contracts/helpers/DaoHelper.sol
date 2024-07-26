@@ -386,6 +386,9 @@ library DaoHelper {
     bytes32 internal constant GP_MIN_INVESTMENT_AMOUNT =
         keccak256("GP_MIN_INVESTMENT_AMOUNT");
 
+    bytes32 internal constant REDEMPTION_FEE_RECEIVER =
+        keccak256("REDEMPTION_FEE_RECEIVER");
+
     //voting
     bytes32 internal constant QUORUM = keccak256("QUORUM");
     bytes32 internal constant SUPER_MAJORITY = keccak256("SUPER_MAJORITY");

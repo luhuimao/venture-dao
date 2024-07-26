@@ -8,7 +8,6 @@ import "../VintageFundingPoolAdapter.sol";
 import "../VintageDaoSetAdapter.sol";
 import "../VintageFundingAdapter.sol";
 
-
 /**
 MIT License
 
@@ -63,6 +62,7 @@ interface IVintageFundRaise {
         uint256 redepmtFeeRatio;
         uint256 protocolFeeRatio;
         address managementFeeAddress;
+        address redemptionFeeReceiver;
     }
 
     struct FundRaiseAmountInfo {
@@ -141,6 +141,7 @@ interface IVintageFundRaise {
     }
     struct ProposalAddressInfo {
         address managementFeeAddress;
+        address redemptionFeeReceiver;
         address fundRaiseTokenAddress;
     }
     struct ProposalFeeInfo {

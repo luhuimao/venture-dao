@@ -215,6 +215,7 @@ describe("fund establishment...", () => {
             "DIV",
             this.vintageVesting.address,
             this.vintageVesting.address,
+            this.vintageVesting.address,
             this.vestingERC721Helper.address
         );
         await vestingERC721.deployed();
@@ -519,9 +520,11 @@ describe("fund establishment...", () => {
         ];
 
         const managementFeeAddress = this.user1.address;
+        const redemptionFeeReceiver = this.user2.address;
         const fundRaiseTokenAddress = this.testtoken1.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 
@@ -569,6 +572,7 @@ describe("fund establishment...", () => {
         await this.vintageVotingAdapterContract.submitVote(this.daoAddr1, newFundProposalId, 1);
 
         let fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, newFundProposalId);
+        console.log(fundRaiseProposalInfo);
         let stopVoteTime = fundRaiseProposalInfo.stopVoteTime;
 
         if (parseInt(stopVoteTime) > blocktimestamp) {
@@ -818,8 +822,10 @@ describe("fund establishment...", () => {
 
         const managementFeeAddress = this.user1.address;
         const fundRaiseTokenAddress = this.testtoken1.address;
+        const redemptionFeeReceiver = this.user2.address;
         const proposalAddressInfo = [
             managementFeeAddress,
+            redemptionFeeReceiver,
             fundRaiseTokenAddress
         ];
 

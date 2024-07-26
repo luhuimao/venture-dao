@@ -234,14 +234,18 @@ contract VintageFundingPoolAdapterContract is
             DaoHelper.FundRaiseState.DONE &&
             ifInRedemptionPeriod(dao, block.timestamp)
         ) {
-            //distribute redemption fee to governor
+            //distribute redemption fee redemption fee receiver
             redemptionFee =
                 (dao.getConfiguration(DaoHelper.REDEMPTION_FEE) * amount) /
                 1e18;
 
             if (redemptionFee > 0)
                 fundingpool.distributeFunds(
-                    address(dao.getAddressConfiguration(DaoHelper.GP_ADDRESS)),
+                    address(
+                        dao.getAddressConfiguration(
+                            DaoHelper.REDEMPTION_FEE_RECEIVER
+                        )
+                    ),
                     tokenAddr,
                     redemptionFee
                 );
