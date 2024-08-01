@@ -85,7 +85,7 @@ import { accessSync } from "fs";
 const hre = require("hardhat");
 
 
-describe("fund raise proposal...", () => {
+describe("free in...", () => {
     before("deploy contracts...", async () => {
         let [
             owner,
@@ -318,6 +318,11 @@ describe("fund raise proposal...", () => {
                 id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
                 addr: this.collectiveDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
+            },
+            {
+                id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
+                addr: this.colletiveGovernorManagementContract.address, // colletiveGovernorManagementContract
+                flags: 1
             }
         ];
 
@@ -486,7 +491,7 @@ describe("fund raise proposal...", () => {
         return proposalId;
     }
 
-    it("", async () => {
+    it("free in...", async () => {
         let fundRaiseProposalId = await submitFundRaiseProposal();
 
         await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
@@ -536,21 +541,28 @@ describe("fund raise proposal...", () => {
         let depositBal1 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.owner.address);
         let depositBal2 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.user1.address);
         let depositBal3 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.user2.address);
+        let fundRaiseId = await this.colletiveFundRaiseProposalContract.fundRaisingId(this.collectiveDirectdaoAddress)
 
-        let freeinEscrowAmount1 = await this.collectiveFreeInEscrowFundAdapterContract.getEscrowAmount(
+        console.log(`fundRaiseId  ${fundRaiseId}`);
+       
+        let freeinEscrowAmount1 = await this.collectiveEscrowFundAdapterContract.escrowFundsFromOverRaised(
             this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            this.owner.address);
+            this.testtoken1.address,
+            this.owner.address,
+            fundRaiseId
+        );
 
-        let freeinEscrowAmount2 = await this.collectiveFreeInEscrowFundAdapterContract.getEscrowAmount(
+        let freeinEscrowAmount2 = await this.collectiveEscrowFundAdapterContract.escrowFundsFromOverRaised(
             this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            this.user1.address);
+            this.testtoken1.address,
+            this.user1.address,
+            fundRaiseId);
 
-        let freeinEscrowAmount3 = await this.collectiveFreeInEscrowFundAdapterContract.getEscrowAmount(
+        let freeinEscrowAmount3 = await this.collectiveEscrowFundAdapterContract.escrowFundsFromOverRaised(
             this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            this.user2.address);
+            this.testtoken1.address,
+            this.user2.address,
+            fundRaiseId);
 
         console.log(
             `
@@ -558,9 +570,9 @@ describe("fund raise proposal...", () => {
             depositBal2     ${hre.ethers.utils.formatEther(depositBal2)}
             depositBal3     ${hre.ethers.utils.formatEther(depositBal3)}
 
-            freeinEscrowAmount1     ${hre.ethers.utils.formatEther(freeinEscrowAmount1[1])}
-            freeinEscrowAmount2     ${hre.ethers.utils.formatEther(freeinEscrowAmount2[1])}
-            freeinEscrowAmount3     ${hre.ethers.utils.formatEther(freeinEscrowAmount3[1])}
+            freeinEscrowAmount1     ${hre.ethers.utils.formatEther(freeinEscrowAmount1)}
+            freeinEscrowAmount2     ${hre.ethers.utils.formatEther(freeinEscrowAmount2)}
+            freeinEscrowAmount3     ${hre.ethers.utils.formatEther(freeinEscrowAmount3)}
             execute fund raise...
             `
         );
@@ -574,36 +586,44 @@ describe("fund raise proposal...", () => {
         await this.colletiveFundingPoolContract.processFundRaise(this.collectiveDirectdaoAddress);
 
 
+
+        console.log("processFundRaise...");
         depositBal1 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.owner.address);
         depositBal2 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.user1.address);
         depositBal3 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.user2.address);
 
-        freeinEscrowAmount1 = await this.collectiveFreeInEscrowFundAdapterContract.getEscrowAmount(
-            this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            this.owner.address);
 
-        freeinEscrowAmount2 = await this.collectiveFreeInEscrowFundAdapterContract.getEscrowAmount(
+        fundRaiseId = await this.colletiveFundRaiseProposalContract.fundRaisingId(this.collectiveDirectdaoAddress)
+        freeinEscrowAmount1 = await this.collectiveEscrowFundAdapterContract.escrowFundsFromOverRaised(
             this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            this.user1.address);
+            this.testtoken1.address,
+            this.owner.address,
+            fundRaiseId);
 
-        freeinEscrowAmount3 = await this.collectiveFreeInEscrowFundAdapterContract.getEscrowAmount(
+        freeinEscrowAmount2 = await this.collectiveEscrowFundAdapterContract.escrowFundsFromOverRaised(
             this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            this.user2.address);
+            this.testtoken1.address,
+            this.user1.address,
+            fundRaiseId);
 
-        let all = hre.ethers.utils.formatEther(depositBal1.add(depositBal2).add(depositBal3).add(freeinEscrowAmount1[1]).add(freeinEscrowAmount2[1]).
-            add(freeinEscrowAmount3[1]));
+        freeinEscrowAmount3 = await this.collectiveEscrowFundAdapterContract.escrowFundsFromOverRaised(
+            this.collectiveDirectdaoAddress,
+            this.testtoken1.address,
+            this.user2.address,
+            fundRaiseId);
+
+        let all = hre.ethers.utils.formatEther(depositBal1.add(depositBal2).add(
+            depositBal3).add(freeinEscrowAmount1).add(freeinEscrowAmount2).
+            add(freeinEscrowAmount3));
         console.log(
             `
             depositBal1             ${hre.ethers.utils.formatEther(depositBal1)}
             depositBal2             ${hre.ethers.utils.formatEther(depositBal2)}
             depositBal3             ${hre.ethers.utils.formatEther(depositBal3)}
 
-            freeinEscrowAmount1     ${hre.ethers.utils.formatEther(freeinEscrowAmount1[1])}
-            freeinEscrowAmount2     ${hre.ethers.utils.formatEther(freeinEscrowAmount2[1])}
-            freeinEscrowAmount3     ${hre.ethers.utils.formatEther(freeinEscrowAmount3[1])}
+            freeinEscrowAmount1     ${hre.ethers.utils.formatEther(freeinEscrowAmount1)}
+            freeinEscrowAmount2     ${hre.ethers.utils.formatEther(freeinEscrowAmount2)}
+            freeinEscrowAmount3     ${hre.ethers.utils.formatEther(freeinEscrowAmount3)}
 
             all                      ${all}
             `
@@ -663,25 +683,30 @@ describe("fund raise proposal...", () => {
 
         await this.colletiveFundingPoolContract.processFundRaise(this.collectiveDirectdaoAddress);
 
-
+        console.log("process fund raise...");
         depositBal1 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.owner.address);
         depositBal2 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.user1.address);
         depositBal3 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.user2.address);
 
-        freeinEscrowAmount1 = await this.collectiveFreeInEscrowFundAdapterContract.getEscrowAmount(
-            this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            this.owner.address);
+        fundRaiseId = await this.colletiveFundRaiseProposalContract.fundRaisingId(this.collectiveDirectdaoAddress)
 
-        freeinEscrowAmount2 = await this.collectiveFreeInEscrowFundAdapterContract.getEscrowAmount(
+        freeinEscrowAmount1 = await this.collectiveEscrowFundAdapterContract.escrowFundsFromOverRaised(
             this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            this.user1.address);
+            this.testtoken1.address,
+            this.owner.address,
+            fundRaiseId);
 
-        freeinEscrowAmount3 = await this.collectiveFreeInEscrowFundAdapterContract.getEscrowAmount(
+        freeinEscrowAmount2 = await this.collectiveEscrowFundAdapterContract.escrowFundsFromOverRaised(
             this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            this.user2.address);
+            this.testtoken1.address,
+            this.user1.address,
+            fundRaiseId);
+
+        freeinEscrowAmount3 = await this.collectiveEscrowFundAdapterContract.escrowFundsFromOverRaised(
+            this.collectiveDirectdaoAddress,
+            this.testtoken1.address,
+            this.user2.address,
+            fundRaiseId);
 
         console.log(
             `
@@ -689,12 +714,12 @@ describe("fund raise proposal...", () => {
             depositBal2             ${hre.ethers.utils.formatEther(depositBal2)}
             depositBal3             ${hre.ethers.utils.formatEther(depositBal3)}
 
-            freeinEscrowAmount1     ${hre.ethers.utils.formatEther(freeinEscrowAmount1[1])}
-            freeinEscrowAmount2     ${hre.ethers.utils.formatEther(freeinEscrowAmount2[1])}
-            freeinEscrowAmount3     ${hre.ethers.utils.formatEther(freeinEscrowAmount3[1])}
+            freeinEscrowAmount1     ${hre.ethers.utils.formatEther(freeinEscrowAmount1)}
+            freeinEscrowAmount2     ${hre.ethers.utils.formatEther(freeinEscrowAmount2)}
+            freeinEscrowAmount3     ${hre.ethers.utils.formatEther(freeinEscrowAmount3)}
 
-            all                      ${hre.ethers.utils.formatEther(depositBal1.add(depositBal2).add(depositBal3).add(freeinEscrowAmount1[1]).add(freeinEscrowAmount2[1]).
-                add(freeinEscrowAmount3[1]))}
+            all                      ${hre.ethers.utils.formatEther(depositBal1.add(depositBal2).add(depositBal3).add(freeinEscrowAmount1).add(freeinEscrowAmount2).
+                add(freeinEscrowAmount3))}
             `
         );
         let USDBal1 = await this.testtoken1.balanceOf(this.owner.address);
@@ -709,32 +734,43 @@ describe("fund raise proposal...", () => {
 
             `
         );
-
-        await this.collectiveFreeInEscrowFundAdapterContract.connect(this.owner).withdraw(this.collectiveDirectdaoAddress,
-            fundRaiseProposalId);
-        await this.collectiveFreeInEscrowFundAdapterContract.connect(this.user1).withdraw(this.collectiveDirectdaoAddress,
-            fundRaiseProposalId);
-
-        await this.collectiveFreeInEscrowFundAdapterContract.connect(this.user2).withdraw(this.collectiveDirectdaoAddress,
-            fundRaiseProposalId);
+        fundRaiseId = await this.colletiveFundRaiseProposalContract.fundRaisingId(this.collectiveDirectdaoAddress)
 
 
-
-
-        freeinEscrowAmount1 = await this.collectiveFreeInEscrowFundAdapterContract.getEscrowAmount(
+        await this.collectiveEscrowFundAdapterContract.connect(this.owner).withdrawFromOverRaised(
             this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            this.owner.address);
-
-        freeinEscrowAmount2 = await this.collectiveFreeInEscrowFundAdapterContract.getEscrowAmount(
+            this.testtoken1.address,
+            fundRaiseId
+        );
+        await this.collectiveEscrowFundAdapterContract.connect(this.user1).withdrawFromOverRaised(
             this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            this.user1.address);
+            this.testtoken1.address,
+            fundRaiseId);
 
-        freeinEscrowAmount3 = await this.collectiveFreeInEscrowFundAdapterContract.getEscrowAmount(
+        await this.collectiveEscrowFundAdapterContract.connect(this.user2).withdrawFromOverRaised(
             this.collectiveDirectdaoAddress,
-            fundRaiseProposalId,
-            this.user2.address);
+            this.testtoken1.address,
+            fundRaiseId);
+
+
+        freeinEscrowAmount1 = await this.collectiveEscrowFundAdapterContract.escrowFundsFromOverRaised(
+            this.collectiveDirectdaoAddress,
+            this.testtoken1.address,
+            this.owner.address,
+            fundRaiseId);
+
+        freeinEscrowAmount2 = await this.collectiveEscrowFundAdapterContract.escrowFundsFromOverRaised(
+            this.collectiveDirectdaoAddress,
+            this.testtoken1.address,
+            this.user1.address,
+            fundRaiseId);
+
+        freeinEscrowAmount3 = await this.collectiveEscrowFundAdapterContract.escrowFundsFromOverRaised(
+            this.collectiveDirectdaoAddress,
+            this.testtoken1.address,
+            this.user2.address,
+            fundRaiseId);
+
 
         USDBal1 = await this.testtoken1.balanceOf(this.owner.address);
         USDBal2 = await this.testtoken1.balanceOf(this.user1.address);
@@ -742,9 +778,9 @@ describe("fund raise proposal...", () => {
 
         console.log(
             `
-                freeinEscrowAmount1     ${hre.ethers.utils.formatEther(freeinEscrowAmount1[1])}
-                freeinEscrowAmount2     ${hre.ethers.utils.formatEther(freeinEscrowAmount2[1])}
-                freeinEscrowAmount3     ${hre.ethers.utils.formatEther(freeinEscrowAmount3[1])}
+                freeinEscrowAmount1     ${hre.ethers.utils.formatEther(freeinEscrowAmount1)}
+                freeinEscrowAmount2     ${hre.ethers.utils.formatEther(freeinEscrowAmount2)}
+                freeinEscrowAmount3     ${hre.ethers.utils.formatEther(freeinEscrowAmount3)}
 
                 USDBal1                 ${hre.ethers.utils.formatEther(USDBal1)}
                 USDBal2                 ${hre.ethers.utils.formatEther(USDBal2)}

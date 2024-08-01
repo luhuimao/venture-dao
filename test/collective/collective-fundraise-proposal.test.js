@@ -324,6 +324,11 @@ describe("fund raise proposal...", () => {
                 id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
                 addr: this.collectiveDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
+            },
+            {
+                id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
+                addr: this.colletiveGovernorManagementContract.address, // colletiveGovernorManagementContract
+                flags: 1
             }
         ];
 
@@ -700,7 +705,9 @@ describe("fund raise proposal...", () => {
 
         await this.colletiveFundRaiseProposalContract.processProposal(this.collectiveDirectdaoAddress, proposalId);
         proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(this.collectiveDirectdaoAddress, proposalId);
-
+        console.log(`
+        fund raise proposal state ${proposalDetail.state}
+        `);
         await this.testtoken1.approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
         await this.testtoken1.connect(this.investor1).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
         await this.testtoken1.connect(this.investor2).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
@@ -760,6 +767,9 @@ describe("fund raise proposal...", () => {
         await this.colletiveFundRaiseProposalContract.processProposal(this.collectiveDirectdaoAddress, proposalId);
         proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(this.collectiveDirectdaoAddress, proposalId);
 
+        console.log(`
+        fund raise proposal state ${proposalDetail.state}
+        `);
 
         await this.testtoken1.connect(this.investor3).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
         await this.testtoken1.connect(this.investor4).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
@@ -778,11 +788,27 @@ describe("fund raise proposal...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.colletiveFundingPoolContract.connect(this.investor3).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100"));
-        await this.colletiveFundingPoolContract.connect(this.investor4).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100"));
-        // await this.colletiveFundingPoolContract.connect(this.investor6).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100"));
+        await this.colletiveFundingPoolContract.connect(this.investor1).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100"));
+        await this.colletiveFundingPoolContract.connect(this.investor2).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("300"));
+        await this.colletiveFundingPoolContract.connect(this.investor3).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("500"));
+        await this.colletiveFundingPoolContract.connect(this.investor4).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("200"));
+        // await this.colletiveFundingPoolContract.connect(this.investor5).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("200"));
+        // await this.colletiveFundingPoolContract.connect(this.investor6).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("200"));
 
         await expectRevert(this.colletiveFundingPoolContract.connect(this.investor5).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100")), "revert");
+
+        allInvestors = await this.daoContract.getAllSteward()
+        // allInvestors = await this.colletiveFundingPoolContract.getAllInvestors(this.collectiveDirectdaoAddress);
+        console.log(`
+        allInvestors   ${allInvestors}
+        `);
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(proposalDetail.timeInfo.endTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.timeInfo.endTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+        await this.colletiveFundingPoolContract.processFundRaise(this.collectiveDirectdaoAddress);
 
         allInvestors = await this.daoContract.getAllSteward()
         // allInvestors = await this.colletiveFundingPoolContract.getAllInvestors(this.collectiveDirectdaoAddress);

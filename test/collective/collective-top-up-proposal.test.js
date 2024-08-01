@@ -293,6 +293,17 @@ describe("topup proposal...", () => {
                 id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
                 addr: this.colletiveExpenseProposalContract.address, // colletiveExpenseProposalContract
                 flags: 18
+            },
+            {
+                id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
+                addr: this.colletiveGovernorManagementContract.address, // colletiveGovernorManagementContract
+                flags: 1
+            }
+            ,
+            {
+                id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
+                addr: this.colletiveTopUpProposalContract.address, // colletiveTopUpProposalContract
+                flags: 1
             }
         ];
 
@@ -420,7 +431,7 @@ describe("topup proposal...", () => {
             approve...
         `);
 
-        await this.testtoken1.approve(this.colletiveFundingPoolContract.address, amount);
+        await this.testtoken1.approve(this.colletiveTopUpProposalContract.address, amount);
 
         console.log(`
             approved...

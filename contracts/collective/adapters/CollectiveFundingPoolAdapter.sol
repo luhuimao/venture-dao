@@ -16,12 +16,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
 
     event Deposit(address daoAddress, uint256 amount, address account);
     event WithDraw(address daoAddress, uint256 amount, address account);
-    // event RedeptionFeeCharged(
-    //     address daoAddress,
-    //     address account,
-    //     uint256 amount,
-    //     uint256 redemptionFee
-    // );
+
     event DistributeRedemptionFee(
         address daoAddress,
         address account,
@@ -46,6 +41,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
     error GREATER_MAX_DEPOSIT_AMOUNT();
     error GREATER_MAX_FUND_RAISE_AMOUNT();
     error NOT_IN_FUND_RAISE_WINDOW();
+    error INVALID_AMOUNT();
 
     mapping(address => EnumerableSet.AddressSet) fundInvestors;
     mapping(address => mapping(bytes32 => EnumerableSet.AddressSet)) investorsByFundRaise;
@@ -87,9 +83,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         uint256 amount
     ) external reimbursable(dao) {
         //investment grace period
-        // ColletiveFundingProposalAdapterContract fundingAdapt = ColletiveFundingProposalAdapterContract(
-        //         dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
-        //     );
+
         if (
             !ColletiveFundingProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
@@ -102,10 +96,16 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                 )
             );
 
+        ColletiveFundRaiseProposalAdapterContract fundRaiseContract = ColletiveFundRaiseProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
+            );
+
+        bytes32 lastFundRaiseProposalId = fundRaiseContract.lastProposalIds(
+            address(dao)
+        );
+
         address tokenAddr = fundingpool.getFundRaisingTokenAddress();
-        // uint256 balance = balanceOf(dao, msg.sender);
-        require(amount > 0, "!amount");
-        // require(amount <= balance, ">balance");
+        if (amount <= 0) revert INVALID_AMOUNT();
         if (amount > balanceOf(dao, msg.sender)) revert INSUFFICIENT_FUND();
         uint256 redemptionFee;
 
@@ -125,17 +125,13 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         fundingpool.subtractFromBalance(msg.sender, tokenAddr, amount);
         if (balanceOf(dao, msg.sender) <= 0) {
             _removeFundInvestor(dao, msg.sender);
+            investorsByFundRaise[address(dao)][lastFundRaiseProposalId].remove(
+                msg.sender
+            );
         }
         if (redemptionFee > 0)
             escrowRedemptionFee(dao, tokenAddr, redemptionFee); //  distributeRedemptionFee(dao, tokenAddr, redemptionFee);
 
-        ColletiveFundRaiseProposalAdapterContract fundRaiseContract = ColletiveFundRaiseProposalAdapterContract(
-                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
-            );
-
-        bytes32 lastFundRaiseProposalId = fundRaiseContract.lastProposalIds(
-            address(dao)
-        );
         if (
             fundRaiseContract.isPriorityDepositer(
                 dao,
@@ -180,7 +176,8 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         DaoRegistry dao,
         uint256 amount
     ) external reimbursable(dao) {
-        require(amount > 0, "!amount");
+        if (amount <= 0) revert INVALID_AMOUNT();
+
         DepostLocalVars memory vars;
         vars.fundRaiseContract = ColletiveFundRaiseProposalAdapterContract(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
@@ -203,24 +200,6 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                 revert LESS_MIN_DEPOSIT_AMOUNT();
         }
         if (vars.maxDepositAmount > 0) {
-            // require(
-            //     amount +
-            //         (balanceOf(dao, msg.sender) -
-            //             CollectiveInvestmentPoolExtension(
-            //                 dao.getExtensionAddress(
-            //                     DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
-            //                 )
-            //             ).getPriorAmount(
-            //                     msg.sender,
-            //                     dao.getAddressConfiguration(
-            //                         DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
-            //                     ),
-            //                     resetFundStateBlockNum[address(dao)]
-            //                 )) <=
-            //         vars.maxDepositAmount,
-            //     "> max deposit amount"
-            // );
-
             if (
                 amount +
                     investorsDepositAmountByFundRaise[address(dao)][
@@ -242,12 +221,6 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             vars.fundRaiseCap > 0
         ) {
             //FCFS
-            // if (
-            //     (poolBalance(dao) + amount) -
-            //         accumulateRaiseAmount[address(dao)] >
-            //     vars.fundRaiseCap
-            // ) revert GREATER_MAX_FUND_RAISE_AMOUNT();
-
             if (
                 fundRaisedByProposalId[address(dao)][fundRaiseProposalId] +
                     amount >
@@ -259,12 +232,8 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
         );
         // investor cap
-        if (
-            dao.getConfiguration(DaoHelper.MAX_INVESTORS_ENABLE) == 1 &&
-            dao.getAllSteward().length >=
-            dao.getConfiguration(DaoHelper.MAX_INVESTORS) &&
-            !dao.isMember(msg.sender)
-        ) revert MAX_PATICIPANT_AMOUNT_REACH();
+        if (memberCapCheck(dao, fundRaiseProposalId, msg.sender))
+            revert MAX_PATICIPANT_AMOUNT_REACH();
 
         address token = vars.fundingpool.getFundRaisingTokenAddress();
         if (IERC20(token).balanceOf(msg.sender) < amount)
@@ -305,84 +274,110 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         emit Deposit(address(dao), amount, msg.sender);
     }
 
-    function transferFromNewGovernor(
+    function memberCapCheck(
         DaoRegistry dao,
-        address token,
-        address account,
-        uint256 amount
-    ) external returns (bool) {
-        if (
-            msg.sender !=
-            dao.getAdapterAddress(
-                DaoHelper.COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPTER
-            )
-        ) revert ACCESS_DENIED();
-
-        if (
-            IERC20(token).balanceOf(account) < amount ||
-            IERC20(token).allowance(account, address(this)) < amount
-        ) return false;
+        bytes32 fundRaiseProposalId,
+        address account
+    ) internal view returns (bool) {
+        uint256 count = dao.getAllSteward().length +
+            investorsByFundRaise[address(dao)][fundRaiseProposalId]
+                .values()
+                .length;
+        address[] memory newMem = investorsByFundRaise[address(dao)][
+            fundRaiseProposalId
+        ].values();
+        if (newMem.length > 0) {
+            for (uint8 i = 0; i < newMem.length; i++) {
+                if (dao.isMember(newMem[i])) count -= 1;
+            }
+        }
 
         if (
             dao.getConfiguration(DaoHelper.MAX_INVESTORS_ENABLE) == 1 &&
-            dao.getAllSteward().length >=
-            dao.getConfiguration(DaoHelper.MAX_INVESTORS)
-        ) return false;
+            count >= dao.getConfiguration(DaoHelper.MAX_INVESTORS) &&
+            !dao.isMember(account) &&
+            !investorsByFundRaise[address(dao)][fundRaiseProposalId].contains(
+                account
+            )
+        ) return true;
 
-        IERC20(token).transferFrom(account, address(this), amount);
-        IERC20(token).approve(
-            dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT),
-            amount
-        );
-        // CollectiveInvestmentPoolExtension fundingPoolExt = CollectiveInvestmentPoolExtension(
-        //         dao.getExtensionAddress(
-        //             DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
-        //         )
-        //     );
-        CollectiveInvestmentPoolExtension(
-            dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
-        ).addToBalance(account, token, amount);
-
-        _addFundInvestor(dao, account);
-
-        return true;
+        return false;
     }
 
-    function topupFunds(
-        DaoRegistry dao,
-        address token,
-        address account,
-        uint256 amount
-    ) external {
-        if (
-            msg.sender !=
-            dao.getAdapterAddress(DaoHelper.COLLECTIVE_TOPUP_ADAPTER)
-        ) revert ACCESS_DENIED();
+    // function transferFromNewGovernor(
+    //     DaoRegistry dao,
+    //     address token,
+    //     address account,
+    //     uint256 amount
+    // ) external returns (bool) {
+    //     if (
+    //         msg.sender !=
+    //         dao.getAdapterAddress(
+    //             DaoHelper.COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPTER
+    //         )
+    //     ) revert ACCESS_DENIED();
 
-        if (IERC20(token).balanceOf(account) < amount)
-            revert INSUFFICIENT_FUND();
+    //     if (
+    //         IERC20(token).balanceOf(account) < amount ||
+    //         IERC20(token).allowance(account, address(this)) < amount
+    //     ) return false;
 
-        if (IERC20(token).allowance(account, address(this)) < amount)
-            revert INSUFFICIENT_ALLOWANCE();
+    //     if (
+    //         dao.getConfiguration(DaoHelper.MAX_INVESTORS_ENABLE) == 1 &&
+    //         dao.getAllSteward().length >=
+    //         dao.getConfiguration(DaoHelper.MAX_INVESTORS)
+    //     ) return false;
 
-        IERC20(token).transferFrom(account, address(this), amount);
+    //     IERC20(token).transferFrom(account, address(this), amount);
+    //     IERC20(token).approve(
+    //         dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT),
+    //         amount
+    //     );
 
-        IERC20(token).approve(
-            dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT),
-            amount
-        );
+    //     CollectiveInvestmentPoolExtension(
+    //         dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
+    //     ).addToBalance(account, token, amount);
 
-        // CollectiveInvestmentPoolExtension fundingPoolExt = CollectiveInvestmentPoolExtension(
-        //         dao.getExtensionAddress(
-        //             DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
-        //         )
-        //     );
+    //     _addFundInvestor(dao, account);
 
-        CollectiveInvestmentPoolExtension(
-            dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
-        ).addToBalance(account, token, amount);
-        _addFundInvestor(dao, account);
-    }
+    //     return true;
+    // }
+
+    // function topupFunds(
+    //     DaoRegistry dao,
+    //     address token,
+    //     address account,
+    //     uint256 amount
+    // ) external {
+    //     if (
+    //         msg.sender !=
+    //         dao.getAdapterAddress(DaoHelper.COLLECTIVE_TOPUP_ADAPTER)
+    //     ) revert ACCESS_DENIED();
+
+    //     if (IERC20(token).balanceOf(account) < amount)
+    //         revert INSUFFICIENT_FUND();
+
+    //     if (IERC20(token).allowance(account, address(this)) < amount)
+    //         revert INSUFFICIENT_ALLOWANCE();
+
+    //     IERC20(token).transferFrom(account, address(this), amount);
+
+    //     IERC20(token).approve(
+    //         dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT),
+    //         amount
+    //     );
+
+    //     // CollectiveInvestmentPoolExtension fundingPoolExt = CollectiveInvestmentPoolExtension(
+    //     //         dao.getExtensionAddress(
+    //     //             DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
+    //     //         )
+    //     //     );
+
+    //     CollectiveInvestmentPoolExtension(
+    //         dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
+    //     ).addToBalance(account, token, amount);
+    //     _addFundInvestor(dao, account);
+    // }
 
     function returnFundToQuitGovernor(
         DaoRegistry dao,
@@ -493,7 +488,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         if (!fundInvestors[address(dao)].contains(account))
             fundInvestors[address(dao)].add(account);
 
-        if (!dao.isMember(account)) dao.potentialNewMember(account);
+        // if (!dao.isMember(account)) dao.potentialNewMember(account);
     }
 
     function _removeFundInvestor(DaoRegistry dao, address account) internal {
@@ -501,6 +496,22 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
 
         if (dao.isMember(account) && dao.daoCreator() != account)
             dao.removeMember(account);
+    }
+
+    function _addNewMembers(
+        DaoRegistry dao,
+        bytes32 fundRaiseProposalId
+    ) internal {
+        address[] memory allInvestors = investorsByFundRaise[address(dao)][
+            fundRaiseProposalId
+        ].values();
+
+        if (allInvestors.length > 0) {
+            for (uint8 i = 0; i < allInvestors.length; i++) {
+                if (!dao.isMember(allInvestors[i]))
+                    dao.potentialNewMember(allInvestors[i]);
+            }
+        }
     }
 
     function escrowRedemptionFee(
@@ -527,12 +538,6 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
     }
 
     function resetFundRaiseState(DaoRegistry dao) external {
-        // require(
-        //     msg.sender ==
-        //         dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER),
-        //     "Access deny"
-        // );
-
         if (
             msg.sender !=
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
@@ -541,6 +546,12 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         fundState[address(dao)] = FundState.IN_PROGRESS;
 
         accumulateRaiseAmount[address(dao)] += poolBalance(dao);
+        // accumulateRaiseAmount[
+        //     address(dao)
+        // ] += CollectiveInvestmentPoolExtension(
+        //     dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
+        // ).balanceOf(address(DaoHelper.DAOSQUARE_TREASURY));
+
         resetFundStateBlockNum[address(dao)] = block.number;
     }
 
@@ -750,20 +761,11 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
     }
 
     function processFundRaise(DaoRegistry dao) external returns (bool) {
-        // uint256 fundRaiseTarget = dao.getConfiguration(
-        //     DaoHelper.FUND_RAISING_TARGET
-        // );
-        // uint256 fundRaiseEndTime = dao.getConfiguration(
-        //     DaoHelper.FUND_RAISING_WINDOW_END
-        // );
         if (
             block.timestamp <=
             dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END)
         ) revert FUNDRAISE_ENDTIME_NOT_UP();
 
-        // ColletiveFundRaiseProposalAdapterContract fundRaiseContract = ColletiveFundRaiseProposalAdapterContract(
-        //         dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
-        //     );
         bytes32 fundRaiseProposalId = ColletiveFundRaiseProposalAdapterContract(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
         ).lastProposalIds(address(dao));
@@ -778,11 +780,21 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             ) {
                 escorwExtraFreeInFund(dao);
 
+                _addNewMembers(dao, fundRaiseProposalId);
+
                 fundState[address(dao)] = FundState.DONE;
             } else {
                 fundState[address(dao)] = FundState.FAILED;
 
                 if (poolBalance(dao) > 0) escrowFundForFundRaiseFailed(dao);
+
+                // if (
+                //     CollectiveInvestmentPoolExtension(
+                //         dao.getExtensionAddress(
+                //             DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
+                //         )
+                //     ).balanceOf(address(DaoHelper.DAOSQUARE_TREASURY)) > 0
+                // ) escrowFundForFundRaiseFailed(dao);
             }
 
             emit ProcessFundRaise(
@@ -805,24 +817,6 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             );
         return fundingpool.balanceOf(investorAddr);
     }
-
-    // function balanceOfToken(
-    //     DaoRegistry dao,
-    //     address token,
-    //     address investorAddr
-    // ) public view returns (uint256) {
-    //     CollectiveInvestmentPoolExtension fundingpool = CollectiveInvestmentPoolExtension(
-    //             dao.getExtensionAddress(
-    //                 DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
-    //             )
-    //         );
-    //     return fundingpool.balanceOfToken(investorAddr, token);
-    // }
-
-    function ifInRedemptionPeriod(
-        DaoRegistry dao,
-        uint256 timestamp
-    ) public view returns (bool) {}
 
     function poolBalance(DaoRegistry dao) public view returns (uint256) {
         CollectiveInvestmentPoolExtension fundingpool = CollectiveInvestmentPoolExtension(

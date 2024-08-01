@@ -543,7 +543,15 @@ library GovernanceHelper {
                 )
             );
 
-        if (fundingiPoolAdapt.poolBalance(dao) <= 0 && dao.isMember(account)) {
+        if (
+            CollectiveInvestmentPoolExtension(
+                dao.getExtensionAddress(
+                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
+                )
+            ).balanceOf(address(DaoHelper.DAOSQUARE_TREASURY)) <=
+            0 &&
+            dao.isMember(account)
+        ) {
             return 1;
         }
 

@@ -194,6 +194,9 @@ contract ColletiveFundingProposalAdapterContract is
         vars.investmentPoolAdapt = ColletiveFundingPoolAdapterContract(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER)
         );
+        // vars.investmetPoolExt = CollectiveInvestmentPoolExtension(
+        //     dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
+        // );
         vars._propsalStopVotingTimestamp =
             block.timestamp +
             dao.getConfiguration(DaoHelper.VOTING_PERIOD);

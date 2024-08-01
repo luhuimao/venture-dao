@@ -12,6 +12,7 @@ import "../../helpers/GovernanceHelper.sol";
 import "./CollectiveFundingPoolAdapter.sol";
 import "./CollectiveDaoSetProposalAdapter.sol";
 import "./CollectiveFundingProposalAdapter.sol";
+import "../extensions/CollectiveFundingPool.sol";
 
 contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
     using EnumerableSet for EnumerableSet.Bytes32Set;
@@ -112,12 +113,8 @@ contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
         require(proposal.state == ProposalState.Submitted, "!Submitted");
 
         if (
-            IERC20(proposal.token).allowance(
-                proposal.account,
-                dao.getAdapterAddress(
-                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
-                )
-            ) >= proposal.amount
+            IERC20(proposal.token).allowance(proposal.account, address(this)) >=
+            proposal.amount
         ) {
             ICollectiveVoting votingContract = ICollectiveVoting(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_VOTING_ADAPTER)
@@ -175,18 +172,20 @@ contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
         dao.processProposal(proposalId);
 
         if (voteResult == ICollectiveVoting.VotingState.PASS) {
-            ColletiveFundingPoolAdapterContract fundingPoolAdapt = ColletiveFundingPoolAdapterContract(
-                    dao.getAdapterAddress(
-                        DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
-                    )
-                );
-            fundingPoolAdapt.topupFunds(
-                dao,
-                proposal.token,
-                proposal.account,
-                proposal.amount
-            );
-            proposal.state = ProposalState.Done;
+            // ColletiveFundingPoolAdapterContract fundingPoolAdapt = ColletiveFundingPoolAdapterContract(
+            //         dao.getAdapterAddress(
+            //             DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+            //         )
+            //     );
+            if (
+                topupFunds(
+                    dao,
+                    proposal.token,
+                    proposal.account,
+                    proposal.amount
+                )
+            ) proposal.state = ProposalState.Done;
+            else proposal.state = ProposalState.Failed;
         } else if (
             voteResult == ICollectiveVoting.VotingState.NOT_PASS ||
             voteResult == ICollectiveVoting.VotingState.TIE
@@ -207,6 +206,37 @@ contract ColletiveTopUpProposalAdapterContract is GovernorGuard, Reimbursable {
             nbNo,
             uint256(voteResult)
         );
+
+        return true;
+    }
+
+    function topupFunds(
+        DaoRegistry dao,
+        address token,
+        address account,
+        uint256 amount
+    ) internal returns (bool) {
+        // if (IERC20(token).balanceOf(account) < amount)
+        //     revert INSUFFICIENT_FUND();
+
+        // if (IERC20(token).allowance(account, address(this)) < amount)
+        //     revert INSUFFICIENT_ALLOWANCE();
+
+        if (
+            IERC20(token).balanceOf(account) < amount ||
+            IERC20(token).allowance(account, address(this)) < amount
+        ) return false;
+
+        IERC20(token).transferFrom(account, address(this), amount);
+
+        IERC20(token).approve(
+            dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT),
+            amount
+        );
+
+        CollectiveInvestmentPoolExtension(
+            dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
+        ).addToBalance(account, token, amount);
 
         return true;
     }

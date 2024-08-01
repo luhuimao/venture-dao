@@ -74,6 +74,7 @@ interface ICollectiveFunding {
         uint256 _propsalStopVotingTimestamp;
         ICollectiveVoting votingContract;
         ColletiveFundingPoolAdapterContract investmentPoolAdapt;
+        CollectiveInvestmentPoolExtension investmetPoolExt;
         bool escorwPaybackTokenSucceed;
     }
 

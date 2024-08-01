@@ -14,6 +14,7 @@ import "../../adapters/modifiers/Reimbursable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
+import "../extensions/CollectiveFundingPool.sol";
 
 contract ColletiveGovernorManagementAdapterContract is
     Reimbursable,
@@ -236,9 +237,7 @@ contract ColletiveGovernorManagementAdapterContract is
             proposal.depositAmount ||
             IERC20(proposal.tokenAddress).allowance(
                 proposal.account,
-                dao.getAdapterAddress(
-                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
-                )
+                address(this)
             ) <
             proposal.depositAmount ||
             approvedInfos[address(dao)][proposalId][proposal.account][
@@ -436,14 +435,14 @@ contract ColletiveGovernorManagementAdapterContract is
             address applicant = proposal.account;
 
             if (proposal.pType == ProposalType.GOVERNOR_IN) {
-                ColletiveFundingPoolAdapterContract fundingPoolAdapt = ColletiveFundingPoolAdapterContract(
-                        dao.getAdapterAddress(
-                            DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
-                        )
-                    );
+                // ColletiveFundingPoolAdapterContract fundingPoolAdapt = ColletiveFundingPoolAdapterContract(
+                //         dao.getAdapterAddress(
+                //             DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+                //         )
+                //     );
 
                 if (
-                    fundingPoolAdapt.transferFromNewGovernor(
+                    transferFromNewGovernor(
                         dao,
                         proposal.tokenAddress,
                         proposal.account,
@@ -488,6 +487,36 @@ contract ColletiveGovernorManagementAdapterContract is
             nbNo,
             uint256(voteResult)
         );
+    }
+
+    function transferFromNewGovernor(
+        DaoRegistry dao,
+        address token,
+        address account,
+        uint256 amount
+    ) internal returns (bool) {
+        if (
+            IERC20(token).balanceOf(account) < amount ||
+            IERC20(token).allowance(account, address(this)) < amount
+        ) return false;
+
+        if (
+            dao.getConfiguration(DaoHelper.MAX_INVESTORS_ENABLE) == 1 &&
+            dao.getAllSteward().length >=
+            dao.getConfiguration(DaoHelper.MAX_INVESTORS)
+        ) return false;
+
+        IERC20(token).transferFrom(account, address(this), amount);
+        IERC20(token).approve(
+            dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT),
+            amount
+        );
+
+        CollectiveInvestmentPoolExtension(
+            dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
+        ).addToBalance(account, token, amount);
+
+        return true;
     }
 
     function quit(DaoRegistry dao) external onlyMember(dao) {

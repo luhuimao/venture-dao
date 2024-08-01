@@ -328,6 +328,11 @@ describe("redemption fee...", () => {
                 id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
                 addr: this.collectiveDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
+            },
+            {
+                id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
+                addr: this.colletiveGovernorManagementContract.address, // colletiveGovernorManagementContract
+                flags: 1
             }
         ];
 

@@ -313,6 +313,11 @@ describe("governor management...", () => {
                 id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
                 addr: this.collectiveDistributeAdatperContract.address, // vintageDistrubteAdapterContract
                 flags: 22
+            },
+            {
+                id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
+                addr: this.colletiveGovernorManagementContract.address, // colletiveGovernorManagementContract
+                flags: 1
             }
         ];
 
@@ -581,7 +586,7 @@ describe("governor management...", () => {
         new governor approval...
         `);
         await this.testtoken1.transfer(applicant, depositAmount);
-        await this.testtoken1.connect(this.user1).approve(this.colletiveFundingPoolContract.address, depositAmount);
+        await this.testtoken1.connect(this.user1).approve(this.colletiveGovernorManagementContract.address, depositAmount);
 
         await this.colletiveGovernorManagementContract.connect(this.user1).setGovernorInApprove(
             this.collectiveDirectdaoAddress1,
@@ -700,7 +705,7 @@ describe("governor management...", () => {
         new governor approval...
         `);
         await this.testtoken1.transfer(applicant, depositAmount);
-        await this.testtoken1.connect(this.user2).approve(this.colletiveFundingPoolContract.address, depositAmount);
+        await this.testtoken1.connect(this.user2).approve(this.colletiveGovernorManagementContract.address, depositAmount);
 
         await this.colletiveGovernorManagementContract.connect(this.user2).setGovernorInApprove(
             this.collectiveDirectdaoAddress2,
@@ -811,7 +816,7 @@ describe("governor management...", () => {
         new governor approval...
         `);
         await this.testtoken1.transfer(applicant, depositAmount);
-        await this.testtoken1.connect(this.governor1).approve(this.colletiveFundingPoolContract.address, depositAmount);
+        await this.testtoken1.connect(this.governor1).approve(this.colletiveGovernorManagementContract.address, depositAmount);
 
         await this.colletiveGovernorManagementContract.connect(this.governor1).setGovernorInApprove(
             this.collectiveDirectdaoAddress3,
@@ -913,7 +918,7 @@ describe("governor management...", () => {
         new governor approval...
         `);
         await this.testtoken1.transfer(applicant, depositAmount);
-        await this.testtoken1.connect(this.governor2).approve(this.colletiveFundingPoolContract.address, depositAmount);
+        await this.testtoken1.connect(this.governor2).approve(this.colletiveGovernorManagementContract.address, depositAmount);
 
         await this.colletiveGovernorManagementContract.connect(this.governor2).setGovernorInApprove(
             this.collectiveDirectdaoAddress4,
@@ -1139,10 +1144,10 @@ describe("governor management...", () => {
         const proposalId2 = rel2.events[rel2.events.length - 1].args.proposalId;
 
         await this.testtoken1.transfer(applicant, depositAmount);
-        await this.testtoken1.connect(this.project_team1).approve(this.colletiveFundingPoolContract.address, depositAmount);
+        await this.testtoken1.connect(this.project_team1).approve(this.colletiveGovernorManagementContract.address, depositAmount);
 
         await this.testtoken1.transfer(applicant2, depositAmount);
-        await this.testtoken1.connect(this.project_team2).approve(this.colletiveFundingPoolContract.address, depositAmount);
+        await this.testtoken1.connect(this.project_team2).approve(this.colletiveGovernorManagementContract.address, depositAmount);
 
         await this.colletiveGovernorManagementContract.connect(this.project_team1).setGovernorInApprove(
             this.collectiveDirectdaoAddress2,

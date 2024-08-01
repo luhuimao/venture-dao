@@ -1432,6 +1432,9 @@ export const contracts: Array<ContractConfig> = [
         daoAccessFlagsMap.INCREASE_GOVENOR_OUT_ID
       ],
       extensions: {
+        [extensionsIdsMap.COLLECTIVE_FUNDING_POOL_EXT]: [
+          collectiveFundingPoolExtensionAclFlagsMap.ADD_TO_BALANCE,
+        ],
       },
     },
   },
