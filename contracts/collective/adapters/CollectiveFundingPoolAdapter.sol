@@ -42,6 +42,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
     error GREATER_MAX_FUND_RAISE_AMOUNT();
     error NOT_IN_FUND_RAISE_WINDOW();
     error INVALID_AMOUNT();
+    error AMOUNT_EXCEED_FUND_RAISING_DEPOSIT();
 
     mapping(address => EnumerableSet.AddressSet) fundInvestors;
     mapping(address => mapping(bytes32 => EnumerableSet.AddressSet)) investorsByFundRaise;
@@ -107,6 +108,29 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         address tokenAddr = fundingpool.getFundRaisingTokenAddress();
         if (amount <= 0) revert INVALID_AMOUNT();
         if (amount > balanceOf(dao, msg.sender)) revert INSUFFICIENT_FUND();
+
+        if (
+            block.timestamp >
+            dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN) &&
+            block.timestamp <
+            dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END)
+        ) {
+            if (
+                investorsDepositAmountByFundRaise[address(dao)][
+                    lastFundRaiseProposalId
+                ][msg.sender] < amount
+            ) revert AMOUNT_EXCEED_FUND_RAISING_DEPOSIT();
+            else {
+                investorsDepositAmountByFundRaise[address(dao)][
+                    lastFundRaiseProposalId
+                ][msg.sender] -= amount;
+
+                fundRaisedByProposalId[address(dao)][
+                    lastFundRaiseProposalId
+                ] -= amount;
+            }
+        }
+
         uint256 redemptionFee;
 
         if (
@@ -145,20 +169,20 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                 lastFundRaiseProposalId
             ] -= amount;
 
-        if (
-            balanceOf(dao, msg.sender) <=
-            investorsDepositAmountByFundRaise[address(dao)][
-                lastFundRaiseProposalId
-            ][msg.sender]
-        ) {
-            investorsDepositAmountByFundRaise[address(dao)][
-                lastFundRaiseProposalId
-            ][msg.sender] -= amount;
+        // if (
+        //     balanceOf(dao, msg.sender) <=
+        //     investorsDepositAmountByFundRaise[address(dao)][
+        //         lastFundRaiseProposalId
+        //     ][msg.sender]
+        // ) {
+        //     investorsDepositAmountByFundRaise[address(dao)][
+        //         lastFundRaiseProposalId
+        //     ][msg.sender] -= amount;
 
-            fundRaisedByProposalId[address(dao)][
-                lastFundRaiseProposalId
-            ] -= amount;
-        }
+        //     fundRaisedByProposalId[address(dao)][
+        //         lastFundRaiseProposalId
+        //     ] -= amount;
+        // }
 
         emit WithDraw(address(dao), amount - redemptionFee, msg.sender);
     }
