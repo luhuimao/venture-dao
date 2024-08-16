@@ -463,7 +463,11 @@ contract ColletiveGovernorManagementAdapterContract is
                             DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
                         )
                     );
-                fundingpoolAdapt.returnFundToQuitGovernor(dao, applicant);
+                fundingpoolAdapt.returnFundToQuitGovernor(
+                    dao,
+                    applicant,
+                    false
+                );
 
                 proposal.state = ProposalState.Done;
             }
@@ -533,7 +537,7 @@ contract ColletiveGovernorManagementAdapterContract is
                         DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
                     )
                 );
-            fundingpoolAdapt.returnFundToQuitGovernor(dao, msg.sender);
+            fundingpoolAdapt.returnFundToQuitGovernor(dao, msg.sender, true);
         }
         dao.removeMember(msg.sender);
 

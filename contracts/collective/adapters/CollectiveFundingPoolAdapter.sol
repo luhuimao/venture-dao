@@ -405,7 +405,8 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
 
     function returnFundToQuitGovernor(
         DaoRegistry dao,
-        address account
+        address account,
+        bool redempitonFee
     ) external returns (bool) {
         if (balanceOf(dao, account) <= 0) return false;
 
@@ -417,9 +418,15 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         ) revert ACCESS_DENIED();
 
         uint256 depositedBal = balanceOf(dao, account);
-        uint256 redemptionFee = (depositedBal *
-            dao.getConfiguration(DaoHelper.COLLECTIVE_REDEMPT_FEE_AMOUNT)) /
-            1e18;
+        uint256 redemptionFeeAmount;
+        if (redempitonFee) {
+            redemptionFeeAmount =
+                (depositedBal *
+                    dao.getConfiguration(
+                        DaoHelper.COLLECTIVE_REDEMPT_FEE_AMOUNT
+                    )) /
+                1e18;
+        }
 
         CollectiveInvestmentPoolExtension fundingpoolExt = CollectiveInvestmentPoolExtension(
                 dao.getExtensionAddress(
@@ -430,13 +437,13 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         fundingpoolExt.withdraw(
             account,
             tokenAddr,
-            depositedBal - redemptionFee
+            depositedBal - redemptionFeeAmount
         );
         fundingpoolExt.subtractFromBalance(account, tokenAddr, depositedBal);
         _removeFundInvestor(dao, account);
 
-        if (redemptionFee > 0)
-            escrowRedemptionFee(dao, tokenAddr, redemptionFee); //  distributeRedemptionFee(dao, tokenAddr, redemptionFee);
+        if (redemptionFeeAmount > 0)
+            escrowRedemptionFee(dao, tokenAddr, redemptionFeeAmount); //  distributeRedemptionFee(dao, tokenAddr, redemptionFee);
 
         return true;
     }
