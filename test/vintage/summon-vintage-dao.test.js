@@ -4488,7 +4488,7 @@ describe("voting....", () => {
     });
 });
 
-describe.only("fund term...", () => {
+describe("fund term...", () => {
     before("deploy contracts...", async () => {
         let [owner,
             user1, user2,

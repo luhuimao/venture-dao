@@ -55,7 +55,8 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         public freeINPriorityDeposits; // dao=>new fund proposalid => amount
     mapping(address => mapping(bytes32 => uint256))
         public fundRaisedByProposalId;
-
+    mapping(address => mapping(bytes32 => mapping(address => bool)))
+        public priorityDepositers;
     mapping(address => uint256) public liquidationId;
 
     uint256 public protocolFee = (3 * 1e18) / 1000; // 0.3%
@@ -157,32 +158,15 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             escrowRedemptionFee(dao, tokenAddr, redemptionFee); //  distributeRedemptionFee(dao, tokenAddr, redemptionFee);
 
         if (
-            fundRaiseContract.isPriorityDepositer(
-                dao,
-                lastFundRaiseProposalId,
+            priorityDepositers[address(dao)][lastFundRaiseProposalId][
                 msg.sender
-            ) &&
+            ] &&
             block.timestamp <
             dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END)
         )
             freeINPriorityDeposits[address(dao)][
                 lastFundRaiseProposalId
             ] -= amount;
-
-        // if (
-        //     balanceOf(dao, msg.sender) <=
-        //     investorsDepositAmountByFundRaise[address(dao)][
-        //         lastFundRaiseProposalId
-        //     ][msg.sender]
-        // ) {
-        //     investorsDepositAmountByFundRaise[address(dao)][
-        //         lastFundRaiseProposalId
-        //     ][msg.sender] -= amount;
-
-        //     fundRaisedByProposalId[address(dao)][
-        //         lastFundRaiseProposalId
-        //     ] -= amount;
-        // }
 
         emit WithDraw(address(dao), amount - redemptionFee, msg.sender);
     }
@@ -289,7 +273,13 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                 fundRaiseProposalId,
                 msg.sender
             )
-        ) freeINPriorityDeposits[address(dao)][fundRaiseProposalId] += amount;
+        ) {
+            freeINPriorityDeposits[address(dao)][fundRaiseProposalId] += amount;
+            priorityDepositers[address(dao)][fundRaiseProposalId][
+                msg.sender
+            ] = true;
+        }
+
         investorsDepositAmountByFundRaise[address(dao)][fundRaiseProposalId][
             msg.sender
         ] += amount;
@@ -648,11 +638,9 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                 ][vars.fundRaiseProposalId][allInvestors[i]];
                 if (vars.priorityFunds >= vars.maxFund) {
                     if (
-                        vars.fundRaiseContract.isPriorityDepositer(
-                            dao,
-                            vars.fundRaiseProposalId,
-                            allInvestors[i]
-                        )
+                        priorityDepositers[address(dao)][
+                            vars.fundRaiseProposalId
+                        ][allInvestors[i]]
                     ) {
                         vars.extraFund =
                             vars.fundRaiseBal -
@@ -661,11 +649,9 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                     } else vars.extraFund = vars.fundRaiseBal;
                 } else {
                     if (
-                        vars.fundRaiseContract.isPriorityDepositer(
-                            dao,
-                            vars.fundRaiseProposalId,
-                            allInvestors[i]
-                        )
+                        priorityDepositers[address(dao)][
+                            vars.fundRaiseProposalId
+                        ][allInvestors[i]]
                     ) vars.extraFund = 0;
                     else {
                         vars.extraFund =

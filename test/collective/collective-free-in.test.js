@@ -457,7 +457,7 @@ describe("free in...", () => {
         const timeInfo = [startTime, endTime];
 
         const enable = true;
-        const valifyType = 3;
+        const valifyType = 0;
         const priorityTokenAddress = this.testtoken2.address;
         const tokenId = 0;
         const miniHolding = hre.ethers.utils.parseEther("100");
@@ -520,6 +520,7 @@ describe("free in...", () => {
         proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(this.collectiveDirectdaoAddress, fundRaiseProposalId);
 
 
+
         await this.testtoken1.approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("20000"));
         await this.testtoken1.connect(this.user1).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("20000"));
         await this.testtoken1.connect(this.user2).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("20000"));
@@ -527,6 +528,8 @@ describe("free in...", () => {
         await this.testtoken1.transfer(this.user1.address, hre.ethers.utils.parseEther("20000"));
         await this.testtoken1.transfer(this.user2.address, hre.ethers.utils.parseEther("20000"));
 
+        await this.testtoken2.transfer(this.user1.address, hre.ethers.utils.parseEther("100"));
+        await this.testtoken2.transfer(this.user2.address, hre.ethers.utils.parseEther("100"));
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(proposalDetail.timeInfo.startTime) > blocktimestamp) {
@@ -534,7 +537,7 @@ describe("free in...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("300"));
+        await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("500"));
         await this.colletiveFundingPoolContract.connect(this.user1).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("800"));
         await this.colletiveFundingPoolContract.connect(this.user2).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("900"));
 
@@ -543,8 +546,16 @@ describe("free in...", () => {
         let depositBal3 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.user2.address);
         let fundRaiseId = await this.colletiveFundRaiseProposalContract.fundRaisingId(this.collectiveDirectdaoAddress)
 
+        let poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
+        let priorityDepositAmount = await this.colletiveFundingPoolContract.freeINPriorityDeposits(this.collectiveDirectdaoAddress, fundRaiseProposalId);
+
+
+        let priorityDepositor1 = await this.colletiveFundingPoolContract.priorityDepositers(this.collectiveDirectdaoAddress, fundRaiseProposalId, this.owner.address);
+        let priorityDepositor2 = await this.colletiveFundingPoolContract.priorityDepositers(this.collectiveDirectdaoAddress, fundRaiseProposalId, this.user1.address);
+        let priorityDepositor3 = await this.colletiveFundingPoolContract.priorityDepositers(this.collectiveDirectdaoAddress, fundRaiseProposalId, this.user2.address);
+
         console.log(`fundRaiseId  ${fundRaiseId}`);
-       
+
         let freeinEscrowAmount1 = await this.collectiveEscrowFundAdapterContract.escrowFundsFromOverRaised(
             this.collectiveDirectdaoAddress,
             this.testtoken1.address,
@@ -570,6 +581,14 @@ describe("free in...", () => {
             depositBal2     ${hre.ethers.utils.formatEther(depositBal2)}
             depositBal3     ${hre.ethers.utils.formatEther(depositBal3)}
 
+            priorityDepositor1  ${priorityDepositor1}
+            priorityDepositor2  ${priorityDepositor2}
+            priorityDepositor3  ${priorityDepositor3}
+
+
+            poolBal         ${hre.ethers.utils.formatEther(poolBal)}
+            priorityDepositAmount         ${hre.ethers.utils.formatEther(priorityDepositAmount)}
+
             freeinEscrowAmount1     ${hre.ethers.utils.formatEther(freeinEscrowAmount1)}
             freeinEscrowAmount2     ${hre.ethers.utils.formatEther(freeinEscrowAmount2)}
             freeinEscrowAmount3     ${hre.ethers.utils.formatEther(freeinEscrowAmount3)}
@@ -583,6 +602,8 @@ describe("free in...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
+        await this.testtoken2.connect(this.user2).transfer(this.owner.address, hre.ethers.utils.parseEther("100"))
+
         await this.colletiveFundingPoolContract.processFundRaise(this.collectiveDirectdaoAddress);
 
 
@@ -591,6 +612,9 @@ describe("free in...", () => {
         depositBal1 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.owner.address);
         depositBal2 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.user1.address);
         depositBal3 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.user2.address);
+
+        poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
+        priorityDepositAmount = await this.colletiveFundingPoolContract.freeINPriorityDeposits(this.collectiveDirectdaoAddress, fundRaiseProposalId);
 
 
         fundRaiseId = await this.colletiveFundRaiseProposalContract.fundRaisingId(this.collectiveDirectdaoAddress)
@@ -620,6 +644,9 @@ describe("free in...", () => {
             depositBal1             ${hre.ethers.utils.formatEther(depositBal1)}
             depositBal2             ${hre.ethers.utils.formatEther(depositBal2)}
             depositBal3             ${hre.ethers.utils.formatEther(depositBal3)}
+
+            poolBal         ${hre.ethers.utils.formatEther(poolBal)}
+            priorityDepositAmount         ${hre.ethers.utils.formatEther(priorityDepositAmount)}
 
             freeinEscrowAmount1     ${hre.ethers.utils.formatEther(freeinEscrowAmount1)}
             freeinEscrowAmount2     ${hre.ethers.utils.formatEther(freeinEscrowAmount2)}
