@@ -386,6 +386,8 @@ describe("funding proposal...", () => {
             this.genesis_steward2.address
         ];
         const currency = this.testtoken1.address;
+        const riceRewardReceiver = this.user1.address;
+
         const CollectiveDaoInfo = [
             name,
             creator,
@@ -393,6 +395,7 @@ describe("funding proposal...", () => {
             redemptionFee,
             proposerInvestTokenReward,
             proposerPaybackTokenReward,
+            riceRewardReceiver
         ];
 
         const collectiveDaoParams = [

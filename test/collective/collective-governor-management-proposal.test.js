@@ -418,13 +418,16 @@ describe("governor management...", () => {
             this.genesis_steward2.address
         ];
         const currency = this.testtoken1.address;
+        const riceRewardReceiver = this.user1.address;
+
         const CollectiveDaoInfo1 = [
             daoName1,
             creator,
             currency,
             redemptionFee,
             proposerInvestTokenReward,
-            proposerPaybackTokenReward
+            proposerPaybackTokenReward,
+            riceRewardReceiver
         ];
         const CollectiveDaoInfo2 = [
             daoName2,
@@ -432,7 +435,8 @@ describe("governor management...", () => {
             currency,
             redemptionFee,
             proposerInvestTokenReward,
-            proposerPaybackTokenReward
+            proposerPaybackTokenReward,
+            riceRewardReceiver
         ];
         const CollectiveDaoInfo3 = [
             daoName3,
@@ -440,7 +444,8 @@ describe("governor management...", () => {
             currency,
             redemptionFee,
             proposerInvestTokenReward,
-            proposerPaybackTokenReward
+            proposerPaybackTokenReward,
+            riceRewardReceiver
         ];
         const CollectiveDaoInfo4 = [
             daoName4,
@@ -448,7 +453,8 @@ describe("governor management...", () => {
             currency,
             redemptionFee,
             proposerInvestTokenReward,
-            proposerPaybackTokenReward
+            proposerPaybackTokenReward,
+            riceRewardReceiver
         ];
 
         const collectiveDaoParams1 = [
@@ -486,7 +492,7 @@ describe("governor management...", () => {
             collectiveGovernorMembershipInfo4,
             CollectiveDaoVotingInfo,
             CollectiveDaoInfo4
-        ];
+        ]
 
         const daoinfo1 = await sommonCollectiveDao(this.summonCollectiveDao, this.daoFactory, collectiveDaoParams1);
         const daoinfo2 = await sommonCollectiveDao(this.summonCollectiveDao, this.daoFactory, collectiveDaoParams2);

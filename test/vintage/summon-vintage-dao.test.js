@@ -350,6 +350,8 @@ describe("Summon A Vintage Dao", () => {
 
         const vintageDaoGenesisRaisers = [this.genesis_steward1.address, this.genesis_steward2.address];
         const allocations = [100, 100, 100];
+        const riceRewardReceiver = this.user1.address;
+
         const vintageDaoParams = [
             _daoName,
             creator,
@@ -361,7 +363,8 @@ describe("Summon A Vintage Dao", () => {
             vintageDaoRaiserMembershipInfo,
             vintageDaoVotingInfo,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
         console.log("vintageDaoParams: ", vintageDaoParams);
 
@@ -779,6 +782,7 @@ describe("verify raiser membership...", () => {
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
+        const riceRewardReceiver = this.user1.address;
 
         const vintageDaoParams1 = [
             _daoName1,
@@ -791,7 +795,8 @@ describe("verify raiser membership...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams2 = [
@@ -805,7 +810,8 @@ describe("verify raiser membership...", () => {
             vintageDaoRaiserMembershipInfo2,
             vintageDaoVotingInfo,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams3 = [
@@ -819,7 +825,8 @@ describe("verify raiser membership...", () => {
             vintageDaoRaiserMembershipInfo3,
             vintageDaoVotingInfo,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams4 = [
@@ -833,7 +840,8 @@ describe("verify raiser membership...", () => {
             vintageDaoRaiserMembershipInfo4,
             vintageDaoVotingInfo,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams5 = [
@@ -847,7 +855,8 @@ describe("verify raiser membership...", () => {
             vintageDaoRaiserMembershipInfo5,
             vintageDaoVotingInfo,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
 
@@ -1651,6 +1660,7 @@ describe("voting....", () => {
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
+        const riceRewardReceiver = this.user1.address;
 
         const vintageDaoParams1 = [
             _daoName1,
@@ -1663,7 +1673,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams2 = [
@@ -1677,7 +1688,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo2,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams3 = [
@@ -1691,7 +1703,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo3,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams4 = [
@@ -1705,7 +1718,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo4,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams5 = [
@@ -1719,7 +1733,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo5,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams6 = [
@@ -1733,7 +1748,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo6,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams7 = [
@@ -1747,7 +1763,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo7,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams8 = [
@@ -1761,7 +1778,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo8,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams9 = [
@@ -1775,7 +1793,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo9,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams10 = [
@@ -1789,7 +1808,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo10,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
 
@@ -1804,7 +1824,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo11,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams12 = [
@@ -1818,7 +1839,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo12,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams13 = [
@@ -1832,7 +1854,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo13,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams14 = [
@@ -1846,7 +1869,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo14,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams15 = [
@@ -1860,7 +1884,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo15,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams16 = [
@@ -1874,7 +1899,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo16,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams17 = [
@@ -1888,7 +1914,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo17,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams18 = [
@@ -1902,7 +1929,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo18,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams19 = [
@@ -1916,7 +1944,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo19,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams20 = [
@@ -1930,7 +1959,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo20,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams21 = [
@@ -1944,7 +1974,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo21,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams22 = [
@@ -1958,7 +1989,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo22,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams23 = [
@@ -1972,7 +2004,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo23,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams24 = [
@@ -1986,7 +2019,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo24,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams25 = [
@@ -2000,7 +2034,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo25,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams26 = [
@@ -2014,7 +2049,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo26,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams27 = [
@@ -2028,7 +2064,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo27,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams28 = [
@@ -2042,7 +2079,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo28,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams29 = [
@@ -2056,7 +2094,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo29,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams30 = [
@@ -2070,7 +2109,8 @@ describe("voting....", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo30,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
 
@@ -4737,6 +4777,7 @@ describe("fund term...", () => {
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
+        const riceRewardReceiver = this.user1.address;
 
         const vintageDaoParams1 = [
             _daoName1,
@@ -4749,7 +4790,8 @@ describe("fund term...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         let obj = await sommonVintageDao(this.summonDao, this.daoFactory, vintageDaoParams1);
@@ -5324,6 +5366,7 @@ describe("funding...", () => {
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
+        const riceRewardReceiver = this.user1.address;
 
         const vintageDaoParams1 = [
             _daoName1,
@@ -5336,7 +5379,8 @@ describe("funding...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams2 = [
@@ -5350,7 +5394,8 @@ describe("funding...", () => {
             vintageDaoRaiserMembershipInfo2,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams3 = [
@@ -5364,7 +5409,8 @@ describe("funding...", () => {
             vintageDaoRaiserMembershipInfo3,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams4 = [
@@ -5378,7 +5424,8 @@ describe("funding...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo2,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams5 = [
@@ -5392,7 +5439,8 @@ describe("funding...", () => {
             vintageDaoRaiserMembershipInfo4,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams6 = [
@@ -5406,7 +5454,8 @@ describe("funding...", () => {
             vintageDaoRaiserMembershipInfo4,
             vintageDaoVotingInfo3,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
 
@@ -6826,6 +6875,8 @@ describe("investor membership...", () => {
         ];
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
+        const riceRewardReceiver = this.user1.address;
+
         const vintageDaoParams1 = [
             _daoName1,
             creator,
@@ -6837,7 +6888,8 @@ describe("investor membership...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams2 = [
@@ -6851,7 +6903,8 @@ describe("investor membership...", () => {
             vintageDaoRaiserMembershipInfo2,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams3 = [
@@ -6865,7 +6918,8 @@ describe("investor membership...", () => {
             vintageDaoRaiserMembershipInfo3,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams4 = [
@@ -6879,7 +6933,8 @@ describe("investor membership...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo2,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams5 = [
@@ -6893,7 +6948,8 @@ describe("investor membership...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo2,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         let obj = await sommonVintageDao(this.summonDao, this.daoFactory, vintageDaoParams1);
@@ -8109,6 +8165,8 @@ describe("eligibility deposit voting...", () => {
         ];
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
+        const riceRewardReceiver = this.user1.address;
+
         const vintageDaoParams1 = [
             _daoName1,
             creator,
@@ -8120,7 +8178,8 @@ describe("eligibility deposit voting...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams2 = [
@@ -8134,7 +8193,8 @@ describe("eligibility deposit voting...", () => {
             vintageDaoRaiserMembershipInfo2,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams3 = [
@@ -8148,7 +8208,8 @@ describe("eligibility deposit voting...", () => {
             vintageDaoRaiserMembershipInfo3,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams4 = [
@@ -8162,7 +8223,8 @@ describe("eligibility deposit voting...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo2,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams5 = [
@@ -8176,7 +8238,8 @@ describe("eligibility deposit voting...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo2,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         let obj = await sommonVintageDao(this.summonDao, this.daoFactory, vintageDaoParams1);
@@ -9025,6 +9088,8 @@ describe("funding NFT", () => {
         ];
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
+        const riceRewardReceiver = this.user1.address;
+
         const vintageDaoParams1 = [
             _daoName1,
             creator,
@@ -9036,7 +9101,8 @@ describe("funding NFT", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams2 = [
@@ -9050,7 +9116,8 @@ describe("funding NFT", () => {
             vintageDaoRaiserMembershipInfo2,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams3 = [
@@ -9064,7 +9131,8 @@ describe("funding NFT", () => {
             vintageDaoRaiserMembershipInfo3,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams4 = [
@@ -9078,7 +9146,8 @@ describe("funding NFT", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo2,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams5 = [
@@ -9092,7 +9161,8 @@ describe("funding NFT", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo2,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         let obj = await sommonVintageDao(this.summonDao, this.daoFactory, vintageDaoParams1);
@@ -10187,6 +10257,8 @@ describe("raiser allocations...", () => {
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
+        const riceRewardReceiver = this.user1.address;
+
         const vintageDaoParams1 = [
             _daoName1,
             creator,
@@ -10198,7 +10270,8 @@ describe("raiser allocations...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
 
@@ -10581,6 +10654,8 @@ describe("Free-In...", () => {
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
+        const riceRewardReceiver = this.user1.address;
+
         const vintageDaoParams1 = [
             _daoName1,
             creator,
@@ -10592,7 +10667,8 @@ describe("Free-In...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
 
@@ -12411,6 +12487,8 @@ describe("participant cap...", () => {
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
+        const riceRewardReceiver = this.user1.address;
+
         const vintageDaoParams1 = [
             _daoName1,
             creator,
@@ -12422,7 +12500,8 @@ describe("participant cap...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
 
@@ -12931,6 +13010,8 @@ describe("return token management fee...", () => {
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
+        const riceRewardReceiver = this.user1.address;
+
         const vintageDaoParams1 = [
             _daoName1,
             creator,
@@ -12942,7 +13023,8 @@ describe("return token management fee...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
 
@@ -13597,6 +13679,8 @@ describe("funding proposal start voting at refund period...", () => {
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
+        const riceRewardReceiver = this.user1.address;
+
         const vintageDaoParams1 = [
             _daoName1,
             creator,
@@ -13608,7 +13692,8 @@ describe("funding proposal start voting at refund period...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
 

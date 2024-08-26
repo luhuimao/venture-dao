@@ -71,6 +71,7 @@ contract SummonVintageDao {
         VintageVotingInfo votingInfo;
         address[] genesisGovernors;
         uint256[] allocations;
+        address riceRewardReceiver;
     }
 
     //create dao
@@ -242,6 +243,7 @@ contract SummonVintageDao {
     function summonVintageDao6(
         address newDaoAddr,
         address tokenAddress,
+        address riceReceiver,
         uint256[9] calldata votingInfo
     ) external returns (bool) {
         DaoRegistry newDao = DaoRegistry(newDaoAddr);
@@ -276,6 +278,11 @@ contract SummonVintageDao {
         newDao.setConfiguration(
             DaoHelper.PROPOSAL_EXECUTE_DURATION,
             votingInfo[8]
+        );
+
+        newDao.setAddressConfiguration(
+            DaoHelper.RICE_REWARD_RECEIVER,
+            riceReceiver
         );
 
         return true;
@@ -522,9 +529,10 @@ contract SummonVintageDao {
             params.votingInfo.executingPeriod
         ];
         vars.summonVintageDao6Payload = abi.encodeWithSignature(
-            "summonVintageDao6(address,address,uint256[9])",
+            "summonVintageDao6(address,address,address,uint256[9])",
             vars.newDaoAddr,
             params.votingInfo.tokenAddress,
+            params.riceRewardReceiver,
             uint256SummonVintageDao6Params
         );
 

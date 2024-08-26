@@ -385,14 +385,19 @@ describe("clear fund proposal...", () => {
             this.genesis_steward2.address
         ];
         const currency = this.testtoken1.address;
+        const riceRewardReceiver = this.user1.address;
+
         const CollectiveDaoInfo = [
             name,
             creator,
             currency,
             redemptionFee,
             proposerInvestTokenReward,
-            proposerPaybackTokenReward
+            proposerPaybackTokenReward,
+            riceRewardReceiver
         ];
+
+
 
         const collectiveDaoParams = [
             daoFactoriesAddress,
@@ -411,13 +416,17 @@ describe("clear fund proposal...", () => {
         } = await sommonCollectiveDao(this.summonCollectiveDao, this.daoFactory, collectiveDaoParams);
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
 
-        console.log(`
-        new dao address ${daoAddr}
-        new dao name ${toUtf8(daoName)}
-        `)
+        // console.log(`
+        // new dao address ${daoAddr}
+        // new dao name ${toUtf8(daoName)}
+        // `)
 
         this.collectiveDirectdaoAddress = daoAddr;
         this.daoContract = daoContract;
+
+        const riceReceiver = await daoContract.getAddressConfiguration("0xc77068975ba2254bd67080aa196783f213ee682a15d902d03f33782130cf737d");
+        console.log("riceReceiver ", riceReceiver);
+        
 
         this.collectiveFundingPoolExtContract = (await hre.ethers.getContractFactory("CollectiveInvestmentPoolExtension")).attach((await this.daoContract.getExtensionAddress("0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab")))
     });
@@ -428,7 +437,10 @@ describe("clear fund proposal...", () => {
         const len = collectiveDaoParams.length;
         const daoAddr = await daoFactoryContract.getDaoAddress(collectiveDaoParams[len - 1][0]);
         const daoName = await daoFactoryContract.daos(daoAddr);
-
+        console.log(`
+        new dao address ${daoAddr}
+        new dao name ${toUtf8(daoName)}
+        `)
         return {
             daoAddr: daoAddr,
             daoName: daoName

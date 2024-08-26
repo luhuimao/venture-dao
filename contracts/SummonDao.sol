@@ -105,6 +105,7 @@ contract SummonDao {
         address managementFeeAddress;
         address[] flexDaoGenesisStewards;
         uint256[] allocations;
+        address riceRewardReceiver;
         // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
     }
 
@@ -224,7 +225,8 @@ contract SummonDao {
         uint8 votingPower,
         uint256 tokenID,
         address tokenAddress,
-        uint256[6] calldata _uint256VoteArgs
+        uint256[6] calldata _uint256VoteArgs,
+        address riceRewardReceiver
     ) external returns (bool) {
         DaoRegistry newDao = DaoRegistry(newDaoAddr);
         require(address(this) == msg.sender);
@@ -242,6 +244,11 @@ contract SummonDao {
         newDao.setConfiguration(
             DaoHelper.FLEX_RETURN_TOKEN_MANAGEMENT_FEE_AMOUNT,
             flexDaoReturnTokenManagementFee
+        );
+
+        newDao.setAddressConfiguration(
+            DaoHelper.RICE_REWARD_RECEIVER,
+            riceRewardReceiver
         );
 
         //4config VOTING_PERIOD
@@ -372,12 +379,7 @@ contract SummonDao {
         address[] calldata flexDaoStewardMembershipWhitelist,
         // address flexDaoProposerMembershipTokenAddress,
         address[] calldata flexDaoProposerMembershipWhiteList
-    )
-        external
-        returns (
-            bool
-        )
-    {
+    ) external returns (bool) {
         DaoRegistry dao = DaoRegistry(addressParams[2]);
         require(address(this) == msg.sender);
 
@@ -953,7 +955,7 @@ contract SummonDao {
             params._flexDaoVotingInfo.quorumType
         ];
         vars.summonFlexDao5Payload = abi.encodeWithSignature(
-            "summonFlexDao5(uint256,address,uint256,address,uint8,uint256,address,uint256[6])",
+            "summonFlexDao5(uint256,address,uint256,address,uint8,uint256,address,uint256[6],address)",
             params._flexDaoInfo.flexDaoManagementfee,
             params._flexDaoInfo.managementFeeAddress,
             params._flexDaoInfo.returnTokenManagementFee,
@@ -961,7 +963,8 @@ contract SummonDao {
             params._flexDaoVotingInfo.votingPower,
             params._flexDaoVotingInfo.tokenID,
             params._flexDaoVotingInfo.tokenAddress,
-            uint256VoteParams
+            uint256VoteParams,
+            params._flexDaoInfo.riceRewardReceiver
         );
 
         vars.summonFlexDao6Payload = abi.encodeWithSignature(

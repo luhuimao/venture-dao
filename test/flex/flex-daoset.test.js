@@ -420,6 +420,7 @@ describe("dao set proposal...", () => {
 
         const fundingPollEnable = false; //DIRECT mode
         const flexDaoFundriaseStyle = 1 // 0 - FCFS 1- Free ink0
+        const riceRewardReceiver = this.user1.address;
 
         const flexDaoInfo = {
             name: _daoName, // string name;
@@ -429,7 +430,7 @@ describe("dao set proposal...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
         }
 
         const flexDaoPriorityDepositEnalbe = true;
@@ -520,6 +521,9 @@ describe("dao set proposal...", () => {
 
         this.flexDirectdaoAddress = daoAddr;
         this.daoContract = daoContract;
+
+        const riceReceiver = await daoContract.getAddressConfiguration("0xc77068975ba2254bd67080aa196783f213ee682a15d902d03f33782130cf737d");
+        console.log("riceReceiver ", riceReceiver);
     });
 
     const sommonFlexDao = async (summonDaoContract, daoFactoryContract, flexDaoParams) => {
@@ -2003,6 +2007,7 @@ describe("submit daoset proposal during other poposal in progress...", () => {
 
         const fundingPollEnable = false; //DIRECT mode
         const flexDaoFundriaseStyle = 1 // 0 - FCFS 1- Free ink0
+        const riceRewardReceiver = this.user1.address;
 
         const flexDaoInfo = {
             name: _daoName, // string name;
@@ -2012,7 +2017,8 @@ describe("submit daoset proposal during other poposal in progress...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            flexDaoFundriaseStyle: flexDaoFundriaseStyle,// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in,
+            riceRewardReceiver: riceRewardReceiver
         }
 
         const flexDaoPriorityDepositEnalbe = true;

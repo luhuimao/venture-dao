@@ -448,6 +448,8 @@ describe("Summon A Flex Dao", () => {
         const allocations = [10, 20, 30];
         const fundingPollEnable = false; //DIRECT mode
         const flexDaoFundriaseStyle = 0 // 0 - FCFS 1- Free in
+        const riceRewardReceiver = this.user1.address;
+
         const flexDaoInfo = {
             name: _daoName, // string name;
             creator: this.owner.address, // address creator;
@@ -455,7 +457,8 @@ describe("Summon A Flex Dao", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
 
@@ -723,6 +726,7 @@ describe("Summon A Flex Dao", () => {
         const allocations = [10, 20, 30];
         const fundingPollEnable = true; //Poll mode
         // const flexDaoFundriaseStyle = 0// 0 - FCFS 1- Free in
+        const riceRewardReceiver = this.user1.address;
 
         const flexDaoInfo = {
             name: _daoName, // string name;
@@ -731,7 +735,8 @@ describe("Summon A Flex Dao", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
 
@@ -2218,6 +2223,7 @@ describe("Steward-In Management", () => {
         const allocations = [10, 20, 30];
         const fundingPollEnable = false; //DIRECT mode
         // const flexDaoFundriaseStyle = 0// 0 - FCFS 1- Free in
+        const riceRewardReceiver = this.user1.address;
 
         _daoName = "my_flex_dao2";
         const flexDaoInfo = {
@@ -2227,7 +2233,8 @@ describe("Steward-In Management", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
 
@@ -2733,6 +2740,7 @@ describe("Steward-In Management", () => {
         const allocations = [10, 20, 30];
         const fundingPollEnable = false; //DIRECT mode
         // const flexDaoFundriaseStyle = 0// 0 - FCFS 1- Free in
+        const riceRewardReceiver = this.user1.address;
 
         let _daoName = "my_flex_dao3";
         const flexDaoInfo = {
@@ -2742,7 +2750,8 @@ describe("Steward-In Management", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
 
@@ -3296,6 +3305,7 @@ describe("voting...", () => {
         let _daoName4_1 = "my_flex_dao4_1";
         let _daoName4_2 = "my_flex_dao4_2";
 
+        const riceRewardReceiver = this.user1.address;
 
         const flexDaoInfo1_1 = {
             name: _daoName1_1, // string name;
@@ -3304,7 +3314,8 @@ describe("voting...", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
         const flexDaoInfo1_2 = {
@@ -3314,7 +3325,8 @@ describe("voting...", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo1_3 = {
@@ -3324,7 +3336,8 @@ describe("voting...", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo1_4 = {
@@ -3334,7 +3347,8 @@ describe("voting...", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo2_1 = {
@@ -3344,7 +3358,8 @@ describe("voting...", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo2_2 = {
@@ -3354,7 +3369,8 @@ describe("voting...", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
         const flexDaoInfo2_3 = {
@@ -3364,7 +3380,8 @@ describe("voting...", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo2_4 = {
@@ -3374,7 +3391,8 @@ describe("voting...", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
         const flexDaoInfo2_5 = {
@@ -3384,7 +3402,8 @@ describe("voting...", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo2_6 = {
@@ -3394,7 +3413,8 @@ describe("voting...", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
         const flexDaoInfo3 = {
@@ -3404,7 +3424,8 @@ describe("voting...", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo4 = {
@@ -3414,7 +3435,8 @@ describe("voting...", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
 
@@ -3425,7 +3447,8 @@ describe("voting...", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
 
@@ -3436,7 +3459,8 @@ describe("voting...", () => {
             returnTokenManagementFee: returnTokenManagementFee,
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
-            allocations: allocations
+            allocations: allocations,
+            riceRewardReceiver: riceRewardReceiver
             // flexDaoFundriaseStyle: flexDaoFundriaseStyle// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
         const flexDaoPriorityDepositEnalbe = true;
@@ -5121,6 +5145,7 @@ describe("polling voting...", () => {
         const allocations = [10, 20, 30];
         const fundingPollEnable = true; //poll mode
         const flexDaoFundriaseStyle = 0 // 0 - FCFS 1- Free in
+        const riceRewardReceiver = this.user1.address;
 
         _daoName = "my_flex_dao2";
         let _daoName1_1 = "my_flex_dao1-1";
@@ -5144,7 +5169,8 @@ describe("polling voting...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
         const flexDaoInfo1_2 = {
             name: _daoName1_2, // string name;
@@ -5154,7 +5180,8 @@ describe("polling voting...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo1_3 = {
             name: _daoName1_3, // string name;
@@ -5164,7 +5191,8 @@ describe("polling voting...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo2_1 = {
             name: _daoName2_1, // string name;
@@ -5174,7 +5202,8 @@ describe("polling voting...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo2_2 = {
             name: _daoName2_2, // string name;
@@ -5184,7 +5213,8 @@ describe("polling voting...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo2_3 = {
             name: _daoName2_3, // string name;
@@ -5194,7 +5224,8 @@ describe("polling voting...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
         const flexDaoInfo3_1 = {
             name: _daoName3_1, // string name;
@@ -5204,7 +5235,8 @@ describe("polling voting...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo3_2 = {
             name: _daoName3_2, // string name;
@@ -5214,7 +5246,8 @@ describe("polling voting...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
         const flexDaoInfo3_3 = {
             name: _daoName3_3, // string name;
@@ -5224,7 +5257,8 @@ describe("polling voting...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo4_1 = {
             name: _daoName4_1, // string name;
@@ -5234,7 +5268,8 @@ describe("polling voting...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
         const flexDaoInfo4_2 = {
             name: _daoName4_2, // string name;
@@ -5244,7 +5279,8 @@ describe("polling voting...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo4_3 = {
             name: _daoName4_3, // string name;
@@ -5254,7 +5290,8 @@ describe("polling voting...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
         const flexDaoPriorityDepositEnalbe = true;
 
@@ -8274,6 +8311,7 @@ describe("verify proposer membership...", () => {
         const allocations = [10, 20, 30];
         const fundingPollEnable = true; //poll mode
         const flexDaoFundriaseStyle = 0 // 0 - FCFS 1- Free in
+        const riceRewardReceiver = this.user1.address;
 
         _daoName = "my_flex_dao2";
         let _daoName1_1 = "my_flex_dao1-1";
@@ -8297,7 +8335,8 @@ describe("verify proposer membership...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
         const flexDaoInfo1_2 = {
             name: _daoName1_2, // string name;
@@ -8307,7 +8346,8 @@ describe("verify proposer membership...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo1_3 = {
             name: _daoName1_3, // string name;
@@ -8317,7 +8357,8 @@ describe("verify proposer membership...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo2_1 = {
             name: _daoName2_1, // string name;
@@ -8327,7 +8368,8 @@ describe("verify proposer membership...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo2_2 = {
             name: _daoName2_2, // string name;
@@ -8337,7 +8379,8 @@ describe("verify proposer membership...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo2_3 = {
             name: _daoName2_3, // string name;
@@ -8347,7 +8390,8 @@ describe("verify proposer membership...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
         const flexDaoInfo3_1 = {
             name: _daoName3_1, // string name;
@@ -8357,7 +8401,8 @@ describe("verify proposer membership...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo3_2 = {
             name: _daoName3_2, // string name;
@@ -8367,7 +8412,8 @@ describe("verify proposer membership...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
         const flexDaoInfo3_3 = {
             name: _daoName3_3, // string name;
@@ -8377,7 +8423,8 @@ describe("verify proposer membership...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo4_1 = {
             name: _daoName4_1, // string name;
@@ -8387,7 +8434,8 @@ describe("verify proposer membership...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
         const flexDaoInfo4_2 = {
             name: _daoName4_2, // string name;
@@ -8397,7 +8445,8 @@ describe("verify proposer membership...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         };
         const flexDaoInfo4_3 = {
             name: _daoName4_3, // string name;
@@ -8407,7 +8456,8 @@ describe("verify proposer membership...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
         }
         const flexDaoPriorityDepositEnalbe = true;
 
@@ -9729,6 +9779,8 @@ describe("vesting nft...", () => {
         const allocations = [10, 20, 30];
         const fundingPollEnable = false; //DIRECT mode
         const flexDaoFundriaseStyle = 0 // 0 - FCFS 1- Free in
+        const riceRewardReceiver = this.user1.address;
+
         const flexDaoInfo = {
             name: _daoName, // string name;
             creator: this.owner.address, // address creator;
@@ -9737,7 +9789,9 @@ describe("vesting nft...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle, // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
+
         }
 
         const flexDaoPriorityDepositEnalbe = true;
@@ -10700,6 +10754,8 @@ describe("steward allocations...", () => {
 
         const fundingPollEnable = false; //DIRECT mode
         const flexDaoFundriaseStyle = 0 // 0 - FCFS 1- Free in
+        const riceRewardReceiver = this.user1.address;
+
         const flexDaoInfo = {
             name: _daoName, // string name;
             creator: this.owner.address, // address creator;
@@ -10708,7 +10764,8 @@ describe("steward allocations...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle,// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
         }
 
         const flexDaoPriorityDepositEnalbe = true;
@@ -11162,6 +11219,8 @@ describe("free in...", () => {
 
         const fundingPollEnable = false; //DIRECT mode
         const flexDaoFundriaseStyle = 1 // 0 - FCFS 1- Free in
+        const riceRewardReceiver = this.user1.address;
+
         const flexDaoInfo = {
             name: _daoName, // string name;
             creator: this.owner.address, // address creator;
@@ -11170,7 +11229,8 @@ describe("free in...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle, // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
         }
 
         const flexDaoPriorityDepositEnalbe = true;
@@ -11858,6 +11918,8 @@ describe("participant cap...", () => {
 
         const fundingPollEnable = false; //DIRECT mode
         const flexDaoFundriaseStyle = 1 // 0 - FCFS 1- Free ink0
+        const riceRewardReceiver = this.user1.address;
+
         const flexDaoInfo = {
             name: _daoName, // string name;
             creator: this.owner.address, // address creator;
@@ -11866,7 +11928,8 @@ describe("participant cap...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle,// uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
         }
 
         const flexDaoPriorityDepositEnalbe = true;
@@ -12469,6 +12532,7 @@ describe("return token management fee...", () => {
 
         const fundingPollEnable = false; //DIRECT mode
         const flexDaoFundriaseStyle = 1 // 0 - FCFS 1- Free ink0
+        const riceRewardReceiver = this.user1.address;
 
         const flexDaoInfo = {
             name: _daoName, // string name;
@@ -12478,7 +12542,8 @@ describe("return token management fee...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            flexDaoFundriaseStyle: flexDaoFundriaseStyle, // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
         }
 
         const flexDaoPriorityDepositEnalbe = true;

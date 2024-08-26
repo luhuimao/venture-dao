@@ -426,6 +426,7 @@ describe("funding...", () => {
 
         const fundingPollEnable = false; //DIRECT mode
         const flexDaoFundriaseStyle = 1 // 0 - FCFS 1- Free ink0
+        const riceRewardReceiver = this.user1.address;
 
         const flexDaoInfo = {
             name: _daoName, // string name;
@@ -435,7 +436,8 @@ describe("funding...", () => {
             managementFeeAddress: this.genesis_steward1.address,
             flexDaoGenesisStewards: flexDaoGenesisStewards, // address[] flexDaoGenesisStewards;
             allocations: allocations,
-            flexDaoFundriaseStyle: flexDaoFundriaseStyle // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            // flexDaoFundriaseStyle: flexDaoFundriaseStyle, // uint8 flexDaoFundriaseStyle; // 0 - FCFS 1- Free in
+            riceRewardReceiver: riceRewardReceiver
         }
 
         const flexDaoPriorityDepositEnalbe = true;

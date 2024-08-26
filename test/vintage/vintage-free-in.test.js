@@ -396,6 +396,8 @@ describe("fund establishment...", () => {
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
+        const riceRewardReceiver = this.user1.address;
+
         const vintageDaoParams1 = [
             _daoName1,
             creator,
@@ -407,7 +409,8 @@ describe("fund establishment...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         const vintageDaoParams2 = [
@@ -421,7 +424,8 @@ describe("fund establishment...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo2,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         // console.log(vintageDaoParams1);

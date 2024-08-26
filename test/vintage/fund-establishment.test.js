@@ -393,6 +393,7 @@ describe("fund establishment...", () => {
 
         const vintageDaoGenesisRaisers = [this.genesis_raiser1.address, this.genesis_raiser2.address];
         const allocations = [100, 100, 100];
+        const riceRewardReceiver = this.user1.address;
         const vintageDaoParams1 = [
             _daoName1,
             creator,
@@ -404,8 +405,10 @@ describe("fund establishment...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
+
 
         const vintageDaoParams2 = [
             _daoName2,
@@ -418,7 +421,8 @@ describe("fund establishment...", () => {
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo2,
             vintageDaoGenesisRaisers,
-            allocations
+            allocations,
+            riceRewardReceiver
         ];
 
         // console.log(vintageDaoParams1);
@@ -435,7 +439,8 @@ describe("fund establishment...", () => {
         const dao2Contract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(this.daoAddr2);
         this.dao2Contract = dao2Contract;
 
-
+        const riceReceiver = await dao1Contract.getAddressConfiguration("0xc77068975ba2254bd67080aa196783f213ee682a15d902d03f33782130cf737d");
+        console.log("riceReceiver ", riceReceiver);
 
         const investorMbN = await dao1Contract.getStringConfiguration("0x324dfda0ffcc38c4650b5df076e6f7b4938c2b723873af58b1be5e221dd2cc30");
         const governorMbN = await dao1Contract.getStringConfiguration("0xa4b6f581a2d1e8b24bacedf9a91a13c8df6147ffb9d2bd4a770d867d91018da6");

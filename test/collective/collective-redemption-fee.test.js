@@ -396,14 +396,18 @@ describe("redemption fee...", () => {
             this.genesis_steward2.address
         ];
         const currency = this.testtoken1.address;
+        const riceRewardReceiver = this.user1.address;
+
         const CollectiveDaoInfo = [
             name,
             creator,
             currency,
             redemptionFee,
             proposerInvestTokenReward,
-            proposerPaybackTokenReward
+            proposerPaybackTokenReward,
+            riceRewardReceiver
         ];
+
 
         const collectiveDaoParams = [
             daoFactoriesAddress,

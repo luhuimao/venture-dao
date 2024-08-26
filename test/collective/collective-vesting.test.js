@@ -383,6 +383,8 @@ describe("vesting...", () => {
             this.genesis_steward1.address,
             this.genesis_steward2.address
         ];
+        const riceRewardReceiver = this.user1.address;
+
         const currency = this.testtoken1.address;
         const CollectiveDaoInfo = [
             name,
@@ -390,8 +392,10 @@ describe("vesting...", () => {
             currency,
             redemptionFee,
             proposerInvestTokenReward,
-            proposerPaybackTokenReward
+            proposerPaybackTokenReward,
+            riceRewardReceiver
         ];
+
 
         const collectiveDaoParams = [
             daoFactoriesAddress,

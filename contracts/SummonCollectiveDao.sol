@@ -51,6 +51,7 @@ contract SummonCollectiveDao {
         uint256 redemptionFee;
         uint256 proposerInvestTokenReward;
         uint256 proposerPaybackTokenReward;
+        address riceRewardReceiver;
         // address[] collectiveDaoGenesisGovernor;
     }
 
@@ -219,8 +220,15 @@ contract SummonCollectiveDao {
         uint256 redemptFee,
         address currencyAddress,
         uint256 proposerInvestTokenReward,
-        uint256 proposerPaybackTokenReward
-    ) external returns (bool) {
+        uint256 proposerPaybackTokenReward,
+        address riceRewardReceiver
+    )
+        external
+        returns (
+            // address riceRewardReceiver
+            bool
+        )
+    {
         DaoRegistry newDao = DaoRegistry(newDaoAddr);
         require(address(this) == msg.sender);
 
@@ -240,6 +248,10 @@ contract SummonCollectiveDao {
         newDao.setAddressConfiguration(
             DaoHelper.FUND_RAISING_CURRENCY_ADDRESS,
             currencyAddress
+        );
+        newDao.setAddressConfiguration(
+            DaoHelper.RICE_REWARD_RECEIVER,
+            riceRewardReceiver
         );
         return true;
     }
@@ -323,17 +335,6 @@ contract SummonCollectiveDao {
 
         return true;
     }
-
-    //registerGenesisGovernors
-    // function summonCollectiveDao9(
-    //     address newDaoAddr
-    //     // address[] calldata genesisGovernors
-    // ) external returns (bool) {
-    //     DaoRegistry newDao = DaoRegistry(newDaoAddr);
-    //     require(address(this) == msg.sender);
-    //     registerGenesisGovernors(newDao, genesisGovernors);
-    //     return true;
-    // }
 
     function summonCollectiveDao10(address newDaoAddr) external returns (bool) {
         DaoRegistry dao = DaoRegistry(newDaoAddr);
@@ -475,12 +476,13 @@ contract SummonCollectiveDao {
         );
 
         vars.summonCollectiveDao6Payload = abi.encodeWithSignature(
-            "summonCollectiveDao6(address,uint256,address,uint256,uint256)",
+            "summonCollectiveDao6(address,uint256,address,uint256,uint256,address)",
             vars.newDaoAddr,
             params.collectiveDaoInfo.redemptionFee,
             params.collectiveDaoInfo.currency,
             params.collectiveDaoInfo.proposerInvestTokenReward,
-            params.collectiveDaoInfo.proposerPaybackTokenReward
+            params.collectiveDaoInfo.proposerPaybackTokenReward,
+            params.collectiveDaoInfo.riceRewardReceiver
         );
 
         vars.summonCollectiveDao7Payload = abi.encodeWithSignature(

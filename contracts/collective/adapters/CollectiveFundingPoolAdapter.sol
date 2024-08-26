@@ -509,7 +509,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         if (!fundInvestors[address(dao)].contains(account))
             fundInvestors[address(dao)].add(account);
 
-        // if (!dao.isMember(account)) dao.potentialNewMember(account);
+        if (!dao.isMember(account)) dao.potentialNewMember(account);
     }
 
     function _removeFundInvestor(DaoRegistry dao, address account) internal {

@@ -284,13 +284,16 @@ describe("Summon A Collective Dao", () => {
         ];
 
         const currency = this.testtoken1.address;
+        const riceRewardReceiver = this.user1.address;
+
         const CollectiveDaoInfo = [
             name,
             creator,
             currency,
             redemptionFee,
             proposerInvestTokenReward,
-            proposerPaybackTokenReward
+            proposerPaybackTokenReward,
+            riceRewardReceiver
         ];
 
         const collectiveDaoParams = [
@@ -301,6 +304,7 @@ describe("Summon A Collective Dao", () => {
             collectiveGovernorMembershipInfo,
             CollectiveDaoVotingInfo,
             CollectiveDaoInfo
+            
         ];
 
 
@@ -647,6 +651,7 @@ describe("deposit, withdraw...", () => {
             this.genesis_steward2.address
         ];
         const currency = this.testtoken1.address;
+        const riceRewardReceiver = this.user1.address;
 
         const CollectiveDaoInfo = [
             name,
@@ -654,8 +659,10 @@ describe("deposit, withdraw...", () => {
             currency,
             redemptionFee,
             proposerInvestTokenReward,
-            proposerPaybackTokenReward
+            proposerPaybackTokenReward,
+            riceRewardReceiver
         ];
+
 
         const collectiveDaoParams = [
             daoFactoriesAddress,

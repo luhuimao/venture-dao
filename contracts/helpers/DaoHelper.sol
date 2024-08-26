@@ -570,6 +570,9 @@ library DaoHelper {
     bytes32 internal constant ERC20_TRANSFER_STRATEGY_ADPT =
         keccak256("erc20-transfer-strategy");
 
+    bytes32 internal constant RICE_REWARD_RECEIVER =
+        keccak256("RICE-REWARD-RECEIVER");
+
     // Extensions
 
     /* 

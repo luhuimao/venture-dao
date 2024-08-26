@@ -6,6 +6,8 @@ import "../../helpers/DaoHelper.sol";
 import "./VintageRaiserManagement.sol";
 import "./VintageFundingAdapter.sol";
 import "./VintageFundRaise.sol";
+import "./VintageFundingPoolAdapter.sol";
+import "./VintageRaiserAllocation.sol";
 
 contract VintageDaoSetHelperAdapterContract {
     modifier OnlyDaoSet(DaoRegistry dao) {
