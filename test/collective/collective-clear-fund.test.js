@@ -185,6 +185,7 @@ describe("clear fund proposal...", () => {
         this.collectiveFreeInEscrowFundAdapterContract = this.adapters.collectiveFreeInEscrowFundAdapterContract.instance;
         this.colletiveClearFundProposalAdapterContract = this.adapters.colletiveClearFundProposalAdapterContract.instance;
         this.collectiveRedemptionFeeEscrowAdapterContract = this.adapters.collectiveRedemptionFeeEscrowAdapterContract.instance;
+        this.colletiveSetRiceReceiverProposalAdapterContract = this.adapterscolletiveSetRiceReceiverProposalAdapterContract.instance;
 
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 
@@ -299,6 +300,11 @@ describe("clear fund proposal...", () => {
                 id: '0x1ec3ab9b73a5166bb51de3096776c3fb06df7dc0a5e2df3038eb0588fad3adbc', // collectiveRedemptionFeeEscrowAdapterContract
                 addr: this.collectiveRedemptionFeeEscrowAdapterContract.address,
                 flags: 0
+            },
+            {
+                id: '0x9e82e8ea7f567cfdc187328108cbbacfa60391a3b15920f636c4185ecdce21a5', // colletiveSetRiceReceiverProposalAdapterContract
+                addr: this.colletiveSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 
@@ -426,7 +432,7 @@ describe("clear fund proposal...", () => {
 
         const riceReceiver = await daoContract.getAddressConfiguration("0xc77068975ba2254bd67080aa196783f213ee682a15d902d03f33782130cf737d");
         console.log("riceReceiver ", riceReceiver);
-        
+
 
         this.collectiveFundingPoolExtContract = (await hre.ethers.getContractFactory("CollectiveInvestmentPoolExtension")).attach((await this.daoContract.getExtensionAddress("0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab")))
     });

@@ -85,7 +85,6 @@ import { isAsyncFunction } from "util/types";
 import { sync } from "mkdirp";
 const hre = require("hardhat");
 
-
 describe("daoset proposal...", () => {
 
     before("deploy contracts...", async () => {
@@ -167,6 +166,7 @@ describe("daoset proposal...", () => {
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
         this.vintageGovernorVotingAssetAllocationProposalAdapterContract = adapters.vintageGovernorVotingAssetAllocationProposalAdapterContract.instance;
+        this.vintageSetRiceReceiverProposalAdapterContract = adapters.vintageSetRiceReceiverProposalAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -308,6 +308,11 @@ describe("daoset proposal...", () => {
                 id: '0xd2309e96d8bb2bfc0d3d1013db3e5e4cd56c2be2fdfad04875878bdc61b628d3', //vintageGovernorVotingAssetAllocationProposalAdapterContract
                 addr: this.vintageGovernorVotingAssetAllocationProposalAdapterContract.address,
                 flags: 16777226
+            },
+            {
+                id: '0x5f7213b2964496b4b5d7c886ee16ffc5ce56a5a54f96166558da81e33d5567cc', //vintageSetRiceReceiverProposalAdapterContract
+                addr: this.vintageSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 

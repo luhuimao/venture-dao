@@ -168,6 +168,7 @@ describe("Summon A Vintage Dao", () => {
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
+        this.vintageSetRiceReceiverProposalAdapterContract = adapters.vintageSetRiceReceiverProposalAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -289,6 +290,11 @@ describe("Summon A Vintage Dao", () => {
                 id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
                 addr: this.vintageDaoSetHelperAdapterContract.address,
                 flags: 8
+            },
+            {
+                id: '0x5f7213b2964496b4b5d7c886ee16ffc5ce56a5a54f96166558da81e33d5567cc', //vintageSetRiceReceiverProposalAdapterContract
+                addr: this.vintageSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 
@@ -563,6 +569,7 @@ describe("verify raiser membership...", () => {
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
+        this.vintageSetRiceReceiverProposalAdapterContract = adapters.vintageSetRiceReceiverProposalAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -672,6 +679,11 @@ describe("verify raiser membership...", () => {
                 id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
                 addr: this.vintageDaoSetHelperAdapterContract.address,
                 flags: 8
+            },
+            {
+                id: '0x5f7213b2964496b4b5d7c886ee16ffc5ce56a5a54f96166558da81e33d5567cc', //vintageSetRiceReceiverProposalAdapterContract
+                addr: this.vintageSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 
@@ -1068,6 +1080,7 @@ describe("voting....", () => {
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
+        this.vintageSetRiceReceiverProposalAdapterContract = adapters.vintageSetRiceReceiverProposalAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -1172,6 +1185,11 @@ describe("voting....", () => {
                 id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
                 addr: this.vintageDaoSetHelperAdapterContract.address,
                 flags: 8
+            },
+            {
+                id: '0x5f7213b2964496b4b5d7c886ee16ffc5ce56a5a54f96166558da81e33d5567cc', //vintageSetRiceReceiverProposalAdapterContract
+                addr: this.vintageSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 
@@ -4605,6 +4623,7 @@ describe("fund term...", () => {
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
+        this.vintageSetRiceReceiverProposalAdapterContract = adapters.vintageSetRiceReceiverProposalAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -4714,6 +4733,11 @@ describe("fund term...", () => {
                 id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
                 addr: this.vintageDaoSetHelperAdapterContract.address,
                 flags: 8
+            },
+            {
+                id: '0x5f7213b2964496b4b5d7c886ee16ffc5ce56a5a54f96166558da81e33d5567cc', //vintageSetRiceReceiverProposalAdapterContract
+                addr: this.vintageSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 
@@ -5100,6 +5124,7 @@ describe("funding...", () => {
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
+        this.vintageSetRiceReceiverProposalAdapterContract = adapters.vintageSetRiceReceiverProposalAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -5204,6 +5229,11 @@ describe("funding...", () => {
                 id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
                 addr: this.vintageDaoSetHelperAdapterContract.address,
                 flags: 8
+            },
+            {
+                id: '0x5f7213b2964496b4b5d7c886ee16ffc5ce56a5a54f96166558da81e33d5567cc', //vintageSetRiceReceiverProposalAdapterContract
+                addr: this.vintageSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 
@@ -6566,6 +6596,7 @@ describe("investor membership...", () => {
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
+        this.vintageSetRiceReceiverProposalAdapterContract = adapters.vintageSetRiceReceiverProposalAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -6670,6 +6701,11 @@ describe("investor membership...", () => {
                 id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
                 addr: this.vintageDaoSetHelperAdapterContract.address,
                 flags: 8
+            },
+            {
+                id: '0x5f7213b2964496b4b5d7c886ee16ffc5ce56a5a54f96166558da81e33d5567cc', //vintageSetRiceReceiverProposalAdapterContract
+                addr: this.vintageSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 
@@ -7857,6 +7893,7 @@ describe("eligibility deposit voting...", () => {
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
+        this.vintageSetRiceReceiverProposalAdapterContract = adapters.vintageSetRiceReceiverProposalAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -7961,6 +7998,11 @@ describe("eligibility deposit voting...", () => {
                 id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
                 addr: this.vintageDaoSetHelperAdapterContract.address,
                 flags: 8
+            },
+            {
+                id: '0x5f7213b2964496b4b5d7c886ee16ffc5ce56a5a54f96166558da81e33d5567cc', //vintageSetRiceReceiverProposalAdapterContract
+                addr: this.vintageSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 
@@ -8738,6 +8780,7 @@ describe("funding NFT", () => {
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
+        this.vintageSetRiceReceiverProposalAdapterContract = adapters.vintageSetRiceReceiverProposalAdapterContract.instance;
 
         // const VintageVestingERC721Helper = await hre.ethers.getContractFactory("VintageVestingERC721Helper");
         // const vintageVestingERC721Helper = await VintageVestingERC721Helper.deploy();
@@ -8884,6 +8927,11 @@ describe("funding NFT", () => {
                 id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
                 addr: this.vintageDaoSetHelperAdapterContract.address,
                 flags: 8
+            },
+            {
+                id: '0x5f7213b2964496b4b5d7c886ee16ffc5ce56a5a54f96166558da81e33d5567cc', //vintageSetRiceReceiverProposalAdapterContract
+                addr: this.vintageSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 
@@ -10052,6 +10100,7 @@ describe("raiser allocations...", () => {
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
+        this.vintageSetRiceReceiverProposalAdapterContract = adapters.vintageSetRiceReceiverProposalAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -10188,6 +10237,11 @@ describe("raiser allocations...", () => {
                 id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
                 addr: this.vintageDaoSetHelperAdapterContract.address,
                 flags: 8
+            },
+            {
+                id: '0x5f7213b2964496b4b5d7c886ee16ffc5ce56a5a54f96166558da81e33d5567cc', //vintageSetRiceReceiverProposalAdapterContract
+                addr: this.vintageSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 
@@ -10449,6 +10503,7 @@ describe("Free-In...", () => {
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
+        this.vintageSetRiceReceiverProposalAdapterContract = adapters.vintageSetRiceReceiverProposalAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -10585,6 +10640,11 @@ describe("Free-In...", () => {
                 id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
                 addr: this.vintageDaoSetHelperAdapterContract.address,
                 flags: 8
+            },
+            {
+                id: '0x5f7213b2964496b4b5d7c886ee16ffc5ce56a5a54f96166558da81e33d5567cc', //vintageSetRiceReceiverProposalAdapterContract
+                addr: this.vintageSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 
@@ -12282,6 +12342,7 @@ describe("participant cap...", () => {
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
+        this.vintageSetRiceReceiverProposalAdapterContract = adapters.vintageSetRiceReceiverProposalAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -12418,6 +12479,11 @@ describe("participant cap...", () => {
                 id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
                 addr: this.vintageDaoSetHelperAdapterContract.address,
                 flags: 8
+            },
+            {
+                id: '0x5f7213b2964496b4b5d7c886ee16ffc5ce56a5a54f96166558da81e33d5567cc', //vintageSetRiceReceiverProposalAdapterContract
+                addr: this.vintageSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 
@@ -12805,6 +12871,7 @@ describe("return token management fee...", () => {
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
+        this.vintageSetRiceReceiverProposalAdapterContract = adapters.vintageSetRiceReceiverProposalAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -12941,6 +13008,11 @@ describe("return token management fee...", () => {
                 id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
                 addr: this.vintageDaoSetHelperAdapterContract.address,
                 flags: 8
+            },
+            {
+                id: '0x5f7213b2964496b4b5d7c886ee16ffc5ce56a5a54f96166558da81e33d5567cc', //vintageSetRiceReceiverProposalAdapterContract
+                addr: this.vintageSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 
@@ -13474,6 +13546,7 @@ describe("funding proposal start voting at refund period...", () => {
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
+        this.vintageSetRiceReceiverProposalAdapterContract = adapters.vintageSetRiceReceiverProposalAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -13610,6 +13683,11 @@ describe("funding proposal start voting at refund period...", () => {
                 id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
                 addr: this.vintageDaoSetHelperAdapterContract.address,
                 flags: 8
+            },
+            {
+                id: '0x5f7213b2964496b4b5d7c886ee16ffc5ce56a5a54f96166558da81e33d5567cc', //vintageSetRiceReceiverProposalAdapterContract
+                addr: this.vintageSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 

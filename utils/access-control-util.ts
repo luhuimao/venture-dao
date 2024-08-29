@@ -43,6 +43,7 @@ export const daoAccessFlagsMap: Record<string, string> = {
   INCREASE_TOPUP_ID: "INCREASE_TOPUP_ID",//23
   INCREASE_CLEAR_FUND_ID: "INCREASE_CLEAR_FUND_ID",//24
   INCREASE_Gov_Vot_ASSET_ALLOC_ID: "INCREASE_Gov_Vot_ASSET_ALLOC_ID",//25
+  INCREASE_SET_RICE_RECEIVER_ID: "INCREASE_SET_RICE_RECEIVER_ID" //26
 };
 
 export const daoAccessFlags: Array<string> = Object.values(daoAccessFlagsMap);

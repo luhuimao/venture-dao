@@ -1009,6 +1009,24 @@ export const contracts: Array<ContractConfig> = [
       },
     }
   },
+  {
+    id: adaptersIdsMap.VINTAGE_SET_RICE_RECEIVER_ADAPTER,
+    name: "VintageSetRiceReceiverProposalAdapterContract",
+    alias: "vintageSetRiceReceiverProposalAdapterContract",
+    path: "../../contracts/adapters/VintageSetRiceReceiverProposalAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.SET_CONFIGURATION,
+        daoAccessFlagsMap.INCREASE_SET_RICE_RECEIVER_ID
+      ],
+      extensions: {
+      },
+    }
+  },
   /***********************************vintage end********************************/
   // flex
   {
@@ -1399,6 +1417,24 @@ export const contracts: Array<ContractConfig> = [
       },
     },
   },
+  {
+    id: adaptersIdsMap.FLEX_SET_RICE_RECEIVER_ADAPTER,
+    name: "FlexSetRiceReceiverProposalAdapterContract",
+    alias: "flexSetRiceReceiverProposalAdapterContract",
+    path: "../../contracts/adapters/FlexSetRiceReceiverProposalAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.SET_CONFIGURATION,
+        daoAccessFlagsMap.INCREASE_SET_RICE_RECEIVER_ID
+      ],
+      extensions: {
+      },
+    },
+  },
   /*****************************************************flex end*******************************************************/
   /*****************************************************collective*******************************************************/
   {
@@ -1698,6 +1734,23 @@ export const contracts: Array<ContractConfig> = [
         daoAccessFlagsMap.SUBMIT_PROPOSAL,
         daoAccessFlagsMap.SET_CONFIGURATION,
         daoAccessFlagsMap.INCREASE_CLEAR_FUND_ID],
+      extensions: {
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.COLLECTIVE_SET_RICE_RECEIVER_ADAPTER,
+    name: "ColletiveSetRiceReceiverProposalAdapterContract",
+    alias: "colletiveSetRiceReceiverProposalAdapterContract",
+    path: "../../contracts/adapters/ColletiveSetRiceReceiverProposalAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SUBMIT_PROPOSAL,
+        daoAccessFlagsMap.SET_CONFIGURATION,
+        daoAccessFlagsMap.INCREASE_SET_RICE_RECEIVER_ID],
       extensions: {
       },
     },

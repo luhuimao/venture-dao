@@ -105,7 +105,8 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         INCREASE_EXPENSE_ID, //22
         INCREASE_TOPUP_ID, //23
         INCREASE_CLEAR_FUND_ID, //24
-        INCREASE_Gov_Vot_ASSET_ALLOC_ID //25
+        INCREASE_Gov_Vot_ASSET_ALLOC_ID, //25
+        INCREASE_SET_RICE_RECEIVER_ID //26
     }
     enum VoteType {
         SIMPLE_MAJORITY,
@@ -202,6 +203,7 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
     Counters.Counter private _clearFundProposalIds;
     Counters.Counter private _governorVotingAssetAllocationProposalIds;
     Counters.Counter private _vinGovernorVotingAssetAllocationProposalIds;
+    Counters.Counter private _riceReceiverProposalIds;
 
     /// @notice The map that keeps track of all proposasls submitted to the DAO
     mapping(bytes32 => Proposal) public proposals;
@@ -650,6 +652,13 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         _vinGovernorVotingAssetAllocationProposalIds.increment();
     }
 
+    function increaseRiceReceiverId()
+        external
+        hasAccess(this, AclFlag.INCREASE_SET_RICE_RECEIVER_ID)
+    {
+        _riceReceiverProposalIds.increment();
+    }
+
     /**
      * @notice Looks up if there is an extension of a given address
      * @return Whether or not the address is an extension
@@ -1094,12 +1103,16 @@ contract DaoRegistry is MemberGuard, AdapterGuard {
         return _governorVotingAssetAllocationProposalIds.current();
     }
 
-       function getCurrentVinGovernorVotingAssetAllocationId()
+    function getCurrentVinGovernorVotingAssetAllocationId()
         external
         view
         returns (uint256)
     {
         return _vinGovernorVotingAssetAllocationProposalIds.current();
+    }
+
+    function getCurrentRiceReceiverId() external view returns (uint256) {
+        return _riceReceiverProposalIds.current();
     }
 
     /**

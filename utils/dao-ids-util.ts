@@ -32,6 +32,7 @@ export const adaptersIdsMap: Record<string, string> = {
   COLLECTIVE_FREE_IN_ESCROW_FUND_ADAPTER: "collective-free-in-escrow-fund-adapter",
   COLLECTIVE_CLEAR_FUND_ADAPTER: "collective-clear-fund-adapter",
   COLLECTIVE_REDEMPTION_FEE_ESCROW_ADAPTER: "collective-redemption-fee-escrow-adapter",
+  COLLECTIVE_SET_RICE_RECEIVER_ADAPTER: "collective-set-rice-receiver-adapter",
   /*******************collective end**********************/
 
   /*******************vintage**********************/
@@ -54,7 +55,8 @@ export const adaptersIdsMap: Record<string, string> = {
   VINTAGE_FREE_IN_ESCORW_FUND_ADAPTER: "vintage-free-in-escrow-fund-adapter",
   VINTAGE_DAOSET_ADAPTER: "vintage-daoset-adapter",
   VINTAGE_DAOSET_HELPER_ADAPTER: "vintage-daoset-helper-adapter",
-  VINTAGE_GOV_VOT_ASSET_ALLOC_ADAPTER:"vin-gov-vot-asset-alloc-adapter",
+  VINTAGE_GOV_VOT_ASSET_ALLOC_ADAPTER: "vin-gov-vot-asset-alloc-adapter",
+  VINTAGE_SET_RICE_RECEIVER_ADAPTER: "vintage-set-rice-receiver-adapter",
   /*******************vintage end******************/
 
 
@@ -83,7 +85,8 @@ export const adaptersIdsMap: Record<string, string> = {
   FLEX_DAO_SET_POLLING_ADAPTER: "flex-daoset-polling-adapter",
   FLEX_DAO_SET_PROPOSER_MEMBERSHIP_ADAPTER: "flex-daoset-proposer-membership-adapter",
   FLEX_DAO_SET_VOTING_ADAPTER: "flex-daoset-voting-adapter",
-  FLEX_GOV_VOT_ASSET_ALLOC_ADAPTER:"flex-gov-vot-asset-alloc-adapter",
+  FLEX_GOV_VOT_ASSET_ALLOC_ADAPTER: "flex-gov-vot-asset-alloc-adapter",
+  FLEX_SET_RICE_RECEIVER_ADAPTER: "flex-set-rice-receiver-adapter",
   /*******************flex end******************/
   FUND_RAISE: "fund-raise",
   VESTING: "vesting",

@@ -173,6 +173,7 @@ describe("vesting...", () => {
         this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
         this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
         this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+        this.flexSetRiceReceiverProposalAdapterContract = adapters.flexSetRiceReceiverProposalAdapterContract.instance;
 
         const daoFactoriesAddress = [
             this.daoFactory.address,
@@ -291,6 +292,11 @@ describe("vesting...", () => {
                 id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
                 addr: this.flexDaoSetProposerMembershipAdapterContract.address,
                 flags: 524290
+            },
+            {
+                id: '0xcdb9c6d5700c127f2c99a75e51af1f56590e1b02f8f6ceee2d51d67dd0e91cad',//flexSetRiceReceiverProposalAdapterContract
+                addr: this.flexSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
 
         ];

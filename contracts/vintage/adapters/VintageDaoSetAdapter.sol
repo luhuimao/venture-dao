@@ -739,4 +739,10 @@ contract VintageDaoSetAdapterContract is GovernorGuard, Reimbursable {
         }
         return true;
     }
+
+    function getinvestorMembershipWhiteLists(
+        bytes32 proposalId
+    ) external view returns (address[] memory) {
+        return investorMembershipWhiteLists[proposalId].values();
+    }
 }

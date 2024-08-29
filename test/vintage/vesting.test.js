@@ -173,6 +173,7 @@ describe("vesting...", () => {
         this.vintageFundingPoolAdapterHelperContract = adapters.vintageFundingPoolAdapterHelperContract.instance;
         this.vintageDaoSetAdapterContract = adapters.vintageDaoSetAdapterContract.instance;
         this.vintageDaoSetHelperAdapterContract = adapters.vintageDaoSetHelperAdapterContract.instance;
+        this.vintageSetRiceReceiverProposalAdapterContract = adapters.vintageSetRiceReceiverProposalAdapterContract.instance;
 
         this.testtoken1 = testContracts.testToken1.instance;
         this.testtoken2 = testContracts.testRiceToken.instance;
@@ -309,6 +310,11 @@ describe("vesting...", () => {
                 id: '0x145d8ebc4d7403f3cd60312331619ffb262c52c22bedf24c0148027dd4be3b01', //vintageDaoSetHelperAdapterContract
                 addr: this.vintageDaoSetHelperAdapterContract.address,
                 flags: 8
+            },
+            {
+                id: '0x5f7213b2964496b4b5d7c886ee16ffc5ce56a5a54f96166558da81e33d5567cc', //vintageSetRiceReceiverProposalAdapterContract
+                addr: this.vintageSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 

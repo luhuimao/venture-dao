@@ -1,3 +1,11 @@
+/*
+ * @Descripttion: 
+ * @version: 
+ * @Author: huhuimao
+ * @Date: 2022-12-19 13:50:51
+ * @LastEditors: huhuimao
+ * @LastEditTime: 2023-10-07 15:05:33
+ */
 // Whole-script strict mode syntax
 "use strict";
 
@@ -54,9 +62,6 @@ const {
 } = require("../../utils/oz-util");
 
 import {
-    exec
-} from "child_process";
-import {
     DaoFactory,
     DaoRegistry,
     FundingPoolExtension,
@@ -68,24 +73,11 @@ import {
     expectRevert,
     web3
 } from "../../utils/hh-util";
-import {
-    createDao
-} from "../../utils/deployment-util1";
-import {
-    LogDescription,
-    zeroPad
-} from "ethers/lib/utils";
-import {
-    boolean
-} from "hardhat/internal/core/params/argumentTypes";
-import {
-    deserialize
-} from "v8";
-import { isAsyncFunction } from "util/types";
+
 const hre = require("hardhat");
 
 
-describe("expense...", () => {
+describe("set rice receiver proposal...", () => {
     before("deploy contracts...", async () => {
         let [
             owner,
@@ -185,7 +177,7 @@ describe("expense...", () => {
         this.collectiveFreeInEscrowFundAdapterContract = this.adapters.collectiveFreeInEscrowFundAdapterContract.instance;
         this.colletiveClearFundProposalAdapterContract = this.adapters.colletiveClearFundProposalAdapterContract.instance;
         this.collectiveRedemptionFeeEscrowAdapterContract = this.adapters.collectiveRedemptionFeeEscrowAdapterContract.instance;
-        this.colletiveSetRiceReceiverProposalAdapterContract = this.adapterscolletiveSetRiceReceiverProposalAdapterContract.instance;
+        this.colletiveSetRiceReceiverProposalAdapterContract = this.adapters.colletiveSetRiceReceiverProposalAdapterContract.instance;
 
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 
@@ -196,7 +188,6 @@ describe("expense...", () => {
         _daoName = "my_collective_dao002";
 
         const creator = this.owner.address;
-
         const enalbeAdapters = [
             {
                 id: '0xdac6d9ce728ebc92a61253866b4e5a4c73b76ba0aa11e7297a633f6232f54237', //colletiveDaoSetProposalContract
@@ -266,8 +257,7 @@ describe("expense...", () => {
                 id: '0xd0e09561b13ad01191fc8f65f6fc85651e4f495d3f9ab93d95010ea58382434b', // colletiveExpenseProposalContract
                 addr: this.colletiveExpenseProposalContract.address,
                 flags: 2097162
-            },
-            {
+            }, {
                 id: '0x4bb6d123745fe9358fe205a70b7a4aae2a445c56d4bc19c9a123a9259ff615a1', // colletiveExpenseProposalContract
                 addr: this.collectiveFreeInEscrowFundAdapterContract.address,
                 flags: 0
@@ -313,6 +303,12 @@ describe("expense...", () => {
             {
                 id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
                 addr: this.colletiveGovernorManagementContract.address, // colletiveGovernorManagementContract
+                flags: 1
+            }
+            ,
+            {
+                id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
+                addr: this.colletiveTopUpProposalContract.address, // colletiveTopUpProposalContract
                 flags: 1
             }
         ];
@@ -389,6 +385,7 @@ describe("expense...", () => {
             riceRewardReceiver
         ];
 
+
         const collectiveDaoParams = [
             daoFactoriesAddress,
             enalbeAdapters,
@@ -413,9 +410,6 @@ describe("expense...", () => {
 
         this.collectiveDirectdaoAddress = daoAddr;
         this.daoContract = daoContract;
-
-        this.collectiveFundingPoolExtContract = (await hre.ethers.getContractFactory("CollectiveInvestmentPoolExtension")).attach((await this.daoContract.getExtensionAddress("0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab")))
-
     });
 
     const sommonCollectiveDao = async (summonDaoContract, daoFactoryContract, collectiveDaoParams) => {
@@ -431,209 +425,68 @@ describe("expense...", () => {
         };
     };
 
-    it("submit expense proposal...", async () => {
-        const dao = this.collectiveDirectdaoAddress;
-        const tokenAddress = this.testtoken1.address;
-        const miniTarget = hre.ethers.utils.parseEther("1000");
-        const maxCap = hre.ethers.utils.parseEther("1500");
-        const miniDeposit = hre.ethers.utils.parseEther("10");
-        const maxDeposit = hre.ethers.utils.parseEther("1000");
+    it("submit rice receiver proposal...", async () => {
+        const newriceReceiver = this.user2.address;
+        const tx = await this.colletiveSetRiceReceiverProposalAdapterContract.summbitProposal(
+            this.collectiveDirectdaoAddress,
+            newriceReceiver
+        );
 
-        const fundInfo = [
-            tokenAddress,
-            miniTarget,
-            maxCap,
-            miniDeposit,
-            maxDeposit
-        ];
-
-        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-
-        const startTime = blocktimestamp + 60 * 1;
-        const endTime = startTime + 60 * 60 * 2;
-        const timeInfo = [startTime, endTime];
-
-        const enable = true;
-        const valifyType = 0;
-        const priorityTokenAddress = this.testtoken2.address;
-        const tokenId = 0;
-        const miniHolding = hre.ethers.utils.parseEther("100");
-        const whitelist = [];
-
-        const priorityDepositor = [
-            enable,
-            valifyType,
-            priorityTokenAddress,
-            tokenId,
-            miniHolding,
-            whitelist
-        ];
-
-        const fundRaiseType = 0;
-        const params = [
-            dao,
-            fundRaiseType,
-            fundInfo,
-            timeInfo,
-            priorityDepositor
-        ];
-
-        const tx = await this.colletiveFundRaiseProposalContract.submitProposal(params);
         const rel = await tx.wait();
+        let riceReceiver = await this.daoContract.getAddressConfiguration("0xc77068975ba2254bd67080aa196783f213ee682a15d902d03f33782130cf737d");
 
         const proposalId = rel.events[rel.events.length - 1].args.proposalId;
         console.log(`
-            created...
-            proposalId ${proposalId}
+            submitted. proposalId ${proposalId}
+            current riceReceiver ${riceReceiver}
+        `);
+
+        let proposalInfo = await this.colletiveSetRiceReceiverProposalAdapterContract.proposals(this.collectiveDirectdaoAddress,
+            proposalId
+        );
+
+        console.log(`
+            state ${proposalInfo.state}
+            voting...
         `);
 
         await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
             proposalId,
             1
         );
-        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
-        //     proposalId,
-        //     1
-        // );
-        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
-        //     proposalId,
-        //     1
-        // );
-        console.log("voted, execute...");
-        let proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(this.collectiveDirectdaoAddress, proposalId);
-        const stopVoteTime = proposalDetail.stopVoteTime;
 
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        console.log("voted, execute...");
+
+        const stopVoteTime = proposalInfo.stopVoteTime;
+        console.log(stopVoteTime)
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(stopVoteTime) > blocktimestamp) {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1]);
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.colletiveFundRaiseProposalContract.processProposal(this.collectiveDirectdaoAddress, proposalId);
-        proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(this.collectiveDirectdaoAddress, proposalId);
-
-        console.log(`
-        executed...
-        state ${proposalDetail.state}
-        `);
-
-
-        await this.testtoken1.approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
-        await this.testtoken1.connect(this.investor1).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
-        await this.testtoken1.connect(this.investor2).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
-
-        await this.testtoken1.transfer(this.investor1.address, hre.ethers.utils.parseEther("2000"));
-        await this.testtoken1.transfer(this.investor2.address, hre.ethers.utils.parseEther("2000"));
-
-        await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1000"));
-        await this.colletiveFundingPoolContract.connect(this.investor1).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("500"));
-
-        const token = this.testtoken1.address;
-        const receiver = this.user1.address;
-        const amount = hre.ethers.utils.parseEther("100");
-
-        if (parseInt(endTime) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(endTime) + 1]);
-            await hre.network.provider.send("evm_mine");
-        }
-        await this.colletiveFundingPoolContract.processFundRaise(this.collectiveDirectdaoAddress);
-
-        const tx1 = await this.colletiveExpenseProposalContract.summbitProposal(
+        const voteRel = await this.collectiveVotingContract.voteResult(
             this.collectiveDirectdaoAddress,
-            token,
-            receiver,
-            amount
+            proposalId
         );
 
-        const rel1 = await tx1.wait();
-
-        const proposalId1 = rel1.events[rel.events.length - 1].args.proposalId;
-        let proposalDetail1 = await this.colletiveExpenseProposalContract.proposals(
-            this.collectiveDirectdaoAddress,
-            proposalId1
-        );
-        let receiverUSDBal = await this.testtoken1.balanceOf(receiver);
-        // let depositBal1 = await this.colletiveFundingPoolContract.balanceOfToken(
-        //     this.collectiveDirectdaoAddress,
-        //     this.testtoken1.address,
-        //     this.owner.address
-        // );
-        // let depositBal2 = await this.colletiveFundingPoolContract.balanceOfToken(
-        //     this.collectiveDirectdaoAddress,
-        //     this.testtoken1.address,
-        //     this.investor1.address
-        // );
-
-        let depositBal1 = await this.collectiveFundingPoolExtContract.balanceOfToken(this.testtoken1.address,
-            this.owner.address);
-
-        let depositBal2 = await this.collectiveFundingPoolExtContract.balanceOfToken(this.testtoken1.address,
-            this.investor1.address);
-        let poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
-
         console.log(`
-        created...
-        proposalId ${proposalId1}
-        proposalDetail ${proposalDetail1}
-        receiverUSDBal ${hre.ethers.utils.formatEther(receiverUSDBal)}
-        depositBal1 ${hre.ethers.utils.formatEther(depositBal1)}
-        depositBal2 ${hre.ethers.utils.formatEther(depositBal2)}
-        poolBal ${hre.ethers.utils.formatEther(poolBal)}
-
-        voting...
+        voteRel ${voteRel}
         `);
 
-        await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
-            proposalId1,
-            1
+        await this.colletiveSetRiceReceiverProposalAdapterContract.processProposal(this.collectiveDirectdaoAddress,
+            proposalId);
+
+        riceReceiver = await this.daoContract.getAddressConfiguration("0xc77068975ba2254bd67080aa196783f213ee682a15d902d03f33782130cf737d");
+
+        proposalInfo = await this.colletiveSetRiceReceiverProposalAdapterContract.proposals(this.collectiveDirectdaoAddress,
+            proposalId
         );
-        // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
-        //     proposalId1,
-        //     1
-        // );
-        // await this.collectiveVotingContract.connect(this.genesis_steward2).submitVote(this.collectiveDirectdaoAddress,
-        //     proposalId1,
-        //     1
-        // );
-        console.log("voted, execute...");
 
-        const stopVoteTime1 = proposalDetail1.stopVoteTime;
-
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        if (parseInt(stopVoteTime1) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime1) + 1]);
-            await hre.network.provider.send("evm_mine");
-        }
-
-        await this.colletiveExpenseProposalContract.processProposal(
-            this.collectiveDirectdaoAddress,
-            proposalId1);
-        receiverUSDBal = await this.testtoken1.balanceOf(receiver);
-        // depositBal1 = await this.colletiveFundingPoolContract.balanceOfToken(
-        //     this.collectiveDirectdaoAddress,
-        //     this.testtoken1.address,
-        //     this.owner.address
-        // );
-        depositBal1 = await this.collectiveFundingPoolExtContract.balanceOfToken(this.testtoken1.address,
-            this.owner.address);
-
-        // depositBal2 = await this.colletiveFundingPoolContract.balanceOfToken(
-        //     this.collectiveDirectdaoAddress,
-        //     this.testtoken1.address,
-        //     this.investor1.address
-        // );
-        depositBal2 = await this.collectiveFundingPoolExtContract.balanceOfToken(this.testtoken1.address,
-            this.investor1.address);
-        poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
         console.log(`
-        executed...
-        receiverUSDBal ${hre.ethers.utils.formatEther(receiverUSDBal)}
-        depositBal1 ${hre.ethers.utils.formatEther(depositBal1)}
-        depositBal2 ${hre.ethers.utils.formatEther(depositBal2)}
-        poolBal ${hre.ethers.utils.formatEther(poolBal)}
+            executed...
+            state ${proposalInfo.state}
+            riceReceiver   ${riceReceiver}
         `);
-
-
-
     });
 });

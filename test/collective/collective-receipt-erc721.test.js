@@ -179,6 +179,7 @@ describe("collective investment receipt NFT...", () => {
         this.collectiveFreeInEscrowFundAdapterContract = this.adapters.collectiveFreeInEscrowFundAdapterContract.instance;
         this.colletiveClearFundProposalAdapterContract = this.adapters.colletiveClearFundProposalAdapterContract.instance;
         this.collectiveRedemptionFeeEscrowAdapterContract = this.adapters.collectiveRedemptionFeeEscrowAdapterContract.instance;
+        this.colletiveSetRiceReceiverProposalAdapterContract = this.adapterscolletiveSetRiceReceiverProposalAdapterContract.instance;
 
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 
@@ -309,6 +310,11 @@ describe("collective investment receipt NFT...", () => {
                 id: '0x1ec3ab9b73a5166bb51de3096776c3fb06df7dc0a5e2df3038eb0588fad3adbc', // collectiveRedemptionFeeEscrowAdapterContract
                 addr: this.collectiveRedemptionFeeEscrowAdapterContract.address,
                 flags: 0
+            },
+            {
+                id: '0x9e82e8ea7f567cfdc187328108cbbacfa60391a3b15920f636c4185ecdce21a5', // colletiveSetRiceReceiverProposalAdapterContract
+                addr: this.colletiveSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
         ];
 

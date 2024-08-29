@@ -90,7 +90,9 @@ import {
 // } from "v8";
 const hre = require("hardhat");
 
-describe("vesting", () => {
+
+
+describe("set rice receiver proposal...", () => {
     before("deploy contracts...", async () => {
         let [owner,
             user1, user2,
@@ -180,6 +182,20 @@ describe("vesting", () => {
         this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
         this.flexSetRiceReceiverProposalAdapterContract = adapters.flexSetRiceReceiverProposalAdapterContract.instance;
 
+        // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
+        // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
+        // await flexVestingERC721Helper.deployed();
+        // this.flexVestingERC721Helper = flexVestingERC721Helper;
+
+        // const FlexVestingERC721 = await hre.ethers.getContractFactory("FlexVestingERC721");
+        // const flexVestingERC721 = await FlexVestingERC721.deploy(
+        //     "DAOSquare Investment Receipt",
+        //     "DIR",
+        //     this.flexVesting.address,
+        //     this.flexVestingERC721Helper.address
+        // );
+        // await flexVestingERC721.deployed();
+        // this.flexVestingERC721 = flexVestingERC721;
 
         const VestingERC721Helper = await hre.ethers.getContractFactory("VestingERC721Helper");
         const vestingERC721Helper = await VestingERC721Helper.deploy();
@@ -198,14 +214,7 @@ describe("vesting", () => {
         await vestingERC721.deployed();
         this.vestingERC721 = vestingERC721;
 
-
         this.summonDao = this.adapters.summonDao.instance;
-        this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
-
-        console.log(`
-        owner address ${owner.address}
-        `);
-
 
         const daoFactoriesAddress = [
             this.daoFactory.address,
@@ -216,7 +225,6 @@ describe("vesting", () => {
         const creator = this.owner.address;
 
         const enalbeAdapters = [
-
             {
                 id: '0x3c11b775c25636cc8a8e9190d176c127f201e732c93f4d80e9e1d8e36c9d7ecd', //FlexVesting
                 addr: this.flexVesting.address,
@@ -335,23 +343,22 @@ describe("vesting", () => {
 
         ];
 
-        const adapters1 = [
-            {
-                id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
-                addr: this.flexFundingPoolAdapterContract.address, //FlexFundingPoolAdapterContract
-                flags: 75
-            },
-            {
-                id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
-                addr: this.flexFundingAdapterContract.address, //FlexFundingAdapterContract
-                flags: 26
-            }
+        const adapters1 = [{
+            id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+            addr: this.flexFundingPoolAdapterContract.address, //FlexFundingPoolAdapterContract
+            flags: 75
+        },
+        {
+            id: '0xb12a3847d47fefceb164b75823af125f9aa82b76938df0ddf08c04cd314ba37c',
+            addr: this.flexFundingAdapterContract.address, //FlexFundingAdapterContract
+            flags: 26
+        }
         ];
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
         const flexDaoParticipantCapInfo = [
             true, //bool enable;
-            5 //uint256 maxParticipantsAmount;
+            2 //uint256 maxParticipantsAmount;
         ]
 
         const flexDaoParticipantMembershipEnalbe = true;
@@ -368,7 +375,7 @@ describe("vesting", () => {
         const flexDaoStewardMembershipInfo = [
             1, // bool enable;
             "flexDaoGovernorMembershipName",
-            0, // uint256 varifyType;
+            0, // uint256 varifyType;0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
             hre.ethers.utils.parseEther("100"), // uint256 minHolding;
             this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
@@ -376,7 +383,7 @@ describe("vesting", () => {
         ];
 
         const flexDaoVotingInfo = [
-            0, //eligibilityType 0. erc20 1.erc721 2.erc1155 3.allocation
+            3, //eligibilityType 0. erc20 1.erc721 2.erc1155 3.allocation
             this.testtoken1.address, //tokenAddress
             0, //tokenID
             60 * 10, // uint256 votingPeriod;
@@ -418,13 +425,13 @@ describe("vesting", () => {
             [this.funding_proposer1_whitelist.address, this.funding_proposer2_whitelist.address] // address[] whiteList;
         ];
 
-        const flexDaoManagementfee = hre.ethers.utils.parseEther("0.000"); // 0.2%
-        const returnTokenManagementFee = hre.ethers.utils.parseEther("0.0024");
-
+        const flexDaoManagementfee = hre.ethers.utils.parseEther("0.01"); // 0.2%
+        const returnTokenManagementFee = hre.ethers.utils.parseEther("0.05");
         const flexDaoGenesisStewards = [this.genesis_steward1.address, this.genesis_steward2.address];
         const allocations = [10, 20, 30];
+
         const fundingPollEnable = false; //DIRECT mode
-        const flexDaoFundriaseStyle = 0 // 0 - FCFS 1- Free in
+        const flexDaoFundriaseStyle = 1 // 0 - FCFS 1- Free ink0
         const riceRewardReceiver = this.user1.address;
 
         const flexDaoInfo = {
@@ -473,250 +480,92 @@ describe("vesting", () => {
             daoName
         } = await sommonFlexDao(this.summonDao, this.daoFactory, flexDaoParams);
         const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
-
+        const pollingToken = await daoContract.getAddressConfiguration("0xf60c24a553194691fd513f91f28ce90d85b87ab669703faa0b848c72a41c6923");
+        const flexPollingVoteWeight = await this.flexPollingVotingContract.getVotingWeight(daoAddr, this.owner.address);
         console.log(`
         new dao address ${daoAddr}
         new dao name ${toUtf8(daoName)}
-        `)
+        pollingToken ${pollingToken}
+        flexPollingVoteWeight ${flexPollingVoteWeight}
+            `)
 
         this.flexDirectdaoAddress = daoAddr;
+        this.daoContract = daoContract;
     });
-
 
     const sommonFlexDao = async (summonDaoContract, daoFactoryContract, flexDaoParams) => {
         let tx = await summonDaoContract.summonFlexDao(flexDaoParams);
         let result = await tx.wait();
         const daoAddr = await daoFactoryContract.getDaoAddress(flexDaoParams[flexDaoParams.length - 1].name);
         const daoName = await daoFactoryContract.daos(daoAddr);
-
-
         return {
             daoAddr: daoAddr,
             daoName: daoName
         };
     };
 
-    it("vesting", async () => {
-        const flexFundingAdapterContract = this.flexFundingAdapterContract;
-        const flexVestingContract = this.flexVesting;
-        const dao = (await hre.ethers.getContractFactory("DaoRegistry")).attach(this.flexDirectdaoAddress);
-        const fundingpoolextensionAddr = await dao.getExtensionAddress(sha3("flex-funding-pool-ext"));
-        const flexFundingPoolExtContract = (await hre.ethers.getContractFactory("FlexInvestmentPoolExtension")).attach(fundingpoolextensionAddr);
-
-        let tokenAddress = this.testtoken1.address;
-        let minFundingAmount = hre.ethers.utils.parseEther("100");
-        let maxFundingAmount = hre.ethers.utils.parseEther("100");
-        let escrow = true;
-        let returnTokenAddr = this.testtoken2.address;
-        let price = hre.ethers.utils.parseEther("2");
-
-        let returnTokenAmount = maxFundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price);
-        let minReturnAmount = hre.ethers.utils.parseEther("1000000");
-        let maxReturnAmount = hre.ethers.utils.parseEther("1000000");
-        let approverAddr = this.user1.address;
-        let recipientAddr = this.user1.address;
-
-        let fundingInfo = [
-            tokenAddress,
-            minFundingAmount,
-            maxFundingAmount,
-            escrow,
-            returnTokenAddr,
-            returnTokenAmount,
-            price,
-            minReturnAmount,
-            maxReturnAmount,
-            approverAddr,
-            recipientAddr
-        ];
-
-        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-
-        let vestingStartTime = blocktimestamp + 100000;
-        let vestingCliffEndTime = vestingStartTime + 60 * 60 * 1;
-        let vestingEndTime = vestingCliffEndTime + 60 * 60 * 2 + 60;
-        let vestingInterval = 60 * 60 * 1;
-        let vestingCliffLockAmount = hre.ethers.utils.parseEther("0.1"); // 10%
-
-        const vestNFTEnable = false;
-        const nftToken = this.vestingERC721.address;
-        const vestName = "flex vesting";
-        const vestDescription = "a flex vesting";
-
-        let vestInfo = [
-            vestingStartTime,
-            vestingCliffEndTime,
-            vestingEndTime,
-            vestingInterval,
-            vestingCliffLockAmount,
-            vestNFTEnable,
-            nftToken,
-            vestName,
-            vestDescription
-        ];
-
-        let fundRaiseType = 1;
-        let fundRaiseStartTime = blocktimestamp;
-        let fundRaiseEndTime = fundRaiseStartTime + 100000;
-        let minDepositAmount = hre.ethers.utils.parseEther("10");
-        let maxDepositAmount = hre.ethers.utils.parseEther("2000");
-        let backerIdentification = false;
-
-        let bType = 0;
-        let bChainId = 1;
-        let bTokanAddr = this.testtoken1.address;
-        let bTokenId = 1;
-        let bMinHoldingAmount = 100;
-
-        let bakckerIdentificationInfo = [
-            bType,
-            bChainId,
-            bTokanAddr,
-            bTokenId,
-            bMinHoldingAmount
-        ];
-
-        let pType = 0;
-        let pTokenAddr = this.testtoken1.address;
-        let pTokenId = 1;
-        let pMinHolding = 10;
-        const enablePriorityDeposit = false;
-        let priorityDepositInfo = [
-            enablePriorityDeposit,
-            pType,
-            pTokenAddr,
-            pTokenId,
-            pMinHolding
-        ];
-
-        let fundRaiseInfo = [
-            fundRaiseType,
-            fundRaiseStartTime,
-            fundRaiseEndTime,
-            minDepositAmount,
-            maxDepositAmount,
-            backerIdentification,
-            bakckerIdentificationInfo,
-            priorityDepositInfo
-        ];
-
-        let tokenRewardAmount = hre.ethers.utils.parseEther("0.0"); // 2%
-        let cashRewardAmount = hre.ethers.utils.parseEther("0.0"); // 0.3%
-
-        let proposerRewardInfos = [
-            tokenRewardAmount,
-            cashRewardAmount
-        ];
-
-
-        const priorityWhitelist = [];
-
-        const fundingParams = [
-            fundingInfo,
-            vestInfo,
-            fundRaiseInfo,
-            proposerRewardInfos,
-            priorityWhitelist
-        ];
-        // console.log(fundingParams);
-        console.log(`
-            create flex escrow funding proposal...
-            `)
-        const tx = await flexFundingAdapterContract.connect(this.funding_proposer1_whitelist).
-            submitProposal(dao.address, fundingParams);
-        const result = await tx.wait();
-        const proposalId = result.events[2].args.proposalId;
-        let flexFundingProposalInfo = await flexFundingAdapterContract.Proposals(dao.address, proposalId);
-        console.log(`
-            created...
-            flex funding ProposalId: ${proposalId}
-            state ${flexFundingProposalInfo.state}
-            deposite fund...
-            `);
-
-        const flexFundingPoolAdapt = this.flexFundingPoolAdapterContract;
-        const USDT = this.testtoken1;
-
-        const fundRaiseStartTimes = flexFundingProposalInfo.fundRaiseInfo.fundRaiseStartTime;
-
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-
-        if (parseInt(fundRaiseStartTimes) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaiseStartTimes) + 1]);
-            await hre.network.provider.send("evm_mine");
-        }
-
-        await this.testtoken2.transfer(this.user1.address, returnTokenAmount);
-
-        await this.testtoken2.connect(this.user1).approve(this.flexFundingReturnTokenAdapterContract.address,
-            maxFundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price));
-
-        console.log("approved amount ", maxFundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price));
-        await this.flexFundingReturnTokenAdapterContract.connect(this.user1).setFundingApprove(
-            dao.address,
-            proposalId,
-            this.testtoken2.address,
-            maxFundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price)
+    it("test proposal...", async () => {
+        const newriceReceiver = this.user2.address;
+        const tx = await this.flexSetRiceReceiverProposalAdapterContract.submitProposal(
+            this.flexDirectdaoAddress,
+            newriceReceiver
         );
 
-        await USDT.approve(flexFundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
-        // await expectRevert(flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("10")), "revert");
-        const a = minFundingAmount.mul(hre.ethers.utils.parseEther("1")).div(hre.ethers.utils.parseEther("1").sub(hre.ethers.utils.parseEther("0.003")))
-        const m = await this.flexFundingHelperAdapterContract.getMaxInvestmentAmount(dao.address, proposalId);
-        console.log("MaxInvestmentAmount ", hre.ethers.utils.formatEther(m));
-        await flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("200"));
+        const rel = await tx.wait();
+        let riceReceiver = await this.daoContract.getAddressConfiguration("0xc77068975ba2254bd67080aa196783f213ee682a15d902d03f33782130cf737d");
 
-        const investors = await flexFundingPoolExtContract.getInvestorsByProposalId(proposalId);
-        console.log("investors: ", investors);
-        let depositeBal = await flexFundingPoolAdapt.balanceOf(dao.address, proposalId, this.owner.address);
+        const proposalId = rel.events[rel.events.length - 1].args.proposalId;
         console.log(`
-            deposit balance   ${hre.ethers.utils.formatEther(depositeBal.toString())}
-            whitdraw...
-            `);
-        // await flexFundingPoolAdapt.withdraw(dao.address, proposalId, hre.ethers.utils.parseEther("50"));
-        depositeBal = await flexFundingPoolAdapt.balanceOf(dao.address, proposalId, this.owner.address);
+            submitted. proposalId ${proposalId}
+            current riceReceiver ${riceReceiver}
+        `);
+
+        let proposalInfo = await this.flexSetRiceReceiverProposalAdapterContract.proposals(this.flexDirectdaoAddress,
+            proposalId
+        );
+
         console.log(`
-            deposit balance   ${hre.ethers.utils.formatEther(depositeBal.toString())}
-            process proposal...
-            `);
+            state ${proposalInfo.state}
+            voting...
+        `);
 
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        await this.flexVotingContract.submitVote(this.flexDirectdaoAddress, proposalId, 1);
+        await this.flexVotingContract.connect(this.genesis_steward1).submitVote(this.flexDirectdaoAddress, proposalId, 1);
+        await this.flexVotingContract.connect(this.genesis_steward2).submitVote(this.flexDirectdaoAddress, proposalId, 1);
 
-        if (parseInt(fundRaiseEndTime) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaiseEndTime) + 1]);
+
+        console.log("voted, execute...");
+
+        const stopVoteTime = proposalInfo.stopVoteTime;
+        console.log(stopVoteTime)
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1]);
             await hre.network.provider.send("evm_mine");
         }
 
-        await flexFundingAdapterContract.processProposal(dao.address, proposalId);
-        flexFundingProposalInfo = await flexFundingAdapterContract.Proposals(dao.address, proposalId);
-        const managementFeeAddress = await dao.getAddressConfiguration(sha3("FLEX_MANAGEMENT_FEE_RECEIVE_ADDRESS"));
-        const protocolAddress = await flexFundingAdapterContract.protocolAddress();
-        const protocolFee = await USDT.balanceOf(protocolAddress);
-        const managementFee = await USDT.balanceOf(managementFeeAddress);
-        const proposerreward = await USDT.balanceOf(this.funding_proposer1_whitelist.address);
-        const receiveAmount = await USDT.balanceOf(recipientAddr);
-        const allTributedAmount = toBN(protocolFee.toString()).
-            add(toBN(managementFee.toString())).
-            add(toBN(proposerreward.toString())).
-            add(toBN(receiveAmount.toString()));
-        const MaxInvestmentAmount = await this.flexFundingHelperAdapterContract.getMaxInvestmentAmount(dao.address, proposalId)
+        const voteRel = await this.flexVotingContract.voteResult(
+            this.flexDirectdaoAddress,
+            proposalId
+        );
 
         console.log(`
-            processed...
-            state               ${flexFundingProposalInfo.state}
-            price               ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.price)}
-            finalRaiseAmount    ${flexFundingProposalInfo.investmentInfo.finalRaisedAmount}
-            MaxInvestmentAmount ${MaxInvestmentAmount}
-            paybackTokenAmount  ${flexFundingProposalInfo.investmentInfo.paybackTokenAmount}
-            approved amount     ${maxFundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price)}
-            protocol Fee        ${hre.ethers.utils.formatEther(protocolFee)}
-            management Fee      ${hre.ethers.utils.formatEther(managementFee)}
-            proposer reward     ${hre.ethers.utils.formatEther(proposerreward)}
-            receive Amount      ${hre.ethers.utils.formatEther(receiveAmount)}
-            total tributed amount ${hre.ethers.utils.formatEther(allTributedAmount)}
-            create vesting...
-            `);
+        voteRel ${voteRel}
+        `);
 
-        // await flexVestingContract.createVesting(dao.address, this.owner.address, proposalId);
-    });
-});
+        await this.flexSetRiceReceiverProposalAdapterContract.processProposal(this.flexDirectdaoAddress,
+            proposalId);
+
+        riceReceiver = await this.daoContract.getAddressConfiguration("0xc77068975ba2254bd67080aa196783f213ee682a15d902d03f33782130cf737d");
+
+        proposalInfo = await this.flexSetRiceReceiverProposalAdapterContract.proposals(this.flexDirectdaoAddress,
+            proposalId
+        );
+
+        console.log(`
+            executed...
+            state ${proposalInfo.state}
+            riceReceiver   ${riceReceiver}
+        `);
+    })
+})

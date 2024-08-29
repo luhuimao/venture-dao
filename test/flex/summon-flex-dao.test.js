@@ -177,6 +177,7 @@ describe("Summon A Flex Dao", () => {
         this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
         this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
         this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+        this.flexSetRiceReceiverProposalAdapterContract = adapters.flexSetRiceReceiverProposalAdapterContract.instance;
 
         // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
         // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
@@ -354,6 +355,11 @@ describe("Summon A Flex Dao", () => {
                 id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
                 addr: this.flexDaoSetProposerMembershipAdapterContract.address,
                 flags: 524290
+            },
+            {
+                id: '0xcdb9c6d5700c127f2c99a75e51af1f56590e1b02f8f6ceee2d51d67dd0e91cad',//flexSetRiceReceiverProposalAdapterContract
+                addr: this.flexSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
 
         ];
@@ -627,6 +633,11 @@ describe("Summon A Flex Dao", () => {
                 id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
                 addr: this.flexDaoSetProposerMembershipAdapterContract.address,
                 flags: 524290
+            },
+            {
+                id: '0xcdb9c6d5700c127f2c99a75e51af1f56590e1b02f8f6ceee2d51d67dd0e91cad',//flexSetRiceReceiverProposalAdapterContract
+                addr: this.flexSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
 
         ];
@@ -2006,6 +2017,7 @@ describe("Steward-In Management", () => {
         this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
         this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
         this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+        this.flexSetRiceReceiverProposalAdapterContract = adapters.flexSetRiceReceiverProposalAdapterContract.instance;
 
         console.log("flexStewardMangement addr ", this.flexStewardMangement.address);
 
@@ -2126,6 +2138,11 @@ describe("Steward-In Management", () => {
                 id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
                 addr: this.flexDaoSetProposerMembershipAdapterContract.address,
                 flags: 524290
+            },
+            {
+                id: '0xcdb9c6d5700c127f2c99a75e51af1f56590e1b02f8f6ceee2d51d67dd0e91cad',//flexSetRiceReceiverProposalAdapterContract
+                addr: this.flexSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
 
         ];
@@ -2898,6 +2915,7 @@ describe("voting...", () => {
         this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
         this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
         this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+        this.flexSetRiceReceiverProposalAdapterContract = adapters.flexSetRiceReceiverProposalAdapterContract.instance;
 
         console.log("flexStewardMangement addr ", this.flexStewardMangement.address);
 
@@ -3028,6 +3046,11 @@ describe("voting...", () => {
                 id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
                 addr: this.flexDaoSetProposerMembershipAdapterContract.address,
                 flags: 524290
+            },
+            {
+                id: '0xcdb9c6d5700c127f2c99a75e51af1f56590e1b02f8f6ceee2d51d67dd0e91cad',//flexSetRiceReceiverProposalAdapterContract
+                addr: this.flexSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
 
         ];
@@ -4646,6 +4669,7 @@ describe("polling voting...", () => {
         this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
         this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
         this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+        this.flexSetRiceReceiverProposalAdapterContract = adapters.flexSetRiceReceiverProposalAdapterContract.instance;
 
         console.log("flexStewardMangement addr ", this.flexStewardMangement.address);
 
@@ -4776,6 +4800,11 @@ describe("polling voting...", () => {
                 id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
                 addr: this.flexDaoSetProposerMembershipAdapterContract.address,
                 flags: 524290
+            },
+            {
+                id: '0xcdb9c6d5700c127f2c99a75e51af1f56590e1b02f8f6ceee2d51d67dd0e91cad',//flexSetRiceReceiverProposalAdapterContract
+                addr: this.flexSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
 
         ];
@@ -7770,6 +7799,7 @@ describe("verify proposer membership...", () => {
         this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
         this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
         this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+        this.flexSetRiceReceiverProposalAdapterContract = adapters.flexSetRiceReceiverProposalAdapterContract.instance;
 
         console.log("flexStewardMangement addr ", this.flexStewardMangement.address);
 
@@ -7900,6 +7930,11 @@ describe("verify proposer membership...", () => {
                 id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
                 addr: this.flexDaoSetProposerMembershipAdapterContract.address,
                 flags: 524290
+            },
+            {
+                id: '0xcdb9c6d5700c127f2c99a75e51af1f56590e1b02f8f6ceee2d51d67dd0e91cad',//flexSetRiceReceiverProposalAdapterContract
+                addr: this.flexSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
 
         ];
@@ -9525,6 +9560,7 @@ describe("vesting nft...", () => {
         this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
         this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
         this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+        this.flexSetRiceReceiverProposalAdapterContract = adapters.flexSetRiceReceiverProposalAdapterContract.instance;
 
         // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
         // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
@@ -9684,6 +9720,11 @@ describe("vesting nft...", () => {
                 id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
                 addr: this.flexDaoSetProposerMembershipAdapterContract.address,
                 flags: 524290
+            },
+            {
+                id: '0xcdb9c6d5700c127f2c99a75e51af1f56590e1b02f8f6ceee2d51d67dd0e91cad',//flexSetRiceReceiverProposalAdapterContract
+                addr: this.flexSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
 
         ];
@@ -10506,6 +10547,7 @@ describe("steward allocations...", () => {
         this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
         this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
         this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+        this.flexSetRiceReceiverProposalAdapterContract = adapters.flexSetRiceReceiverProposalAdapterContract.instance;
 
         // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
         // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
@@ -10659,6 +10701,11 @@ describe("steward allocations...", () => {
                 id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
                 addr: this.flexDaoSetProposerMembershipAdapterContract.address,
                 flags: 524290
+            },
+            {
+                id: '0xcdb9c6d5700c127f2c99a75e51af1f56590e1b02f8f6ceee2d51d67dd0e91cad',//flexSetRiceReceiverProposalAdapterContract
+                addr: this.flexSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
 
         ];
@@ -10973,6 +11020,7 @@ describe("free in...", () => {
         this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
         this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
         this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+        this.flexSetRiceReceiverProposalAdapterContract = adapters.flexSetRiceReceiverProposalAdapterContract.instance;
 
         // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
         // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
@@ -11124,6 +11172,11 @@ describe("free in...", () => {
                 id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
                 addr: this.flexDaoSetProposerMembershipAdapterContract.address,
                 flags: 524290
+            },
+            {
+                id: '0xcdb9c6d5700c127f2c99a75e51af1f56590e1b02f8f6ceee2d51d67dd0e91cad',//flexSetRiceReceiverProposalAdapterContract
+                addr: this.flexSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
 
         ];
@@ -11673,6 +11726,7 @@ describe("participant cap...", () => {
         this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
         this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
         this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+        this.flexSetRiceReceiverProposalAdapterContract = adapters.flexSetRiceReceiverProposalAdapterContract.instance;
 
         // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
         // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
@@ -11826,6 +11880,11 @@ describe("participant cap...", () => {
                 id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
                 addr: this.flexDaoSetProposerMembershipAdapterContract.address,
                 flags: 524290
+            },
+            {
+                id: '0xcdb9c6d5700c127f2c99a75e51af1f56590e1b02f8f6ceee2d51d67dd0e91cad',//flexSetRiceReceiverProposalAdapterContract
+                addr: this.flexSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
 
         ];
@@ -12286,6 +12345,7 @@ describe("return token management fee...", () => {
         this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
         this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
         this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+        this.flexSetRiceReceiverProposalAdapterContract = adapters.flexSetRiceReceiverProposalAdapterContract.instance;
 
         // const FlexVestingERC721Helper = await hre.ethers.getContractFactory("FlexVestingERC721Helper");
         // const flexVestingERC721Helper = await FlexVestingERC721Helper.deploy();
@@ -12439,6 +12499,11 @@ describe("return token management fee...", () => {
                 id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
                 addr: this.flexDaoSetProposerMembershipAdapterContract.address,
                 flags: 524290
+            },
+            {
+                id: '0xcdb9c6d5700c127f2c99a75e51af1f56590e1b02f8f6ceee2d51d67dd0e91cad',//flexSetRiceReceiverProposalAdapterContract
+                addr: this.flexSetRiceReceiverProposalAdapterContract.address,
+                flags: 33554442
             }
 
         ];
