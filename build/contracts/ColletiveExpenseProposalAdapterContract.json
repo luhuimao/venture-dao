@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ColletiveExpenseProposalAdapterContract",
+  "sourceName": "contracts/collective/adapters/CollectiveExpenseProposalAdapter.sol",
+  "abi": [],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea26469706673582212206cd03281587f009910c102a9799bae9ce41e04d7bf141767f70e0dc9e867ef1b64736f6c63430008040033",
+  "deployedBytecode": "0x6080604052600080fdfea26469706673582212206cd03281587f009910c102a9799bae9ce41e04d7bf141767f70e0dc9e867ef1b64736f6c63430008040033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
