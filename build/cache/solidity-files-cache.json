@@ -2090,8 +2090,8 @@
       ]
     },
     "/Users/benjamin/Documents/github/luhuimao/venture-dao/contracts/flex/adatpers/FlexFunding.sol": {
-      "lastModificationDate": 1724752839425,
-      "contentHash": "f8c1e2ddc9b7c1824fd2aeb22753b6a5",
+      "lastModificationDate": 1724994045616,
+      "contentHash": "935153911fdfdf06d8c6bca3d448f97e",
       "sourceName": "contracts/flex/adatpers/FlexFunding.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -2134,8 +2134,8 @@
       ]
     },
     "/Users/benjamin/Documents/github/luhuimao/venture-dao/contracts/flex/adatpers/interfaces/IFlexFunding.sol": {
-      "lastModificationDate": 1724736059698,
-      "contentHash": "3a1d1bad2c75135656c482e77bded49e",
+      "lastModificationDate": 1724987088068,
+      "contentHash": "448e43d3c017617ef697dc2622de0bd3",
       "sourceName": "contracts/flex/adatpers/interfaces/IFlexFunding.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -2786,7 +2786,7 @@
       ]
     },
     "/Users/benjamin/Documents/github/luhuimao/venture-dao/contracts/flex/adatpers/FlexDaoSetVotingAdapter.sol": {
-      "lastModificationDate": 1724737504782,
+      "lastModificationDate": 1724943675689,
       "contentHash": "d2300e4301bb97f68e8c3c43618a9408",
       "sourceName": "contracts/flex/adatpers/FlexDaoSetVotingAdapter.sol",
       "solcConfig": {
@@ -2907,7 +2907,7 @@
       ]
     },
     "/Users/benjamin/Documents/github/luhuimao/venture-dao/contracts/vintage/adapters/VintageDaoSetAdapter.sol": {
-      "lastModificationDate": 1724818497413,
+      "lastModificationDate": 1724823061072,
       "contentHash": "1f81be99e19a3ca4356a3eabe62bc9a7",
       "sourceName": "contracts/vintage/adapters/VintageDaoSetAdapter.sol",
       "solcConfig": {
@@ -4610,7 +4610,7 @@
       ]
     },
     "/Users/benjamin/Documents/github/luhuimao/venture-dao/contracts/SummonDao.sol": {
-      "lastModificationDate": 1724753894500,
+      "lastModificationDate": 1724994052611,
       "contentHash": "75457a8967c2d6156b75de230ea42727",
       "sourceName": "contracts/SummonDao.sol",
       "solcConfig": {
@@ -7629,8 +7629,8 @@
       ]
     },
     "/Users/benjamin/Documents/github/luhuimao/venture-dao/contracts/flex/adatpers/FlexDaoSetProposerMembershipAdapter.sol": {
-      "lastModificationDate": 1724736221882,
-      "contentHash": "4fc797e0b929c0db1082bca0acd49f5a",
+      "lastModificationDate": 1724943680283,
+      "contentHash": "4d64c2367e52b1b0f899822c0befd456",
       "sourceName": "contracts/flex/adatpers/FlexDaoSetProposerMembershipAdapter.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -9064,8 +9064,8 @@
       ]
     },
     "/Users/benjamin/Documents/github/luhuimao/venture-dao/contracts/InvestmentReceiptERC721.sol": {
-      "lastModificationDate": 1724912498619,
-      "contentHash": "23847f78fca4eb00ce921ee416c10c21",
+      "lastModificationDate": 1724988459962,
+      "contentHash": "4f36666059642dda377b8403cb5fcfe1",
       "sourceName": "contracts/InvestmentReceiptERC721.sol",
       "solcConfig": {
         "version": "0.8.4",

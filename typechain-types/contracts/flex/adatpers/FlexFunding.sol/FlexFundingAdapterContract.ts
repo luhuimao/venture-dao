@@ -32,6 +32,7 @@ export declare namespace IFlexFunding {
     tokenAddress: PromiseOrValue<string>;
     minInvestmentAmount: PromiseOrValue<BigNumberish>;
     maxInvestmentAmount: PromiseOrValue<BigNumberish>;
+    investedAmount: PromiseOrValue<BigNumberish>;
     finalRaisedAmount: PromiseOrValue<BigNumberish>;
     escrow: PromiseOrValue<boolean>;
     paybackTokenAddr: PromiseOrValue<string>;
@@ -48,6 +49,7 @@ export declare namespace IFlexFunding {
     BigNumber,
     BigNumber,
     BigNumber,
+    BigNumber,
     boolean,
     string,
     BigNumber,
@@ -60,6 +62,7 @@ export declare namespace IFlexFunding {
     tokenAddress: string;
     minInvestmentAmount: BigNumber;
     maxInvestmentAmount: BigNumber;
+    investedAmount: BigNumber;
     finalRaisedAmount: BigNumber;
     escrow: boolean;
     paybackTokenAddr: string;

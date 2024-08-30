@@ -12,6 +12,16 @@ import type {
 const _abi = [
   {
     inputs: [],
+    name: "ACCESS_DENIED",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "ADAPTER_NOT_FOUND",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "FundRaiseEndTimeNotUP",
     type: "error",
   },
@@ -47,7 +57,37 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "NOT_IN_WHITELIST",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NOT_MEET_ERC1155_REQUIRMENT",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NOT_MEET_ERC20_REQUIREMENT",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NOT_MEET_ERC721_REQUIREMENT",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "NotInExecuteState",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "PROPOSAL_IN_VOTING_PERIOD",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "UNDONE_DAO_SET_PROPOSAL",
     type: "error",
   },
   {
