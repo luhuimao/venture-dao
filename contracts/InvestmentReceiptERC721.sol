@@ -63,6 +63,9 @@ contract InvestmentReceiptERC721 is ERC721 {
         string tokenName;
     }
 
+    error ALREADY_MINTED();
+    error UN_MINTABLE();
+
     constructor(
         string memory name,
         string memory symbol,
@@ -100,10 +103,9 @@ contract InvestmentReceiptERC721 is ERC721 {
         string memory projectName,
         string memory description
     ) external returns (uint256 id) {
-        require(
-            investmentIdToTokenId[investmentProposalId][msg.sender] == 0,
-            "alreday minted"
-        );
+        if (investmentIdToTokenId[investmentProposalId][msg.sender] != 0)
+            revert ALREADY_MINTED();
+
         MintLocalVars memory vars;
 
         if (mode == 0) {
@@ -142,11 +144,16 @@ contract InvestmentReceiptERC721 is ERC721 {
                     ) -
                 esc;
 
+            vars.fundingAmount = vars.investmentInfo.investedAmount;
+            vars.myInvestmentAmount =
+                (vars.myInvestmentAmount * vars.investmentInfo.investedAmount) /
+                vars.investmentInfo.finalRaisedAmount;
+
             vars.finalRaisedAmount = vars.investmentInfo.finalRaisedAmount;
         } else if (mode == 1) {
             (
                 vars.tokenAddress,
-                vars.finalRaisedAmount,
+                vars.fundingAmount,
                 ,
                 ,
                 ,
@@ -169,7 +176,7 @@ contract InvestmentReceiptERC721 is ERC721 {
                     msg.sender,
                     vars.tokenAddress,
                     vars.executeBlockNum - 1
-                ) * vars.finalRaisedAmount) /
+                ) * vars.fundingAmount) /
                 vars.fundingPoolExt.getPriorAmount(
                     address(DaoHelper.DAOSQUARE_TREASURY),
                     vars.tokenAddress,
@@ -203,7 +210,7 @@ contract InvestmentReceiptERC721 is ERC721 {
                     msg.sender,
                     vars.cfundingInfo.token,
                     vars.executeBlockNum - 1
-                ) * vars.finalRaisedAmount) /
+                ) * vars.fundingAmount) /
                 vars.cFundingPoolExt.getPriorAmount(
                     address(DaoHelper.DAOSQUARE_TREASURY),
                     vars.cfundingInfo.token,
@@ -211,7 +218,7 @@ contract InvestmentReceiptERC721 is ERC721 {
                 );
         } else {}
 
-        require(vars.myInvestmentAmount > 0, "unmintable");
+        if (vars.myInvestmentAmount <= 0) revert UN_MINTABLE();
 
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
@@ -243,7 +250,7 @@ contract InvestmentReceiptERC721 is ERC721 {
             investmentProposalId,
             vars.executeBlockNum,
             executedTxHash,
-            vars.finalRaisedAmount,
+            vars.fundingAmount,
             vars.myInvestmentAmount,
             ERC20Info(
                 vars.tokenAddress,

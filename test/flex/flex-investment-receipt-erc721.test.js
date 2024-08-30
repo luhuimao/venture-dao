@@ -219,6 +219,27 @@ describe("flex investment receipt NFT...", () => {
         await flexInvestmentReceiptERC721.deployed();
         this.flexInvestmentReceiptERC721 = flexInvestmentReceiptERC721;
 
+        console.log("deploying InvestmentReceiptERC721Helper....");
+        const InvestmentReceiptERC721Helper = await hre.ethers.getContractFactory("InvestmentReceiptERC721Helper");
+        const investmentReceiptERC721Helper = await InvestmentReceiptERC721Helper.deploy();
+        await investmentReceiptERC721Helper.deployed();
+        this.investmentReceiptERC721Helper = investmentReceiptERC721Helper;
+
+        console.log("deploying InvestmentReceiptERC721....");
+        const InvestmentReceiptERC721 = await hre.ethers.getContractFactory("InvestmentReceiptERC721");
+        const investmentReceiptERC721 = await InvestmentReceiptERC721.deploy(
+            "DAOSquare Investment Receipt",
+            "DIR",
+            this.flexFundingAdapterContract.address,
+            this.flexFundingAdapterContract.address,
+            this.colletiveFundingProposalContract.address,
+            this.investmentReceiptERC721Helper.address
+        );
+        await investmentReceiptERC721.deployed();
+        this.investmentReceiptERC721 = investmentReceiptERC721;
+
+
+
 
         this.summonDao = this.adapters.summonDao.instance;
 
@@ -674,13 +695,13 @@ describe("flex investment receipt NFT...", () => {
 
 
 
-        await USDT.transfer(this.investor1.address, hre.ethers.utils.parseEther("100000"));
+        await USDT.transfer(this.investor1.address, hre.ethers.utils.parseEther("990000000000"));
         await USDT.approve(flexFundingPoolAdapt.address, hre.ethers.utils.parseEther("10000000000000"));
         await USDT.connect(this.investor1).approve(flexFundingPoolAdapt.address, hre.ethers.utils.parseEther("10000000000000"));
 
         await expectRevert(flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("0.1")), "revert");
-        await flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("1990000000000"));
-        await flexFundingPoolAdapt.connect(this.investor1).deposit(dao.address, proposalId, hre.ethers.utils.parseEther("240.2324"));
+        await flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("200"));
+        await flexFundingPoolAdapt.connect(this.investor1).deposit(dao.address, proposalId, hre.ethers.utils.parseEther("200"));
 
         const investors = await flexFundingPoolExtContract.getInvestorsByProposalId(proposalId);
         console.log("investors: ", investors);
@@ -708,13 +729,15 @@ describe("flex investment receipt NFT...", () => {
         flexFundingProposalInfo = await flexFundingAdapterContract.Proposals(dao.address, proposalId);
         console.log(`
         processed...
+        investedAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.investedAmount)}
+        finalRaisedAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.finalRaisedAmount)}
         state ${flexFundingProposalInfo.state}`
         );
 
         const mode = 0;//0 flex 1 vintage 2 collective
         const projectName = "ABI Finance";
         const description = "Camelot is an ecosystem-focused and community-driven DEX built on Arbitrum. It has been built as a highly efficient and customizable protocol, allowing both builders and users to leverage our custom infrastructure for deep, sustainable, and adaptable liquidity. Camelot moves beyond the traditional design of DEXs to focus on offering a tailored approach that prioritises composability.";
-        await this.flexInvestmentReceiptERC721.
+        await this.investmentReceiptERC721.
             safeMint(
                 dao.address,
                 proposalId,
@@ -725,7 +748,7 @@ describe("flex investment receipt NFT...", () => {
             );
 
 
-        await this.flexInvestmentReceiptERC721.connect(this.investor1).
+        await this.investmentReceiptERC721.connect(this.investor1).
             safeMint(
                 dao.address,
                 proposalId,
@@ -735,9 +758,9 @@ describe("flex investment receipt NFT...", () => {
                 description
             );
 
-        const tokenId1 = await this.flexInvestmentReceiptERC721.investmentIdToTokenId(proposalId, this.owner.address);
-        const tokenId2 = await this.flexInvestmentReceiptERC721.investmentIdToTokenId(proposalId, this.investor1.address);
-        const r1 = await this.flexInvestmentReceiptERC721.tokenIdToInvestmentProposalInfo(tokenId1);
+        const tokenId1 = await this.investmentReceiptERC721.investmentIdToTokenId(proposalId, this.owner.address);
+        const tokenId2 = await this.investmentReceiptERC721.investmentIdToTokenId(proposalId, this.investor1.address);
+        const r1 = await this.investmentReceiptERC721.tokenIdToInvestmentProposalInfo(tokenId1);
         console.log(r1);
         console.log(`
         minted...
@@ -745,13 +768,15 @@ describe("flex investment receipt NFT...", () => {
         tokenId2   ${tokenId2}
         `);
 
-        const tokenURI = await this.flexInvestmentReceiptERC721.tokenURI(1);
-        const svg = await this.flexInvestmentReceiptERC721Helper.getSvg(1, this.flexInvestmentReceiptERC721.address);
-        // const svg2 = await this.flexInvestmentReceiptERC721Helper.getSvg(2, this.flexInvestmentReceiptERC721.address);
+        const tokenURI = await this.investmentReceiptERC721.tokenURI(1);
+        const svg = await this.investmentReceiptERC721Helper.getSvg(1, this.investmentReceiptERC721.address);
+        const svg2 = await this.investmentReceiptERC721Helper.getSvg(2, this.investmentReceiptERC721.address);
         console.log(tokenId1);
         console.log(tokenId2);
         console.log(tokenURI);
-        // console.log(svg);
+        console.log(svg);
+        console.log(svg2);
+
 
     });
 

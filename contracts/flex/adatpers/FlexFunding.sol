@@ -34,7 +34,8 @@ contract FlexFundingAdapterContract is
         address(0x9ac9c636404C8d46D9eb966d7179983Ba5a3941A);
 
     modifier onlyDaoFactoryOwner(DaoRegistry dao) {
-        require(msg.sender == DaoHelper.daoFactoryAddress(dao), "Access Deny");
+        if (msg.sender != DaoHelper.daoFactoryAddress(dao))
+            revert ACCESS_DENIED();
         _;
     }
 
@@ -46,41 +47,73 @@ contract FlexFundingAdapterContract is
                     DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
                 ) == 0
             ) {
-                require(
+                // require(
+                //     IERC20(
+                //         dao.getAddressConfiguration(
+                //             DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+                //         )
+                //     ).balanceOf(msg.sender) >=
+                //         dao.getConfiguration(
+                //             DaoHelper.FLEX_PROPOSER_MIN_HOLDING
+                //         ),
+                //     "< min erc20 requirment"
+                // );
+                if (
                     IERC20(
                         dao.getAddressConfiguration(
                             DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
                         )
-                    ).balanceOf(msg.sender) >=
-                        dao.getConfiguration(
-                            DaoHelper.FLEX_PROPOSER_MIN_HOLDING
-                        ),
-                    "< min erc20 requirment"
-                );
+                    ).balanceOf(msg.sender) <
+                    dao.getConfiguration(DaoHelper.FLEX_PROPOSER_MIN_HOLDING)
+                ) revert NOT_MEET_ERC20_REQUIREMENT();
             }
             if (
                 dao.getConfiguration(
                     DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
                 ) == 1
             ) {
-                require(
+                // require(
+                //     IERC721(
+                //         dao.getAddressConfiguration(
+                //             DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+                //         )
+                //     ).balanceOf(msg.sender) >=
+                //         dao.getConfiguration(
+                //             DaoHelper.FLEX_PROPOSER_MIN_HOLDING
+                //         ),
+                //     "< erc721 requirment"
+                // );
+                if (
                     IERC721(
                         dao.getAddressConfiguration(
                             DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
                         )
-                    ).balanceOf(msg.sender) >=
-                        dao.getConfiguration(
-                            DaoHelper.FLEX_PROPOSER_MIN_HOLDING
-                        ),
-                    "< erc721 requirment"
-                );
+                    ).balanceOf(msg.sender) <
+                    dao.getConfiguration(DaoHelper.FLEX_PROPOSER_MIN_HOLDING)
+                ) revert NOT_MEET_ERC721_REQUIREMENT();
             }
             if (
                 dao.getConfiguration(
                     DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
                 ) == 2
             ) {
-                require(
+                // require(
+                //     IERC1155(
+                //         dao.getAddressConfiguration(
+                //             DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+                //         )
+                //     ).balanceOf(
+                //             msg.sender,
+                //             dao.getConfiguration(
+                //                 DaoHelper.FLEX_PROPOSER_TOKENID
+                //             )
+                //         ) >=
+                //         dao.getConfiguration(
+                //             DaoHelper.FLEX_PROPOSER_MIN_HOLDING
+                //         ),
+                //     "< erc1155 requirment"
+                // );
+                if (
                     IERC1155(
                         dao.getAddressConfiguration(
                             DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
@@ -90,22 +123,22 @@ contract FlexFundingAdapterContract is
                             dao.getConfiguration(
                                 DaoHelper.FLEX_PROPOSER_TOKENID
                             )
-                        ) >=
-                        dao.getConfiguration(
-                            DaoHelper.FLEX_PROPOSER_MIN_HOLDING
-                        ),
-                    "< erc1155 requirment"
-                );
+                        ) <
+                    dao.getConfiguration(DaoHelper.FLEX_PROPOSER_MIN_HOLDING)
+                ) revert NOT_MEET_ERC1155_REQUIRMENT();
             }
             if (
                 dao.getConfiguration(
                     DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
                 ) == 3
             ) {
-                require(
-                    isProposerWhiteList(dao, msg.sender),
-                    "not in whitelist"
-                );
+                // require(
+                //     isProposerWhiteList(dao, msg.sender),
+                //     "not in whitelist"
+                // );
+
+                if (!isProposerWhiteList(dao, msg.sender))
+                    revert NOT_IN_WHITELIST();
             }
         }
         _;
@@ -129,12 +162,17 @@ contract FlexFundingAdapterContract is
     }
 
     modifier OnlyDaosetAccess(DaoRegistry dao) {
-        require(
-            msg.sender ==
-                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER) ||
-                DaoHelper.isInCreationModeAndHasAccess(dao),
-            "!access"
-        );
+        // require(
+        //     msg.sender ==
+        //         dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER) ||
+        //         DaoHelper.isInCreationModeAndHasAccess(dao),
+        //     "!access"
+        // );
+        if (
+            msg.sender !=
+            dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER) &&
+            !DaoHelper.isInCreationModeAndHasAccess(dao)
+        ) revert ACCESS_DENIED();
         _;
     }
 
@@ -177,9 +215,11 @@ contract FlexFundingAdapterContract is
         ProposalParams calldata params
     ) external override reimbursable(dao) onlyProposer(dao) {
         FlexDaoSetHelperAdapterContract daosethelper = FlexDaoSetHelperAdapterContract(
-            dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
-        );
-        require(daosethelper.isProposalAllDone(dao), "UnDone Daoset Proposal");
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
+            );
+        // require(daosethelper.isProposalAllDone(dao), "UnDone Daoset Proposal");
+        if (!daosethelper.isProposalAllDone(dao))
+            revert UNDONE_DAO_SET_PROPOSAL();
         if (
             (params.investmentInfo.maxInvestmentAmount > 0 &&
                 params.investmentInfo.maxInvestmentAmount <
@@ -254,6 +294,7 @@ contract FlexFundingAdapterContract is
                 params.investmentInfo.tokenAddress,
                 params.investmentInfo.minInvestmentAmount,
                 params.investmentInfo.maxInvestmentAmount,
+                0,
                 0,
                 params.investmentInfo.escrow,
                 params.investmentInfo.paybackTokenAddr,
@@ -350,18 +391,22 @@ contract FlexFundingAdapterContract is
         );
 
         if (proposal.state == ProposalStatus.IN_VOTING_PROGRESS) {
-            require(
-                block.timestamp > proposal.stopVoteTime,
-                "proposal in voting period"
-            );
+            // require(
+            //     block.timestamp > proposal.stopVoteTime,
+            //     "proposal in voting period"
+            // );
+            if (block.timestamp <= proposal.stopVoteTime)
+                revert PROPOSAL_IN_VOTING_PERIOD();
             // Checks if the proposal has passed.
             vars.flexVoting = FlexPollingVotingContract(
                 dao.votingAdapter(proposalId)
             );
-            require(
-                address(vars.flexVoting) != address(0x0),
-                "adapter not found"
-            );
+            // require(
+            //     address(vars.flexVoting) != address(0x0),
+            //     "adapter not found"
+            // );
+            if (address(vars.flexVoting) == address(0x0))
+                revert ADAPTER_NOT_FOUND();
 
             (vars.voteResult, , ) = vars.flexVoting.voteResult(dao, proposalId);
             if (vars.voteResult == IFlexVoting.VotingState.PASS) {
@@ -404,6 +449,11 @@ contract FlexFundingAdapterContract is
                     vars.proposerReward
             ) {
                 proposal.investmentInfo.finalRaisedAmount = vars.poolBalance;
+                proposal.investmentInfo.investedAmount =
+                    vars.poolBalance -
+                    vars.protocolFee -
+                    vars.managementFee -
+                    vars.proposerReward;
 
                 if (proposal.investmentInfo.escrow) {
                     // calculate && update payback token amount

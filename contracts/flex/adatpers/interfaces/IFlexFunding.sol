@@ -138,6 +138,7 @@ interface IFlexFunding {
         address tokenAddress;
         uint256 minInvestmentAmount;
         uint256 maxInvestmentAmount;
+        uint256 investedAmount;
         uint256 finalRaisedAmount;
         bool escrow;
         address paybackTokenAddr;
@@ -212,4 +213,12 @@ interface IFlexFunding {
     error InvalidVestingParams();
     error InvalidTokenRewardAmount();
     error NotInExecuteState();
+    error ACCESS_DENIED();
+    error NOT_MEET_ERC20_REQUIREMENT();
+    error NOT_MEET_ERC721_REQUIREMENT();
+    error NOT_MEET_ERC1155_REQUIRMENT();
+    error NOT_IN_WHITELIST();
+    error UNDONE_DAO_SET_PROPOSAL();
+    error PROPOSAL_IN_VOTING_PERIOD();
+    error ADAPTER_NOT_FOUND();
 }

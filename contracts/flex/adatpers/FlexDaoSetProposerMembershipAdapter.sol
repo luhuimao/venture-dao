@@ -138,6 +138,15 @@ contract FlexDaoSetProposerMembershipAdapterContract is
 
         ongoingProposerMembershipProposal[address(dao)] = bytes32(0);
 
+        emit ProposalProcessed(
+            address(dao),
+            proposalId,
+            uint256(voteResult),
+            allWeight,
+            nYes,
+            nNo
+        );
+
         return (voteResult, nYes, nNo, allWeight);
     }
 

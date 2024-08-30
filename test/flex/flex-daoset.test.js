@@ -1375,12 +1375,12 @@ describe("dao set proposal...", () => {
             whiteList
         ];
 
-        const tx = await this.flexDaoSetProposerMembershipAdapterContract
+        let tx = await this.flexDaoSetProposerMembershipAdapterContract
             .submitProposerMembershipProposal(
                 params
             );
 
-        const result = await tx.wait();
+        let result = await tx.wait();
         const proposalId = result.events[result.events.length - 1].args.proposalId;
 
         let proposal = await this.flexDaoSetProposerMembershipAdapterContract.
@@ -1443,11 +1443,15 @@ describe("dao set proposal...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.flexDaoSetProposerMembershipAdapterContract.
+        tx = await this.flexDaoSetProposerMembershipAdapterContract.
             processProposerMembershipProposal(
                 this.flexDirectdaoAddress,
                 proposalId
             );
+        result = await tx.wait();
+        let voteResult = result.events[result.events.length - 1].args.voteResult;
+
+
         proposal = await this.flexDaoSetProposerMembershipAdapterContract.
             proposerMembershipProposals(
                 this.flexDirectdaoAddress,
@@ -1471,6 +1475,7 @@ describe("dao set proposal...", () => {
 
         console.log(`
         executed...
+        voteResult  ${voteResult}
         state ${proposal.state}
         FLEX_PROPOSER_ENABLE ${FLEX_PROPOSER_ENABLE}
         currentName ${currentName}

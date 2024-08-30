@@ -480,7 +480,7 @@ describe("deposit, withdraw...", () => {
         this.collectiveFreeInEscrowFundAdapterContract = this.adapters.collectiveFreeInEscrowFundAdapterContract.instance;
         this.colletiveClearFundProposalAdapterContract = this.adapters.colletiveClearFundProposalAdapterContract.instance;
         this.collectiveRedemptionFeeEscrowAdapterContract = this.adapters.collectiveRedemptionFeeEscrowAdapterContract.instance;
-        this.colletiveSetRiceReceiverProposalAdapterContract = this.adapterscolletiveSetRiceReceiverProposalAdapterContract.instance;
+        this.colletiveSetRiceReceiverProposalAdapterContract = this.adapters.colletiveSetRiceReceiverProposalAdapterContract.instance;
 
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 

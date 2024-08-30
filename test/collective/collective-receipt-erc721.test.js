@@ -179,15 +179,16 @@ describe("collective investment receipt NFT...", () => {
         this.collectiveFreeInEscrowFundAdapterContract = this.adapters.collectiveFreeInEscrowFundAdapterContract.instance;
         this.colletiveClearFundProposalAdapterContract = this.adapters.colletiveClearFundProposalAdapterContract.instance;
         this.collectiveRedemptionFeeEscrowAdapterContract = this.adapters.collectiveRedemptionFeeEscrowAdapterContract.instance;
-        this.colletiveSetRiceReceiverProposalAdapterContract = this.adapterscolletiveSetRiceReceiverProposalAdapterContract.instance;
-
+        this.colletiveSetRiceReceiverProposalAdapterContract = this.adapters.colletiveSetRiceReceiverProposalAdapterContract.instance;
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 
+        console.log("deploying VestingERC721Helper....");
         const VestingERC721Helper = await hre.ethers.getContractFactory("VestingERC721Helper");
         const vestingERC721Helper = await VestingERC721Helper.deploy();
         await vestingERC721Helper.deployed();
         this.vestingERC721Helper = vestingERC721Helper;
 
+        console.log("deploying VestingERC721....");
         const VestingERC721 = await hre.ethers.getContractFactory("VestingERC721");
         const vestingERC721 = await VestingERC721.deploy(
             "DAOSquare Investment Vesting",
@@ -200,12 +201,13 @@ describe("collective investment receipt NFT...", () => {
         await vestingERC721.deployed();
         this.vestingERC721 = vestingERC721;
 
-
+        console.log("deploying InvestmentReceiptERC721Helper....");
         const InvestmentReceiptERC721Helper = await hre.ethers.getContractFactory("InvestmentReceiptERC721Helper");
         const investmentReceiptERC721Helper = await InvestmentReceiptERC721Helper.deploy();
         await investmentReceiptERC721Helper.deployed();
         this.investmentReceiptERC721Helper = investmentReceiptERC721Helper;
 
+        console.log("deploying InvestmentReceiptERC721....");
         const InvestmentReceiptERC721 = await hre.ethers.getContractFactory("InvestmentReceiptERC721");
         const investmentReceiptERC721 = await InvestmentReceiptERC721.deploy(
             "DAOSquare Investment Receipt",
@@ -714,6 +716,26 @@ describe("collective investment receipt NFT...", () => {
         const tx1 = await this.colletiveFundingProposalContract.processProposal(dao, proposalId);
 
         proposalDetail = await this.colletiveFundingProposalContract.proposals(dao, proposalId);
+
+        depositBal1 = await collectiveFundingPoolExtContract.getPriorAmount(
+            this.owner.address,
+            this.testtoken1.address,
+            currentBlockNum - 1
+        );
+
+        depositBal2 = await collectiveFundingPoolExtContract.getPriorAmount(
+            this.investor1.address,
+            this.testtoken1.address,
+            currentBlockNum - 1
+        );
+
+        console.log(`
+        depositBal1 ${hre.ethers.utils.formatEther(depositBal1)}
+        depositBal2 ${hre.ethers.utils.formatEther(depositBal2)}
+        investedAmount ${hre.ethers.utils.formatEther(proposalDetail.fundingInfo.fundingAmount)}
+        finalRaisedAmount ${hre.ethers.utils.formatEther(proposalDetail.fundingInfo.totalAmount)}
+        `);
+
         console.log(`
         executed...
         proposal state ${proposalDetail.state}
@@ -756,11 +778,12 @@ describe("collective investment receipt NFT...", () => {
 
         const tokenURI = await this.investmentReceiptERC721.tokenURI(1);
         const svg = await this.investmentReceiptERC721Helper.getSvg(1, this.investmentReceiptERC721.address);
-        // const svg2 = await this.flexInvestmentReceiptERC721Helper.getSvg(2, this.flexInvestmentReceiptERC721.address);
+        const svg2 = await this.investmentReceiptERC721Helper.getSvg(2, this.investmentReceiptERC721.address);
         console.log(tokenId1);
         console.log(tokenId2);
         console.log(tokenURI);
 
         console.log(svg);
+        console.log(svg2);
     });
 });
