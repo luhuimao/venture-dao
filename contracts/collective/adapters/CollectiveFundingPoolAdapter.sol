@@ -317,81 +317,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
 
         return false;
     }
-
-    // function transferFromNewGovernor(
-    //     DaoRegistry dao,
-    //     address token,
-    //     address account,
-    //     uint256 amount
-    // ) external returns (bool) {
-    //     if (
-    //         msg.sender !=
-    //         dao.getAdapterAddress(
-    //             DaoHelper.COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPTER
-    //         )
-    //     ) revert ACCESS_DENIED();
-
-    //     if (
-    //         IERC20(token).balanceOf(account) < amount ||
-    //         IERC20(token).allowance(account, address(this)) < amount
-    //     ) return false;
-
-    //     if (
-    //         dao.getConfiguration(DaoHelper.MAX_INVESTORS_ENABLE) == 1 &&
-    //         dao.getAllSteward().length >=
-    //         dao.getConfiguration(DaoHelper.MAX_INVESTORS)
-    //     ) return false;
-
-    //     IERC20(token).transferFrom(account, address(this), amount);
-    //     IERC20(token).approve(
-    //         dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT),
-    //         amount
-    //     );
-
-    //     CollectiveInvestmentPoolExtension(
-    //         dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
-    //     ).addToBalance(account, token, amount);
-
-    //     _addFundInvestor(dao, account);
-
-    //     return true;
-    // }
-
-    // function topupFunds(
-    //     DaoRegistry dao,
-    //     address token,
-    //     address account,
-    //     uint256 amount
-    // ) external {
-    //     if (
-    //         msg.sender !=
-    //         dao.getAdapterAddress(DaoHelper.COLLECTIVE_TOPUP_ADAPTER)
-    //     ) revert ACCESS_DENIED();
-
-    //     if (IERC20(token).balanceOf(account) < amount)
-    //         revert INSUFFICIENT_FUND();
-
-    //     if (IERC20(token).allowance(account, address(this)) < amount)
-    //         revert INSUFFICIENT_ALLOWANCE();
-
-    //     IERC20(token).transferFrom(account, address(this), amount);
-
-    //     IERC20(token).approve(
-    //         dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT),
-    //         amount
-    //     );
-
-    //     // CollectiveInvestmentPoolExtension fundingPoolExt = CollectiveInvestmentPoolExtension(
-    //     //         dao.getExtensionAddress(
-    //     //             DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
-    //     //         )
-    //     //     );
-
-    //     CollectiveInvestmentPoolExtension(
-    //         dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
-    //     ).addToBalance(account, token, amount);
-    //     _addFundInvestor(dao, account);
-    // }
+    
 
     function returnFundToQuitGovernor(
         DaoRegistry dao,
@@ -509,7 +435,6 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         if (!fundInvestors[address(dao)].contains(account))
             fundInvestors[address(dao)].add(account);
 
-        if (!dao.isMember(account)) dao.potentialNewMember(account);
     }
 
     function _removeFundInvestor(DaoRegistry dao, address account) internal {
