@@ -24,7 +24,6 @@ contract ColletiveSetRiceReceiverProposalAdapterContract is
     }
 
     enum ProposalState {
-        Submitted,
         Voting,
         Executing,
         Done,
@@ -76,7 +75,7 @@ contract ColletiveSetRiceReceiverProposalAdapterContract is
             msg.sender,
             block.timestamp,
             block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD),
-            ProposalState.Submitted
+            ProposalState.Voting
         );
 
         dao.submitProposal(proposalId);
