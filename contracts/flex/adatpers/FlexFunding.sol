@@ -391,20 +391,13 @@ contract FlexFundingAdapterContract is
         );
 
         if (proposal.state == ProposalStatus.IN_VOTING_PROGRESS) {
-            // require(
-            //     block.timestamp > proposal.stopVoteTime,
-            //     "proposal in voting period"
-            // );
             if (block.timestamp <= proposal.stopVoteTime)
                 revert PROPOSAL_IN_VOTING_PERIOD();
             // Checks if the proposal has passed.
             vars.flexVoting = FlexPollingVotingContract(
                 dao.votingAdapter(proposalId)
             );
-            // require(
-            //     address(vars.flexVoting) != address(0x0),
-            //     "adapter not found"
-            // );
+
             if (address(vars.flexVoting) == address(0x0))
                 revert ADAPTER_NOT_FOUND();
 
@@ -515,12 +508,7 @@ contract FlexFundingAdapterContract is
                         ]
                     );
                 }
-                //else {
-                //     vars.flexAllocAdapt = FlexAllocationAdapterContract(
-                //         dao.getAdapterAddress(DaoHelper.FLEX_ALLOCATION_ADAPT)
-                //     );
-                //     vars.flexAllocAdapt.noEscrow(dao, proposalId);
-                // }
+
                 //1
                 proposal.state = ProposalStatus.IN_EXECUTE_PROGRESS;
 
