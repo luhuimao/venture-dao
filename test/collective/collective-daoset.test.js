@@ -556,7 +556,7 @@ describe("daoset...", () => {
         const support = 43;
         const quorum = 33;
         const votingPeriod = 60 * 100;
-        const executingPeriod = 60 * 2;
+        // const executingPeriod = 60 * 2;
         const gracePeriod = 60 * 3;
 
         const params = [
@@ -569,7 +569,7 @@ describe("daoset...", () => {
             support,
             quorum,
             votingPeriod,
-            executingPeriod,
+            // executingPeriod,
             gracePeriod
         ];
 
@@ -913,7 +913,7 @@ describe("daoset...", () => {
         const support = 43;
         const quorum = 33;
         const votingPeriod = 60 * 100;
-        const executingPeriod = 60 * 2;
+        // const executingPeriod = 60 * 2;
         const gracePeriod = 60 * 9;
         const params = [votingAssetType,
             tokenAddress,
@@ -924,7 +924,7 @@ describe("daoset...", () => {
             support,
             quorum,
             votingPeriod,
-            executingPeriod,
+            // executingPeriod,
             gracePeriod
         ];
 

@@ -116,7 +116,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
 
     struct VotingTimeInfo {
         uint256 votingPeriod;
-        uint256 executingPeriod;
+        // uint256 executingPeriod;
         uint256 gracePeriod;
         uint256 creationTime;
         uint256 stopVoteTime;
@@ -139,7 +139,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
         uint256 support;
         uint256 quorum;
         uint256 votingPeriod;
-        uint256 executingPeriod;
+        // uint256 executingPeriod;
         uint256 gracePeriod;
     }
 
@@ -350,7 +350,7 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
             ),
             VotingTimeInfo(
                 params.votingPeriod,
-                params.executingPeriod,
+                // params.executingPeriod,
                 params.gracePeriod,
                 block.timestamp,
                 block.timestamp + dao.getConfiguration(DaoHelper.VOTING_PERIOD)
@@ -803,10 +803,10 @@ contract ColletiveDaoSetProposalAdapterContract is GovernorGuard, Reimbursable {
             DaoHelper.VOTING_PERIOD,
             proposal.timeInfo.votingPeriod
         );
-        dao.setConfiguration(
-            DaoHelper.PROPOSAL_EXECUTE_DURATION,
-            proposal.timeInfo.executingPeriod
-        );
+        // dao.setConfiguration(
+        //     DaoHelper.PROPOSAL_EXECUTE_DURATION,
+        //     proposal.timeInfo.executingPeriod
+        // );
     }
 
     function getGovernorMembershipWhitelist(

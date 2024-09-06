@@ -1130,6 +1130,7 @@ describe("funding debug...", () => {
             flags: 26
         }
         ];
+
         let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
         const flexDaoParticipantCapInfo = [
@@ -1744,7 +1745,7 @@ describe("funding debug...", () => {
             startVoteTime  ${flexFundingProposalInfo.startVoteTime}
             deposite fund...
             `);
-    
+
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
