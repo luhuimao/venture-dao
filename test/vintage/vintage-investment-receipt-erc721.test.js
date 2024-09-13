@@ -216,9 +216,9 @@ describe("vesting...", () => {
         const vintageInvestmentReceiptERC721 = await VintageInvestmentReceiptERC721.deploy(
             "DAOSquare Investment Receipt",
             "DIR",
-            this.flexFundingAdapterContract.address,
-            this.vintageFundingAdapterContract.address,
-            this.colletiveFundingProposalContract.address,
+            // this.flexFundingAdapterContract.address,
+            // this.vintageFundingAdapterContract.address,
+            // this.colletiveFundingProposalContract.address,
             this.vintageInvestmentReceiptERC721Helper.address
         );
         await vintageInvestmentReceiptERC721.deployed();
@@ -646,7 +646,7 @@ describe("vesting...", () => {
           `);
 
         const approver = this.owner.address;
-        const escrow = true;
+        const escrow = false;
         const price = hre.ethers.utils.parseEther("0.3");
 
         const receiver = this.project_team1.address;
@@ -668,7 +668,7 @@ describe("vesting...", () => {
             price,
             "0",
             approver,
-            false,
+            true,
             ZERO_ADDRESS
         ];
 
@@ -738,7 +738,10 @@ describe("vesting...", () => {
         }
 
         const tx1 = await vintageFundingAdapterContract.processProposal(this.daoAddr1, proposalId);
-
+        const ff = await tx1.wait();
+        const executedInvestors = ff.events[ff.events.length - 1].args.investors;
+        console.log("executedInvestors ", executedInvestors);
+        
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(blocktimestamp) + 60])
         await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has

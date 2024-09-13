@@ -61,6 +61,7 @@ const {
     accounts
 } = require("../../utils/oz-util");
 
+import { zeroPad } from "ethers/lib/utils";
 import {
     DaoFactory,
     DaoRegistry,
@@ -212,14 +213,23 @@ describe("collective investment receipt NFT...", () => {
         const investmentReceiptERC721 = await InvestmentReceiptERC721.deploy(
             "DAOSquare Investment Receipt",
             "DIR",
-            this.flexFundingAdapterContract.address,
-            this.vintageFundingAdapterContract.address,
-            this.colletiveFundingProposalContract.address,
+            // this.flexFundingAdapterContract.address,
+            // this.vintageFundingAdapterContract.address,
+            // this.colletiveFundingProposalContract.address,
             this.investmentReceiptERC721Helper.address
         );
         await investmentReceiptERC721.deployed();
         this.investmentReceiptERC721 = investmentReceiptERC721;
 
+
+        console.log("deploying ManualVesting....");
+        const ManualVesting = await hre.ethers.getContractFactory("ManualVesting");
+        const manualVesting = await ManualVesting.deploy(
+            this.bentoBoxV1.address,
+            this.investmentReceiptERC721.address
+        );
+        await manualVesting.deployed();
+        this.manualVesting = manualVesting;
 
         const daoFactoriesAddress = [
             this.daoFactory.address,
@@ -593,9 +603,18 @@ describe("collective investment receipt NFT...", () => {
             currentBlockNum - 1
         );
 
+        let bal1 = await await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress,
+            this.owner.address
+        );
+        let bal2 = await await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress,
+            this.investor1.address
+        );
+
         console.log(`
         depositBal1 ${hre.ethers.utils.formatEther(depositBal1)}
         depositBal2 ${hre.ethers.utils.formatEther(depositBal2)}
+        final bal1  ${hre.ethers.utils.formatEther(bal1)}
+        final bal2  ${hre.ethers.utils.formatEther(bal2)}
         `);
 
         //funding proposal
@@ -606,7 +625,7 @@ describe("collective investment receipt NFT...", () => {
 
         const fundingInfo = [token, fundingAmount, totalAmount, receiver];
 
-        const escrow = true;
+        const escrow = false;
         const paybackToken = this.testtoken2.address;
 
         const price = hre.ethers.utils.parseEther("1.2");
@@ -714,6 +733,9 @@ describe("collective investment receipt NFT...", () => {
         }
 
         const tx1 = await this.colletiveFundingProposalContract.processProposal(dao, proposalId);
+        const ff = await tx1.wait();
+        const executedInvestors = ff.events[ff.events.length - 1].args.investors;
+        console.log("executedInvestors ", executedInvestors);
 
         proposalDetail = await this.colletiveFundingProposalContract.proposals(dao, proposalId);
 
@@ -745,7 +767,7 @@ describe("collective investment receipt NFT...", () => {
         const mode = 2;//0 flex 1 vintage 2 collective
         const projectName = "ABI Finance";
         const description = "Camelot is an ecosystem-focused and community-driven DEX built on Arbitrum. It has been built as a highly efficient and customizable protocol, allowing both builders and users to leverage our custom infrastructure for deep, sustainable, and adaptable liquidity. Camelot moves beyond the traditional design of DEXs to focus on offering a tailored approach that prioritises composability.";
-        await this.investmentReceiptERC721.
+        let txs = await this.investmentReceiptERC721.
             safeMint(
                 dao,
                 proposalId,
@@ -755,21 +777,40 @@ describe("collective investment receipt NFT...", () => {
                 description
             );
 
+        let ss = await txs.wait();
+        let ipid = ss.events[ss.events.length - 1].args.proposalId;
+        let minter = ss.events[ss.events.length - 1].args.minter;
+        let rntokenId = ss.events[ss.events.length - 1].args.tokenId;
+        console.log(`
+           ipid  ${ipid} 
+           minter ${minter}
+           rntokenId ${rntokenId}
+        `);
+        // console.log(this.investmentReceiptERC721.functions);
+        // txs = await this.investmentReceiptERC721.connect(this.investor1).
+        //     safeMint(
+        //         dao,
+        //         proposalId,
+        //         mode,
+        //         tx1.hash,
+        //         projectName,
+        //         description
+        //     );
+        // ss = await txs.wait();
+        // ipid = ss.events[ss.events.length - 1].args.proposalId;
+        // minter = ss.events[ss.events.length - 1].args.minter;
+        // rntokenId = ss.events[ss.events.length - 1].args.tokenId;
 
-        await this.investmentReceiptERC721.connect(this.investor1).
-            safeMint(
-                dao,
-                proposalId,
-                mode,
-                tx1.hash,
-                projectName,
-                description
-            );
+        // console.log(`
+        //     ipid  ${ipid} 
+        //     minter ${minter}
+        //     rntokenId ${rntokenId}
+        //  `);
 
         const tokenId1 = await this.investmentReceiptERC721.investmentIdToTokenId(proposalId, this.owner.address);
         const tokenId2 = await this.investmentReceiptERC721.investmentIdToTokenId(proposalId, this.investor1.address);
         const r1 = await this.investmentReceiptERC721.tokenIdToInvestmentProposalInfo(tokenId1);
-        console.log(r1);
+        // console.log(r1);
         console.log(`
         minted...
         tokenId1   ${tokenId1}
@@ -778,12 +819,77 @@ describe("collective investment receipt NFT...", () => {
 
         const tokenURI = await this.investmentReceiptERC721.tokenURI(1);
         const svg = await this.investmentReceiptERC721Helper.getSvg(1, this.investmentReceiptERC721.address);
-        const svg2 = await this.investmentReceiptERC721Helper.getSvg(2, this.investmentReceiptERC721.address);
-        console.log(tokenId1);
-        console.log(tokenId2);
-        console.log(tokenURI);
+        // const svg2 = await this.investmentReceiptERC721Helper.getSvg(2, this.investmentReceiptERC721.address);
 
-        console.log(svg);
-        console.log(svg2);
+        txs = await this.investmentReceiptERC721.connect(this.owner).transferFrom(this.owner.address, this.investor2.address, 1);
+        ss = await txs.wait();
+        let ffrom = ss.events[ss.events.length - 1].args.from;
+        let tto = ss.events[ss.events.length - 1].args.to;
+        let iid = ss.events[ss.events.length - 1].args.id;
+        console.log(`
+            ffrom ${ffrom}
+            tto   ${tto}
+            iid   ${iid}
+        `);
+        // console.log(tokenId1);
+        // console.log(tokenId2);
+        // console.log(tokenURI);
+
+        // console.log(svg);
+        // console.log(svg2);
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        const vstartTime = toBN(blocktimestamp).add(toBN(60 * 1));
+        const vendTime = toBN(vstartTime).add(toBN(60 * 60 * 500));
+        const vcliffEndTime = toBN(vstartTime).add(toBN(60 * 60 * 1));
+        const vvestingInterval = 60 * 60 * 1;
+        const vpaybackToken = this.testtoken2.address;
+        const vrecipientAddr = this.user1.address;
+        const vdepositAmount = hre.ethers.utils.parseEther("3843");
+        const vcliffVestingAmount = hre.ethers.utils.parseEther("0.032");
+        const vnftEnable = false;
+        const verc721 = ZERO_ADDRESS;
+        const vname = "vesting nft disable";
+        const vdes = "99932fd";
+        console.log("vstartTime ", vstartTime);
+        console.log("vcliffEndTime ", vcliffEndTime);
+
+        const CreateVestingParams = [
+            vstartTime,
+            vcliffEndTime,
+            vendTime,
+            vvestingInterval,
+            vpaybackToken,
+            vrecipientAddr,
+            vdepositAmount,
+            vcliffVestingAmount,
+            vnftEnable,
+            verc721,
+            vname,
+            vdes
+        ];
+
+        await this.testtoken2.approve(this.bentoBoxV1.address, hre.ethers.utils.parseEther("2000"));
+
+        const total = hre.ethers.utils.parseEther("2000");//1333.333333333333333332
+        const vmode = 2;
+        await this.manualVesting.batchCreate(
+            [this.investor1.address],
+            [this.investor2.address],
+            CreateVestingParams,
+            total,
+            vmode,
+            dao,
+            proposalId
+        );
+
+        console.log("crated...");
+
+
+        let vestInfo1 = await this.manualVesting.vests(1);
+        let vestInfo2 = await this.manualVesting.vests(2);
+        console.log(hre.ethers.utils.formatEther(vestInfo1.total));
+        console.log(hre.ethers.utils.formatEther(vestInfo2.total));
     });
+
 });

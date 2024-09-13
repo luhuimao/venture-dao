@@ -211,9 +211,9 @@ describe("flex investment receipt NFT...", () => {
         const flexInvestmentReceiptERC721 = await FlexInvestmentReceiptERC721.deploy(
             "DAOSquare Investment Receipt",
             "DIR",
-            this.flexFundingAdapterContract.address,
-            this.vintageFundingAdapterContract.address,
-            this.colletiveFundingProposalContract.address,
+            // this.flexFundingAdapterContract.address,
+            // this.vintageFundingAdapterContract.address,
+            // this.colletiveFundingProposalContract.address,
             this.flexInvestmentReceiptERC721Helper.address
         );
         await flexInvestmentReceiptERC721.deployed();
@@ -230,9 +230,9 @@ describe("flex investment receipt NFT...", () => {
         const investmentReceiptERC721 = await InvestmentReceiptERC721.deploy(
             "DAOSquare Investment Receipt",
             "DIR",
-            this.flexFundingAdapterContract.address,
-            this.flexFundingAdapterContract.address,
-            this.colletiveFundingProposalContract.address,
+            // this.flexFundingAdapterContract.address,
+            // this.flexFundingAdapterContract.address,
+            // this.colletiveFundingProposalContract.address,
             this.investmentReceiptERC721Helper.address
         );
         await investmentReceiptERC721.deployed();
@@ -540,7 +540,7 @@ describe("flex investment receipt NFT...", () => {
         let tokenAddress = this.testtoken1.address;
         let minFundingAmount = hre.ethers.utils.parseEther("100");
         let maxFundingAmount = hre.ethers.utils.parseEther("10000000000000");
-        let escrow = true;
+        let escrow = false;
         let returnTokenAddr = this.testtoken2.address;
         let price = hre.ethers.utils.parseEther("100000");
         let returnTokenAmount = hre.ethers.utils.parseEther("1000000000");
@@ -725,7 +725,10 @@ describe("flex investment receipt NFT...", () => {
         }
 
         const tx1 = await flexFundingAdapterContract.processProposal(dao.address, proposalId);
-        // console.log("tx ", tx1);
+        const ff = await tx1.wait();
+        const executedInvestors = ff.events[ff.events.length - 1].args.investors;
+        console.log("executedInvestors ", executedInvestors);
+        
         flexFundingProposalInfo = await flexFundingAdapterContract.Proposals(dao.address, proposalId);
         console.log(`
         processed...

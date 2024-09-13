@@ -431,7 +431,7 @@ describe("fund establishment...", () => {
             riceRewardReceiver
         ];
 
-        // console.log(vintageDaoParams1);
+        console.log(vintageDaoParams1);
 
         let obj = await sommonVintageDao(this.summonDao, this.daoFactory, vintageDaoParams1);
         // console.log(obj);

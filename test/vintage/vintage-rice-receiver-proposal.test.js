@@ -216,9 +216,9 @@ describe("rice receiver proposal...", () => {
         const vintageInvestmentReceiptERC721 = await VintageInvestmentReceiptERC721.deploy(
             "DAOSquare Investment Receipt",
             "DIR",
-            this.flexFundingAdapterContract.address,
-            this.vintageFundingAdapterContract.address,
-            this.colletiveFundingProposalContract.address,
+            // this.flexFundingAdapterContract.address,
+            // this.vintageFundingAdapterContract.address,
+            // this.colletiveFundingProposalContract.address,
             this.vintageInvestmentReceiptERC721Helper.address
         );
         await vintageInvestmentReceiptERC721.deployed();
