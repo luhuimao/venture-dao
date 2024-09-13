@@ -445,7 +445,11 @@ contract VintageFundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
     function subtractAllFromBalance(
         address token,
         uint256 amount
-    ) public hasExtensionAccess(AclFlag.SUB_FROM_BALANCE) {
+    )
+        public
+        hasExtensionAccess(AclFlag.SUB_FROM_BALANCE)
+        returns (address[] memory)
+    {
         uint256 treasuryBalance = balanceOf(
             address(DaoHelper.DAOSQUARE_TREASURY)
         );
@@ -460,6 +464,8 @@ contract VintageFundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
                 );
             }
         }
+
+        return tem;
     }
 
     /**

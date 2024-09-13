@@ -74,6 +74,7 @@ interface IFlexFunding {
         address proposer;
         uint256 totalSendOutAmount;
         uint256 paybackTokenAmount;
+        address[] investors;
     }
 
     struct SubmitProposalLocalVars {
@@ -202,7 +203,8 @@ interface IFlexFunding {
     event ProposalExecuted(
         address daoAddress,
         bytes32 proposalId,
-        ProposalStatus state
+        ProposalStatus state,
+        address[] investors
     );
 
     error FundRaiseEndTimeNotUP();

@@ -122,6 +122,7 @@ interface IVintageInvestment {
         uint256 protocolFee;
         uint256 managementFee;
         uint256 proposerFundReward;
+        address[] investors;
     }
 
     event ProposalCreated(address daoAddr, bytes32 proposalId);
@@ -133,7 +134,8 @@ interface IVintageInvestment {
         bytes32 proposalID,
         uint128 allVotingWeight,
         uint128 nbYes,
-        uint128 nbNo
+        uint128 nbNo,
+        address[] investors
     );
     // error InvalidStepSetting();
     error INVESTMENT_PROPOSAL_NOT_FINALIZED();

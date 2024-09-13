@@ -90,6 +90,7 @@ interface ICollectiveFunding {
         uint256 protocolFee;
         uint256 managementFee;
         uint256 proposerFundReward;
+        address[] investors;
     }
     event ProposalCreated(address daoAddr, bytes32 proposalId);
     event ProposalExecuted(
@@ -97,7 +98,8 @@ interface ICollectiveFunding {
         bytes32 proposalId,
         uint256 allVotingWeight,
         uint256 nbYes,
-        uint256 nbNo
+        uint256 nbNo,
+        address[] investors
     );
     event StartVoting(address daoAddr, bytes32 proposalId);
 

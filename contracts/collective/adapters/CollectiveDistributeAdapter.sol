@@ -19,17 +19,15 @@ contract CollectiveDistributeAdatperContract {
             "!access"
         );
         CollectiveInvestmentPoolExtension fundingpoolExt = CollectiveInvestmentPoolExtension(
-                dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
+                dao.getExtensionAddress(
+                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
+                )
             );
         distributeFundToProductTeam(fundingpoolExt, _addressArgs[0], fees[0]);
         if (fees[1] > 0)
             distributeManagementFeeToGP(dao, fundingpoolExt, fees[1]);
         if (fees[2] > 0)
-            distributeProtocolFee(
-                fundingpoolExt,
-                _addressArgs[1],
-                fees[2]
-            );
+            distributeProtocolFee(fundingpoolExt, _addressArgs[1], fees[2]);
         if (fees[3] > 0)
             distributeProposerFundRewardToProposer(
                 fundingpoolExt,
@@ -92,18 +90,22 @@ contract CollectiveDistributeAdatperContract {
         uint256 protocolFee,
         uint256 managementFee,
         uint256 proposerFundReward
-    ) external {
+    ) external returns (address[] memory) {
         require(
             msg.sender ==
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER),
             "!funding adapter"
         );
         CollectiveInvestmentPoolExtension fundingpoolExt = CollectiveInvestmentPoolExtension(
-                dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
+                dao.getExtensionAddress(
+                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
+                )
             );
+        address[] memory tem = fundingpoolExt.getInvestors();
         fundingpoolExt.subtractAllFromBalance(
             fundingpoolExt.getFundRaisingTokenAddress(),
             investmentAmount + protocolFee + managementFee + proposerFundReward
         );
+        return tem;
     }
 }

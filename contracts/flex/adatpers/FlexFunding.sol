@@ -484,7 +484,8 @@ contract FlexFundingAdapterContract is
                         emit ProposalExecuted(
                             address(dao),
                             proposalId,
-                            proposal.state
+                            proposal.state,
+                            vars.investors
                         );
                         return false;
                     }
@@ -556,7 +557,7 @@ contract FlexFundingAdapterContract is
                 );
 
                 //7 substract
-                vars.flexInvestmentPoolExt.substractFromAll(
+                vars.investors = vars.flexInvestmentPoolExt.substractFromAll(
                     proposalId,
                     vars.poolBalance
                 );
@@ -566,7 +567,12 @@ contract FlexFundingAdapterContract is
                 // didt meet the min investment amount
                 proposal.state = ProposalStatus.FAILED;
                 proposal.executeBlockNum = block.number;
-                emit ProposalExecuted(address(dao), proposalId, proposal.state);
+                emit ProposalExecuted(
+                    address(dao),
+                    proposalId,
+                    proposal.state,
+                    vars.investors
+                );
                 return false;
             }
         } else {
@@ -576,7 +582,12 @@ contract FlexFundingAdapterContract is
             unDoneProposals[address(dao)].remove(proposalId);
 
         proposal.executeBlockNum = block.number;
-        emit ProposalExecuted(address(dao), proposalId, proposal.state);
+        emit ProposalExecuted(
+            address(dao),
+            proposalId,
+            proposal.state,
+            vars.investors
+        );
         return true;
     }
 

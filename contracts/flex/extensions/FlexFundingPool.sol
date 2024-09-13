@@ -308,7 +308,11 @@ contract FlexInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
     function substractFromAll(
         bytes32 proposalId,
         uint256 amount
-    ) external hasExtensionAccess(AclFlag.SUB_FROM_BALANCE) {
+    )
+        external
+        hasExtensionAccess(AclFlag.SUB_FROM_BALANCE)
+        returns (address[] memory)
+    {
         address[] memory tem = investors[proposalId].values();
         uint256 poolBalance = balanceOf(proposalId, DaoHelper.TOTAL);
         for (uint8 i = 0; i < tem.length; i++) {
@@ -321,6 +325,7 @@ contract FlexInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
                 );
             }
         }
+        return tem;
     }
 
     function createInvestorMembership(

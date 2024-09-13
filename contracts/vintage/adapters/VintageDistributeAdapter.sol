@@ -92,7 +92,7 @@ contract VintageDistributeAdatperContract {
         uint256 protocolFee,
         uint256 managementFee,
         uint256 proposerFundReward
-    ) external {
+    ) external returns (address[] memory) {
         require(
             msg.sender ==
                 dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_ADAPTER),
@@ -101,9 +101,13 @@ contract VintageDistributeAdatperContract {
         VintageFundingPoolExtension fundingpoolExt = VintageFundingPoolExtension(
                 dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
             );
-        fundingpoolExt.subtractAllFromBalance(
-            fundingpoolExt.getFundRaisingTokenAddress(),
-            investmentAmount + protocolFee + managementFee + proposerFundReward
-        );
+        return
+            fundingpoolExt.subtractAllFromBalance(
+                fundingpoolExt.getFundRaisingTokenAddress(),
+                investmentAmount +
+                    protocolFee +
+                    managementFee +
+                    proposerFundReward
+            );
     }
 }

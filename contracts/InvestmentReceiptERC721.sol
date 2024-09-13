@@ -27,9 +27,9 @@ contract InvestmentReceiptERC721 is ERC721 {
     Counters.Counter private _tokenIds;
 
     address public _owner;
-    address public flexInvestmentContrAddress;
-    address public vintageInvestmentContrAddress;
-    address public collectiveInvestmentContrAddress;
+    // address public flexInvestmentContrAddress;
+    // address public vintageInvestmentContrAddress;
+    // address public collectiveInvestmentContrAddress;
     address public receiptERC721HelperContrAddress;
     /// @dev Global max total supply of NFTs.
     uint256 public maxTotalSupply;
@@ -41,6 +41,9 @@ contract InvestmentReceiptERC721 is ERC721 {
     // mapping(bytes32 => mapping(address => bool)) public mintedInfo;
     mapping(bytes32 => mapping(address => uint256))
         public investmentIdToTokenId;
+
+    mapping(uint256 => bytes32) public tokenIdToInvestmentProposalId;
+    mapping(address => uint256) public holderToTokenId;
     mapping(uint256 => InvestmentReceiptInfo)
         public tokenIdToInvestmentProposalInfo;
 
@@ -66,18 +69,20 @@ contract InvestmentReceiptERC721 is ERC721 {
     error ALREADY_MINTED();
     error UN_MINTABLE();
 
+    event Minted(bytes32 proposalId, address minter, uint256 tokenId);
+
     constructor(
         string memory name,
         string memory symbol,
-        address _flexInvestmentContrAddress,
-        address _vintageInvestmentontrAddress,
-        address _collectiveInvestmentContrAddress,
+        // address _flexInvestmentContrAddress,
+        // address _vintageInvestmentontrAddress,
+        // address _collectiveInvestmentContrAddress,
         address _ercHelperContrAddress
     ) ERC721(name, symbol) {
         _owner = msg.sender;
-        flexInvestmentContrAddress = _flexInvestmentContrAddress;
-        vintageInvestmentContrAddress = _vintageInvestmentontrAddress;
-        collectiveInvestmentContrAddress = _collectiveInvestmentContrAddress;
+        // flexInvestmentContrAddress = _flexInvestmentContrAddress;
+        // vintageInvestmentContrAddress = _vintageInvestmentontrAddress;
+        // collectiveInvestmentContrAddress = _collectiveInvestmentContrAddress;
         receiptERC721HelperContrAddress = _ercHelperContrAddress;
     }
 
@@ -87,12 +92,17 @@ contract InvestmentReceiptERC721 is ERC721 {
         uint256 fundingAmount;
         uint256 executeBlockNum;
         IFlexFunding.ProposalInvestmentInfo investmentInfo;
-        InvestmentLibrary.VestInfo vinVestInfo;
+        IFlexFunding.VestInfo flexVestInfo;
+        InvestmentLibrary.ProposalPaybackTokenInfo vinpbnfo;
         address tokenAddress;
         uint256 vinvestmentAmount;
         VintageFundingPoolExtension fundingPoolExt;
         ICollectiveFunding.FundingInfo cfundingInfo;
+        ICollectiveFunding.VestingInfo colVestingInfo;
+        ICollectiveFunding.EscrowInfo colEsInfo;
         CollectiveInvestmentPoolExtension cFundingPoolExt;
+        bool nftEnable;
+        bool escrow;
     }
 
     function safeMint(
@@ -112,15 +122,20 @@ contract InvestmentReceiptERC721 is ERC721 {
             (
                 ,
                 vars.investmentInfo,
-                ,
+                vars.flexVestInfo,
                 ,
                 ,
                 ,
                 ,
                 ,
                 vars.executeBlockNum
-            ) = FlexFundingAdapterContract(flexInvestmentContrAddress)
-                .Proposals(daoAddr, investmentProposalId);
+            ) = FlexFundingAdapterContract(
+                DaoRegistry(daoAddr).getAdapterAddress(
+                    DaoHelper.FLEX_FUNDING_ADAPT
+                )
+            ).Proposals(daoAddr, investmentProposalId);
+            vars.escrow = vars.investmentInfo.escrow;
+            vars.nftEnable = vars.flexVestInfo.nftEnable;
             vars.tokenAddress = vars.investmentInfo.tokenAddress;
             (, uint256 esc) = FlexFreeInEscrowFundAdapterContract(
                 DaoRegistry(daoAddr).getAdapterAddress(
@@ -160,12 +175,16 @@ contract InvestmentReceiptERC721 is ERC721 {
                 ,
                 ,
                 ,
-                ,
+                vars.vinpbnfo,
                 ,
                 vars.executeBlockNum
-            ) = VintageFundingAdapterContract(vintageInvestmentContrAddress)
-                .proposals(daoAddr, investmentProposalId);
-
+            ) = VintageFundingAdapterContract(
+                DaoRegistry(daoAddr).getAdapterAddress(
+                    DaoHelper.VINTAGE_FUNDING_ADAPTER
+                )
+            ).proposals(daoAddr, investmentProposalId);
+            vars.nftEnable = vars.vinpbnfo.nftEnable;
+            vars.escrow = vars.vinpbnfo.escrow;
             vars.fundingPoolExt = VintageFundingPoolExtension(
                 DaoRegistry(daoAddr).getExtensionAddress(
                     DaoHelper.VINTAGE_INVESTMENT_POOL_EXT
@@ -185,14 +204,16 @@ contract InvestmentReceiptERC721 is ERC721 {
         } else if (mode == 2) {
             (
                 vars.cfundingInfo,
-                ,
-                ,
+                vars.colEsInfo,
+                vars.colVestingInfo,
                 ,
                 ,
                 vars.executeBlockNum,
 
             ) = ColletiveFundingProposalAdapterContract(
-                collectiveInvestmentContrAddress
+                DaoRegistry(daoAddr).getAdapterAddress(
+                    DaoHelper.COLLECTIVE_FUNDING_ADAPTER
+                )
             ).proposals(daoAddr, investmentProposalId);
 
             vars.fundingAmount = vars.cfundingInfo.fundingAmount;
@@ -202,7 +223,8 @@ contract InvestmentReceiptERC721 is ERC721 {
                     DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
                 )
             );
-
+            vars.nftEnable = vars.colVestingInfo.nftEnable;
+            vars.escrow = vars.colEsInfo.escrow;
             vars.tokenAddress = vars.cfundingInfo.token;
 
             vars.myInvestmentAmount =
@@ -218,13 +240,18 @@ contract InvestmentReceiptERC721 is ERC721 {
                 );
         } else {}
 
-        if (vars.myInvestmentAmount <= 0) revert UN_MINTABLE();
+        if (
+            vars.myInvestmentAmount <= 0 ||
+            !(vars.nftEnable && vars.escrow == false)
+        ) revert UN_MINTABLE();
 
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
 
         _safeMint(msg.sender, newItemId);
         investmentIdToTokenId[investmentProposalId][msg.sender] = newItemId;
+        tokenIdToInvestmentProposalId[newItemId] = investmentProposalId;
+        holderToTokenId[msg.sender] = newItemId;
         maxTotalSupply += 1;
         string memory investmentProposalLink = string(
             abi.encodePacked(
@@ -261,6 +288,8 @@ contract InvestmentReceiptERC721 is ERC721 {
             description,
             investmentProposalLink
         );
+        emit Minted(investmentProposalId, msg.sender, newItemId);
+
         return newItemId;
     }
 
@@ -281,6 +310,16 @@ contract InvestmentReceiptERC721 is ERC721 {
                     info.myInvestedAmount,
                     info.description
                 );
+    }
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 id
+    ) public override(ERC721) {
+        holderToTokenId[from] = 0;
+        holderToTokenId[to] = id;
+        ERC721.transferFrom(from, to, id);
     }
 
     function contractURI() public pure returns (string memory) {

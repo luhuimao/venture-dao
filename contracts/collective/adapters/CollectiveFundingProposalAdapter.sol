@@ -389,7 +389,7 @@ contract ColletiveFundingProposalAdapterContract is
                 }
 
                 //process7. substract from invetment pool
-                distributeCont.subFromFundPool(
+                vars.investors = distributeCont.subFromFundPool(
                     dao,
                     proposal.fundingInfo.fundingAmount,
                     vars.protocolFee,
@@ -416,7 +416,8 @@ contract ColletiveFundingProposalAdapterContract is
             proposalId,
             vars.allVotingWeight,
             vars.nbYes,
-            vars.nbNo
+            vars.nbNo,
+            vars.investors
         );
 
         return true;

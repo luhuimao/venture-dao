@@ -458,7 +458,7 @@ contract VintageFundingAdapterContract is
                 }
 
                 //process7. substract from invetment pool
-                distributeCont.subFromFundPool(
+                vars.investors = distributeCont.subFromFundPool(
                     dao,
                     proposal.investmentAmount,
                     vars.protocolFee,
@@ -486,7 +486,8 @@ contract VintageFundingAdapterContract is
             proposalId,
             vars.allVotingWeight,
             vars.nbYes,
-            vars.nbNo
+            vars.nbNo,
+            vars.investors
         );
         return true;
     }

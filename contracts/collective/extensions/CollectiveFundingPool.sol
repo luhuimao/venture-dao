@@ -543,6 +543,10 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         return investors.contains(investorAddr);
     }
 
+    function getInvestors() external view returns (address[] memory) {
+        return investors.values();
+    }
+
     function _newInvestor(address investorAddr) internal {
         require(
             investorAddr != address(0x0),
