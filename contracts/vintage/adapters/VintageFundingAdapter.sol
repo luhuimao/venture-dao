@@ -144,12 +144,12 @@ contract VintageFundingAdapterContract is
         DaoRegistry dao,
         InvestmentProposalParams calldata params
     ) external override onlyGovernor(dao) reimbursable(dao) {
-        require(
-            VintageDaoSetAdapterContract(
+        if (
+            !VintageDaoSetAdapterContract(
                 dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER)
-            ).isProposalAllDone(address(dao)),
-            "DaoSet Proposal Undone"
-        );
+            ).isProposalAllDone(address(dao))
+        ) revert DAO_SET_PROPOSAL_UNDONE();
+
         SubmitProposalLocalVars memory vars;
         dao.increaseInvestmentId();
         vars.proposalId = TypeConver.bytesToBytes32(
@@ -219,12 +219,12 @@ contract VintageFundingAdapterContract is
         bytes32 proposalId
     ) external reimbursable(dao) onlyGovernor(dao) {
         //  queue is empty
-        require(getQueueLength(dao) > 0, "!ProposalQueue");
+        if (getQueueLength(dao) <= 0) revert PROPOSAL_QUEUE_EMPTY();
         //proposalId must get from begining of the queue
-        require(
-            proposalId == proposalQueue[address(dao)].front(),
-            "!HeadQueueProposalId"
-        );
+
+        if (proposalId != proposalQueue[address(dao)].front())
+            revert INVALID_HEAD_QUEUE_PROPOSAL_ID();
+
         StartVotingLocalVars memory vars;
         vars.ongongingPrposalId = ongoingProposal[address(dao)];
 
@@ -249,19 +249,17 @@ contract VintageFundingAdapterContract is
             block.timestamp +
             dao.getConfiguration(DaoHelper.VOTING_PERIOD);
         // make sure there is no proposal in progress during redempt duration
-        require(
-            !vars.investmentPoolAdapt.ifInRedemptionPeriod(
+
+        if (
+            vars.investmentPoolAdapt.ifInRedemptionPeriod(
                 dao,
                 vars._propsalStopVotingTimestamp +
                     dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION)
-            ),
-            "HitRedemptePeriod"
-        );
+            )
+        ) revert HIT_REDEMPTION_PERIOD();
 
-        require(
-            proposal.status == InvestmentLibrary.ProposalState.IN_QUEUE,
-            "ProposalNotInQueue"
-        );
+        if (proposal.status != InvestmentLibrary.ProposalState.IN_QUEUE)
+            revert PROPOSAL_NOT_IN_QUEUE();
 
         //Removes the proposalId at the beginning of the queue
         proposalQueue[address(dao)].popFront();
@@ -358,23 +356,23 @@ contract VintageFundingAdapterContract is
         vars.ongoingProposalId = ongoingProposal[address(dao)];
         //make sure proposal process in sequence
         if (vars.ongoingProposalId != bytes32(0)) {
-            require(proposalId == vars.ongoingProposalId, "Invalid PrposalId");
+            if (proposalId != vars.ongoingProposalId)
+                revert INVALID_PROPOSAL_ID();
         }
         InvestmentLibrary.ProposalInfo storage proposal = proposals[
             address(dao)
         ][proposalId];
 
-        require(
-            block.timestamp >
-                proposal.proposalTimeInfo.proposalStopVotingTimestamp,
-            "In Voting Period"
-        );
+        if (
+            block.timestamp <=
+            proposal.proposalTimeInfo.proposalStopVotingTimestamp
+        ) revert IN_VOTING_PERIOD();
 
-        require(
-            proposal.status !=
-                InvestmentLibrary.ProposalState.IN_EXECUTE_PROGRESS,
-            "In Execute Progress"
-        );
+        if (
+            proposal.status ==
+            InvestmentLibrary.ProposalState.IN_EXECUTE_PROGRESS
+        ) revert IN_EXECUTE_PERIOD();
+
         dao.processProposal(proposalId);
         vars.investmentpool = VintageFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
@@ -384,10 +382,9 @@ contract VintageFundingAdapterContract is
         vars.votingContract = VintageVotingContract(
             dao.votingAdapter(proposalId)
         );
-        require(
-            address(vars.votingContract) != address(0x0),
-            "Adapter Not Found"
-        );
+
+        if (address(vars.votingContract) == address(0x0))
+            revert ADAPTER_NOT_FOUND();
 
         vars.allVotingWeight = GovernanceHelper
             .getVintageAllGovernorVotingWeightByProposalId(dao, proposalId);

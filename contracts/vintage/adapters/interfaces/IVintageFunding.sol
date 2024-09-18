@@ -139,4 +139,13 @@ interface IVintageInvestment {
     );
     // error InvalidStepSetting();
     error INVESTMENT_PROPOSAL_NOT_FINALIZED();
+    error DAO_SET_PROPOSAL_UNDONE();
+    error PROPOSAL_QUEUE_EMPTY();
+    error INVALID_HEAD_QUEUE_PROPOSAL_ID();
+    error HIT_REDEMPTION_PERIOD();
+    error PROPOSAL_NOT_IN_QUEUE();
+    error INVALID_PROPOSAL_ID();
+    error IN_VOTING_PERIOD();
+    error IN_EXECUTE_PERIOD();
+    error ADAPTER_NOT_FOUND();
 }

@@ -14,6 +14,12 @@ library InvestmentLibrary {
         FAILED
     }
 
+    error PRICE_LESS_THEN_ZERO();
+    error INVALID_VESTING_CLIFF_AMOUNT();
+    error INVALID_RETURN_TOKEN_AMOUNT();
+    error INVALID_INVESTMENT_TOKEN_AMOUNT();
+    error INVALID_RECEIVER_ADDRESS();
+
     uint256 public constant PERCENTAGE_PRECISION = 1e18;
     string public constant PROPOSALID_PREFIX = "Investment#";
 
@@ -87,7 +93,7 @@ library InvestmentLibrary {
                 (investmentPoolAdapt.protocolFee() +
                     dao.getConfiguration(DaoHelper.MANAGEMENT_FEE) +
                     dao.getConfiguration(
-                        DaoHelper.VINTAGE_PROPOSER_TOKEN_REWARD_RADIO
+                        DaoHelper.VINTAGE_PROPOSER_FUND_REWARD_RADIO
                     )));
         proposal.totalAmount = totalFund;
 
@@ -128,20 +134,14 @@ library InvestmentLibrary {
                     proposal.vestInfo.vestingInterval > 0,
                 "vesting time invalid"
             );
-            require(proposal.price > 0, "price must > 0");
+            if (proposal.price <= 0) revert PRICE_LESS_THEN_ZERO();
             uint256 paybackTokenAmount = (proposal.investmentAmount *
                 PERCENTAGE_PRECISION) / proposal.price;
 
-            require(
-                proposal.vestInfo.vestingCliffLockAmount <=
-                    PERCENTAGE_PRECISION,
-                "invalid vesting cliff amount"
-            );
+            if (proposal.vestInfo.vestingCliffLockAmount > PERCENTAGE_PRECISION)
+                revert INVALID_VESTING_CLIFF_AMOUNT();
 
-            require(
-                paybackTokenAmount > 0,
-                "invalid return token token Amount"
-            );
+            if (paybackTokenAmount <= 0) revert INVALID_RETURN_TOKEN_AMOUNT();
             proposal
                 .proposalPaybackTokenInfo
                 .paybackTokenAmount = paybackTokenAmount;
@@ -149,15 +149,11 @@ library InvestmentLibrary {
 
         if (proposal.proposalPaybackTokenInfo.nftEnable) {}
 
-        require(
-            proposal.investmentAmount > 0,
-            "Invalid Investment Token Amount"
-        );
+        if (proposal.investmentAmount <= 0)
+            revert INVALID_INVESTMENT_TOKEN_AMOUNT();
 
-        require(
-            proposal.recipientAddr != address(0x0),
-            "Invalid Receiver Address"
-        );
+        if (proposal.recipientAddr == address(0x0))
+            revert INVALID_RECEIVER_ADDRESS();
 
         proposal.status = ProposalState.IN_QUEUE;
 
