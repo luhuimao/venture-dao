@@ -66,6 +66,10 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
         address[] lps
     );
 
+    error ACCESS_DENIED();
+    error EXCEED_TOTOAL_PAYBACK_AMOUNT();
+    error INSUFFICIENT_ALLOWANCE();
+
     function getInvestmentRewards(
         DaoRegistry dao,
         address recipient,
@@ -92,6 +96,8 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
             executedBlockNum,
 
         ) = collectiveFundingAdapt.proposals(address(dao), proposalId);
+        if (executedBlockNum <= 0) return 0;
+
         uint256 totalFund = fundingpoolExt.getPriorAmount(
             DaoHelper.DAOSQUARE_TREASURY,
             fundingInfo.token,
@@ -103,7 +109,6 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
             executedBlockNum - 1
         );
 
-        // uint256 paybackTokenAmount = escrowInfo.paybackTokenAmount;
         uint256 returnTokenManagementFee = (escrowInfo.paybackAmount *
             dao.getConfiguration(
                 DaoHelper.COLLECTIVE_PAYBACK_TOKEN_MANAGEMENT_FEE_AMOUNT
@@ -113,13 +118,15 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
             proposer,
             escrowInfo.paybackAmount
         );
+        if (
+            escrowInfo.paybackAmount < returnTokenManagementFee ||
+            ((escrowInfo.paybackAmount - returnTokenManagementFee) <
+                proposerBonus)
+        ) return 0;
 
         uint256 paybackTokenAmount = escrowInfo.paybackAmount -
             returnTokenManagementFee -
             proposerBonus;
-
-        // uint256 totalFund = fundingpoolExt.totalSupply();
-        // uint256 fund = fundingpoolExt.balanceOf(recipient);
 
         if (totalFund <= 0 || fund <= 0 || paybackTokenAmount <= 0) {
             return 0;
@@ -178,13 +185,10 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
         bytes32 proposalId,
         uint256[6] memory uint256Args
     ) external {
-        require(
-            msg.sender ==
-                address(
-                    dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
-                ),
-            "access deny"
-        );
+        if (
+            msg.sender !=
+            address(dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER))
+        ) revert ACCESS_DENIED();
         allocateProjectTokenLocalVars memory vars;
 
         vars.tokenAmount = uint256Args[0];
@@ -198,15 +202,15 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
             dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
         );
 
-        require(
+        if (
             IERC20(tokenAddress).allowance(
                 dao.getAdapterAddress(
                     DaoHelper.COLLECTIVE_PAYBACK_TOKEN_ADAPTER
                 ),
                 address(this)
-            ) >= vars.tokenAmount,
-            "insufficient allowance"
-        );
+            ) < vars.tokenAmount
+        ) revert INSUFFICIENT_ALLOWANCE();
+
         IERC20(tokenAddress).transferFrom(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_PAYBACK_TOKEN_ADAPTER),
             address(this),
@@ -287,7 +291,9 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
                 vars.totalReward += vars.proposerBonus;
             }
         }
-        require(vars.totalReward <= vars.tokenAmount, ">payback amount");
+        if (vars.totalReward > vars.tokenAmount)
+            revert EXCEED_TOTOAL_PAYBACK_AMOUNT();
+
         emit AllocateToken(
             address(dao),
             proposalId,
@@ -301,11 +307,10 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
         bytes32 proposalId,
         address recipient
     ) external returns (bool) {
-        require(
-            msg.sender ==
-                dao.getAdapterAddress(DaoHelper.COLLECTIVE_VESTING_ADAPTER),
-            "Access deny"
-        );
+        if (
+            msg.sender !=
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_VESTING_ADAPTER)
+        ) revert ACCESS_DENIED();
         vestingInfos[address(dao)][proposalId][recipient].created = true;
 
         return true;
