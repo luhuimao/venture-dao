@@ -203,7 +203,7 @@ describe("vesting...", () => {
         // );
         // await vintageVestingERC721.deployed();
         // this.vintageVestingERC721Contract = vintageVestingERC721;
-        
+
         const VestingERC721Helper = await hre.ethers.getContractFactory("VestingERC721Helper");
         const vestingERC721Helper = await VestingERC721Helper.deploy();
         await vestingERC721Helper.deployed();
@@ -477,8 +477,8 @@ describe("vesting...", () => {
             returnPeriod
         ];
 
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.001"); //0.1%
+        const managementFeeRatio = hre.ethers.utils.parseEther("0.01"); //1%
+        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.05"); //5%
 
         const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
         const proposalFeeInfo = [
@@ -497,8 +497,8 @@ describe("vesting...", () => {
             fundRaiseTokenAddress
         ];
 
-        const fundFromInverstor = hre.ethers.utils.parseEther("0.004");
-        const projectTokenFromInvestor = hre.ethers.utils.parseEther("0.004");
+        const fundFromInverstor = hre.ethers.utils.parseEther("0.02");
+        const projectTokenFromInvestor = hre.ethers.utils.parseEther("0.1");
         const proposerReward = [
             fundFromInverstor,
             projectTokenFromInvestor
@@ -599,7 +599,7 @@ describe("vesting...", () => {
         `);
 
         // Submit funding proposal
-        const requestedFundAmount = hre.ethers.utils.parseEther("2000");
+        const requestedFundAmount = hre.ethers.utils.parseEther("300");
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("5000");
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
@@ -608,7 +608,7 @@ describe("vesting...", () => {
         const vestingCliffEndTime = vestingStartTime + 60 * 60 * 1;
         const vestingInterval = 60 * 10;
 
-        const vestingCliffLockAmount = hre.ethers.utils.parseEther("0.3");
+        const vestingCliffLockAmount = hre.ethers.utils.parseEther("0.03");
 
         const projectTeamAddr = this.project_team1.address;
         const projectTeamTokenAddr = this.testtoken2.address;
@@ -627,7 +627,7 @@ describe("vesting...", () => {
 
         const approver = this.owner.address;
         const escrow = true;
-        const price = hre.ethers.utils.parseEther("0.3");
+        const price = hre.ethers.utils.parseEther("3");
 
         const receiver = this.project_team1.address;
         console.log(`
@@ -746,6 +746,7 @@ describe("vesting...", () => {
 
         console.log(
             `
+        totalAmount  ${hre.ethers.utils.formatEther(fundingProposalInfo.totalAmount)}
         state ${fundingProposalInfo.status}
         paybackTokenAmount ${hre.ethers.utils.formatEther(fundingProposalInfo.proposalPaybackTokenInfo.paybackTokenAmount)}
         investorVestAmount ${hre.ethers.utils.formatEther(investorVestAmount)}
