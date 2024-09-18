@@ -366,8 +366,8 @@ describe("topup proposal...", () => {
         const redemptionFee = hre.ethers.utils.parseEther("0.001"); // 0.2%;
         // const collectiveDaoManagementfee = hre.ethers.utils.parseEther("0.001"); // 0.2%
         const managementFeeAddress = this.gp1.address;
-        const proposerInvestTokenReward = hre.ethers.utils.parseEther("0.001"); // 0.2%;
-        const proposerPaybackTokenReward = hre.ethers.utils.parseEther("0.001"); // 0.2%;
+        const proposerInvestTokenReward = hre.ethers.utils.parseEther("0"); // 0.2%;
+        const proposerPaybackTokenReward = hre.ethers.utils.parseEther("0"); // 0.2%;
         const collectiveDaoGenesisGovernor = [
             this.genesis_steward1.address,
             this.genesis_steward2.address
@@ -522,5 +522,110 @@ describe("topup proposal...", () => {
        
         depositAmount ${hre.ethers.utils.formatEther(depositAmount)}
     `);
+
+        const approver = this.user2.address;
+        const fundingProposalId = await submitFundingProposal();
+
+        let proposalDetail = await this.colletiveFundingProposalContract.proposals(this.collectiveDirectdaoAddress, fundingProposalId);
+
+        await this.testtoken2.connect(this.user2).approve(this.collectivePaybackTokenAdapterContract.address, proposalDetail.escrowInfo.paybackAmount);
+        await this.testtoken2.transfer(approver, proposalDetail.escrowInfo.paybackAmount);
+        await this.collectivePaybackTokenAdapterContract.connect(this.user2).setFundingApprove(
+            this.collectiveDirectdaoAddress,
+            fundingProposalId,
+            this.testtoken2.address,
+            proposalDetail.escrowInfo.paybackAmount
+        );
+
+        await this.colletiveFundingProposalContract.startVotingProcess(this.collectiveDirectdaoAddress,
+            fundingProposalId);
+
+        proposalDetail = await this.colletiveFundingProposalContract.proposals(this.collectiveDirectdaoAddress, fundingProposalId);
+
+        await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
+            fundingProposalId,
+            1
+        );
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(proposalDetail.timeInfo.stopVotingTime + 60) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.timeInfo.stopVotingTime + 60) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+
+        await this.colletiveFundingProposalContract.processProposal(this.collectiveDirectdaoAddress, fundingProposalId);
+
+        proposalDetail = await this.colletiveFundingProposalContract.proposals(this.collectiveDirectdaoAddress, fundingProposalId);
+
+        const ir = await this.collectiveAllocationAdapterContract.getInvestmentRewards(
+            this.collectiveDirectdaoAddress,
+            this.owner.address,
+            fundingProposalId
+        );
+        console.log(`
+        executed...
+        proposal state ${proposalDetail.state}
+        ir   ${hre.ethers.utils.formatEther(ir)}
+        `);
+
     });
+
+    const submitFundingProposal = async () => {
+        let dao = this.collectiveDirectdaoAddress;
+        const token = this.testtoken1.address;
+        const fundingAmount = hre.ethers.utils.parseEther("1000");
+        const totalAmount = hre.ethers.utils.parseEther("0");
+        const receiver = this.user1.address;
+
+        const fundingInfo = [token, fundingAmount, totalAmount, receiver];
+
+        const escrow = true;
+        const paybackToken = this.testtoken2.address;
+
+        const price = hre.ethers.utils.parseEther("1");
+        const paybackAmount = fundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price);
+        const approver = this.user2.address;
+        const escrowInfo = [
+            escrow,
+            paybackToken,
+            price,
+            paybackAmount,
+            approver
+        ];
+
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        const startTime = blocktimestamp + 60 * 10;
+        const endTime = startTime + 60 * 30;
+        const cliffEndTime = startTime + 60 * 1;
+        const cliffVestingAmount = hre.ethers.utils.parseEther("0.02");
+        const vestingInterval = 60 * 20;
+        const nftEnable = false;
+        const erc721 = this.flexERC721.address;
+        const vestName = "LO";
+        const vestDescription = "layer zero vesting";
+
+        const vestingInfo = [
+            startTime,
+            endTime,
+            cliffEndTime,
+            cliffVestingAmount,
+            vestingInterval,
+            nftEnable,
+            erc721,
+            vestName,
+            vestDescription
+        ];
+        const ProposalParams = [
+            dao,
+            fundingInfo,
+            escrowInfo,
+            vestingInfo
+        ];
+        const tx = await this.colletiveFundingProposalContract.submitProposal(ProposalParams);
+        let result = await tx.wait();
+        const proposalId = result.events[result.events.length - 1].args.proposalId;
+
+        return proposalId;
+
+    }
 });

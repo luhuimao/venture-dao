@@ -414,6 +414,26 @@ describe("clear fund proposal...", () => {
             CollectiveDaoVotingInfo,
             CollectiveDaoInfo
         ];
+        // const collectiveDaoParams = [
+        //     daoFactoriesAddress,
+        //     enalbeAdapters,
+        //     adapters1,
+        //     [true, 3],
+        //     [false, 3, 1, '0x0000000000000000000000000000000000000000', 2, []],
+        //     [
+        //         0, 0, 23, 34, 0,
+        //         0, 120, 60, 60
+        //     ],
+        //     [
+        //         'collective-script0915',
+        //         '0xDF9DFA21F47659cf742FE61030aCb0F15f659707',
+        //         '0x32Bf9E40E6b94419f2E49DD112231BFAEcAC3B6C',
+        //         0,
+        //         0,
+        //         0,
+        //         '0xDF9DFA21F47659cf742FE61030aCb0F15f659707'
+        //     ]
+        // ];
 
 
         const {
