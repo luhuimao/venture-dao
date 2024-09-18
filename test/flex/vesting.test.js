@@ -178,8 +178,8 @@ describe("vesting", () => {
         this.flexDaoSetInvestorCapAdapterContract = adapters.flexDaoSetInvestorCapAdapterContract.instance;
         this.flexDaoSetInvestorMembershipAdapterContract = adapters.flexDaoSetInvestorMembershipAdapterContract.instance;
         this.flexDaoSetProposerMembershipAdapterContract = adapters.flexDaoSetProposerMembershipAdapterContract.instance;
+        this.flexGovernorVotingAssetAllocationProposalAdapterContract = adapters.flexGovernorVotingAssetAllocationProposalAdapterContract.instance;
         this.flexSetRiceReceiverProposalAdapterContract = adapters.flexSetRiceReceiverProposalAdapterContract.instance;
-
 
         const VestingERC721Helper = await hre.ethers.getContractFactory("VestingERC721Helper");
         const vestingERC721Helper = await VestingERC721Helper.deploy();
@@ -326,6 +326,11 @@ describe("vesting", () => {
                 id: '0xf3ce48289b9021e92bc5661ccf481e756dcb8de846c2eb9620bb83917cab5237',//flexDaoSetProposerMembershipAdapterContract
                 addr: this.flexDaoSetProposerMembershipAdapterContract.address,
                 flags: 524290
+            },
+            {
+                id: '0xa34105560351082ce6b5540bff167edddf0aae5c59e0db3cd4ab748b5ae9b1c9',//flexGovernorVotingAssetAllocationProposalAdapterContract
+                addr: this.flexGovernorVotingAssetAllocationProposalAdapterContract.address,
+                flags: 16777226
             },
             {
                 id: '0xcdb9c6d5700c127f2c99a75e51af1f56590e1b02f8f6ceee2d51d67dd0e91cad',//flexSetRiceReceiverProposalAdapterContract
