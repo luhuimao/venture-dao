@@ -764,7 +764,7 @@ describe("funding proposal...", () => {
         console.log(`
         funding proposal submitted...
         proposalId ${proposalId}
-        proposalDetail ${proposalDetail}
+        totalAmount ${hre.ethers.utils.formatEther(proposalDetail.fundingInfo.totalAmount)}
         `);
         await this.testtoken2.connect(this.user2).approve(this.collectivePaybackTokenAdapterContract.address, paybackAmount);
         await this.testtoken2.transfer(approver, paybackAmount);
