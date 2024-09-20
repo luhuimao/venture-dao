@@ -338,8 +338,8 @@ library DaoHelper {
         keccak256("COLLECTIVE_PROPOSER_TOKEN_REWARD_RADIO");
     bytes32 internal constant COLLECTIVE_PAYBACK_TOKEN_MANAGEMENT_FEE_AMOUNT =
         keccak256("COLLECTIVE_PAYBACK_TOKEN_MANAGEMENT_FEE_AMOUNT");
-    bytes32 internal constant COLLECTIVE_PROPOSER_FUND_REWARD_RADIO =
-        keccak256("COLLECTIVE_PROPOSER_FUND_REWARD_RADIO");
+    // bytes32 internal constant COLLECTIVE_PROPOSER_FUND_REWARD_RADIO =
+    //     keccak256("COLLECTIVE_PROPOSER_FUND_REWARD_RADIO");
 
     /*********************************
     COLLECTIVE SETTING 

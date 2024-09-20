@@ -109,10 +109,8 @@ contract ColletiveFundingProposalAdapterContract is
                 Strings.toString(params.dao.getCurrentInvestmentProposalId())
             )
         );
-        // Create proposal.
         params.dao.submitProposal(vars.proposalId);
 
-        // Saves the state of the proposal.
         uint256 totalFund = (params.fundingInfo.fundingAmount *
             PERCENTAGE_PRECISION) /
             (PERCENTAGE_PRECISION -
@@ -333,10 +331,10 @@ contract ColletiveFundingProposalAdapterContract is
                     DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
                 )
             );
-            vars.managementFee =
-                (proposal.fundingInfo.totalAmount *
-                    dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) /
-                PERCENTAGE_PRECISION;
+            // vars.managementFee =
+            //     (proposal.fundingInfo.totalAmount *
+            //         dao.getConfiguration(DaoHelper.MANAGEMENT_FEE)) /
+            //     PERCENTAGE_PRECISION;
 
             vars.protocolFee =
                 (proposal.fundingInfo.totalAmount *
@@ -346,7 +344,7 @@ contract ColletiveFundingProposalAdapterContract is
             vars.proposerFundReward =
                 (proposal.fundingInfo.totalAmount *
                     dao.getConfiguration(
-                        DaoHelper.COLLECTIVE_PROPOSER_FUND_REWARD_RADIO
+                        DaoHelper.COLLECTIVE_PROPOSER_INVEST_TOKEN_REWARD_AMOUNT
                     )) /
                 PERCENTAGE_PRECISION;
 
