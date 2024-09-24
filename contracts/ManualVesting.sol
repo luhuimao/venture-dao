@@ -129,6 +129,7 @@ contract ManualVesting {
     error NotOwner();
     error NotVestReceiver();
     error InValidVestingTimeParam();
+    error InValidBatchVesting2Param();
 
     mapping(uint256 => Vest) public vests;
     mapping(address => mapping(uint256 => uint256)) public tokenIdToVestId; //erc721 address => tokenId => vestId
@@ -457,6 +458,47 @@ contract ManualVesting {
                         params.vestingInterval,
                         params.paybackToken,
                         holders[i],
+                        vars.depositAmount,
+                        params.cliffVestingAmount,
+                        params.nftEnable,
+                        params.erc721,
+                        params.name,
+                        params.description
+                    )
+                );
+            }
+        }
+    }
+
+    function batchCreate2(
+        address[] calldata receivers,
+        uint256[] calldata amounts,
+        CreateVestingParams calldata params
+    ) external {
+        if (receivers.length != amounts.length)
+            revert InValidBatchVesting2Param();
+
+        if (
+            params.startTime == 0 ||
+            params.cliffEndTime == 0 ||
+            params.endTime == 0 ||
+            params.vestingInterval == 0
+        ) revert InValidBatchVesting2Param();
+
+        if (receivers.length > 0) {
+            BatchVestingVars memory vars;
+
+            for (uint8 i = 0; i < receivers.length; i++) {
+                vars.depositAmount = amounts[i];
+
+                createVesting(
+                    CreateVestingParams(
+                        params.startTime,
+                        params.cliffEndTime,
+                        params.endTime,
+                        params.vestingInterval,
+                        params.paybackToken,
+                        receivers[i],
                         vars.depositAmount,
                         params.cliffVestingAmount,
                         params.nftEnable,

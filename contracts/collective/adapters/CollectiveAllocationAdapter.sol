@@ -140,12 +140,12 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
         address proposerAddr,
         uint256 tokenAmount
     ) public view returns (uint256) {
-        if (!dao.isMember(proposerAddr)) {
-            return 0;
-        }
+        // if (!dao.isMember(proposerAddr)) {
+        //     return 0;
+        // }
         uint256 ProposerBonus = (tokenAmount *
             dao.getConfiguration(
-                DaoHelper.COLLECTIVE_PROPOSER_TOKEN_REWARD_RADIO
+                DaoHelper.COLLECTIVE_PROPOSER_PAYBACK_TOKEN_REWARD_AMOUNT
             )) / PERCENTAGE_PRECISION;
 
         return ProposerBonus;
