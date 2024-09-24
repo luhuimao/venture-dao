@@ -167,7 +167,7 @@ describe("vesting...", () => {
         this.flexDaoSetPollingAdapterContract = adapters.flexDaoSetPollingAdapterContract.instance;
         this.flexDaoSetVotingAdapterContract = adapters.flexDaoSetVotingAdapterContract.instance;
 
-     
+
         this.colletiveGovernorManagementContract = adapters.colletiveGovernorManagementContract.instance;
         this.colletiveDaoSetProposalContract = adapters.colletiveDaoSetProposalContract.instance;
         this.colletiveFundingProposalContract = adapters.colletiveFundingProposalContract.instance;
@@ -382,13 +382,13 @@ describe("vesting...", () => {
         const name = _daoName;
         const redemptionFee = hre.ethers.utils.parseEther("0.001"); // 0.2%;
         // const collectiveDaoManagementfee = hre.ethers.utils.parseEther("0.001"); // 0.2%
-        const managementFeeAddress = this.gp1.address;
+        // const managementFeeAddress = this.gp1.address;
         const proposerInvestTokenReward = hre.ethers.utils.parseEther("0.001"); // 0.2%;
         const proposerPaybackTokenReward = hre.ethers.utils.parseEther("0.001"); // 0.2%;
-        const collectiveDaoGenesisGovernor = [
-            this.genesis_steward1.address,
-            this.genesis_steward2.address
-        ];
+        // const collectiveDaoGenesisGovernor = [
+        //     this.genesis_steward1.address,
+        //     this.genesis_steward2.address
+        // ];
         const riceRewardReceiver = this.user1.address;
 
         const currency = this.testtoken1.address;
@@ -451,7 +451,7 @@ describe("vesting...", () => {
         let miniTarget = hre.ethers.utils.parseEther("1000");
         let maxCap = hre.ethers.utils.parseEther("2000");
         let miniDeposit = hre.ethers.utils.parseEther("10");
-        let maxDeposit = hre.ethers.utils.parseEther("1000");
+        let maxDeposit = hre.ethers.utils.parseEther("2000");
 
         const fundInfo = [
             tokenAddress,
@@ -550,8 +550,8 @@ describe("vesting...", () => {
         console.log(`
         blocktimestamp ${blocktimestamp}
         `);
-        await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1000"));
-        await this.colletiveFundingPoolContract.connect(this.investor1).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("500"));
+        // await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1000"));
+        await this.colletiveFundingPoolContract.connect(this.investor1).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1100"));
 
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
@@ -636,8 +636,9 @@ describe("vesting...", () => {
         console.log(`
         funding proposal submitted...
         proposalId ${proposalId}
-        proposalDetail ${proposalDetail}
+        
         `);
+        console.log("proposalDetail", proposalDetail);
         await this.testtoken2.connect(this.user2).approve(this.collectivePaybackTokenAdapterContract.address, paybackAmount);
         await this.testtoken2.transfer(approver, paybackAmount);
         await this.collectivePaybackTokenAdapterContract.connect(this.user2).setFundingApprove(
@@ -650,10 +651,10 @@ describe("vesting...", () => {
         const allowanceAmount = await this.testtoken2.allowance(approver, this.collectivePaybackTokenAdapterContract.address);
         const approvalAmount = await this.collectivePaybackTokenAdapterContract.approvedInfos(dao, proposalId, approver, this.testtoken2.address)
         console.log(`
-        paybackBal ${paybackBal}
-        allowanceAmount ${allowanceAmount}
-        approvalAmount ${approvalAmount}
-        paybackAmount ${paybackAmount}
+        paybackBal ${hre.ethers.utils.formatEther(paybackBal)}
+        allowanceAmount ${hre.ethers.utils.formatEther(allowanceAmount)}
+        approvalAmount ${hre.ethers.utils.formatEther(approvalAmount)}
+        paybackAmount ${hre.ethers.utils.formatEther(paybackAmount)}
         start voting...
         `);
         await this.colletiveFundingProposalContract.startVotingProcess(dao,
@@ -670,6 +671,10 @@ describe("vesting...", () => {
         voting...
         `);
         await this.collectiveVotingContract.connect(this.owner).submitVote(dao,
+            proposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.investor1).submitVote(dao,
             proposalId,
             1
         );

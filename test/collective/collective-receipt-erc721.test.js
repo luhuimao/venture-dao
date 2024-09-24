@@ -851,7 +851,7 @@ describe("collective investment receipt NFT...", () => {
         const verc721 = ZERO_ADDRESS;
         const vname = "vesting nft disable";
         const vdes = "99932fd";
-       
+
 
         const CreateVestingParams = [
             vstartTime,
@@ -889,6 +889,21 @@ describe("collective investment receipt NFT...", () => {
         let vestInfo2 = await this.manualVesting.vests(2);
         console.log(hre.ethers.utils.formatEther(vestInfo1.total));
         console.log(hre.ethers.utils.formatEther(vestInfo2.total));
+
+
+        await this.testtoken2.approve(this.bentoBoxV1.address, hre.ethers.utils.parseEther("2344"));
+
+        await this.manualVesting.batchCreate2(
+            [this.user1.address, this.user2.address],
+            [hre.ethers.utils.parseEther("234.434"), hre.ethers.utils.parseEther("444.002")],
+            CreateVestingParams
+        );
+
+        let vestInfo3 = await this.manualVesting.vests(3);
+        let vestInfo4 = await this.manualVesting.vests(4);
+        console.log(hre.ethers.utils.formatEther(vestInfo3.total));
+        console.log(hre.ethers.utils.formatEther(vestInfo4.total));
+
     });
 
 });
