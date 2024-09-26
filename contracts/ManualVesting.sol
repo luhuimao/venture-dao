@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 // import "./interfaces/IVesting.sol";
-import "./VestingERC721.sol";
+import "./ManualVestingERC721.sol";
 import "hardhat/console.sol";
 import "./core/DaoRegistry.sol";
 import "./flex/adatpers/FlexFunding.sol";
@@ -19,6 +19,7 @@ import "./collective/adapters/CollectiveFundingProposalAdapter.sol";
 import "./collective/extensions/CollectiveFundingPool.sol";
 import "./InvestmentReceiptERC721.sol";
 import "./adapters/vesting/contracts/interfaces/IBentoBoxMinimal.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract ManualVesting {
     struct VestParams {
@@ -188,7 +189,7 @@ contract ManualVesting {
         vars.vestId = vestIds++;
 
         if (params.nftEnable) {
-            vars.newTokenId = VestingERC721(params.erc721).safeMint(
+            vars.newTokenId = ManualVestingERC721(params.erc721).safeMint(
                 params.recipientAddr
             );
             tokenIdToVestId[params.erc721][vars.newTokenId] = vars.vestId;
@@ -272,7 +273,7 @@ contract ManualVesting {
 
         if (vest.nftInfo.nftToken != address(0x0)) {
             if (
-                VestingERC721(vest.nftInfo.nftToken).ownerOf(
+                ManualVestingERC721(vest.nftInfo.nftToken).ownerOf(
                     vest.nftInfo.tokenId
                 ) != msg.sender
             ) revert NotVestReceiver();
