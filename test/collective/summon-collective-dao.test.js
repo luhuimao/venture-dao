@@ -85,7 +85,7 @@ import { isAsyncFunction } from "util/types";
 const hre = require("hardhat");
 
 
-describe.only("Summon A Collective Dao", () => {
+describe("Summon A Collective Dao", () => {
     before("deploy contracts...", async () => {
         let [
             owner,
