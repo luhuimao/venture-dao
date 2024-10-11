@@ -522,6 +522,11 @@ describe("grace...", () => {
             1
         );
 
+        await this.collectiveVotingContract.connect(this.investor1).submitVote(this.collectiveDirectdaoAddress,
+            fundingProposalId,
+            1
+        );
+
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(proposalDetail.timeInfo.stopVotingTime + 60) > blocktimestamp) {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.timeInfo.stopVotingTime) + 1]);
@@ -621,9 +626,17 @@ describe("grace...", () => {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.timeInfo.startTime) + 1]);
             await hre.network.provider.send("evm_mine");
         }
-        await this.testtoken1.approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
 
-        await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1000"));
+        await this.testtoken1.transfer(this.investor1.address, hre.ethers.utils.parseEther("2000"));
+        await this.testtoken1.transfer(this.investor2.address, hre.ethers.utils.parseEther("2000"));
+
+        await this.testtoken1.approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
+        await this.testtoken1.connect(this.investor1).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
+        await this.testtoken1.connect(this.investor2).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
+
+        await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("800"));
+        await this.colletiveFundingPoolContract.connect(this.investor1).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("300"));
+        await this.colletiveFundingPoolContract.connect(this.investor2).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("400"));
 
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
@@ -648,20 +661,53 @@ describe("grace...", () => {
             this.collectiveDirectdaoAddress,
             this.owner.address
         );
+        let bal2 = await this.colletiveFundingPoolContract.balanceOf(
+            this.collectiveDirectdaoAddress,
+            this.investor1.address
+        );
+        let bal3 = await this.colletiveFundingPoolContract.balanceOf(
+            this.collectiveDirectdaoAddress,
+            this.investor2.address
+        );
 
         let graceWithdrawAmount = await this.colletiveFundingPoolContract.graceWithdrawAmount(
             investmentProposalId,
             this.owner.address
         );
 
+        let graceWithdrawAmount2 = await this.colletiveFundingPoolContract.graceWithdrawAmount(
+            investmentProposalId,
+            this.investor1.address
+        );
+
+        let graceWithdrawAmount3 = await this.colletiveFundingPoolContract.graceWithdrawAmount(
+            investmentProposalId,
+            this.investor2.address
+        );
+
+
         let votingWeight = await this.collectiveVotingContract.getVotingWeight(this.collectiveDirectdaoAddress,
             this.owner.address);
+
+        let votingWeight2 = await this.collectiveVotingContract.getVotingWeight(this.collectiveDirectdaoAddress,
+            this.investor1.address);
+
+        let votingWeight3 = await this.collectiveVotingContract.getVotingWeight(this.collectiveDirectdaoAddress,
+            this.investor2.address);
 
         console.log(
             `
             bal1    ${hre.ethers.utils.formatEther(bal1)}
             graceWithdrawAmount    ${hre.ethers.utils.formatEther(graceWithdrawAmount)}
             votingWeight   ${votingWeight}
+
+            bal2    ${hre.ethers.utils.formatEther(bal2)}
+            graceWithdrawAmount2    ${hre.ethers.utils.formatEther(graceWithdrawAmount2)}
+            votingWeight2   ${votingWeight2}
+
+            bal3    ${hre.ethers.utils.formatEther(bal3)}
+            graceWithdrawAmount3    ${hre.ethers.utils.formatEther(graceWithdrawAmount3)}
+            votingWeight3   ${votingWeight3}
             Grace Period Withdraw...
             `
         );
@@ -669,7 +715,16 @@ describe("grace...", () => {
 
         await this.colletiveFundingPoolContract.withdraw(
             this.collectiveDirectdaoAddress,
-            hre.ethers.utils.parseEther("500")
+            hre.ethers.utils.parseEther("200")
+        );
+
+        await this.colletiveFundingPoolContract.connect(this.investor1).withdraw(
+            this.collectiveDirectdaoAddress,
+            hre.ethers.utils.parseEther("100")
+        );
+        await this.colletiveFundingPoolContract.connect(this.investor2).withdraw(
+            this.collectiveDirectdaoAddress,
+            hre.ethers.utils.parseEther("80")
         );
 
         bal1 = await this.colletiveFundingPoolContract.balanceOf(
@@ -677,21 +732,123 @@ describe("grace...", () => {
             this.owner.address
         );
 
+        bal2 = await this.colletiveFundingPoolContract.balanceOf(
+            this.collectiveDirectdaoAddress,
+            this.investor1.address
+        );
+
+        bal3 = await this.colletiveFundingPoolContract.balanceOf(
+            this.collectiveDirectdaoAddress,
+            this.investor2.address
+        );
+
         graceWithdrawAmount = await this.colletiveFundingPoolContract.graceWithdrawAmount(
             investmentProposalId,
             this.owner.address
         );
 
+        graceWithdrawAmount2 = await this.colletiveFundingPoolContract.graceWithdrawAmount(
+            investmentProposalId,
+            this.investor1.address
+        );
+
+        graceWithdrawAmount3 = await this.colletiveFundingPoolContract.graceWithdrawAmount(
+            investmentProposalId,
+            this.investor2.address
+        );
+
+
         votingWeight = await this.collectiveVotingContract.getVotingWeight(this.collectiveDirectdaoAddress,
             this.owner.address);
+
+        votingWeight2 = await this.collectiveVotingContract.getVotingWeight(this.collectiveDirectdaoAddress,
+            this.investor1.address);
+
+
+        votingWeight3 = await this.collectiveVotingContract.getVotingWeight(this.collectiveDirectdaoAddress,
+            this.investor2.address);
+
+        let poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
+
+        let proposalDetail = await this.colletiveFundingProposalContract.proposals(
+            this.collectiveDirectdaoAddress, investmentProposalId);
+
+        let expectedInvestAmount1 = proposalDetail.fundingInfo.totalAmount.mul(bal1).div(poolBal);
+        let expectedInvestAmount2 = proposalDetail.fundingInfo.totalAmount.mul(bal2).div(poolBal);
+        let expectedInvestAmount3 = proposalDetail.fundingInfo.totalAmount.mul(bal3).div(poolBal);
 
         console.log(
             `
             bal1    ${hre.ethers.utils.formatEther(bal1)}
             graceWithdrawAmount    ${hre.ethers.utils.formatEther(graceWithdrawAmount)}
             votingWeight   ${votingWeight}
+
+            bal2    ${hre.ethers.utils.formatEther(bal2)}
+            graceWithdrawAmount2    ${hre.ethers.utils.formatEther(graceWithdrawAmount2)}
+            votingWeight2   ${votingWeight2}
+
+            bal3    ${hre.ethers.utils.formatEther(bal3)}
+            graceWithdrawAmount3    ${hre.ethers.utils.formatEther(graceWithdrawAmount3)}
+            votingWeight3   ${votingWeight3}
+
+            poolBal    ${hre.ethers.utils.formatEther(poolBal)}
+            expectedInvestAmount1  ${hre.ethers.utils.formatEther(expectedInvestAmount1)}
+            expectedInvestAmount2  ${hre.ethers.utils.formatEther(expectedInvestAmount2)}
+            expectedInvestAmount3  ${hre.ethers.utils.formatEther(expectedInvestAmount3)}
             `
         );
+
+
+
+
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(proposalDetail.timeInfo.stopVotingTime + 60) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.timeInfo.stopVotingTime) + 100]);
+            await hre.network.provider.send("evm_mine");
+        }
+
+        await this.colletiveFundingProposalContract.processProposal(
+            this.collectiveDirectdaoAddress,
+            investmentProposalId
+        );
+
+        proposalDetail = await this.colletiveFundingProposalContract.proposals(
+            this.collectiveDirectdaoAddress, investmentProposalId);
+
+        let bal1_1 = await this.colletiveFundingPoolContract.balanceOf(
+            this.collectiveDirectdaoAddress,
+            this.owner.address
+        );
+
+        let bal2_2 = await this.colletiveFundingPoolContract.balanceOf(
+            this.collectiveDirectdaoAddress,
+            this.investor1.address
+        );
+
+        let bal3_3 = await this.colletiveFundingPoolContract.balanceOf(
+            this.collectiveDirectdaoAddress,
+            this.investor2.address
+        );
+
+
+        let invested1 = bal1.sub(bal1_1);
+        let invested2 = bal2.sub(bal2_2);
+        let invested3 = bal3.sub(bal3_3);
+
+        let total_invested = invested1.add(invested2).add(invested3);
+
+        console.log(`
+        state ${proposalDetail.state}     
+        bal1_1    ${hre.ethers.utils.formatEther(bal1_1)}
+        bal2_2    ${hre.ethers.utils.formatEther(bal2_2)}
+        bal3_3    ${hre.ethers.utils.formatEther(bal3_3)}
+
+        invested1    ${hre.ethers.utils.formatEther(invested1)}
+        invested2    ${hre.ethers.utils.formatEther(invested2)}
+        invested3    ${hre.ethers.utils.formatEther(invested3)}        
+        total_invested    ${hre.ethers.utils.formatEther(total_invested)}   
+        total_funding ${hre.ethers.utils.formatEther(proposalDetail.fundingInfo.totalAmount)}   
+        `);
     })
 
 })
