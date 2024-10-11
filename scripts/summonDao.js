@@ -53,7 +53,7 @@ async function main() {
     // await submitFlexDaosetVotingProposal("0xc6390890243296e83000822ffc77e2375af9b9c1");
     // await flexDaosetProposal("0xe2b5a93863310d61be803f36cc02006c932c4f9c", "0xcc02006c932c4f9c566f74696e67202331000000000000000000000000000000");
     // await collectiveClearFundProposal("0xc2e10c4a27cb9d3abf1416c9b6eef61becc32516");
-    await getCollectiveAdapterAddress("0x040bc4cb2f5e05061aa951eae31df5adfae95e81");
+    // await getCollectiveAdapterAddress("0x040bc4cb2f5e05061aa951eae31df5adfae95e81");
     // await collectiveRedemptionFee("0x72a789cc0c1a438d6c3bd165832057bd3428ba39");
     // await collectiveEscrowFund("0xb4df914f21757dd024f5a7182af78a6640e86dea");
     // await collectiveOperationProposals("0x97d555cac557c5c0395f858fa1544253edea1bd8");
@@ -99,7 +99,7 @@ async function main() {
     // await createDaosetProposal();
     // await getDaoConfig("0x3cc5809781b98695ad31c5fbfc98869ccd1c7f8a");
     // await getDaoInfo("0xEd0B0ADE001Dd4C004d3e454e9BE52e3ACc1bA35");
-    // await deploy();
+    await deploy();
     // await getFlexdaoInvestorWhitelist();
     // await submitVintageDaosetProposal();
     // await getVintageDaosetProposal();
@@ -2914,25 +2914,25 @@ const deploy = async () => {
     // await vintageSetRiceReceiverProposalAdapterContract.deployed();
     // console.log("vintageSetRiceReceiverProposalAdapterContract deployed address:", vintageSetRiceReceiverProposalAdapterContract.address);
 
-    const ColletiveGovernorManagementContract = await hre.ethers.getContractFactory("ColletiveGovernorManagementAdapterContract");
-    const colletiveGovernorManagementContract = await ColletiveGovernorManagementContract.deploy();
-    await colletiveGovernorManagementContract.deployed();
-    console.log("colletiveGovernorManagementContract deployed address:", colletiveGovernorManagementContract.address);
+    // const ColletiveGovernorManagementContract = await hre.ethers.getContractFactory("ColletiveGovernorManagementAdapterContract");
+    // const colletiveGovernorManagementContract = await ColletiveGovernorManagementContract.deploy();
+    // await colletiveGovernorManagementContract.deployed();
+    // console.log("colletiveGovernorManagementContract deployed address:", colletiveGovernorManagementContract.address);
 
-    const ColletiveDaoSetProposalAdapterContract = await hre.ethers.getContractFactory("ColletiveDaoSetProposalAdapterContract");
-    const colletiveDaoSetProposalContract = await ColletiveDaoSetProposalAdapterContract.deploy();
-    await colletiveDaoSetProposalContract.deployed();
-    console.log("colletiveDaoSetProposalContract deployed address:", colletiveDaoSetProposalContract.address);
+    // const ColletiveDaoSetProposalAdapterContract = await hre.ethers.getContractFactory("ColletiveDaoSetProposalAdapterContract");
+    // const colletiveDaoSetProposalContract = await ColletiveDaoSetProposalAdapterContract.deploy();
+    // await colletiveDaoSetProposalContract.deployed();
+    // console.log("colletiveDaoSetProposalContract deployed address:", colletiveDaoSetProposalContract.address);
 
-    const ColletiveFundingProposalAdapterContract = await hre.ethers.getContractFactory("ColletiveFundingProposalAdapterContract");
-    const colletiveFundingProposalAdapterContract = await ColletiveFundingProposalAdapterContract.deploy();
-    await colletiveFundingProposalAdapterContract.deployed();
-    console.log("colletiveFundingProposalAdapterContract deployed address:", colletiveFundingProposalAdapterContract.address);
+    // const ColletiveFundingProposalAdapterContract = await hre.ethers.getContractFactory("ColletiveFundingProposalAdapterContract");
+    // const colletiveFundingProposalAdapterContract = await ColletiveFundingProposalAdapterContract.deploy();
+    // await colletiveFundingProposalAdapterContract.deployed();
+    // console.log("colletiveFundingProposalAdapterContract deployed address:", colletiveFundingProposalAdapterContract.address);
 
-    const CollectiveVotingAdapterContract = await hre.ethers.getContractFactory("CollectiveVotingAdapterContract");
-    const collectiveVotingContract = await CollectiveVotingAdapterContract.deploy();
-    await collectiveVotingContract.deployed();
-    console.log("collectiveVotingContract deployed address:", collectiveVotingContract.address);
+    // const CollectiveVotingAdapterContract = await hre.ethers.getContractFactory("CollectiveVotingAdapterContract");
+    // const collectiveVotingContract = await CollectiveVotingAdapterContract.deploy();
+    // await collectiveVotingContract.deployed();
+    // console.log("collectiveVotingContract deployed address:", collectiveVotingContract.address);
 
     const ColletiveFundingPoolAdapterContract = await hre.ethers.getContractFactory("ColletiveFundingPoolAdapterContract");
     const colletiveFundingPoolContract = await ColletiveFundingPoolAdapterContract.deploy();
@@ -2974,15 +2974,15 @@ const deploy = async () => {
     // await collectiveEscrowFundAdapterContract.deployed();
     // console.log("collectiveEscrowFundAdapterContract deployed address:", collectiveEscrowFundAdapterContract.address);
 
-    const ColletiveTopUpProposalAdapterContract = await hre.ethers.getContractFactory("ColletiveTopUpProposalAdapterContract");
-    const colletiveTopUpProposalContract = await ColletiveTopUpProposalAdapterContract.deploy();
-    await colletiveTopUpProposalContract.deployed();
-    console.log("colletiveTopUpProposalContract deployed address:", colletiveTopUpProposalContract.address);
+    // const ColletiveTopUpProposalAdapterContract = await hre.ethers.getContractFactory("ColletiveTopUpProposalAdapterContract");
+    // const colletiveTopUpProposalContract = await ColletiveTopUpProposalAdapterContract.deploy();
+    // await colletiveTopUpProposalContract.deployed();
+    // console.log("colletiveTopUpProposalContract deployed address:", colletiveTopUpProposalContract.address);
 
-    const ColletiveExpenseProposalAdapterContract = await hre.ethers.getContractFactory("ColletiveExpenseProposalAdapterContract");
-    const colletiveExpenseProposalContract = await ColletiveExpenseProposalAdapterContract.deploy();
-    await colletiveExpenseProposalContract.deployed();
-    console.log("colletiveExpenseProposalContract deployed address:", colletiveExpenseProposalContract.address);
+    // const ColletiveExpenseProposalAdapterContract = await hre.ethers.getContractFactory("ColletiveExpenseProposalAdapterContract");
+    // const colletiveExpenseProposalContract = await ColletiveExpenseProposalAdapterContract.deploy();
+    // await colletiveExpenseProposalContract.deployed();
+    // console.log("colletiveExpenseProposalContract deployed address:", colletiveExpenseProposalContract.address);
 
 
     // const CollectiveInvestmentPoolExtension = await hre.ethers.getContractFactory("CollectiveInvestmentPoolExtension");
@@ -3000,20 +3000,20 @@ const deploy = async () => {
     // await collectiveFreeInEscrowFundAdapterContract.deployed();
     // console.log("collectiveFreeInEscrowFundAdapterContract deployed address:", collectiveFreeInEscrowFundAdapterContract.address);
 
-    const ColletiveClearFundProposalAdapterContract = await hre.ethers.getContractFactory("ColletiveClearFundProposalAdapterContract");
-    const colletiveClearFundProposalAdapterContract = await ColletiveClearFundProposalAdapterContract.deploy();
-    await colletiveClearFundProposalAdapterContract.deployed();
-    console.log("colletiveClearFundProposalAdapterContract deployed address:", colletiveClearFundProposalAdapterContract.address);
+    // const ColletiveClearFundProposalAdapterContract = await hre.ethers.getContractFactory("ColletiveClearFundProposalAdapterContract");
+    // const colletiveClearFundProposalAdapterContract = await ColletiveClearFundProposalAdapterContract.deploy();
+    // await colletiveClearFundProposalAdapterContract.deployed();
+    // console.log("colletiveClearFundProposalAdapterContract deployed address:", colletiveClearFundProposalAdapterContract.address);
 
     // const CollectiveRedemptionFeeEscrowAdapterContract = await hre.ethers.getContractFactory("CollectiveRedemptionFeeEscrowAdapterContract");
     // const collectiveRedemptionFeeEscrowAdapterContract = await CollectiveRedemptionFeeEscrowAdapterContract.deploy();
     // await collectiveRedemptionFeeEscrowAdapterContract.deployed();
     // console.log("collectiveRedemptionFeeEscrowAdapterContract deployed address:", collectiveRedemptionFeeEscrowAdapterContract.address);
 
-    const ColletiveSetRiceReceiverProposalAdapterContract = await hre.ethers.getContractFactory("ColletiveSetRiceReceiverProposalAdapterContract");
-    const colletiveSetRiceReceiverProposalAdapterContract = await ColletiveSetRiceReceiverProposalAdapterContract.deploy();
-    await colletiveSetRiceReceiverProposalAdapterContract.deployed();
-    console.log("colletiveSetRiceReceiverProposalAdapterContract deployed address:", colletiveSetRiceReceiverProposalAdapterContract.address);
+    // const ColletiveSetRiceReceiverProposalAdapterContract = await hre.ethers.getContractFactory("ColletiveSetRiceReceiverProposalAdapterContract");
+    // const colletiveSetRiceReceiverProposalAdapterContract = await ColletiveSetRiceReceiverProposalAdapterContract.deploy();
+    // await colletiveSetRiceReceiverProposalAdapterContract.deployed();
+    // console.log("colletiveSetRiceReceiverProposalAdapterContract deployed address:", colletiveSetRiceReceiverProposalAdapterContract.address);
 
 
     // const ManualVesting = await hre.ethers.getContractFactory("ManualVesting");

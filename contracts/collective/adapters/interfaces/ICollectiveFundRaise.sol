@@ -50,6 +50,7 @@ interface ICollectiveFundRaise {
     enum ProposalState {
         Voting,
         Executing,
+        FundRaising,
         Done,
         Failed
     }
@@ -93,4 +94,7 @@ interface ICollectiveFundRaise {
     error LAST_NEW_FUND_PROPOSAL_NOT_FINISH();
     error INVALID_PARAM();
     error UNEXECUTE();
+    error DAOSET_PROPOSAL_UNDONE();
+    error VOTING_ADAPTER_NOT_FOUND();
+    error ACCESS_DENIED();
 }

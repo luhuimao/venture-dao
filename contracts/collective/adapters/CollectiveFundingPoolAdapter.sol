@@ -714,9 +714,13 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END)
         ) revert FUNDRAISE_ENDTIME_NOT_UP();
 
-        bytes32 fundRaiseProposalId = ColletiveFundRaiseProposalAdapterContract(
-            dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
-        ).lastProposalIds(address(dao));
+        ColletiveFundRaiseProposalAdapterContract fundRaiseContr = ColletiveFundRaiseProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
+            );
+
+        bytes32 fundRaiseProposalId = fundRaiseContr.lastProposalIds(
+            address(dao)
+        );
 
         if (fundState[address(dao)] == FundState.IN_PROGRESS) {
             uint256 raisedAmount = fundRaisedByProposalId[address(dao)][
@@ -731,18 +735,17 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                 _addNewMembers(dao, fundRaiseProposalId);
 
                 fundState[address(dao)] = FundState.DONE;
+
+                fundRaiseContr.setProposalState(dao, fundRaiseProposalId, true);
             } else {
                 fundState[address(dao)] = FundState.FAILED;
 
                 if (poolBalance(dao) > 0) escrowFundForFundRaiseFailed(dao);
-
-                // if (
-                //     CollectiveInvestmentPoolExtension(
-                //         dao.getExtensionAddress(
-                //             DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
-                //         )
-                //     ).balanceOf(address(DaoHelper.DAOSQUARE_TREASURY)) > 0
-                // ) escrowFundForFundRaiseFailed(dao);
+                fundRaiseContr.setProposalState(
+                    dao,
+                    fundRaiseProposalId,
+                    false
+                );
             }
 
             emit ProcessFundRaise(

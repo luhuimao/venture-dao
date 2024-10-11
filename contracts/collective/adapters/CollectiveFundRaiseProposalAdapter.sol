@@ -49,10 +49,12 @@ contract ColletiveFundRaiseProposalAdapterContract is
         vars.daosetAdapt = ColletiveDaoSetProposalAdapterContract(
             params.dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
         );
-        require(
-            vars.daosetAdapt.isProposalAllDone(params.dao),
-            "DaoSet Proposal Undone"
-        );
+        // require(
+        //     vars.daosetAdapt.isProposalAllDone(params.dao),
+        //     "DaoSet Proposal Undone"
+        // );
+        if (!vars.daosetAdapt.isProposalAllDone(params.dao))
+            revert DAOSET_PROPOSAL_UNDONE();
 
         vars.investmentContract = ColletiveFundingProposalAdapterContract(
             params.dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
@@ -171,10 +173,9 @@ contract ColletiveFundRaiseProposalAdapterContract is
         vars.votingContract = CollectiveVotingAdapterContract(
             dao.votingAdapter(proposalId)
         );
-        require(
-            address(vars.votingContract) != address(0x0),
-            "voting adapter not found"
-        );
+
+        if (address(vars.votingContract) == address(0x0))
+            revert VOTING_ADAPTER_NOT_FOUND();
 
         (vars.voteResult, vars.nbYes, vars.nbNo) = vars
             .votingContract
@@ -187,7 +188,7 @@ contract ColletiveFundRaiseProposalAdapterContract is
             fundRaisingId[address(dao)] += 1;
             //reset fund raise state
             vars.investmentPoolAdapt.resetFundRaiseState(dao);
-            proposalDetails.state = ProposalState.Done;
+            proposalDetails.state = ProposalState.FundRaising;
         } else if (
             vars.voteResult == ICollectiveVoting.VotingState.NOT_PASS ||
             vars.voteResult == ICollectiveVoting.VotingState.TIE
@@ -332,6 +333,22 @@ contract ColletiveFundRaiseProposalAdapterContract is
         for (uint8 i = 0; i < whitelist.length; i++) {
             priorityDepositorWhitelist[dao][proposalId].add(whitelist[i]);
         }
+    }
+
+    function setProposalState(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        bool state
+    ) external {
+        if (
+            msg.sender !=
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER)
+        ) revert ACCESS_DENIED();
+
+        ProposalDetails storage proposalDetails = proposals[dao][proposalId];
+
+        if (state) proposalDetails.state = ProposalState.Done;
+        else proposalDetails.state = ProposalState.Failed;
     }
 
     function getPriorityDepositeWhiteList(

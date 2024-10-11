@@ -739,7 +739,10 @@ describe("fund raise proposal...", () => {
             await hre.network.provider.send("evm_mine");
         }
         await this.colletiveFundingPoolContract.processFundRaise(this.collectiveDirectdaoAddress);
-
+        proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(this.collectiveDirectdaoAddress, proposalId);
+        console.log(`
+            fund raise proposal state ${proposalDetail.state}
+        `);
 
         let allInvestors = await this.daoContract.getAllSteward()
 
@@ -817,6 +820,12 @@ describe("fund raise proposal...", () => {
         }
         await this.colletiveFundingPoolContract.processFundRaise(this.collectiveDirectdaoAddress);
 
+        proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(this.collectiveDirectdaoAddress, proposalId);
+
+        console.log(`
+        fund raise proposal state ${proposalDetail.state}
+        `);
+        
         allInvestors = await this.daoContract.getAllSteward()
         // allInvestors = await this.colletiveFundingPoolContract.getAllInvestors(this.collectiveDirectdaoAddress);
         console.log(`
