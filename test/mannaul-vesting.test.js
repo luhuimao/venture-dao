@@ -233,7 +233,7 @@ describe("mannual vesting...", () => {
         const URI = await this.manualVestingERC721.tokenURI(1);
         const svg = await this.manualVestingERC721.getSvg(1);
 
-        console.log(svg)
+        // console.log(svg)
     });
 
 

@@ -872,7 +872,7 @@ describe("collective investment receipt NFT...", () => {
 
         const total = hre.ethers.utils.parseEther("2000");//1333.333333333333333332
         const vmode = 2;// collective
-        await this.manualVesting.batchCreate(
+        txs = await this.manualVesting.batchCreate(
             [this.investor1.address],//investors
             [this.investor2.address],//holders
             CreateVestingParams,
@@ -882,6 +882,21 @@ describe("collective investment receipt NFT...", () => {
             proposalId
         );
 
+        ss = await txs.wait();
+        console.log("len ", ss.events.length);
+
+        console.log("1 ", ss.events[0].event);
+        console.log("2 ", ss.events[1].event);
+        console.log("3 ", ss.events[2].event);
+        console.log("4 ", ss.events[3].args);
+        console.log("5 ", ss.events[4].event);
+        console.log("6 ", ss.events[5].event);
+        console.log("7 ", ss.events[6].event);
+        console.log("8 ", ss.events[7].args);
+        console.log("9 ", ss.events[8].args);
+
+        const currentvestId = await this.manualVesting.vestIds();
+        console.log(currentvestId);
         console.log("crated...");
 
 
@@ -893,17 +908,29 @@ describe("collective investment receipt NFT...", () => {
 
         await this.testtoken2.approve(this.bentoBoxV1.address, hre.ethers.utils.parseEther("2344"));
 
-        await this.manualVesting.batchCreate2(
+        txs = await this.manualVesting.batchCreate2(
             [this.user1.address, this.user2.address],
             [hre.ethers.utils.parseEther("234.434"), hre.ethers.utils.parseEther("444.002")],
             CreateVestingParams
         );
 
+        ss = await txs.wait();
+        console.log("lem ", ss.events.length);
+
+        // console.log("1 ", ss.events[0]);
+        // console.log("2 ", ss.events[1]);
+        // console.log("3 ", ss.events[2]);
+        console.log("4 ", ss.events[3].args);
+        // console.log("5 ", ss.events[4]);
+        // console.log("6 ", ss.events[5]);
+        // console.log("7 ", ss.events[6]);
+        console.log("8 ", ss.events[7].args);
+        console.log("9 ", ss.events[8].args);
+
         let vestInfo3 = await this.manualVesting.vests(3);
         let vestInfo4 = await this.manualVesting.vests(4);
         console.log(hre.ethers.utils.formatEther(vestInfo3.total));
         console.log(hre.ethers.utils.formatEther(vestInfo4.total));
-
     });
 
 });

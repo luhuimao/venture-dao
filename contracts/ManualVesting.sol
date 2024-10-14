@@ -124,7 +124,7 @@ contract ManualVesting {
         address token,
         bool toBentoBox
     );
-
+    event BatchVesting(uint256 startVestId, uint256 endVestId);
     event LogUpdateOwner(uint256 indexed vestId, address indexed newOwner);
 
     error NotOwner();
@@ -394,6 +394,7 @@ contract ManualVesting {
         uint256 totalAmount;
         uint256 depositAmount;
         InvestmentReceiptERC721 receiptCon;
+        uint256 startVestId;
     }
 
     function batchCreate(
@@ -406,6 +407,8 @@ contract ManualVesting {
         bytes32 proposalId
     ) external {
         BatchVestingVars memory vars;
+        vars.startVestId = vestIds;
+
         vars.receiptCon = InvestmentReceiptERC721(receiptNFTAddr);
         if (investors.length > 0) {
             for (uint8 i = 0; i < investors.length; i++) {
@@ -469,6 +472,8 @@ contract ManualVesting {
                 );
             }
         }
+
+        emit BatchVesting(vars.startVestId, vestIds - 1);
     }
 
     function batchCreate2(
@@ -476,6 +481,9 @@ contract ManualVesting {
         uint256[] calldata amounts,
         CreateVestingParams calldata params
     ) external {
+        BatchVestingVars memory vars;
+        vars.startVestId = vestIds;
+
         if (receivers.length != amounts.length)
             revert InValidBatchVesting2Param();
 
@@ -487,8 +495,6 @@ contract ManualVesting {
         ) revert InValidBatchVesting2Param();
 
         if (receivers.length > 0) {
-            BatchVestingVars memory vars;
-
             for (uint8 i = 0; i < receivers.length; i++) {
                 vars.depositAmount = amounts[i];
 
@@ -510,6 +516,7 @@ contract ManualVesting {
                 );
             }
         }
+        emit BatchVesting(vars.startVestId, vestIds - 1);
     }
 
     struct MintLocalVars {
