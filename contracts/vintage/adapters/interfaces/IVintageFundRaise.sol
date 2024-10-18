@@ -36,6 +36,7 @@ interface IVintageFundRaise {
     enum ProposalState {
         Voting,
         Executing,
+        FundRaising,
         Done,
         Failed
     }
@@ -218,4 +219,9 @@ interface IVintageFundRaise {
     error LAST_NEW_FUND_PROPOSAL_NOT_FINISH();
     error INVALID_PARAM();
     error VOTING_NOT_FINISH();
+    error DAOSET_PROPOSAL_UNDONE();
+    error UNDONE_INVESTMENT_PROPOSAL();
+    error NOT_CLEAR_FUND();
+    error VOTING_ADAPTER_NOT_FOUND();
+    error ACCESS_DENIED();
 }

@@ -87,19 +87,24 @@ contract VintageFundRaiseAdapterContract is
         vars.daosetAdapt = VintageDaoSetAdapterContract(
             params.dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_ADAPTER)
         );
-        require(
-            vars.daosetAdapt.isProposalAllDone(address(params.dao)),
-            "DaoSet Proposal Undone"
-        );
+
+        if (!vars.daosetAdapt.isProposalAllDone(address(params.dao)))
+            revert DAOSET_PROPOSAL_UNDONE();
         vars.investmentContract = VintageFundingAdapterContract(
             params.dao.getAdapterAddress(DaoHelper.VINTAGE_FUNDING_ADAPTER)
         );
-        require(
-            vars.investmentContract.getQueueLength(params.dao) <= 0 &&
-                vars.investmentContract.ongoingProposal(address(params.dao)) ==
-                bytes32(0),
-            "Undone Investment Proposal"
-        );
+        // require(
+        //     vars.investmentContract.getQueueLength(params.dao) <= 0 &&
+        //         vars.investmentContract.ongoingProposal(address(params.dao)) ==
+        //         bytes32(0),
+        //     "Undone Investment Proposal"
+        // );
+        if (
+            vars.investmentContract.getQueueLength(params.dao) > 0 ||
+            vars.investmentContract.ongoingProposal(address(params.dao)) !=
+            bytes32(0)
+        ) revert UNDONE_INVESTMENT_PROPOSAL();
+
         vars.lastFundEndTime = params.dao.getConfiguration(
             DaoHelper.FUND_END_TIME
         );
@@ -111,10 +116,9 @@ contract VintageFundRaiseAdapterContract is
                 DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT
             )
         );
-        require(
-            vars.investmentPoolAdapt.poolBalance(params.dao) <= 0,
-            "!clear fund"
-        );
+
+        if (vars.investmentPoolAdapt.poolBalance(params.dao) > 0)
+            revert NOT_CLEAR_FUND();
         require(
             vars.investmentPoolAdapt.daoFundRaisingStates(
                 address(params.dao)
@@ -151,8 +155,8 @@ contract VintageFundRaiseAdapterContract is
             params.proposalTimeInfo.redemptInterval ||
             params.proposalTimeInfo.redemptInterval >
             params.proposalTimeInfo.fundTerm ||
-            params.proposalTimeInfo.refundPeriod >=
-            params.proposalTimeInfo.fundTerm ||
+            // params.proposalTimeInfo.refundPeriod >=
+            // params.proposalTimeInfo.fundTerm ||
             params.proposalFeeInfo.managementFeeRatio >= 10 ** 18 ||
             params.proposalFeeInfo.managementFeeRatio < 0 ||
             params.proposalFeeInfo.redepmtFeeRatio >= 10 ** 18 ||
@@ -274,7 +278,6 @@ contract VintageFundRaiseAdapterContract is
     ) external override reimbursable(dao) {
         ProcessProposalLocalVars memory vars;
 
-        // vars.proposalInfo = Proposals[address(dao)][proposalId];
         ProposalDetails storage proposalDetails = Proposals[address(dao)][
             proposalId
         ];
@@ -285,10 +288,9 @@ contract VintageFundRaiseAdapterContract is
         vars.votingContract = VintageVotingContract(
             dao.votingAdapter(proposalId)
         );
-        require(
-            address(vars.votingContract) != address(0x0),
-            "voting adapter not found"
-        );
+
+        if (address(vars.votingContract) == address(0x0))
+            revert VOTING_ADAPTER_NOT_FOUND();
 
         (vars.voteResult, vars.nbYes, vars.nbNo) = vars
             .votingContract
@@ -301,7 +303,7 @@ contract VintageFundRaiseAdapterContract is
 
             //reset fund raise state
             vars.investmentPoolAdapt.resetFundRaiseState(dao);
-            proposalDetails.state = ProposalState.Done;
+            proposalDetails.state = ProposalState.FundRaising;
 
             // fundsCounter += 1;
             createdFundCounter[address(dao)] += 1;
@@ -548,6 +550,21 @@ contract VintageFundRaiseAdapterContract is
             priorityDepositeWhiteList[dao][proposalId].add(whitelist[i]);
             // }
         }
+    }
+
+    function setProposalState(
+        DaoRegistry dao,
+        bytes32 proposalId,
+        bool state
+    ) external {
+        if (
+            msg.sender !=
+            dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
+        ) revert ACCESS_DENIED();
+
+        if (state)
+            Proposals[address(dao)][proposalId].state = ProposalState.Done;
+        else Proposals[address(dao)][proposalId].state = ProposalState.Failed;
     }
 
     function getWhiteList(
