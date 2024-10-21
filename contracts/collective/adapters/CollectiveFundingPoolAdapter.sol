@@ -794,4 +794,11 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
 
         return graceWithdrawAmount[investmentProposalId][account];
     }
+
+    function getInvestorsByFundRaise(
+        DaoRegistry dao,
+        bytes32 fundRaiseProposalId
+    ) external view returns (address[] memory) {
+        return investorsByFundRaise[address(dao)][fundRaiseProposalId].values();
+    }
 }

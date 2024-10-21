@@ -603,6 +603,7 @@ describe("fund establishment...", () => {
         expect(fundState == 3, true);
         console.log(`
         executed...
+        fund raise state ${fundRaiseProposalInfo.state}
         fund State ${fundState}
         `);
 
@@ -621,9 +622,11 @@ describe("fund establishment...", () => {
 
         await this.vintageFundingPoolAdapterContract.processFundRaise(this.daoAddr1);
         fundState = await vintageFundingPoolAdapterContract.daoFundRaisingStates(this.daoAddr1);
+        fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, newFundProposalId);
 
         console.log(`
         executed...
+        fund raise state ${fundRaiseProposalInfo.state}
         fund State ${fundState}
         `);
 

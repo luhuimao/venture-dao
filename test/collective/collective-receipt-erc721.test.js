@@ -909,8 +909,8 @@ describe("collective investment receipt NFT...", () => {
         await this.testtoken2.approve(this.bentoBoxV1.address, hre.ethers.utils.parseEther("2344"));
 
         txs = await this.manualVesting.batchCreate2(
-            [this.user1.address, this.user2.address],
-            [hre.ethers.utils.parseEther("234.434"), hre.ethers.utils.parseEther("444.002")],
+            [this.user1.address],
+            [hre.ethers.utils.parseEther("234.434")],
             CreateVestingParams
         );
 
@@ -918,14 +918,14 @@ describe("collective investment receipt NFT...", () => {
         console.log("lem ", ss.events.length);
 
         // console.log("1 ", ss.events[0]);
-        // console.log("2 ", ss.events[1]);
+        // console.log("2 ", ss.events[1].args);
         // console.log("3 ", ss.events[2]);
         console.log("4 ", ss.events[3].args);
-        // console.log("5 ", ss.events[4]);
+        console.log("5 ", ss.events[4]);
         // console.log("6 ", ss.events[5]);
         // console.log("7 ", ss.events[6]);
-        console.log("8 ", ss.events[7].args);
-        console.log("9 ", ss.events[8].args);
+        // console.log("8 ", ss.events[7].args);
+        // console.log("9 ", ss.events[8].args);
 
         let vestInfo3 = await this.manualVesting.vests(3);
         let vestInfo4 = await this.manualVesting.vests(4);
