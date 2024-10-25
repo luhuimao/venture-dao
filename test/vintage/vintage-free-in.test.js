@@ -410,8 +410,8 @@ describe("fund establishment...", () => {
             daoFactoriesAddress, // address[] daoFactoriesAddress;
             enalbeAdapters, // DaoFactory.Adapter[] enalbeAdapters;
             adapters1, // DaoFactory.Adapter[] adapters1;
-            vintageDaoParticipantCapInfo,
-            vintageDaoBackerMembershipInfo1,
+            // vintageDaoParticipantCapInfo,
+            // vintageDaoBackerMembershipInfo1,
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
@@ -425,8 +425,8 @@ describe("fund establishment...", () => {
             daoFactoriesAddress, // address[] daoFactoriesAddress;
             enalbeAdapters, // DaoFactory.Adapter[] enalbeAdapters;
             adapters1, // DaoFactory.Adapter[] adapters1;
-            vintageDaoParticipantCapInfo,
-            vintageDaoBackerMembershipInfo1,
+            // vintageDaoParticipantCapInfo,
+            // vintageDaoBackerMembershipInfo1,
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo2,
             vintageDaoGenesisRaisers,

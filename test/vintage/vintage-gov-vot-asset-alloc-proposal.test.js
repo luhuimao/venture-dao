@@ -390,8 +390,8 @@ describe("daoset proposal...", () => {
             daoFactoriesAddress, // address[] daoFactoriesAddress;
             enalbeAdapters, // DaoFactory.Adapter[] enalbeAdapters;
             adapters1, // DaoFactory.Adapter[] adapters1;
-            vintageDaoParticipantCapInfo,
-            vintageDaoBackerMembershipInfo1,
+            // vintageDaoParticipantCapInfo,
+            // vintageDaoBackerMembershipInfo1,
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,

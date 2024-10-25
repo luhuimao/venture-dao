@@ -385,8 +385,8 @@ describe("daoset proposal...", () => {
             daoFactoriesAddress, // address[] daoFactoriesAddress;
             enalbeAdapters, // DaoFactory.Adapter[] enalbeAdapters;
             adapters1, // DaoFactory.Adapter[] adapters1;
-            vintageDaoParticipantCapInfo,
-            vintageDaoBackerMembershipInfo1,
+            // vintageDaoParticipantCapInfo,
+            // vintageDaoBackerMembershipInfo1,
             vintageDaoRaiserMembershipInfo1,
             vintageDaoVotingInfo1,
             vintageDaoGenesisRaisers,
@@ -429,257 +429,257 @@ describe("daoset proposal...", () => {
         return proposalId;
     };
 
-    it("create daoset participant cap proposal...", async () => {
-        const enable = true;
-        const cap = 5;
-        let tx = await this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap);
+    // it("create daoset participant cap proposal...", async () => {
+    //     const enable = true;
+    //     const cap = 5;
+    //     let tx = await this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap);
 
-        let rel = await tx.wait();
+    //     let rel = await tx.wait();
 
-        let proposalId = rel.events[rel.events.length - 1].args.proposalId
-        const proposal = await this.vintageDaoSetAdapterContract.investorCapProposals(
-            this.daoAddr1,
-            proposalId);
+    //     let proposalId = rel.events[rel.events.length - 1].args.proposalId
+    //     const proposal = await this.vintageDaoSetAdapterContract.investorCapProposals(
+    //         this.daoAddr1,
+    //         proposalId);
 
-        console.log(proposal);
-        await expectRevert(this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap), "revert");
-
-
-        const vintageFundingAdapterContract = this.vintageFundingAdapterContract;
-        const vintageFundingPoolAdapterContract = this.vintageFundingPoolAdapterContract;
-        const vintageVotingAdapterContract = this.vintageVotingAdapterContract;
-        const vintageVesting = this.vintageVesting;
-        const fundRaiseMinTarget = hre.ethers.utils.parseEther("10000");
-        const fundRaiseMaxCap = hre.ethers.utils.parseEther("20000");
-        const lpMinDepositAmount = hre.ethers.utils.parseEther("100");
-        const lpMaxDepositAmount = hre.ethers.utils.parseEther("200000");
-        const fundRaiseType = 1; // 0 FCFS 1 Free In
-
-        //submit fund raise proposal
-        const proposalFundRaiseInfo = [
-            fundRaiseMinTarget,
-            fundRaiseMaxCap,
-            lpMinDepositAmount,
-            lpMaxDepositAmount,
-            fundRaiseType // 0 FCFS 1 Free In
-        ];
-        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-
-        let startTime = blocktimestamp + 60 * 1;
-        let endTime = startTime + 60 * 60 * 2;
-        const fundTerm = 60 * 60 * 24 * 30;
-        const redemptPeriod = 60 * 60 * 1;
-        const redemptInterval = 60 * 60 * 24 * 7;
-        const returnPeriod = 60 * 60 * 1;
-
-        let proposalTimeInfo = [
-            startTime,
-            endTime,
-            fundTerm,
-            redemptPeriod,
-            redemptInterval,
-            returnPeriod
-        ];
-
-        const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
-        const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.001"); //0.1%
-
-        const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
-        const proposalFeeInfo = [
-            managementFeeRatio,
-            returnTokenmanagementFeeRatio,
-            redepmtFeeRatio
-        ];
-
-        const managementFeeAddress = this.user1.address;
-        const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
-
-        const fundRaiseTokenAddress = this.testtoken1.address;
-        const proposalAddressInfo = [
-            managementFeeAddress,
-            redemptionFeeReceiver,
-            fundRaiseTokenAddress
-        ];
-
-        const fundFromInverstor = hre.ethers.utils.parseEther("0.004");
-        const projectTokenFromInvestor = hre.ethers.utils.parseEther("0.004");
-        const proposerReward = [
-            fundFromInverstor,
-            projectTokenFromInvestor
-        ];
+    //     console.log(proposal);
+    //     await expectRevert(this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap), "revert");
 
 
-        const enalbePriorityDeposit = true;
-        const vtype = 3; // 0 erc20 1 erc721 2 erc1155 3 whitelist
-        const token = ZERO_ADDRESS;
-        const tokenId = 0;
-        const amount = 0;
-        const priorityDepositeWhitelist = [
-            this.user1.address,
-            this.user2.address
-        ];
-        const proposalPriorityDepositInfo = [
-            enalbePriorityDeposit,
-            vtype,
-            token,
-            tokenId,
-            amount,
-            priorityDepositeWhitelist
-        ];
+    //     const vintageFundingAdapterContract = this.vintageFundingAdapterContract;
+    //     const vintageFundingPoolAdapterContract = this.vintageFundingPoolAdapterContract;
+    //     const vintageVotingAdapterContract = this.vintageVotingAdapterContract;
+    //     const vintageVesting = this.vintageVesting;
+    //     const fundRaiseMinTarget = hre.ethers.utils.parseEther("10000");
+    //     const fundRaiseMaxCap = hre.ethers.utils.parseEther("20000");
+    //     const lpMinDepositAmount = hre.ethers.utils.parseEther("100");
+    //     const lpMaxDepositAmount = hre.ethers.utils.parseEther("200000");
+    //     const fundRaiseType = 1; // 0 FCFS 1 Free In
 
-        let fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ];
+    //     //submit fund raise proposal
+    //     const proposalFundRaiseInfo = [
+    //         fundRaiseMinTarget,
+    //         fundRaiseMaxCap,
+    //         lpMinDepositAmount,
+    //         lpMaxDepositAmount,
+    //         fundRaiseType // 0 FCFS 1 Free In
+    //     ];
+    //     let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
-        await expectRevert(createFundRaiseProposal(this.vintageFundRaiseAdapterContract, this.owner, fundRaiseParams), "revert");
+    //     let startTime = blocktimestamp + 60 * 1;
+    //     let endTime = startTime + 60 * 60 * 2;
+    //     const fundTerm = 60 * 60 * 24 * 30;
+    //     const redemptPeriod = 60 * 60 * 1;
+    //     const redemptInterval = 60 * 60 * 24 * 7;
+    //     const returnPeriod = 60 * 60 * 1;
 
-        console.log("voting...");
-        await this.vintageVotingAdapterContract.connect(this.genesis_raiser1).submitVote(this.daoAddr1, proposalId, 1);
-        await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr1, proposalId, 1);
-        await this.vintageVotingAdapterContract.submitVote(this.daoAddr1, proposalId, 1);
+    //     let proposalTimeInfo = [
+    //         startTime,
+    //         endTime,
+    //         fundTerm,
+    //         redemptPeriod,
+    //         redemptInterval,
+    //         returnPeriod
+    //     ];
 
-        let ProposalInfo = await this.vintageDaoSetAdapterContract.investorCapProposals(this.daoAddr1, proposalId);
-        let stopVoteTime = ProposalInfo.stopVoteTime;
+    //     const managementFeeRatio = hre.ethers.utils.parseEther("0.004"); //0.4%
+    //     const returnTokenmanagementFeeRatio = hre.ethers.utils.parseEther("0.001"); //0.1%
 
-        if (parseInt(stopVoteTime) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1])
-            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
-        }
-        let voteRel = await this.vintageVotingAdapterContract.voteResult(this.daoAddr1, proposalId);
-        console.log(`
-        voted. processing...
-        state ${voteRel.state}  nbYes ${voteRel.nbYes}  nbNo ${voteRel.nbNo}
-        process proposal...
-        `);
-        await this.vintageDaoSetAdapterContract.processInvestorCapProposal(this.daoAddr1, proposalId);
+    //     const redepmtFeeRatio = hre.ethers.utils.parseEther("0.002");
+    //     const proposalFeeInfo = [
+    //         managementFeeRatio,
+    //         returnTokenmanagementFeeRatio,
+    //         redepmtFeeRatio
+    //     ];
 
-        ProposalInfo = await this.vintageDaoSetAdapterContract.investorCapProposals(this.daoAddr1, proposalId);
+    //     const managementFeeAddress = this.user1.address;
+    //     const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
 
-        console.log(`
-        executed...
-        proposal state ${ProposalInfo.state}
-        `);
+    //     const fundRaiseTokenAddress = this.testtoken1.address;
+    //     const proposalAddressInfo = [
+    //         managementFeeAddress,
+    //         redemptionFeeReceiver,
+    //         fundRaiseTokenAddress
+    //     ];
 
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        startTime = blocktimestamp + 60 * 1;
-        endTime = startTime + 60 * 60 * 2;
+    //     const fundFromInverstor = hre.ethers.utils.parseEther("0.004");
+    //     const projectTokenFromInvestor = hre.ethers.utils.parseEther("0.004");
+    //     const proposerReward = [
+    //         fundFromInverstor,
+    //         projectTokenFromInvestor
+    //     ];
 
-        proposalTimeInfo = [
-            startTime,
-            endTime,
-            fundTerm,
-            redemptPeriod,
-            redemptInterval,
-            returnPeriod
-        ];
 
-        fundRaiseParams = [
-            this.daoAddr1,
-            proposalFundRaiseInfo,
-            proposalTimeInfo,
-            proposalFeeInfo,
-            proposalAddressInfo,
-            proposerReward,
-            proposalPriorityDepositInfo
-        ];
+    //     const enalbePriorityDeposit = true;
+    //     const vtype = 3; // 0 erc20 1 erc721 2 erc1155 3 whitelist
+    //     const token = ZERO_ADDRESS;
+    //     const tokenId = 0;
+    //     const amount = 0;
+    //     const priorityDepositeWhitelist = [
+    //         this.user1.address,
+    //         this.user2.address
+    //     ];
+    //     const proposalPriorityDepositInfo = [
+    //         enalbePriorityDeposit,
+    //         vtype,
+    //         token,
+    //         tokenId,
+    //         amount,
+    //         priorityDepositeWhitelist
+    //     ];
 
-        await expectRevert(createFundRaiseProposal(this.vintageFundRaiseAdapterContract, this.user1, fundRaiseParams), "revert");
-        const newFundProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, this.genesis_raiser1, fundRaiseParams);
+    //     let fundRaiseParams = [
+    //         this.daoAddr1,
+    //         proposalFundRaiseInfo,
+    //         proposalTimeInfo,
+    //         proposalFeeInfo,
+    //         proposalAddressInfo,
+    //         proposerReward,
+    //         proposalPriorityDepositInfo
+    //     ];
 
-        console.log(`
-        new fund proposal created...
-        proposalId ${newFundProposalId}
-        vote for new fund proposal...
-        `);
+    //     await expectRevert(createFundRaiseProposal(this.vintageFundRaiseAdapterContract, this.owner, fundRaiseParams), "revert");
 
-        await this.vintageVotingAdapterContract.connect(this.genesis_raiser1).submitVote(this.daoAddr1, newFundProposalId, 1);
-        await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr1, newFundProposalId, 1);
-        await this.vintageVotingAdapterContract.submitVote(this.daoAddr1, newFundProposalId, 1);
+    //     console.log("voting...");
+    //     await this.vintageVotingAdapterContract.connect(this.genesis_raiser1).submitVote(this.daoAddr1, proposalId, 1);
+    //     await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr1, proposalId, 1);
+    //     await this.vintageVotingAdapterContract.submitVote(this.daoAddr1, proposalId, 1);
 
-        let fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, newFundProposalId);
-        stopVoteTime = fundRaiseProposalInfo.stopVoteTime;
+    //     let ProposalInfo = await this.vintageDaoSetAdapterContract.investorCapProposals(this.daoAddr1, proposalId);
+    //     let stopVoteTime = ProposalInfo.stopVoteTime;
 
-        if (parseInt(stopVoteTime) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1])
-            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
-        }
-        voteRel = await this.vintageVotingAdapterContract.voteResult(this.daoAddr1, newFundProposalId);
-        console.log(`
-        voted. processing...
-        vote result ${voteRel.state}  nbYes ${voteRel.nbYes}  nbNo ${voteRel.nbNo}
-        process new fund proposal...
-        `);
-        await this.vintageFundRaiseAdapterContract.processProposal(this.daoAddr1, newFundProposalId);
-        fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, newFundProposalId);
-        let fundState = await vintageFundingPoolAdapterContract.daoFundRaisingStates(this.daoAddr1);
-        expect(fundRaiseProposalInfo.state == 2, true);
-        expect(fundState == 1, true);
+    //     if (parseInt(stopVoteTime) > blocktimestamp) {
+    //         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1])
+    //         await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+    //     }
+    //     let voteRel = await this.vintageVotingAdapterContract.voteResult(this.daoAddr1, proposalId);
+    //     console.log(`
+    //     voted. processing...
+    //     state ${voteRel.state}  nbYes ${voteRel.nbYes}  nbNo ${voteRel.nbNo}
+    //     process proposal...
+    //     `);
+    //     await this.vintageDaoSetAdapterContract.processInvestorCapProposal(this.daoAddr1, proposalId);
 
-        console.log(`
-        proposal state ${fundRaiseProposalInfo.state}
-        fund State ${fundState}
-        submit daoset proposal...
-        `);
-        await expectRevert(this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap), "revert");
+    //     ProposalInfo = await this.vintageDaoSetAdapterContract.investorCapProposals(this.daoAddr1, proposalId);
 
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+    //     console.log(`
+    //     executed...
+    //     proposal state ${ProposalInfo.state}
+    //     `);
 
-        if (parseInt(fundRaiseProposalInfo.timesInfo.fundRaiseEndTime) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaiseProposalInfo.timesInfo.fundRaiseEndTime) + 1])
-            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
-        }
+    //     blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+    //     startTime = blocktimestamp + 60 * 1;
+    //     endTime = startTime + 60 * 60 * 2;
 
-        console.log(`
-        process fund raising...
-        `);
+    //     proposalTimeInfo = [
+    //         startTime,
+    //         endTime,
+    //         fundTerm,
+    //         redemptPeriod,
+    //         redemptInterval,
+    //         returnPeriod
+    //     ];
 
-        await vintageFundingPoolAdapterContract.processFundRaise(this.daoAddr1);
-        fundState = await vintageFundingPoolAdapterContract.daoFundRaisingStates(this.daoAddr1);
-        expect(fundState == 3, true);
-        console.log(`
-        executed...
-        fund State ${fundState}
-        `);
-        const refundEndTime = parseInt(fundRaiseProposalInfo.timesInfo.fundRaiseEndTime) +
-            + parseInt(fundRaiseProposalInfo.timesInfo.refundDuration);
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        if (refundEndTime > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [refundEndTime + 1]);
-            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
-        }
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+    //     fundRaiseParams = [
+    //         this.daoAddr1,
+    //         proposalFundRaiseInfo,
+    //         proposalTimeInfo,
+    //         proposalFeeInfo,
+    //         proposalAddressInfo,
+    //         proposerReward,
+    //         proposalPriorityDepositInfo
+    //     ];
 
-        console.log(`
-        ${fundRaiseProposalInfo.timesInfo.fundRaiseEndTime}
-        ${fundRaiseProposalInfo.timesInfo.refundDuration}
-        refundEndTime ${refundEndTime}
-        blocktimestamp ${blocktimestamp}
-        `)
+    //     await expectRevert(createFundRaiseProposal(this.vintageFundRaiseAdapterContract, this.user1, fundRaiseParams), "revert");
+    //     const newFundProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, this.genesis_raiser1, fundRaiseParams);
 
-        tx = await this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap);
-        console.log(`
-        dao set proposal created...
-        `);
-        rel = await tx.wait();
-        proposalId = rel.events[rel.events.length - 1].args.proposalId;
+    //     console.log(`
+    //     new fund proposal created...
+    //     proposalId ${newFundProposalId}
+    //     vote for new fund proposal...
+    //     `);
 
-        ProposalInfo = await this.vintageDaoSetAdapterContract.investorCapProposals(this.daoAddr1, proposalId);
-        stopVoteTime = ProposalInfo.stopVoteTime;
-        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
-        if (parseInt(stopVoteTime) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1])
-            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
-        }
+    //     await this.vintageVotingAdapterContract.connect(this.genesis_raiser1).submitVote(this.daoAddr1, newFundProposalId, 1);
+    //     await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr1, newFundProposalId, 1);
+    //     await this.vintageVotingAdapterContract.submitVote(this.daoAddr1, newFundProposalId, 1);
 
-        await this.vintageDaoSetAdapterContract.processInvestorCapProposal(this.daoAddr1, proposalId);
+    //     let fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, newFundProposalId);
+    //     stopVoteTime = fundRaiseProposalInfo.stopVoteTime;
 
-    });
+    //     if (parseInt(stopVoteTime) > blocktimestamp) {
+    //         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1])
+    //         await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+    //     }
+    //     voteRel = await this.vintageVotingAdapterContract.voteResult(this.daoAddr1, newFundProposalId);
+    //     console.log(`
+    //     voted. processing...
+    //     vote result ${voteRel.state}  nbYes ${voteRel.nbYes}  nbNo ${voteRel.nbNo}
+    //     process new fund proposal...
+    //     `);
+    //     await this.vintageFundRaiseAdapterContract.processProposal(this.daoAddr1, newFundProposalId);
+    //     fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, newFundProposalId);
+    //     let fundState = await vintageFundingPoolAdapterContract.daoFundRaisingStates(this.daoAddr1);
+    //     expect(fundRaiseProposalInfo.state == 2, true);
+    //     expect(fundState == 1, true);
+
+    //     console.log(`
+    //     proposal state ${fundRaiseProposalInfo.state}
+    //     fund State ${fundState}
+    //     submit daoset proposal...
+    //     `);
+    //     await expectRevert(this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap), "revert");
+
+    //     blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+    //     if (parseInt(fundRaiseProposalInfo.timesInfo.fundRaiseEndTime) > blocktimestamp) {
+    //         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(fundRaiseProposalInfo.timesInfo.fundRaiseEndTime) + 1])
+    //         await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+    //     }
+
+    //     console.log(`
+    //     process fund raising...
+    //     `);
+
+    //     await vintageFundingPoolAdapterContract.processFundRaise(this.daoAddr1);
+    //     fundState = await vintageFundingPoolAdapterContract.daoFundRaisingStates(this.daoAddr1);
+    //     expect(fundState == 3, true);
+    //     console.log(`
+    //     executed...
+    //     fund State ${fundState}
+    //     `);
+    //     const refundEndTime = parseInt(fundRaiseProposalInfo.timesInfo.fundRaiseEndTime) +
+    //         + parseInt(fundRaiseProposalInfo.timesInfo.refundDuration);
+    //     blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+    //     if (refundEndTime > blocktimestamp) {
+    //         await hre.network.provider.send("evm_setNextBlockTimestamp", [refundEndTime + 1]);
+    //         await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+    //     }
+    //     blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+    //     console.log(`
+    //     ${fundRaiseProposalInfo.timesInfo.fundRaiseEndTime}
+    //     ${fundRaiseProposalInfo.timesInfo.refundDuration}
+    //     refundEndTime ${refundEndTime}
+    //     blocktimestamp ${blocktimestamp}
+    //     `)
+
+    //     tx = await this.vintageDaoSetAdapterContract.submitInvestorCapProposal(this.daoAddr1, enable, cap);
+    //     console.log(`
+    //     dao set proposal created...
+    //     `);
+    //     rel = await tx.wait();
+    //     proposalId = rel.events[rel.events.length - 1].args.proposalId;
+
+    //     ProposalInfo = await this.vintageDaoSetAdapterContract.investorCapProposals(this.daoAddr1, proposalId);
+    //     stopVoteTime = ProposalInfo.stopVoteTime;
+    //     blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+    //     if (parseInt(stopVoteTime) > blocktimestamp) {
+    //         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1])
+    //         await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+    //     }
+
+    //     await this.vintageDaoSetAdapterContract.processInvestorCapProposal(this.daoAddr1, proposalId);
+
+    // });
 
     it("create daoset governor membership proposal...", async () => {
         const enable = true;
@@ -770,94 +770,94 @@ describe("daoset proposal...", () => {
 
     });
 
-    it("create daoset investor membership proposal...", async () => {
-        const name = 'investormembership002';
-        const enable = true;
-        const varifyType = 1; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
-        const minAmount = 2;
-        const tokenAddress = this.testtoken1.address;
-        const tokenId = 1;
-        const whitelist = [
-            this.user1.address,
-            this.user2.address
-        ];
+    // it("create daoset investor membership proposal...", async () => {
+    //     const name = 'investormembership002';
+    //     const enable = true;
+    //     const varifyType = 1; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
+    //     const minAmount = 2;
+    //     const tokenAddress = this.testtoken1.address;
+    //     const tokenId = 1;
+    //     const whitelist = [
+    //         this.user1.address,
+    //         this.user2.address
+    //     ];
 
-        const params = [
-            this.daoAddr1,
-            name,
-            enable,
-            varifyType,
-            minAmount,
-            tokenAddress,
-            tokenId,
-            whitelist
-        ];
+    //     const params = [
+    //         this.daoAddr1,
+    //         name,
+    //         enable,
+    //         varifyType,
+    //         minAmount,
+    //         tokenAddress,
+    //         tokenId,
+    //         whitelist
+    //     ];
 
-        const tx = await this.vintageDaoSetAdapterContract.submitInvestorMembershipProposal(
-            params
-        );
+    //     const tx = await this.vintageDaoSetAdapterContract.submitInvestorMembershipProposal(
+    //         params
+    //     );
 
-        await expectRevert(this.vintageDaoSetAdapterContract.submitInvestorMembershipProposal(
-            params
-        ), "revert");
+    //     await expectRevert(this.vintageDaoSetAdapterContract.submitInvestorMembershipProposal(
+    //         params
+    //     ), "revert");
 
-        const rel = await tx.wait();
+    //     const rel = await tx.wait();
 
-        const proposalId = rel.events[rel.events.length - 1].args.proposalId
-        const proposal = await this.vintageDaoSetAdapterContract.investorMembershipProposals(
-            this.daoAddr1,
-            proposalId);
+    //     const proposalId = rel.events[rel.events.length - 1].args.proposalId
+    //     const proposal = await this.vintageDaoSetAdapterContract.investorMembershipProposals(
+    //         this.daoAddr1,
+    //         proposalId);
 
-        const current_VINTAGE_INVESTOR_MEMBERSHIP_NAME = await await this.dao1Contract.getStringConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_NAME"));
+    //     const current_VINTAGE_INVESTOR_MEMBERSHIP_NAME = await await this.dao1Contract.getStringConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_NAME"));
 
-        console.log(proposal);
-        console.log(`
-        proposalId ${proposal.proposalId}
-        current_VINTAGE_INVESTOR_MEMBERSHIP_NAME ${current_VINTAGE_INVESTOR_MEMBERSHIP_NAME}
-        `);
+    //     console.log(proposal);
+    //     console.log(`
+    //     proposalId ${proposal.proposalId}
+    //     current_VINTAGE_INVESTOR_MEMBERSHIP_NAME ${current_VINTAGE_INVESTOR_MEMBERSHIP_NAME}
+    //     `);
 
-        console.log("voting...");
-        await this.vintageVotingAdapterContract.connect(this.genesis_raiser1).submitVote(this.daoAddr1, proposalId, 1);
-        await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr1, proposalId, 1);
-        await this.vintageVotingAdapterContract.submitVote(this.daoAddr1, proposalId, 1);
+    //     console.log("voting...");
+    //     await this.vintageVotingAdapterContract.connect(this.genesis_raiser1).submitVote(this.daoAddr1, proposalId, 1);
+    //     await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr1, proposalId, 1);
+    //     await this.vintageVotingAdapterContract.submitVote(this.daoAddr1, proposalId, 1);
 
-        let ProposalInfo = await this.vintageDaoSetAdapterContract.investorMembershipProposals(this.daoAddr1, proposalId);
-        let stopVoteTime = ProposalInfo.stopVoteTime;
-        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+    //     let ProposalInfo = await this.vintageDaoSetAdapterContract.investorMembershipProposals(this.daoAddr1, proposalId);
+    //     let stopVoteTime = ProposalInfo.stopVoteTime;
+    //     let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
-        if (parseInt(stopVoteTime) > blocktimestamp) {
-            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1])
-            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
-        }
-        let voteRel = await this.vintageVotingAdapterContract.voteResult(this.daoAddr1, proposalId);
-        console.log(`
-        voted. processing...
-        state ${voteRel.state}  nbYes ${voteRel.nbYes}  nbNo ${voteRel.nbNo}
-        process proposal...
-        `);
-        await this.vintageDaoSetAdapterContract.processInvestorMembershipProposal(this.daoAddr1, proposalId);
-        ProposalInfo = await this.vintageDaoSetAdapterContract.investorMembershipProposals(this.daoAddr1, proposalId);
-        const crmenable = await this.dao1Contract.getConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_ENABLE"));
-        const cvrmtype = await this.dao1Contract.getConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_TYPE"));
-        const cvrmamount = await this.dao1Contract.getConfiguration(sha3("VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING"));
-        const cvrmtokenaddr = await this.dao1Contract.getAddressConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS"));
-        const cvrmtokenid = await this.dao1Contract.getConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_TOKENID"));
-        const VINTAGE_INVESTOR_MEMBERSHIP_NAME = await await this.dao1Contract.getStringConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_NAME"));
-        expect(cvrmtype == varifyType, true);
-        expect(minAmount == cvrmamount, true);
-        expect(tokenAddress == cvrmtokenaddr, true);
-        expect(tokenId == cvrmtokenid, true);
-        console.log(`
-        processed...
-        proposal state ${ProposalInfo.state}
-        crmenable ${crmenable}
-        cvrmtype ${cvrmtype}
-        cvrmamount ${hre.ethers.utils.formatEther(cvrmamount)}
-        cvrmtokenid ${cvrmtokenid}
-        cvrmtokenaddr ${cvrmtokenaddr}
-        VINTAGE_INVESTOR_MEMBERSHIP_NAME ${VINTAGE_INVESTOR_MEMBERSHIP_NAME}
-        `);
-    });
+    //     if (parseInt(stopVoteTime) > blocktimestamp) {
+    //         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1])
+    //         await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+    //     }
+    //     let voteRel = await this.vintageVotingAdapterContract.voteResult(this.daoAddr1, proposalId);
+    //     console.log(`
+    //     voted. processing...
+    //     state ${voteRel.state}  nbYes ${voteRel.nbYes}  nbNo ${voteRel.nbNo}
+    //     process proposal...
+    //     `);
+    //     await this.vintageDaoSetAdapterContract.processInvestorMembershipProposal(this.daoAddr1, proposalId);
+    //     ProposalInfo = await this.vintageDaoSetAdapterContract.investorMembershipProposals(this.daoAddr1, proposalId);
+    //     const crmenable = await this.dao1Contract.getConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_ENABLE"));
+    //     const cvrmtype = await this.dao1Contract.getConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_TYPE"));
+    //     const cvrmamount = await this.dao1Contract.getConfiguration(sha3("VINTAGE_RAISER_MEMBERSHIP_MIN_HOLDING"));
+    //     const cvrmtokenaddr = await this.dao1Contract.getAddressConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS"));
+    //     const cvrmtokenid = await this.dao1Contract.getConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_TOKENID"));
+    //     const VINTAGE_INVESTOR_MEMBERSHIP_NAME = await await this.dao1Contract.getStringConfiguration(sha3("VINTAGE_INVESTOR_MEMBERSHIP_NAME"));
+    //     expect(cvrmtype == varifyType, true);
+    //     expect(minAmount == cvrmamount, true);
+    //     expect(tokenAddress == cvrmtokenaddr, true);
+    //     expect(tokenId == cvrmtokenid, true);
+    //     console.log(`
+    //     processed...
+    //     proposal state ${ProposalInfo.state}
+    //     crmenable ${crmenable}
+    //     cvrmtype ${cvrmtype}
+    //     cvrmamount ${hre.ethers.utils.formatEther(cvrmamount)}
+    //     cvrmtokenid ${cvrmtokenid}
+    //     cvrmtokenaddr ${cvrmtokenaddr}
+    //     VINTAGE_INVESTOR_MEMBERSHIP_NAME ${VINTAGE_INVESTOR_MEMBERSHIP_NAME}
+    //     `);
+    // });
 
     it("create daoset voting proposal...", async () => {
         const eligibilityType = 1; //0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
@@ -975,14 +975,14 @@ describe("daoset proposal...", () => {
 
     it("cant submit new daoset proposal untill all daoset proposal done...", async () => {
 
-        const daosetPcProposalId = await submitInvestorCapProposal();
-
-        await expectRevert(submitGovernorMembershipProposal(), "revert");
-        await expectRevert(submitInvestorMembershipProposal(), "revert");
+        const daosetPcProposalId = await submitGovernorMembershipProposal();
+        console.log(daosetPcProposalId)
+        // await expectRevert(submitGovernorMembershipProposal(), "revert");
+        // await expectRevert(submitInvestorMembershipProposal(), "revert");
         await expectRevert(submitVotingProposal(), "revert");
 
 
-        const ProposalInfo = await this.vintageDaoSetAdapterContract.investorCapProposals(
+        const ProposalInfo = await this.vintageDaoSetAdapterContract.governorMembershipProposals(
             this.daoAddr1,
             daosetPcProposalId);
 
@@ -995,14 +995,14 @@ describe("daoset proposal...", () => {
             await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
         }
 
-        await this.vintageDaoSetAdapterContract.processInvestorCapProposal(this.daoAddr1, daosetPcProposalId);
+        await this.vintageDaoSetAdapterContract.processGovernorMembershipProposal(this.daoAddr1, daosetPcProposalId);
     });
     it("cant submit new daoset proposal during operation proposal process...", async () => {
         await submitFundRaiseProposal();
 
-        await expectRevert(submitInvestorCapProposal(), "revert");
+        // await expectRevert(submitInvestorCapProposal(), "revert");
         await expectRevert(submitGovernorMembershipProposal(), "revert");
-        await expectRevert(submitInvestorMembershipProposal(), "revert");
+        // await expectRevert(submitInvestorMembershipProposal(), "revert");
         await expectRevert(submitVotingProposal(), "revert");
     });
 
@@ -1042,6 +1042,11 @@ describe("daoset proposal...", () => {
         const tx = await this.vintageDaoSetAdapterContract.submitGovernorMembershipProposal(
             params
         );
+        let rel = await tx.wait();
+
+        let proposalId = rel.events[rel.events.length - 1].args.proposalId
+
+        return proposalId;
     }
 
     const submitInvestorMembershipProposal = async () => {
@@ -1070,6 +1075,11 @@ describe("daoset proposal...", () => {
         const tx = await this.vintageDaoSetAdapterContract.submitInvestorMembershipProposal(
             params
         );
+        let rel = await tx.wait();
+
+        let proposalId = rel.events[rel.events.length - 1].args.proposalId
+
+        return proposalId;
     }
 
     const submitVotingProposal = async () => {
@@ -1104,6 +1114,12 @@ describe("daoset proposal...", () => {
             this.daoAddr1,
             votingParams
         );
+
+        let rel = await tx.wait();
+
+        let proposalId = rel.events[rel.events.length - 1].args.proposalId
+
+        return proposalId;
     }
 
     const submitFundRaiseProposal = async () => {
