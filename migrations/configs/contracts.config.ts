@@ -800,6 +800,22 @@ export const contracts: Array<ContractConfig> = [
     },
   },
   {
+    id: adaptersIdsMap.VINTAGE_FUND_RAISE_HELPER,
+    name: "VintageFundRaiseHelperAdapterContract",
+    alias: "vintageFundRaiseHelperAdapter",
+    path: "../../contracts/adapters/VintageFundRaiseHelperAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+        daoAccessFlagsMap.SET_CONFIGURATION,
+      ],
+      extensions: {
+      },
+    },
+  },
+  {
     id: adaptersIdsMap.VINTAGE_VESTING_ADAPTER,
     name: "VintageVesting",
     alias: "vintageVesting",

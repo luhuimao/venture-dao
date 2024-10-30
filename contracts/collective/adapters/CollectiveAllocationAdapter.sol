@@ -115,7 +115,7 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
             )) / 1e18;
         uint256 proposerBonus = getProposerBonus(
             dao,
-            proposer,
+            // proposer,
             escrowInfo.paybackAmount
         );
         if (
@@ -137,7 +137,7 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
 
     function getProposerBonus(
         DaoRegistry dao,
-        address proposerAddr,
+        // address proposerAddr,
         uint256 tokenAmount
     ) public view returns (uint256) {
         // if (!dao.isMember(proposerAddr)) {
@@ -225,7 +225,7 @@ contract CollectiveAllocationAdapterContract is AdapterGuard {
             1e18;
         vars.proposerBonus = getProposerBonus(
             dao,
-            proposerAddr,
+            // proposerAddr,
             vars.tokenAmount
         );
 

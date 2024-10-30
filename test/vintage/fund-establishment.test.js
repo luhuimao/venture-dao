@@ -160,6 +160,7 @@ describe("fund establishment...", () => {
 
         this.vintageRaiserManagementContract = adapters.vintageRaiserManagementContract.instance;
         this.vintageFundRaiseAdapterContract = adapters.vintageFundRaiseAdapter.instance;
+        this.vintageFundRaiseHelperAdapterContract = adapters.vintageFundRaiseHelperAdapter.instance;
         this.vintageFundingPoolAdapterContract = adapters.vintageFundingPoolAdapterContract.instance;
         this.vintageVotingAdapterContract = adapters.vintageVotingContract.instance;
         this.vintageFundingAdapterContract = adapters.vintageFundingAdapterContract.instance;
@@ -236,6 +237,11 @@ describe("fund establishment...", () => {
                 id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
+            },
+            {
+                id: '0x5443327e16211d6f6930defab8b33523e6990ea67a94b67a6f23dee03dbeb88d', //vintageFundRaiseHelperAdapterContract
+                addr: this.vintageFundRaiseHelperAdapterContract.address,
+                flags: 8
             },
             {
                 id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract
@@ -431,7 +437,7 @@ describe("fund establishment...", () => {
             riceRewardReceiver
         ];
 
-        console.log(vintageDaoParams1);
+        // console.log(vintageDaoParams1);
 
         let obj = await sommonVintageDao(this.summonDao, this.daoFactory, vintageDaoParams1);
         // console.log(obj);
@@ -565,6 +571,24 @@ describe("fund establishment...", () => {
             priorityDepositeWhitelist
         ];
 
+        const vintageDaoParticipantCapInfo = [
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
+        ];
+        // const ERC721 = await hre.ethers.getContractFactory("PixelNFT");
+        // const erc721 = await ERC721.deploy(4);
+        // await erc721.deployed();
+        // this.testERC721 = erc721;
+        let vintageDaoInvestorEligibility = [
+            1, // bool enable;
+            "vintageDaoInvestorMembershipName",
+            0, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
+            hre.ethers.utils.parseEther("100"), // uint256 minHolding;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
+            [ZERO_ADDRESS] // address[] whiteList;
+        ];
+
         let fundRaiseParams = [
             this.daoAddr1,
             proposalFundRaiseInfo,
@@ -572,10 +596,12 @@ describe("fund establishment...", () => {
             proposalFeeInfo,
             proposalAddressInfo,
             proposerReward,
-            proposalPriorityDepositInfo
+            proposalPriorityDepositInfo,
+            vintageDaoParticipantCapInfo,
+            vintageDaoInvestorEligibility
         ];
 
-        const newFundProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, this.owner, fundRaiseParams);
+        let newFundProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, this.owner, fundRaiseParams);
 
 
         await this.vintageVotingAdapterContract.connect(this.genesis_raiser1).submitVote(this.daoAddr1, newFundProposalId, 1);
@@ -604,6 +630,7 @@ describe("fund establishment...", () => {
         console.log(`
         executed...
         fund raise state ${fundRaiseProposalInfo.state}
+
         fund State ${fundState}
         `);
 
@@ -623,10 +650,28 @@ describe("fund establishment...", () => {
         await this.vintageFundingPoolAdapterContract.processFundRaise(this.daoAddr1);
         fundState = await vintageFundingPoolAdapterContract.daoFundRaisingStates(this.daoAddr1);
         fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, newFundProposalId);
+        const MAX_INVESTORS_ENABLE = await this.daoContract.getConfiguration("0x69f4ffb3ebcb7809550bddd3e4d449a47e737bf6635bc7a730996643997b0e48");
+        const MAX_INVESTORS = await this.daoContract.getConfiguration("0xecbde689cc6337d29a750b8b8a8abbfa97427b4ac800ab55be2f2c87311510f2");
+        const VINTAGE_INVESTOR_MEMBERSHIP_ENABLE = await this.daoContract.getConfiguration("0x1405d0156cf64c805704fdf6691baebfcfa0d409ea827c231693ff0581b0b777");
+        const VINTAGE_INVESTOR_MEMBERSHIP_NAME = await this.daoContract.getStringConfiguration("0x324dfda0ffcc38c4650b5df076e6f7b4938c2b723873af58b1be5e221dd2cc30");
+        const VINTAGE_INVESTOR_MEMBERSHIP_TYPE = await this.daoContract.getConfiguration("0x80140cd7e0b1d935bee578a67a41547c82987de8e7d6b3827d411b738110258b");
+        const VINTAGE_INVESTOR_MEMBERSHIP_MIN_HOLDING = await this.daoContract.getConfiguration("0x04ecaf460eb9f82aeb70035e3f24c18a3650fa0da9ddbe7e63d70de659b9b901");
+        const VINTAGE_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS = await this.daoContract.getAddressConfiguration("0xe373ab56628c86db3f0e36774c2c5e0393f9272ff5c976bc3f0db2db60cdbc14");
+        const VINTAGE_INVESTOR_MEMBERSHIP_TOKENID = await this.daoContract.getConfiguration("0x6cb5bc3796b0717ca4ff665886c96fb0178d6341366eb7b6c737fe79083b836a");
 
         console.log(`
         executed...
         fund raise state ${fundRaiseProposalInfo.state}
+
+        MAX_INVESTORS_ENABLE               ${MAX_INVESTORS_ENABLE}
+        MAX_INVESTORS                      ${MAX_INVESTORS}
+        VINTAGE_INVESTOR_MEMBERSHIP_ENABLE ${VINTAGE_INVESTOR_MEMBERSHIP_ENABLE}
+        VINTAGE_INVESTOR_MEMBERSHIP_NAME   ${VINTAGE_INVESTOR_MEMBERSHIP_NAME}
+        VINTAGE_INVESTOR_MEMBERSHIP_TYPE   ${VINTAGE_INVESTOR_MEMBERSHIP_TYPE}
+        VINTAGE_INVESTOR_MEMBERSHIP_MIN_HOLDING  ${VINTAGE_INVESTOR_MEMBERSHIP_MIN_HOLDING}
+        VINTAGE_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS ${VINTAGE_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS}
+        VINTAGE_INVESTOR_MEMBERSHIP_TOKENID ${VINTAGE_INVESTOR_MEMBERSHIP_TOKENID}
+
         fund State ${fundState}
         `);
 
@@ -766,6 +811,18 @@ describe("fund establishment...", () => {
             returnPeriod
         ];
 
+        vintageDaoInvestorEligibility = [
+            1, // bool enable;
+            "vintageDaoInvestorMembershipName",
+            3, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
+            hre.ethers.utils.parseEther("100"), // uint256 minHolding;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
+            [this.investor1.address,
+            this.investor2.address,
+            ] // address[] whiteList;
+        ];
+
         fundRaiseParams = [
             this.daoAddr1,
             proposalFundRaiseInfo,
@@ -773,7 +830,9 @@ describe("fund establishment...", () => {
             proposalFeeInfo,
             proposalAddressInfo,
             proposerReward,
-            proposalPriorityDepositInfo
+            proposalPriorityDepositInfo,
+            vintageDaoParticipantCapInfo,
+            vintageDaoInvestorEligibility
         ];
         await vintageFundingAdapterContract.processProposal(this.daoAddr1, proposalId);
         fundingProposalInfo = await vintageFundingAdapterContract.proposals(this.daoAddr1, proposalId);
@@ -781,7 +840,40 @@ describe("fund establishment...", () => {
         investment proposal status ${fundingProposalInfo.status}
         crate new fund proposal...
         `);
-        await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, this.owner, fundRaiseParams);
+        newFundProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, this.owner, fundRaiseParams);
+        fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, newFundProposalId);
+        // console.log(fundRaiseProposalInfo);
+
+        await this.vintageVotingAdapterContract.connect(this.genesis_raiser1).submitVote(this.daoAddr1, newFundProposalId, 1);
+        await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr1, newFundProposalId, 1);
+        await this.vintageVotingAdapterContract.submitVote(this.daoAddr1, newFundProposalId, 1);
+
+        stopVoteTime = fundRaiseProposalInfo.stopVoteTime;
+
+        if (parseInt(stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1])
+            await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
+        }
+        voteRel = await this.vintageVotingAdapterContract.voteResult(this.daoAddr1, newFundProposalId);
+        console.log(`
+        voted. processing...
+        vote result ${voteRel.state}  nbYes ${voteRel.nbYes}  nbNo ${voteRel.nbNo}
+        process new fund proposal...
+        `);
+        let investorWl = await this.vintageFundingPoolAdapterContract.getInvestorMembershipWhiteList(this.daoAddr1)
+        console.log(`
+            investorWl    ${investorWl}
+        `)
+        await this.vintageFundRaiseAdapterContract.processProposal(this.daoAddr1, newFundProposalId);
+        fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, newFundProposalId);
+        console.log(fundRaiseProposalInfo.investorEligibility.whiteList);
+        investorWl = await this.vintageFundingPoolAdapterContract.getInvestorMembershipWhiteList(this.daoAddr1)
+        console.log(`
+            executed...
+            fund raise state ${fundRaiseProposalInfo.state}
+            investorWl    ${investorWl}
+            fund State ${fundState}
+            `);
 
     });
 
@@ -869,6 +961,24 @@ describe("fund establishment...", () => {
             priorityDepositeWhitelist
         ];
 
+        const vintageDaoParticipantCapInfo = [
+            true, //bool enable;
+            5 //uint256 maxParticipantsAmount;
+        ];
+        // const ERC721 = await hre.ethers.getContractFactory("PixelNFT");
+        // const erc721 = await ERC721.deploy(4);
+        // await erc721.deployed();
+        // this.testERC721 = erc721;
+        const vintageDaoInvestorEligibility = [
+            1, // bool enable;
+            "vintageDaoInvestorMembershipName",
+            0, // uint256 varifyType; //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
+            hre.ethers.utils.parseEther("100"), // uint256 minHolding;
+            this.testtoken1.address, // address tokenAddress;
+            0, // uint256 tokenId;
+            [ZERO_ADDRESS] // address[] whiteList;
+        ];
+
         let fundRaiseParams = [
             this.daoAddr2,
             proposalFundRaiseInfo,
@@ -876,7 +986,9 @@ describe("fund establishment...", () => {
             proposalFeeInfo,
             proposalAddressInfo,
             proposerReward,
-            proposalPriorityDepositInfo
+            proposalPriorityDepositInfo,
+            vintageDaoParticipantCapInfo,
+            vintageDaoInvestorEligibility
         ];
 
         const newFundProposalId = await createFundRaiseProposal(this.vintageFundRaiseAdapterContract, this.owner, fundRaiseParams);

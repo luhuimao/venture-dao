@@ -53,11 +53,11 @@ async function main() {
     // await submitFlexDaosetVotingProposal("0xc6390890243296e83000822ffc77e2375af9b9c1");
     // await flexDaosetProposal("0xe2b5a93863310d61be803f36cc02006c932c4f9c", "0xcc02006c932c4f9c566f74696e67202331000000000000000000000000000000");
     // await collectiveClearFundProposal("0xc2e10c4a27cb9d3abf1416c9b6eef61becc32516");
-    // await getCollectiveAdapterAddress("0x040bc4cb2f5e05061aa951eae31df5adfae95e81");
+    // await getCollectiveAdapterAddress("0xdbaec61afe929a419cfcd6f0adf0a3db47606ca1");
     // await collectiveRedemptionFee("0x72a789cc0c1a438d6c3bd165832057bd3428ba39");
     // await collectiveEscrowFund("0xb4df914f21757dd024f5a7182af78a6640e86dea");
     // await collectiveOperationProposals("0x97d555cac557c5c0395f858fa1544253edea1bd8");
-    // await collectiveFundRaise("0x9c4d73ade40fea8590ab1d59e4fdcfed43f13749");
+    // await collectiveFundRaise("0x8912ae0abdb6ac0198341678d56dff2b3b2df4b2");
     // await collectiveExpenseProposal("0x82a5ee461cec0f6284e424db56bde6d980251088",
     //     "0x56bde6d980251088457870656e73652331000000000000000000000000000000");
     // await getCollectiveInvestmentProposalInfo(
@@ -2779,6 +2779,11 @@ const deploy = async () => {
     // await vintageFundRaiseAdapterContract.deployed();
     // console.log("vintageFundRaiseAdapterContract deployed address:", vintageFundRaiseAdapterContract.address);
 
+    // const VintageFundRaiseHelperAdapterContract = await hre.ethers.getContractFactory("VintageFundRaiseHelperAdapterContract");
+    // const vintageFundRaiseHelperAdapterContract = await VintageFundRaiseHelperAdapterContract.deploy();
+    // await vintageFundRaiseHelperAdapterContract.deployed();
+    // console.log("vintageFundRaiseHelperAdapterContract deployed address:", vintageFundRaiseHelperAdapterContract.address);
+
     // const VintageVotingContract = await hre.ethers.getContractFactory("VintageVotingContract");
     // const vintageVotingContract = await VintageVotingContract.deploy();
     // await vintageVotingContract.deployed();
@@ -2894,10 +2899,10 @@ const deploy = async () => {
     // await vintageFreeInEscrowFundAdapterContract.deployed();
     // console.log("vintageFreeInEscrowFundAdapterContract deployed address:", vintageFreeInEscrowFundAdapterContract.address);
 
-    // const VintageDaoSetAdapterContract = await hre.ethers.getContractFactory("VintageDaoSetAdapterContract");
-    // const vintageDaoSetAdapterContract = await VintageDaoSetAdapterContract.deploy();
-    // await vintageDaoSetAdapterContract.deployed();
-    // console.log("vintageDaoSetAdapterContract deployed address:", vintageDaoSetAdapterContract.address);
+    const VintageDaoSetAdapterContract = await hre.ethers.getContractFactory("VintageDaoSetAdapterContract");
+    const vintageDaoSetAdapterContract = await VintageDaoSetAdapterContract.deploy();
+    await vintageDaoSetAdapterContract.deployed();
+    console.log("vintageDaoSetAdapterContract deployed address:", vintageDaoSetAdapterContract.address);
 
     // const VintageDaoSetHelperAdapterContract = await hre.ethers.getContractFactory("VintageDaoSetHelperAdapterContract");
     // const vintageDaoSetHelperAdapterContract = await VintageDaoSetHelperAdapterContract.deploy();
@@ -2934,15 +2939,15 @@ const deploy = async () => {
     // await collectiveVotingContract.deployed();
     // console.log("collectiveVotingContract deployed address:", collectiveVotingContract.address);
 
-    const ColletiveFundingPoolAdapterContract = await hre.ethers.getContractFactory("ColletiveFundingPoolAdapterContract");
-    const colletiveFundingPoolContract = await ColletiveFundingPoolAdapterContract.deploy();
-    await colletiveFundingPoolContract.deployed();
-    console.log("colletiveFundingPoolContract deployed address:", colletiveFundingPoolContract.address);
+    // const ColletiveFundingPoolAdapterContract = await hre.ethers.getContractFactory("ColletiveFundingPoolAdapterContract");
+    // const colletiveFundingPoolContract = await ColletiveFundingPoolAdapterContract.deploy();
+    // await colletiveFundingPoolContract.deployed();
+    // console.log("colletiveFundingPoolContract deployed address:", colletiveFundingPoolContract.address);
 
-    const ColletiveFundRaiseProposalAdapterContract = await hre.ethers.getContractFactory("ColletiveFundRaiseProposalAdapterContract");
-    const colletiveFundRaiseProposalContract = await ColletiveFundRaiseProposalAdapterContract.deploy();
-    await colletiveFundRaiseProposalContract.deployed();
-    console.log("colletiveFundRaiseProposalContract deployed address:", colletiveFundRaiseProposalContract.address);
+    // const ColletiveFundRaiseProposalAdapterContract = await hre.ethers.getContractFactory("ColletiveFundRaiseProposalAdapterContract");
+    // const colletiveFundRaiseProposalContract = await ColletiveFundRaiseProposalAdapterContract.deploy();
+    // await colletiveFundRaiseProposalContract.deployed();
+    // console.log("colletiveFundRaiseProposalContract deployed address:", colletiveFundRaiseProposalContract.address);
 
     // const BentoBoxV1 = await hre.ethers.getContractFactory("BentoBoxV1");
     // const bentoBoxV1 = await BentoBoxV1.deploy();
@@ -2951,7 +2956,7 @@ const deploy = async () => {
 
     // const CollectivePaybackTokenAdapterContract = await hre.ethers.getContractFactory("CollectivePaybackTokenAdapterContract");
     // const collectivePaybackTokenAdapterContract = await CollectivePaybackTokenAdapterContract.deploy();
-    // await collectivePaybackTokenAdapterContract.deployed();
+    // await collectivePa˚ybackTokenAdapterContract.deployed();
     // console.log("collectivePaybackTokenAdapterContract deployed address:", collectivePaybackTokenAdapterContract.address);
 
     // const CollectiveAllocationAdapterContract = await hre.ethers.getContractFactory("CollectiveAllocationAdapterContract");
@@ -3041,7 +3046,7 @@ const deploy = async () => {
     // const manualVestingERC721 = await ManualVestingERC721.deploy(
     //     "DAOSquare Vesting Manual",
     //     "DVM",
-    //     "0x5496EF3aE960faAe6d74d7B5dE13a9B7FCd1D092",
+    //     "0x5Ec3A0aB6286F2199352AA2dbdB8474faE34EFfA",
     //     manualVestingERC721TokenUriHelper.address,
     //     manualVestingERC721SVGHelper.address
     // );
@@ -4176,6 +4181,9 @@ const collectiveFundRaise = async (daoAddr) => {
     const fundRaiseContract = (await hre.ethers.getContractFactory("ColletiveFundRaiseProposalAdapterContract"))
         .attach(colletiveFundRaiseProposalContractAddr);
 
+    const fundRaiseProposalInfo = await fundRaiseContract.proposals(daoAddr, "0xd56dff2b3b2df4b246756e6445737461626c6973686d656e7423310000000000")
+
+    
     const fundRaiseProposalId = fundRaiseContract.lastProposalIds(
         daoAddr
     );
@@ -4184,6 +4192,7 @@ const collectiveFundRaise = async (daoAddr) => {
         `poolBal   ${hre.ethers.utils.formatEther(poolBal)}
         fundState  ${fundState}
         fundRaisedByProposalId  ${fundRaisedByProposalId}
+        fund raise state ${fundRaiseProposalInfo.state}
         `
     );
 
@@ -4745,7 +4754,10 @@ const getInvestmentEscrowNFTSvg = async () => {
 
 const crateBatchVesting = async () => {
     const manualVestingContr = (await hre.ethers.getContractFactory("ManualVesting"))
-        .attach("0x5496EF3aE960faAe6d74d7B5dE13a9B7FCd1D092");
+        .attach("0x5Ec3A0aB6286F2199352AA2dbdB8474faE34EFfA");
+
+    const currentID = await manualVestingContr.vestIds();
+    console.log(currentID);
 
     const apprAddr = "0x78CfFd8A45bc890a14f8F29029F87dBeE3577fA0"
 
@@ -4767,7 +4779,7 @@ const crateBatchVesting = async () => {
     const vdepositAmount = hre.ethers.utils.parseEther("0");
     const vcliffVestingAmount = hre.ethers.utils.parseEther("0.032");
     const vnftEnable = true;
-    const verc721 = "0x097311e1a4FCf0DEB1266d3445D44D297f7929fE";
+    const verc721 = "0x0Eac1c6eF15B5e44920945CF3787855Ce7a52bc5";
     const vname = "vesting nft disable";
     const vdes = "99932fd";
 
@@ -4791,7 +4803,9 @@ const crateBatchVesting = async () => {
         [
             "0xDF9DFA21F47659cf742FE61030aCb0F15f659707",
             "0x06bc456535ec14669c1b116d339226faba08b429",
-            "0xef72177cb6ce54f17a75c174c7032bf7703689b4"],
+            "0xef72177cb6ce54f17a75c174c7032bf7703689b4"
+        ]
+        ,
         [
             hre.ethers.utils.parseEther("30"),
             hre.ethers.utils.parseEther("50"),

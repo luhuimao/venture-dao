@@ -83,6 +83,8 @@ interface IVintageFundRaise {
         ProposalState state;
         uint256 creationTime;
         uint256 stopVoteTime;
+        VintageInvestorCapInfo investorCap;
+        VintageInvestorEligibility investorEligibility;
     }
 
     struct SubmitProposalLocalVars {
@@ -111,6 +113,21 @@ interface IVintageFundRaise {
         VintageFundingAdapterContract investmentContract;
     }
 
+    struct VintageInvestorCapInfo {
+        bool enable;
+        uint256 cap;
+    }
+
+    struct VintageInvestorEligibility {
+        bool enable;
+        string name;
+        uint8 varifyType;
+        uint256 minAmount;
+        address tokenAddress;
+        uint256 tokenId;
+        address[] whiteList;
+    }
+
     struct ProposalParams {
         DaoRegistry dao;
         ProposalFundRaiseInfo proposalFundRaiseInfo;
@@ -119,6 +136,8 @@ interface IVintageFundRaise {
         ProposalAddressInfo proposalAddressInfo;
         ProoserReward proposerReward;
         ProposalPriorityDepositInfo priorityDeposite;
+        VintageInvestorCapInfo investorCap;
+        VintageInvestorEligibility investorEligibility;
     }
 
     struct ProposalPriorityDepositInfo {
@@ -162,21 +181,7 @@ interface IVintageFundRaise {
     /*
      * EVENTS
      */
-    event ProposalCreated(
-        address daoAddr,
-        bytes32 proposalId
-        // address acceptTokenAddr,
-        // uint256 fundRaiseTarget,
-        // uint256 fundRaiseMaxAmount,
-        // uint256 lpMinDepositAmount,
-        // uint256 lpMaxDepositAmount,
-        // uint256 fundRaiseStartTime,
-        // uint256 fundRaiseEndTime,
-        // uint256 fundEndTime,
-        // uint256 redemptPeriod,
-        // uint256 redemptDuration,
-        // ProposalState state
-    );
+    event ProposalCreated(address daoAddr, bytes32 proposalId);
     event proposalExecuted(
         address daoAddr,
         bytes32 proposalId,
@@ -205,14 +210,7 @@ interface IVintageFundRaise {
     _addressArgs[0]:managementFeeAddress
     _addressArgs[1]:fundRaiseTokenAddress
     */
-    function submitProposal(
-        // DaoRegistry dao,
-        // uint256[] calldata _uint256ArgsProposal,
-        // uint256[] calldata _uint256ArgsTimeInfo,
-        // uint256[] calldata _uint256ArgsFeeInfo,
-        // address[] calldata _addressArgs
-        ProposalParams calldata params
-    ) external;
+    function submitProposal(ProposalParams calldata params) external;
 
     function processProposal(DaoRegistry dao, bytes32 proposalId) external;
 

@@ -41,6 +41,7 @@ export const adaptersIdsMap: Record<string, string> = {
   VINTAGE_FUNDING_POOL_ADAPTER_HELPER: "vintage-funding-pool-adatper-helper",
   VINTAGE_VOTING: "vintage-voting",
   VINTAGE_FUND_RAISE: "vintage-fund-raise",
+  VINTAGE_FUND_RAISE_HELPER: "vintage-fund-raise-helper",
   VINTAGE_RAISER_MANAGEMENT: "vintage-raiser-management",
   VINTAGE_FUNDING_ADAPTER: "vintage-funding-adapter",
   VINTAGE_ALLOCATION_ADAPTER: "vintage-allocation-adapter",

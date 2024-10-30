@@ -152,6 +152,7 @@ describe("daoset proposal...", () => {
 
         this.vintageRaiserManagementContract = adapters.vintageRaiserManagementContract.instance;
         this.vintageFundRaiseAdapterContract = adapters.vintageFundRaiseAdapter.instance;
+        this.vintageFundRaiseHelperAdapterContract = adapters.vintageFundRaiseHelperAdapter.instance;
         this.vintageFundingPoolAdapterContract = adapters.vintageFundingPoolAdapterContract.instance;
         this.vintageVotingAdapterContract = adapters.vintageVotingContract.instance;
         this.vintageFundingAdapterContract = adapters.vintageFundingAdapterContract.instance;
@@ -228,6 +229,11 @@ describe("daoset proposal...", () => {
                 id: '0xa837e34a29b67bf52f684a1c93def79b84b9c012732becee4e5df62809df64ed', //fund raise
                 addr: this.vintageFundRaiseAdapterContract.address,
                 flags: 1034
+            },
+            {
+                id: '0x5443327e16211d6f6930defab8b33523e6990ea67a94b67a6f23dee03dbeb88d', //vintageFundRaiseHelperAdapterContract
+                addr: this.vintageFundRaiseHelperAdapterContract.address,
+                flags: 8
             },
             {
                 id: '0xaaff643bdbd909f604d46ce015336f7e20fee3ac4a55cef3610188dee176c892', //FundingPoolAdapterContract

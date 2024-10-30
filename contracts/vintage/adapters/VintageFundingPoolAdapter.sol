@@ -155,7 +155,7 @@ contract VintageFundingPoolAdapterContract is
     ) external {
         if (
             msg.sender !=
-            dao.getAdapterAddress(DaoHelper.VINTAGE_DAO_SET_HELPER_ADAPTER) &&
+            dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_HELPER_ADAPTER) &&
             !DaoHelper.isInCreationModeAndHasAccess(dao)
         ) revert ACCESS_DENIED();
         if (!investorMembershipWhiteList[address(dao)].contains(account)) {
