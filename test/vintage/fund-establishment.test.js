@@ -575,10 +575,7 @@ describe("fund establishment...", () => {
             true, //bool enable;
             5 //uint256 maxParticipantsAmount;
         ];
-        // const ERC721 = await hre.ethers.getContractFactory("PixelNFT");
-        // const erc721 = await ERC721.deploy(4);
-        // await erc721.deployed();
-        // this.testERC721 = erc721;
+      
         let vintageDaoInvestorEligibility = [
             1, // bool enable;
             "vintageDaoInvestorMembershipName",

@@ -33,10 +33,15 @@ contract CollectiveVestingAdapterContract is ICollectiveVesting {
             vars.allocAdapter.ifEligible(dao, recipientAddr, proposalId),
             "uneligible of this proposalId"
         );
-        require(
-            !vars.allocAdapter.isVestCreated(dao, proposalId, recipientAddr),
-            "Already Created"
-        );
+        if (!vars.allocAdapter.ifEligible(dao, recipientAddr, proposalId))
+            revert UNELIGIBLE_FOR_THIS_PROPOSAL();
+        // require(
+        //     !vars.allocAdapter.isVestCreated(dao, proposalId, recipientAddr),
+        //     "Already Created"
+        // );
+
+        if (vars.allocAdapter.isVestCreated(dao, proposalId, recipientAddr))
+            revert ALREADY_CREATED();
 
         vars.collectiveFundingAdapt = ColletiveFundingProposalAdapterContract(
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
@@ -121,10 +126,9 @@ contract CollectiveVestingAdapterContract is ICollectiveVesting {
                 msg.sender,
                 recipientAddr,
                 vars.paybackTokenInfo.paybackToken,
-                // vars.paybackTokenInfo.nftEnable == true
-                //     ? vars.paybackTokenInfo.erc721
-                //     :
-                address(0x0)
+                vars.vestInfo.nftEnable == true
+                    ? vars.vestInfo.erc721
+                    : address(0x0)
             ],
             [
                 vars.vestingSteps,
@@ -137,7 +141,7 @@ contract CollectiveVestingAdapterContract is ICollectiveVesting {
                 vars.vestInfo.vestingInterval,
                 vars.newTokenId
             ],
-            false,
+            vars.vestInfo.nftEnable,
             "",
             ""
         );

@@ -729,6 +729,9 @@ describe("vesting...", () => {
             proposalId
         );
 
+        let nftBal1 = await this.vestingERC721.balanceOf(this.owner.address)
+        let nftBal2 = await this.vestingERC721.balanceOf(this.investor1.address)
+
         let vestInfo1 = await this.collectiveVestingContract.vests(1)
         let vestInfo2 = await this.collectiveVestingContract.vests(2)
         console.log(`
@@ -736,6 +739,10 @@ describe("vesting...", () => {
         paybackAmount ${hre.ethers.utils.formatEther(proposalDetail.escrowInfo.paybackAmount)}
         vest1 total  ${hre.ethers.utils.formatEther(vestInfo1.total)}
         vest2 total  ${hre.ethers.utils.formatEther(vestInfo2.total)}
+
+        nftBal1      ${nftBal1}
+        nftBal2      ${nftBal2}
+
         `);
 
 
@@ -754,7 +761,20 @@ describe("vesting...", () => {
         claim...
         `);
         await this.collectiveVestingContract.connect(this.owner).withdraw(dao, 1);
-        await this.collectiveVestingContract.connect(this.investor1).withdraw(dao, 2);
+        // await this.collectiveVestingContract.connect(this.investor1).withdraw(dao, 2);
+        await this.vestingERC721.connect(this.investor1).transferFrom(this.investor1.address,
+            this.investor2.address, 2
+        );
+        await expectRevert(this.collectiveVestingContract.connect(this.investor1).withdraw(dao, 2), "revert");
+
+        let nftOwner2 = await this.vestingERC721.ownerOf(2);
+        console.log(`
+            nftOwner2    ${nftOwner2}
+            investor1    ${this.investor1.address}
+            investor2    ${this.investor2.address}
+            nftToken       ${vestInfo2.nftInfo.nftToken}
+        `);
+        await this.collectiveVestingContract.connect(this.investor2).withdraw(dao, 2);
 
 
         vestInfo1 = await this.collectiveVestingContract.vests(1)
@@ -767,21 +787,22 @@ describe("vesting...", () => {
         claimed...
         claimedAmount1 ${hre.ethers.utils.formatEther(vestInfo1.claimed)}
         claimedAmount2 ${hre.ethers.utils.formatEther(vestInfo2.claimed)}
+        nftToken       ${hre.ethers.utils.formatEther(vestInfo2.nftInfo.nftToken)}
         vestBal1 ${hre.ethers.utils.formatEther(vestBal1)}
         vestBal2 ${hre.ethers.utils.formatEther(vestBal2)}
         paybackTokenBal ${hre.ethers.utils.formatEther(paybackTokenBal)}
         `);
 
         const uri = await this.vestingERC721.tokenURI(2);
-        console.log(uri);
+        // console.log(uri);
         const svg = await this.vestingERC721.getSvg(1);
         const svg2 = await this.vestingERC721.getSvg(2);
 
-        console.log(`
-        svg 
-        ${svg2}
-        `
-        );
+        // console.log(`
+        // svg 
+        // ${svg2}
+        // `
+        // );
 
     });
 });
