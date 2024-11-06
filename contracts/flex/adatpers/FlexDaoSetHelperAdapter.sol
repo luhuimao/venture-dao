@@ -117,10 +117,10 @@ contract FlexDaoSetHelperAdapterContract {
                 DaoHelper.FLEX_INVESTOR_MEMBERSHIP_NAME,
                 name
             );
-            dao.setConfiguration(
-                DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_TYPE,
-                varifyType
-            );
+            // dao.setConfiguration(
+            //     DaoHelper.VINTAGE_INVESTOR_MEMBERSHIP_TYPE,
+            //     varifyType
+            // );
             //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS
 
             FlexInvestmentPoolAdapterContract flexFundingPool = FlexInvestmentPoolAdapterContract(

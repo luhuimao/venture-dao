@@ -94,7 +94,7 @@ contract ManualVestingERC721 is ERC721 {
 
     function contractURI() public pure returns (string memory) {
         string
-            memory json = unicode'{"name": "DAOSquare Vesting Manual","description":"The NFTs in the DAOSquare Vesting Manual Collection are generated through the Vesting APP provided by DAOSquare Incubator to represent the rights of each manually created Vesting. The beneficiary of the vesting is the holder of the NFT, which means if the NFT is transferred, the related vesting rights will also be transferred.","image":"","external_link":"https://daosquare.fi"}';
+            memory json = unicode'{"name": "DAOSquare Vesting Manual","description":"The NFTs in the DAOSquare Vesting Manual Collection are generated through the Vesting APP provided by DAOSquare Incubator to represent the rights of each manually created Vesting. The beneficiary of the vesting is the holder of the NFT, which means if the NFT is transferred, the related vesting rights will also be transferred.","image":"https://i.ibb.co/JxNcmf4/Collection-Logo.png","external_link":"https://daosquare.fi"}';
 
         return
             string(
