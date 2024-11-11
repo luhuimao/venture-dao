@@ -353,6 +353,7 @@ describe("governor management...", () => {
             this.governor2.address,
         ];
 
+        const memberEligibilityName = "test name";
 
         const collectiveGovernorMembershipInfo1 = [
             enable,
@@ -360,6 +361,7 @@ describe("governor management...", () => {
             erc20MinHolding,
             erc20tokenAddress,
             0,
+            memberEligibilityName,
             []
         ];
 
@@ -370,6 +372,7 @@ describe("governor management...", () => {
             erc721MinHolding,
             erc721tokenAddress,
             0,
+            memberEligibilityName,
             []
         ];
 
@@ -380,6 +383,7 @@ describe("governor management...", () => {
             erc1155MinHolding,
             erc1155TokenAddress,
             tokenId,
+            memberEligibilityName,
             []
         ];
 
@@ -390,6 +394,7 @@ describe("governor management...", () => {
             0,
             ZERO_ADDRESS,
             tokenId,
+            memberEligibilityName,
             whiteList
         ];
 
@@ -401,7 +406,7 @@ describe("governor management...", () => {
         const quorumType = 0; // 0. - (YES + NO) / Total > X%  1. - YES + NO > X
         const votingPeriod = 60;
         const gracePeriod = 60;
-        const executePeriod = 60;
+        // const executePeriod = 60;
 
         const CollectiveDaoVotingInfo = [
             votingAssetType, //0. deposit
@@ -411,8 +416,8 @@ describe("governor management...", () => {
             supportType, // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
             quorumType, // 0. - (YES + NO) / Total > X%  1. - YES + NO > X
             votingPeriod,
-            gracePeriod,
-            executePeriod
+            gracePeriod
+            // executePeriod
         ]
 
         const redemptionFee = hre.ethers.utils.parseEther("0.001"); // 0.2%;

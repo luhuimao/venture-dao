@@ -155,7 +155,9 @@ contract VintageFundingPoolAdapterContract is
     ) external {
         if (
             msg.sender !=
-            dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_HELPER_ADAPTER) &&
+            dao.getAdapterAddress(
+                DaoHelper.VINTAGE_FUND_RAISE_HELPER_ADAPTER
+            ) &&
             !DaoHelper.isInCreationModeAndHasAccess(dao)
         ) revert ACCESS_DENIED();
         if (!investorMembershipWhiteList[address(dao)].contains(account)) {
@@ -274,13 +276,13 @@ contract VintageFundingPoolAdapterContract is
         emit WithDraw(address(dao), amount - redemptionFee, msg.sender);
     }
 
-    function clearFund(DaoRegistry dao) external reimbursable(dao) {
+    function clearFund(DaoRegistry dao) public reimbursable(dao) {
         require(
             (daoFundRaisingStates[address(dao)] ==
                 DaoHelper.FundRaiseState.FAILED &&
                 block.timestamp >
-                dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) +
-                    dao.getConfiguration(DaoHelper.RETURN_DURATION)) ||
+                dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END)) ||
+                // + dao.getConfiguration(DaoHelper.RETURN_DURATION)
                 (daoFundRaisingStates[address(dao)] ==
                     DaoHelper.FundRaiseState.DONE &&
                     block.timestamp >
@@ -498,6 +500,8 @@ contract VintageFundingPoolAdapterContract is
                     daoFundRaisingStates[address(dao)] = DaoHelper
                         .FundRaiseState
                         .FAILED;
+
+                    clearFund(dao);
 
                     fundRaiseContract.setProposalState(
                         dao,

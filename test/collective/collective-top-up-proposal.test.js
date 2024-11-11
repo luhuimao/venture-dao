@@ -321,6 +321,7 @@ describe("topup proposal...", () => {
         ];
 
         const enable = true;
+        const memberEligibilityName = "test name";
         const varifyType = 3;
         const minHolding = 1;
         const tokenAddress = this.testtoken1.address;
@@ -337,6 +338,7 @@ describe("topup proposal...", () => {
             minHolding,
             tokenAddress,
             tokenId,
+            memberEligibilityName,
             whiteList
         ];
 
@@ -348,7 +350,7 @@ describe("topup proposal...", () => {
         const quorumType = 0; // 0. - (YES + NO) / Total > X%  1. - YES + NO > X
         const votingPeriod = 60;
         const gracePeriod = 60;
-        const executePeriod = 60;
+        // const executePeriod = 60;
 
         const CollectiveDaoVotingInfo = [
             votingAssetType, //0. deposit
@@ -358,8 +360,8 @@ describe("topup proposal...", () => {
             supportType, // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
             quorumType, // 0. - (YES + NO) / Total > X%  1. - YES + NO > X
             votingPeriod,
-            gracePeriod,
-            executePeriod
+            gracePeriod
+            // executePeriod
         ]
 
         const name = _daoName;

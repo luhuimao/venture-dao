@@ -68,6 +68,25 @@ function getProposalCounter() {
     return proposalCounter().next().value;
 }
 
+describe.only("",()=>{
+    before("", ()=>{
+        const fee1= toBN("102354145342886386898").mul(toBN("10000000000000000")).div(toBN("1000000000000000000"));
+        const fee2= toBN("102354145342886386898").mul(toBN("10000000000000000")).div(toBN("1000000000000000000"));
+        const fee3= toBN("102354145342886386898").mul(toBN("3000000000000000")).div(toBN("1000000000000000000"));
+
+        const investmentFund = toBN("102354145342886386898").sub(fee1.add(fee2).add(fee3));
+        console.log(investmentFund)
+    });
+
+    it("",()=>{
+        console.log(33);
+        const investmentFund = toBN("102354145342886386898").mul(toBN("10000000000000000")).div(toBN("1000000000000000000")).add
+        toBN("102354145342886386898").mul(toBN("10000000000000000")).div(toBN("1000000000000000000")).add
+        toBN("102354145342886386898").mul(toBN("3000000000000000")).div(toBN("1000000000000000000"));
+        console.log(investmentFund)
+    });
+});
+
 
 describe("Adapter - DistributeFundsV2", () => {
     before("deploy dao", async () => {

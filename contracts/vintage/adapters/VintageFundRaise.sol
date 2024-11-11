@@ -115,6 +115,7 @@ contract VintageFundRaiseAdapterContract is
 
         if (vars.investmentPoolAdapt.poolBalance(params.dao) > 0)
             revert NOT_CLEAR_FUND();
+        console.log(vars.lastFundEndTime + vars.refundDuration);
         require(
             vars.investmentPoolAdapt.daoFundRaisingStates(
                 address(params.dao)
@@ -307,7 +308,11 @@ contract VintageFundRaiseAdapterContract is
             proposalDetails.state = ProposalState.Executing;
             // set dao configuration
             // setFundRaiseConfiguration(dao, proposalDetails);
-            VintageFundRaiseHelperAdapterContract(dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_HELPER_ADAPTER)).setFundRaiseConfiguration(dao, proposalDetails);
+            VintageFundRaiseHelperAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.VINTAGE_FUND_RAISE_HELPER_ADAPTER
+                )
+            ).setFundRaiseConfiguration(dao, proposalDetails);
             //reset fund raise state
             vars.investmentPoolAdapt.resetFundRaiseState(dao);
             proposalDetails.state = ProposalState.FundRaising;

@@ -245,6 +245,7 @@ describe("Summon A Collective Dao", () => {
         ];
 
         const enable = true;
+        const memberEligibilityName = "test name";
         const varifyType = 3;
         const minHolding = 1;
         const tokenAddress = this.testtoken1.address;
@@ -261,6 +262,7 @@ describe("Summon A Collective Dao", () => {
             minHolding,
             tokenAddress,
             tokenId,
+            memberEligibilityName,
             whiteList
         ];
 
@@ -272,7 +274,7 @@ describe("Summon A Collective Dao", () => {
         const quorumType = 0; // 0. - (YES + NO) / Total > X%  1. - YES + NO > X
         const votingPeriod = 60;
         const gracePeriod = 60;
-        const executePeriod = 60;
+        // const executePeriod = 60;
 
         const CollectiveDaoVotingInfo = [
             votingAssetType, //0. deposit
@@ -282,8 +284,8 @@ describe("Summon A Collective Dao", () => {
             supportType, // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
             quorumType, // 0. - (YES + NO) / Total > X%  1. - YES + NO > X
             votingPeriod,
-            gracePeriod,
-            executePeriod
+            gracePeriod
+            // executePeriod
         ]
 
         const name = _daoName;
@@ -520,6 +522,7 @@ describe("Summon A Collective Dao", () => {
                 "100000000000000000000",
                 '0x32Bf9E40E6b94419f2E49DD112231BFAEcAC3B6C',
                 0,
+                "s",
                 []
             ],
             [
@@ -773,6 +776,7 @@ describe("deposit, withdraw...", () => {
         ];
 
         const enable = true;
+        const memberEligibilityName = "test name";
         const varifyType = 3;
         const minHolding = 1;
         const tokenAddress = this.testtoken1.address;
@@ -789,6 +793,7 @@ describe("deposit, withdraw...", () => {
             minHolding,
             tokenAddress,
             tokenId,
+            memberEligibilityName,
             whiteList
         ];
 
@@ -800,7 +805,7 @@ describe("deposit, withdraw...", () => {
         const quorumType = 0; // 0. - (YES + NO) / Total > X%  1. - YES + NO > X
         const votingPeriod = 60;
         const gracePeriod = 60;
-        const executePeriod = 60;
+        // const executePeriod = 60;
 
         const CollectiveDaoVotingInfo = [
             votingAssetType, //0. deposit
@@ -810,8 +815,8 @@ describe("deposit, withdraw...", () => {
             supportType, // 0. - YES / (YES + NO) > X%  1. - YES - NO > X
             quorumType, // 0. - (YES + NO) / Total > X%  1. - YES + NO > X
             votingPeriod,
-            gracePeriod,
-            executePeriod
+            gracePeriod
+            // executePeriod
         ]
 
         const name = _daoName;

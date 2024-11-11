@@ -29,6 +29,7 @@ contract SummonCollectiveDao {
         uint256 minHolding;
         address tokenAddress;
         uint256 tokenId;
+        string name;
         address[] whiteList;
     }
 
@@ -41,7 +42,7 @@ contract SummonCollectiveDao {
         uint256 quorumType; // 0. - (YES + NO) / Total > X%  1. - YES + NO > X
         uint256 votingPeriod;
         uint256 gracePeriod;
-        uint256 executePeriod;
+        // uint256 executePeriod;
     }
 
     struct CollectiveDaoInfo {
@@ -161,7 +162,7 @@ contract SummonCollectiveDao {
     function summonCollectiveDao5(
         address newDaoAddr,
         uint8 votingPower,
-        uint256[8] calldata _uint256VoteArgs
+        uint256[7] calldata _uint256VoteArgs
     ) external returns (bool) {
         DaoRegistry newDao = DaoRegistry(newDaoAddr);
         require(address(this) == msg.sender);
@@ -207,10 +208,10 @@ contract SummonCollectiveDao {
         );
 
         //9.config COLLECTIVE_VOTING_EXECUTE_PERIOD
-        newDao.setConfiguration(
-            DaoHelper.COLLECTIVE_VOTING_EXECUTE_PERIOD,
-            _uint256VoteArgs[7]
-        );
+        // newDao.setConfiguration(
+        //     DaoHelper.COLLECTIVE_VOTING_EXECUTE_PERIOD,
+        //     _uint256VoteArgs[7]
+        // );
         return true;
     }
 
@@ -275,6 +276,7 @@ contract SummonCollectiveDao {
     //config governor membership
     function summonCollectiveDao8(
         address newDaoAddr,
+        string calldata name,
         uint256 vType,
         uint256 miniHolding,
         uint256 tokenId,
@@ -288,6 +290,10 @@ contract SummonCollectiveDao {
             dao.setConfiguration(
                 DaoHelper.COLLECTIVE_GOVERNOR_MEMBERSHIP_ENABLE,
                 1
+            );
+            dao.setStringConfiguration(
+                DaoHelper.COLLECTIVE_GOVERNOR_MEMBERSHIP_NAME,
+                name
             );
             dao.setConfiguration(
                 DaoHelper.COLLECTIVE_GOVERNOR_MEMBERSHIP_TYPE,
@@ -458,18 +464,18 @@ contract SummonCollectiveDao {
             vars.newDaoAddr
         );
 
-        uint256[8] memory uint256VoteParams = [
+        uint256[7] memory uint256VoteParams = [
             params.collectiveDaoVotingInfo.votingPeriod,
             params.collectiveDaoVotingInfo.support,
             params.collectiveDaoVotingInfo.votingAssetType,
             params.collectiveDaoVotingInfo.quorum,
             params.collectiveDaoVotingInfo.supportType,
             params.collectiveDaoVotingInfo.quorumType,
-            params.collectiveDaoVotingInfo.gracePeriod,
-            params.collectiveDaoVotingInfo.executePeriod
+            params.collectiveDaoVotingInfo.gracePeriod
+            // params.collectiveDaoVotingInfo.executePeriod
         ];
         vars.summonCollectiveDao5Payload = abi.encodeWithSignature(
-            "summonCollectiveDao5(address,uint8,uint256[8])",
+            "summonCollectiveDao5(address,uint8,uint256[7])",
             vars.newDaoAddr,
             params.collectiveDaoVotingInfo.votingPower,
             uint256VoteParams
@@ -493,8 +499,9 @@ contract SummonCollectiveDao {
         );
 
         vars.summonCollectiveDao8Payload = abi.encodeWithSignature(
-            "summonCollectiveDao8(address,uint256,uint256,uint256,bool,address,address[])",
+            "summonCollectiveDao8(address,string,uint256,uint256,uint256,bool,address,address[])",
             vars.newDaoAddr,
+            params.governorMembership.name,
             params.governorMembership.varifyType,
             params.governorMembership.minHolding,
             params.governorMembership.tokenId,
