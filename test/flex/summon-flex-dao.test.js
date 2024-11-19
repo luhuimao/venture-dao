@@ -519,7 +519,7 @@ describe("Summon A Flex Dao", () => {
         this.flexDirectdaoAddress = daoAddr;
     });
 
-    it.only("summom a flex POLL dao by summon contract...", async () => {
+    it("summom a flex POLL dao by summon contract...", async () => {
 
         const daoFactoriesAddress = [
             this.daoFactory.address,

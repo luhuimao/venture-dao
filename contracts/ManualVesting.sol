@@ -124,7 +124,20 @@ contract ManualVesting {
         address token,
         bool toBentoBox
     );
-    event BatchVesting(uint256 startVestId, uint256 endVestId);
+    event BatchVesting1(
+        address[] investors,
+        address[] holders,
+        uint256 totalAmount,
+        uint256 startVestId,
+        uint256 endVestId
+    );
+    event BatchVesting2(
+        address[] receivers,
+        uint256 totalAmount,
+        uint256 startVestId,
+        uint256 endVestId
+    );
+
     event LogUpdateOwner(uint256 indexed vestId, address indexed newOwner);
 
     error NotOwner();
@@ -473,7 +486,13 @@ contract ManualVesting {
             }
         }
 
-        emit BatchVesting(vars.startVestId, vestIds - 1);
+        emit BatchVesting1(
+            investors,
+            holders,
+            total,
+            vars.startVestId,
+            vestIds - 1
+        );
     }
 
     function batchCreate2(
@@ -497,7 +516,7 @@ contract ManualVesting {
         if (receivers.length > 0) {
             for (uint8 i = 0; i < receivers.length; i++) {
                 vars.depositAmount = amounts[i];
-
+                vars.totalAmount += vars.depositAmount;
                 createVesting(
                     CreateVestingParams(
                         params.startTime,
@@ -516,7 +535,12 @@ contract ManualVesting {
                 );
             }
         }
-        emit BatchVesting(vars.startVestId, vestIds - 1);
+        emit BatchVesting2(
+            receivers,
+            vars.totalAmount,
+            vars.startVestId,
+            vestIds - 1
+        );
     }
 
     struct MintLocalVars {

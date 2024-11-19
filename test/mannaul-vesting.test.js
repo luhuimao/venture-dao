@@ -234,6 +234,16 @@ describe("mannual vesting...", () => {
         const svg = await this.manualVestingERC721.getSvg(1);
 
         // console.log(svg)
+        await this.testtoken2.approve(this.bentoBoxV1.address, hre.ethers.utils.parseEther("3000"));
+
+        const receivers = [this.user1.address, this.user2.address, this.investor1.address, this.investor2.address];
+        const amounts = [hre.ethers.utils.parseEther("423"), hre.ethers.utils.parseEther("423"), hre.ethers.utils.parseEther("423"), hre.ethers.utils.parseEther("423")]
+        const tx = await this.manualVesting.batchCreate2(receivers, amounts, CreateVestingParams);
+        const result = await tx.wait();
+        console.log(result.events[result.events.length - 1].args);
+        console.log(`
+            totalAmount  ${hre.ethers.utils.formatEther(result.events[result.events.length - 1].args.totalAmount)}
+        `)
     });
 
 
