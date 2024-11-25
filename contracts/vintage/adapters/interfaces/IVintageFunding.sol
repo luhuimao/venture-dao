@@ -148,4 +148,5 @@ interface IVintageInvestment {
     error IN_VOTING_PERIOD();
     error IN_EXECUTE_PERIOD();
     error ADAPTER_NOT_FOUND();
+    error PRE_PROPOSAL_UNDONE();
 }

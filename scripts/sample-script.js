@@ -384,19 +384,27 @@ async function main() {
   // funding pool adapter deployed address ${fundingpool.address}
   // `);
 
-  await transfer();
+  // await transfer();
+
 
   // await deposit("0xd0a0582A8e82dC63056056188ED4406E45B84692", "0x466c657846756e64696e67233900000000000000000000000000000000000000", "10000");
 }
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+
+const investmentFund = toBN("102354145342886386898").mul(toBN("10000000000000000")).div(toBN("1000000000000000000")).add
+toBN("102354145342886386898").mul(toBN("10000000000000000")).div(toBN("1000000000000000000")).add
+toBN("102354145342886386898").mul(toBN("3000000000000000")).div(toBN("1000000000000000000"));
+console.log(investmentFund)
+// main()
+//   .then(() => process.exit(0))
+//   .catch((error) => {
+//     console.error(error);
+//     process.exit(1);
+//   });
+
+
 
 
 

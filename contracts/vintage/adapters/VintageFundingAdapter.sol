@@ -232,15 +232,13 @@ contract VintageFundingAdapterContract is
             address(dao)
         ][proposalId];
         // make sure there is no proposal no finalized
-        if (vars.ongongingPrposalId != bytes32(0)) {
-            require(
+        if (
+            vars.ongongingPrposalId != bytes32(0) &&
+            !(proposals[address(dao)][vars.ongongingPrposalId].status ==
+                InvestmentLibrary.ProposalState.DONE ||
                 proposals[address(dao)][vars.ongongingPrposalId].status ==
-                    InvestmentLibrary.ProposalState.DONE ||
-                    proposals[address(dao)][vars.ongongingPrposalId].status ==
-                    InvestmentLibrary.ProposalState.FAILED,
-                "PrePropsalNotDone"
-            );
-        }
+                InvestmentLibrary.ProposalState.FAILED)
+        ) revert PRE_PROPOSAL_UNDONE();
 
         vars.investmentPoolAdapt = VintageFundingPoolAdapterContract(
             dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
