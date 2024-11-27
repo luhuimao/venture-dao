@@ -234,7 +234,7 @@ describe("mannual vesting...", () => {
         const svg = await this.manualVestingERC721.getSvg(1);
 
         // console.log(svg)
-        await this.testtoken2.approve(this.bentoBoxV1.address, hre.ethers.utils.parseEther("3000"));
+        await this.testtoken2.approve(this.bentoBoxV1.address, hre.ethers.utils.parseEther("1692"));
 
         const receivers = [this.user1.address, this.user2.address, this.investor1.address, this.investor2.address];
         const amounts = [hre.ethers.utils.parseEther("423"), hre.ethers.utils.parseEther("423"), hre.ethers.utils.parseEther("423"), hre.ethers.utils.parseEther("423")]
@@ -244,6 +244,127 @@ describe("mannual vesting...", () => {
         console.log(`
             totalAmount  ${hre.ethers.utils.formatEther(result.events[result.events.length - 1].args.totalAmount)}
         `)
+        const batchId = result.events[result.events.length - 1].args.batchId;
+        await this.manualVesting.connect(this.user1).createVesting2(batchId)
+        await this.manualVesting.connect(this.user2).createVesting2(batchId)
+        await this.manualVesting.connect(this.investor1).createVesting2(batchId)
+        await this.manualVesting.connect(this.investor2).createVesting2(batchId)
+
+    });
+
+    it("batch create manual vesting...", async () => {
+
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        const vstartTime = toBN(blocktimestamp).add(toBN(60 * 1));
+        const vendTime = toBN(vstartTime).add(toBN(60 * 60 * 500));
+        const vcliffEndTime = toBN(vstartTime).add(toBN(60 * 60 * 1));
+        const vvestingInterval = 60 * 60 * 1;
+        const vpaybackToken = this.testtoken2.address;
+        const vrecipientAddr = this.user1.address;
+        const vdepositAmount = hre.ethers.utils.parseEther("234.543");
+        const vcliffVestingAmount = hre.ethers.utils.parseEther("0.032");
+        const vnftEnable = true;
+        const verc721 = this.manualVestingERC721.address;
+        const vname = "vesting nft disable";
+        const vdes = "99932fd";
+
+
+        const CreateVestingParams = [
+            vstartTime,
+            vcliffEndTime,
+            vendTime,
+            vvestingInterval,
+            vpaybackToken,
+            vrecipientAddr,
+            vdepositAmount,
+            vcliffVestingAmount,
+            vnftEnable,
+            verc721,
+            vname,
+            vdes
+        ];
+
+        const oldAllowanceAmount = await this.testtoken2.allowance(this.owner.address, this.bentoBoxV1.address);
+        console.log("oldAllowanceAmount ", hre.ethers.utils.formatEther(oldAllowanceAmount));
+        const approveAmount = toBN(oldAllowanceAmount).add(hre.ethers.utils.parseEther("4864"));
+        await this.testtoken2.approve(this.bentoBoxV1.address, approveAmount);
+        console.log("approved...");
+
+        const receivers = [this.user1.address, this.user2.address];
+        const amounts = [hre.ethers.utils.parseEther("432"), hre.ethers.utils.parseEther("4432")]
+        const tx = await this.manualVesting.batchCreate2(receivers, amounts, CreateVestingParams);
+        const rel = await tx.wait();
+        const event_receivers = rel.events[rel.events.length - 1].args.receivers;
+        const event_totalAmount = rel.events[rel.events.length - 1].args.totalAmount;
+        const event_batchId = rel.events[rel.events.length - 1].args.batchId;
+
+        console.log(`
+            batch vesting created...
+            event_receivers  ${event_receivers}
+            event_totalAmount  ${hre.ethers.utils.formatEther(event_totalAmount)}
+            event_batchId  ${event_batchId}
+        `);
+
+        const batchVestingInfo = await this.manualVesting.batchVestInfo(event_batchId);
+        console.log(batchVestingInfo);
+
+        await expectRevert(this.manualVesting.createVesting2(event_batchId), "revert");
+
+        const tx1 = await this.manualVesting.connect(this.user1).createVesting2(event_batchId);
+        const re1 = await tx1.wait();
+        const event_vestId = re1.events[re1.events.length - 1].args.vestId;
+        const event_token = re1.events[re1.events.length - 1].args.token;
+        const event_recipient = re1.events[re1.events.length - 1].args.recipient;
+        const event_start = re1.events[re1.events.length - 1].args.start;
+        const event_cliffDuration = re1.events[re1.events.length - 1].args.cliffDuration;
+        const event_stepDuration = re1.events[re1.events.length - 1].args.stepDuration;
+        const event_steps = re1.events[re1.events.length - 1].args.steps;
+        const event_cliffShares = re1.events[re1.events.length - 1].args.cliffShares;
+        const event_stepShares = re1.events[re1.events.length - 1].args.stepShares;
+
+        console.log(`
+            event_vestId   ${event_vestId}
+            event_token   ${event_token}
+            event_recipient   ${event_recipient}
+            event_start   ${event_start}
+            event_cliffDuration   ${event_cliffDuration}
+            event_stepDuration   ${event_stepDuration}
+            event_steps   ${event_steps}
+            event_cliffShares   ${event_cliffShares}
+            event_stepShares   ${event_stepShares}
+        `);
+
+        await expectRevert(this.manualVesting.connect(this.user2).createVesting2(4), "revert");
+        await expectRevert(this.manualVesting.connect(this.user1).createVesting2(event_batchId), "revert");
+        const tx2 = await this.manualVesting.connect(this.user2).createVesting2(event_batchId);
+        const re2 = await tx2.wait();
+        const event_vestId2 = re2.events[re2.events.length - 1].args.vestId;
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(vendTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vendTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+
+        let vestBal = await this.manualVesting.vestBalance(event_vestId);
+        let vestBal2 = await this.manualVesting.vestBalance(event_vestId2);
+
+        await this.manualVesting.connect(this.user1).withdraw(event_vestId);
+        await this.manualVesting.connect(this.user2).withdraw(event_vestId2);
+
+        let vestInfo = await this.manualVesting.vests(event_vestId);
+        let vestInfo2 = await this.manualVesting.vests(event_vestId2);
+
+        console.log(`
+            vestBal     ${vestBal}
+            vestBal2     ${vestBal2}
+
+            vestInfo.claimed  ${vestInfo.claimed}
+            vestInfo2.claimed  ${vestInfo2.claimed}
+
+            vestInfo.total  ${vestInfo.total}
+            vestInfo2.total  ${vestInfo2.total}
+        `);
     });
 
 

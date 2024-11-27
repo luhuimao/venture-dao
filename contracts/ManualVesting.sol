@@ -70,6 +70,15 @@ contract ManualVesting {
         address token;
     }
 
+    struct BatchVestInfo {
+        uint128 claimed;
+        uint256 total;
+        StepInfo stepInfo;
+        TimeInfo timeInfo;
+        VestNFTInfo nftInfo;
+        VestInfo vestInfo;
+    }
+
     struct CreateVestLocalVars {
         uint256 depositedShares;
         uint256 vestId;
@@ -96,6 +105,13 @@ contract ManualVesting {
         address erc721;
         string name;
         string description;
+    }
+
+    struct EligibleVestUser {
+        address account;
+        uint256 amount;
+        bool created;
+        uint256 batchId;
     }
 
     event CreateVesting(
@@ -128,14 +144,12 @@ contract ManualVesting {
         address[] investors,
         address[] holders,
         uint256 totalAmount,
-        uint256 startVestId,
-        uint256 endVestId
+        uint256 batchId
     );
     event BatchVesting2(
         address[] receivers,
         uint256 totalAmount,
-        uint256 startVestId,
-        uint256 endVestId
+        uint256 batchId
     );
 
     event LogUpdateOwner(uint256 indexed vestId, address indexed newOwner);
@@ -144,11 +158,16 @@ contract ManualVesting {
     error NotVestReceiver();
     error InValidVestingTimeParam();
     error InValidBatchVesting2Param();
+    error CREATED();
+    error UN_ELIGIBLE();
 
     mapping(uint256 => Vest) public vests;
     mapping(address => mapping(uint256 => uint256)) public tokenIdToVestId; //erc721 address => tokenId => vestId
-
+    mapping(uint256 => mapping(address => EligibleVestUser))
+        public eligibleVestUsers;
+    mapping(uint256 => BatchVestInfo) public batchVestInfo;
     uint256 public vestIds;
+    uint256 public batchIds;
 
     uint256 public constant PERCENTAGE_PRECISION = 1e18;
 
@@ -157,6 +176,7 @@ contract ManualVesting {
 
     constructor(address _bentoBoxAddr, address _receiptNFTAddr) {
         vestIds = 1;
+        batchIds = 1;
         bentoBoxAddr = _bentoBoxAddr;
         receiptNFTAddr = _receiptNFTAddr;
     }
@@ -238,6 +258,120 @@ contract ManualVesting {
             uint32(params.startTime),
             uint32(params.cliffEndTime - params.startTime),
             uint32(params.vestingInterval),
+            uint32(vars.vestingSteps),
+            vars.cliffShares,
+            vars.stepShares
+        );
+    }
+
+    function createVesting2(uint256 batchId) public payable {
+        CreateVestLocalVars memory vars;
+
+        if (eligibleVestUsers[batchId][msg.sender].amount <= 0)
+            revert UN_ELIGIBLE();
+
+        if (eligibleVestUsers[batchId][msg.sender].created) revert CREATED();
+
+        if (
+            batchVestInfo[batchId].timeInfo.start == 0 ||
+            batchVestInfo[batchId].timeInfo.start +
+                batchVestInfo[batchId].timeInfo.cliffDuration ==
+            0 ||
+            batchVestInfo[batchId].timeInfo.end == 0 ||
+            batchVestInfo[batchId].timeInfo.stepDuration == 0
+        ) revert InValidVestingTimeParam();
+        vars.depositedShares = _depositToken(
+            batchVestInfo[batchId].vestInfo.token,
+            batchVestInfo[batchId].vestInfo.owner,
+            address(this),
+            eligibleVestUsers[batchId][msg.sender].amount,
+            false
+        );
+        vars.duration =
+            batchVestInfo[batchId].timeInfo.end -
+            (batchVestInfo[batchId].timeInfo.start +
+                batchVestInfo[batchId].timeInfo.cliffDuration);
+
+        vars.vestingSteps =
+            vars.duration /
+            batchVestInfo[batchId].timeInfo.stepDuration;
+
+        if (vars.duration <= batchVestInfo[batchId].timeInfo.stepDuration)
+            vars.vestingSteps = 1;
+
+        if (vars.duration > batchVestInfo[batchId].timeInfo.stepDuration) {
+            if (
+                batchVestInfo[batchId].timeInfo.stepDuration % vars.duration ==
+                0
+            )
+                vars.vestingSteps =
+                    vars.duration /
+                    batchVestInfo[batchId].timeInfo.stepDuration;
+
+            if (
+                vars.vestingSteps *
+                    batchVestInfo[batchId].timeInfo.stepDuration <
+                vars.duration
+            )
+                vars.vestingSteps =
+                    vars.duration /
+                    batchVestInfo[batchId].timeInfo.stepDuration +
+                    1;
+        }
+        vars.cliffShares = uint128(
+            (eligibleVestUsers[batchId][msg.sender].amount *
+                batchVestInfo[batchId].stepInfo.cliffShares) /
+                PERCENTAGE_PRECISION
+        );
+
+        vars.stepShares = uint128(
+            (vars.depositedShares - vars.cliffShares) / vars.vestingSteps
+        );
+
+        vars.vestId = vestIds++;
+
+        if (batchVestInfo[batchId].nftInfo.nftToken != address(0x0)) {
+            vars.newTokenId = ManualVestingERC721(
+                batchVestInfo[batchId].nftInfo.nftToken
+            ).safeMint(msg.sender);
+            tokenIdToVestId[batchVestInfo[batchId].nftInfo.nftToken][
+                vars.newTokenId
+            ] = vars.vestId;
+        }
+        createNewVest(
+            vars.vestId,
+            [
+                msg.sender,
+                msg.sender,
+                batchVestInfo[batchId].vestInfo.token,
+                batchVestInfo[batchId].nftInfo.nftToken
+            ],
+            [
+                vars.vestingSteps,
+                vars.cliffShares,
+                vars.stepShares,
+                vars.depositedShares,
+                batchVestInfo[batchId].timeInfo.start,
+                batchVestInfo[batchId].timeInfo.end,
+                batchVestInfo[batchId].timeInfo.start +
+                    batchVestInfo[batchId].timeInfo.cliffDuration,
+                batchVestInfo[batchId].timeInfo.stepDuration,
+                vars.newTokenId
+            ],
+            batchVestInfo[batchId].nftInfo.nftToken == address(0x0)
+                ? false
+                : true,
+            batchVestInfo[batchId].vestInfo.name,
+            batchVestInfo[batchId].vestInfo.description
+        );
+        eligibleVestUsers[batchId][msg.sender].created = true;
+        emit CreateVesting(
+            vars.vestId,
+            batchVestInfo[batchId].vestInfo.token,
+            msg.sender,
+            uint32(batchVestInfo[batchId].timeInfo.start),
+            uint32(batchVestInfo[batchId].timeInfo.cliffDuration),
+            uint32(batchVestInfo[batchId].timeInfo.stepDuration),
             uint32(vars.vestingSteps),
             vars.cliffShares,
             vars.stepShares
@@ -408,6 +542,7 @@ contract ManualVesting {
         uint256 depositAmount;
         InvestmentReceiptERC721 receiptCon;
         uint256 startVestId;
+        uint256 batchIds;
     }
 
     function batchCreate(
@@ -421,6 +556,30 @@ contract ManualVesting {
     ) external {
         BatchVestingVars memory vars;
         vars.startVestId = vestIds;
+        vars.batchIds = batchIds++;
+
+        batchVestInfo[vars.batchIds] = BatchVestInfo(
+            0,
+            total,
+            StepInfo(0, uint128(params.cliffVestingAmount), 0),
+            TimeInfo(
+                uint32(params.startTime),
+                uint32(params.endTime),
+                uint32(params.cliffEndTime - params.startTime),
+                uint32(params.vestingInterval)
+            ),
+            VestNFTInfo(
+                params.nftEnable == true ? params.erc721 : address(0x0),
+                0
+            ),
+            VestInfo(
+                params.name,
+                params.description,
+                msg.sender,
+                address(0x0),
+                params.paybackToken
+            )
+        );
 
         vars.receiptCon = InvestmentReceiptERC721(receiptNFTAddr);
         if (investors.length > 0) {
@@ -436,22 +595,31 @@ contract ManualVesting {
                     (total * vars.investedAmount) /
                     vars.totalAmount;
 
-                createVesting(
-                    CreateVestingParams(
-                        params.startTime,
-                        params.cliffEndTime,
-                        params.endTime,
-                        params.vestingInterval,
-                        params.paybackToken,
-                        investors[i],
-                        vars.depositAmount,
-                        params.cliffVestingAmount,
-                        params.nftEnable,
-                        params.erc721,
-                        params.name,
-                        params.description
-                    )
+                eligibleVestUsers[vars.batchIds][
+                    investors[i]
+                ] = EligibleVestUser(
+                    investors[i],
+                    vars.depositAmount,
+                    false,
+                    vars.batchIds
                 );
+
+                // createVesting(
+                //     CreateVestingParams(
+                //         params.startTime,
+                //         params.cliffEndTime,
+                //         params.endTime,
+                //         params.vestingInterval,
+                //         params.paybackToken,
+                //         investors[i],
+                //         vars.depositAmount,
+                //         params.cliffVestingAmount,
+                //         params.nftEnable,
+                //         params.erc721,
+                //         params.name,
+                //         params.description
+                //     )
+                // );
             }
         }
 
@@ -467,32 +635,35 @@ contract ManualVesting {
                     (total * vars.investedAmount) /
                     vars.totalAmount;
 
-                createVesting(
-                    CreateVestingParams(
-                        params.startTime,
-                        params.cliffEndTime,
-                        params.endTime,
-                        params.vestingInterval,
-                        params.paybackToken,
-                        holders[i],
-                        vars.depositAmount,
-                        params.cliffVestingAmount,
-                        params.nftEnable,
-                        params.erc721,
-                        params.name,
-                        params.description
-                    )
+                eligibleVestUsers[vars.batchIds][
+                    investors[i]
+                ] = EligibleVestUser(
+                    holders[i],
+                    vars.depositAmount,
+                    false,
+                    vars.batchIds
                 );
+
+                // createVesting(
+                //     CreateVestingParams(
+                //         params.startTime,
+                //         params.cliffEndTime,
+                //         params.endTime,
+                //         params.vestingInterval,
+                //         params.paybackToken,
+                //         holders[i],
+                //         vars.depositAmount,
+                //         params.cliffVestingAmount,
+                //         params.nftEnable,
+                //         params.erc721,
+                //         params.name,
+                //         params.description
+                //     )
+                // );
             }
         }
 
-        emit BatchVesting1(
-            investors,
-            holders,
-            total,
-            vars.startVestId,
-            vestIds - 1
-        );
+        emit BatchVesting1(investors, holders, total, vars.batchIds);
     }
 
     function batchCreate2(
@@ -502,6 +673,7 @@ contract ManualVesting {
     ) external {
         BatchVestingVars memory vars;
         vars.startVestId = vestIds;
+        vars.batchIds = batchIds++;
 
         if (receivers.length != amounts.length)
             revert InValidBatchVesting2Param();
@@ -517,30 +689,58 @@ contract ManualVesting {
             for (uint8 i = 0; i < receivers.length; i++) {
                 vars.depositAmount = amounts[i];
                 vars.totalAmount += vars.depositAmount;
-                createVesting(
-                    CreateVestingParams(
-                        params.startTime,
-                        params.cliffEndTime,
-                        params.endTime,
-                        params.vestingInterval,
-                        params.paybackToken,
-                        receivers[i],
-                        vars.depositAmount,
-                        params.cliffVestingAmount,
-                        params.nftEnable,
-                        params.erc721,
-                        params.name,
-                        params.description
-                    )
+
+                eligibleVestUsers[vars.batchIds][
+                    receivers[i]
+                ] = EligibleVestUser(
+                    receivers[i],
+                    vars.depositAmount,
+                    false,
+                    vars.batchIds
                 );
+
+                // createVesting(
+                //     CreateVestingParams(
+                //         params.startTime,
+                //         params.cliffEndTime,
+                //         params.endTime,
+                //         params.vestingInterval,
+                //         params.paybackToken,
+                //         receivers[i],
+                //         vars.depositAmount,
+                //         params.cliffVestingAmount,
+                //         params.nftEnable,
+                //         params.erc721,
+                //         params.name,
+                //         params.description
+                //     )
+                // );
             }
         }
-        emit BatchVesting2(
-            receivers,
+
+        batchVestInfo[vars.batchIds] = BatchVestInfo(
+            0,
             vars.totalAmount,
-            vars.startVestId,
-            vestIds - 1
+            StepInfo(0, uint128(params.cliffVestingAmount), 0),
+            TimeInfo(
+                uint32(params.startTime),
+                uint32(params.endTime),
+                uint32(params.cliffEndTime - params.startTime),
+                uint32(params.vestingInterval)
+            ),
+            VestNFTInfo(
+                params.nftEnable == true ? params.erc721 : address(0x0),
+                0
+            ),
+            VestInfo(
+                params.name,
+                params.description,
+                msg.sender,
+                address(0x0),
+                params.paybackToken
+            )
         );
+        emit BatchVesting2(receivers, vars.totalAmount, vars.batchIds);
     }
 
     struct MintLocalVars {
