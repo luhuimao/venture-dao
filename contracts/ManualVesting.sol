@@ -126,6 +126,19 @@ contract ManualVesting {
         uint128 stepShares
     );
 
+    event CreateVesting2(
+        uint256 indexed vestId,
+        address token,
+        address indexed recipient,
+        uint32 start,
+        uint32 cliffDuration,
+        uint32 stepDuration,
+        uint32 steps,
+        uint128 cliffShares,
+        uint128 stepShares,
+        uint256 batchId
+    );
+
     event Withdraw(
         uint256 indexed vestId,
         address indexed token,
@@ -365,7 +378,7 @@ contract ManualVesting {
             batchVestInfo[batchId].vestInfo.description
         );
         eligibleVestUsers[batchId][msg.sender].created = true;
-        emit CreateVesting(
+        emit CreateVesting2(
             vars.vestId,
             batchVestInfo[batchId].vestInfo.token,
             msg.sender,
@@ -374,7 +387,8 @@ contract ManualVesting {
             uint32(batchVestInfo[batchId].timeInfo.stepDuration),
             uint32(vars.vestingSteps),
             vars.cliffShares,
-            vars.stepShares
+            vars.stepShares,
+            batchId
         );
     }
 
