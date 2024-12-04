@@ -779,6 +779,16 @@ describe("collective investment receipt NFT...", () => {
                 description
             );
 
+        // await this.investmentReceiptERC721.connect(this.investor1).
+        // safeMint(
+        //     dao,
+        //     proposalId,
+        //     mode,
+        //     tx1.hash,
+        //     projectName,
+        //     description
+        // );
+
         let ss = await txs.wait();
         let ipid = ss.events[ss.events.length - 1].args.proposalId;
         let minter = ss.events[ss.events.length - 1].args.minter;
@@ -885,20 +895,42 @@ describe("collective investment receipt NFT...", () => {
         );
 
         ss = await txs.wait();
+
+        let evu1 = await this.manualVesting.eligibleVestUsers(
+            ss.events[ss.events.length - 1].args.batchId, this.investor1.address);
+
+
+        let evu2 = await this.manualVesting.eligibleVestUsers(
+            ss.events[ss.events.length - 1].args.batchId, this.investor2.address);
+
         console.log("len ", ss.events.length);
 
         console.log("1 ", ss.events[0].event);
-        console.log("2 ", ss.events[1].event);
-        console.log("3 ", ss.events[2].event);
-        console.log("4 ", ss.events[3].args);
-        console.log("5 ", ss.events[4].event);
-        console.log("6 ", ss.events[5].event);
-        console.log("7 ", ss.events[6].event);
-        console.log("8 ", ss.events[7].args);
-        console.log("9 ", ss.events[8].args);
+        console.log("investors ", ss.events[ss.events.length - 1].args.investors);
+        console.log("holders ", ss.events[ss.events.length - 1].args.holders);
+        console.log("totalAmount ", ss.events[ss.events.length - 1].args.totalAmount);
+        console.log("batchId ", ss.events[ss.events.length - 1].args.batchId);
+
+        console.log(`
+            evu1 amount ${hre.ethers.utils.formatEther(evu1.amount)}
+            evu2 amount ${hre.ethers.utils.formatEther(evu2.amount)}
+        `)
+
+        // console.log("2 ", ss.events[1].event);
+        // console.log("3 ", ss.events[2].event);
+        // console.log("4 ", ss.events[3].args);
+        // console.log("5 ", ss.events[4].event);
+        // console.log("6 ", ss.events[5].event);
+        // console.log("7 ", ss.events[6].event);
+        // console.log("8 ", ss.events[7].args);
+        // console.log("9 ", ss.events[8].args);
 
         const currentvestId = await this.manualVesting.vestIds();
-        console.log(currentvestId);
+        console.log("currentvestId ", currentvestId);
+
+        await this.manualVesting.connect(this.investor1).createVesting2(ss.events[ss.events.length - 1].args.batchId);
+        await this.manualVesting.connect(this.investor2).createVesting2(ss.events[ss.events.length - 1].args.batchId);
+
         console.log("crated...");
 
 
@@ -906,6 +938,20 @@ describe("collective investment receipt NFT...", () => {
         let vestInfo2 = await this.manualVesting.vests(2);
         console.log(hre.ethers.utils.formatEther(vestInfo1.total));
         console.log(hre.ethers.utils.formatEther(vestInfo2.total));
+
+        await this.manualVesting.connect(this.investor1).withdraw(1);
+        await this.manualVesting.connect(this.investor2).withdraw(2);
+
+        vestInfo1 = await this.manualVesting.vests(1);
+        vestInfo2 = await this.manualVesting.vests(2);
+
+        console.log(
+            `
+            claimed1 
+            ${hre.ethers.utils.formatEther(vestInfo1.claimed)}
+            claimed2
+            ${hre.ethers.utils.formatEther(vestInfo2.total)}`
+        );
 
 
         await this.testtoken2.approve(this.bentoBoxV1.address, hre.ethers.utils.parseEther("2344"));
@@ -922,8 +968,8 @@ describe("collective investment receipt NFT...", () => {
         // console.log("1 ", ss.events[0]);
         // console.log("2 ", ss.events[1].args);
         // console.log("3 ", ss.events[2]);
-        console.log("4 ", ss.events[3].args);
-        console.log("5 ", ss.events[4]);
+        // console.log("4 ", ss.events[3].args);
+        // console.log("5 ", ss.events[4]);
         // console.log("6 ", ss.events[5]);
         // console.log("7 ", ss.events[6]);
         // console.log("8 ", ss.events[7].args);
