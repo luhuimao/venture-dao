@@ -41,11 +41,11 @@ contract InvestmentReceiptERC721 is ERC721 {
     // mapping(bytes32 => mapping(address => bool)) public mintedInfo;
     mapping(bytes32 => mapping(address => uint256))
         public investmentIdToTokenId;
-
     mapping(uint256 => bytes32) public tokenIdToInvestmentProposalId;
-    mapping(address => uint256) public holderToTokenId;
+    // mapping(address => uint256) public holderToTokenId;
     mapping(uint256 => InvestmentReceiptInfo)
         public tokenIdToInvestmentProposalInfo;
+    mapping(bytes32 => mapping(address => bool)) public mintedAccounts;
 
     struct InvestmentReceiptInfo {
         address daoAddress;
@@ -113,7 +113,7 @@ contract InvestmentReceiptERC721 is ERC721 {
         string memory projectName,
         string memory description
     ) external returns (uint256 id) {
-        if (investmentIdToTokenId[investmentProposalId][msg.sender] != 0)
+        if (mintedAccounts[investmentProposalId][msg.sender] == true)
             revert ALREADY_MINTED();
 
         MintLocalVars memory vars;
@@ -249,9 +249,10 @@ contract InvestmentReceiptERC721 is ERC721 {
         uint256 newItemId = _tokenIds.current();
 
         _safeMint(msg.sender, newItemId);
+        mintedAccounts[investmentProposalId][msg.sender] = true;
         investmentIdToTokenId[investmentProposalId][msg.sender] = newItemId;
         tokenIdToInvestmentProposalId[newItemId] = investmentProposalId;
-        holderToTokenId[msg.sender] = newItemId;
+        // holderToTokenId[msg.sender] = newItemId;
         maxTotalSupply += 1;
         string memory investmentProposalLink = string(
             abi.encodePacked(
@@ -317,8 +318,13 @@ contract InvestmentReceiptERC721 is ERC721 {
         address to,
         uint256 id
     ) public override(ERC721) {
-        holderToTokenId[from] = 0;
-        holderToTokenId[to] = id;
+        // holderToTokenId[from] = 0;
+        // holderToTokenId[to] = id;
+
+        bytes32 investmentProposalId = tokenIdToInvestmentProposalId[id];
+        investmentIdToTokenId[investmentProposalId][from] = 0;
+        investmentIdToTokenId[investmentProposalId][to] = id;
+
         ERC721.transferFrom(from, to, id);
     }
 

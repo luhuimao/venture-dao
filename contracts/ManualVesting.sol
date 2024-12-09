@@ -642,7 +642,10 @@ contract ManualVesting {
                 (, , , , vars.totalAmount, vars.investedAmount, , , , ) = vars
                     .receiptCon
                     .tokenIdToInvestmentProposalInfo(
-                        vars.receiptCon.holderToTokenId(holders[i])
+                        vars.receiptCon.investmentIdToTokenId(
+                            proposalId,
+                            holders[i]
+                        )
                     );
 
                 vars.depositAmount =
@@ -763,6 +766,10 @@ contract ManualVesting {
         IFlexFunding.ProposalInvestmentInfo investmentInfo;
         IFlexFunding.VestInfo flexVestInfo;
         InvestmentLibrary.ProposalPaybackTokenInfo vinpbnfo;
+        FlexInvestmentPoolExtension investmentpoolExt;
+        FlexFreeInEscrowFundAdapterContract flexFreeInCont;
+        FlexInvestmentPoolAdapterContract flexFundingPoolCont;
+        DaoRegistry daoContr;
         address tokenAddress;
         uint256 vinvestmentAmount;
         VintageFundingPoolExtension fundingPoolExt;
@@ -782,6 +789,7 @@ contract ManualVesting {
     ) internal view returns (uint256, uint256) {
         MintLocalVars memory vars;
         if (mode == 0) {
+            vars.daoContr = DaoRegistry(daoAddr);
             (
                 ,
                 vars.investmentInfo,
@@ -793,39 +801,40 @@ contract ManualVesting {
                 ,
                 vars.executeBlockNum
             ) = FlexFundingAdapterContract(
-                DaoRegistry(daoAddr).getAdapterAddress(
-                    DaoHelper.FLEX_FUNDING_ADAPT
-                )
+                vars.daoContr.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
             ).Proposals(daoAddr, investmentProposalId);
-            // vars.escrow = vars.investmentInfo.escrow;
-            // vars.nftEnable = vars.flexVestInfo.nftEnable;
-            // vars.tokenAddress = vars.investmentInfo.tokenAddress;
+
             (, uint256 esc) = FlexFreeInEscrowFundAdapterContract(
-                DaoRegistry(daoAddr).getAdapterAddress(
+                vars.daoContr.getAdapterAddress(
                     DaoHelper.FLEX_FREE_IN_ESCROW_FUND_ADAPTER
                 )
-            ).getEscrowAmount(
-                    DaoRegistry(daoAddr),
-                    investmentProposalId,
-                    account
-                );
+            ).getEscrowAmount(vars.daoContr, investmentProposalId, account);
+
+            vars.investmentpoolExt = FlexInvestmentPoolExtension(
+                vars.daoContr.getExtensionAddress(
+                    DaoHelper.FLEX_INVESTMENT_POOL_EXT
+                )
+            );
 
             vars.myInvestmentAmount =
-                FlexInvestmentPoolExtension(
-                    DaoRegistry(daoAddr).getExtensionAddress(
-                        DaoHelper.FLEX_INVESTMENT_POOL_EXT
-                    )
-                ).getPriorAmount(
-                        investmentProposalId,
-                        account,
-                        vars.executeBlockNum - 1
-                    ) -
+                vars.investmentpoolExt.getPriorAmount(
+                    investmentProposalId,
+                    account,
+                    vars.executeBlockNum - 1
+                ) -
                 esc;
 
-            vars.fundingAmount = vars.investmentInfo.investedAmount;
-            vars.myInvestmentAmount =
-                (vars.myInvestmentAmount * vars.investmentInfo.investedAmount) /
-                vars.investmentInfo.finalRaisedAmount;
+            vars.fundingAmount =
+                vars.investmentpoolExt.getPriorAmount(
+                    investmentProposalId,
+                    DaoHelper.TOTAL,
+                    vars.executeBlockNum - 1
+                ) -
+                FlexInvestmentPoolAdapterContract(
+                    vars.daoContr.getAdapterAddress(
+                        DaoHelper.FLEX_INVESTMENT_POOL_ADAPT
+                    )
+                ).freeInExtraAmount(daoAddr, investmentProposalId);
 
             // vars.finalRaisedAmount = vars.investmentInfo.finalRaisedAmount;
         } else if (mode == 1) {
@@ -846,24 +855,22 @@ contract ManualVesting {
                     DaoHelper.VINTAGE_FUNDING_ADAPTER
                 )
             ).proposals(daoAddr, investmentProposalId);
-            // vars.nftEnable = vars.vinpbnfo.nftEnable;
-            // vars.escrow = vars.vinpbnfo.escrow;
+
             vars.fundingPoolExt = VintageFundingPoolExtension(
                 DaoRegistry(daoAddr).getExtensionAddress(
                     DaoHelper.VINTAGE_INVESTMENT_POOL_EXT
                 )
             );
-            vars.myInvestmentAmount =
-                (vars.fundingPoolExt.getPriorAmount(
-                    account,
-                    vars.tokenAddress,
-                    vars.executeBlockNum - 1
-                ) * vars.fundingAmount) /
-                vars.fundingPoolExt.getPriorAmount(
-                    address(DaoHelper.DAOSQUARE_TREASURY),
-                    vars.tokenAddress,
-                    vars.executeBlockNum - 1
-                );
+            vars.myInvestmentAmount = vars.fundingPoolExt.getPriorAmount(
+                account,
+                vars.tokenAddress,
+                vars.executeBlockNum - 1
+            );
+            vars.fundingAmount = vars.fundingPoolExt.getPriorAmount(
+                address(DaoHelper.DAOSQUARE_TREASURY),
+                vars.tokenAddress,
+                vars.executeBlockNum - 1
+            );
         } else if (mode == 2) {
             (
                 vars.cfundingInfo,
@@ -879,28 +886,22 @@ contract ManualVesting {
                 )
             ).proposals(daoAddr, investmentProposalId);
 
-            vars.fundingAmount = vars.cfundingInfo.fundingAmount;
-            // vars.finalRaisedAmount = vars.cfundingInfo.totalAmount;
             vars.cFundingPoolExt = CollectiveInvestmentPoolExtension(
                 DaoRegistry(daoAddr).getExtensionAddress(
                     DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
                 )
             );
-            // vars.nftEnable = vars.colVestingInfo.nftEnable;
-            // vars.escrow = vars.colEsInfo.escrow;
-            // vars.tokenAddress = vars.cfundingInfo.token;
 
-            vars.myInvestmentAmount =
-                (vars.cFundingPoolExt.getPriorAmount(
-                    account,
-                    vars.cfundingInfo.token,
-                    vars.executeBlockNum - 1
-                ) * vars.fundingAmount) /
-                vars.cFundingPoolExt.getPriorAmount(
-                    address(DaoHelper.DAOSQUARE_TREASURY),
-                    vars.cfundingInfo.token,
-                    vars.executeBlockNum - 1
-                );
+            vars.myInvestmentAmount = vars.cFundingPoolExt.getPriorAmount(
+                account,
+                vars.cfundingInfo.token,
+                vars.executeBlockNum - 1
+            );
+            vars.fundingAmount = vars.cFundingPoolExt.getPriorAmount(
+                address(DaoHelper.DAOSQUARE_TREASURY),
+                vars.cfundingInfo.token,
+                vars.executeBlockNum - 1
+            );
         }
 
         return (vars.myInvestmentAmount, vars.fundingAmount);

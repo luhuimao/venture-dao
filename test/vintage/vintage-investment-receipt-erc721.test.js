@@ -553,7 +553,7 @@ describe("vesting...", () => {
             true, //bool enable;
             5 //uint256 maxParticipantsAmount;
         ];
-      
+
         const vintageDaoBackerMembershipInfo1 = [
             1, // bool enable;
             "vintageDaoBackerMembershipInfo1",
@@ -764,7 +764,7 @@ describe("vesting...", () => {
         const ff = await tx1.wait();
         const executedInvestors = ff.events[ff.events.length - 1].args.investors;
         console.log("executedInvestors ", executedInvestors);
-        
+
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(blocktimestamp) + 60])
         await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
@@ -786,6 +786,15 @@ describe("vesting...", () => {
             "ssssssssssssssss"
         );
 
+        await expectRevert(this.vintageInvestmentReceiptERC721.safeMint(
+            this.daoAddr1,
+            proposalId,
+            mode,
+            tx1.hash,
+            "jjjjjjjj",
+            "ssssssssssssssss"
+        ), "revert");
+
         await this.vintageInvestmentReceiptERC721.connect(this.investor1).safeMint(
             this.daoAddr1,
             proposalId,
@@ -795,6 +804,35 @@ describe("vesting...", () => {
             "ssssssssssssssss"
         );
 
+        await expectRevert(this.vintageInvestmentReceiptERC721.connect(this.investor2).safeMint(
+            this.daoAddr1,
+            proposalId,
+            mode,
+            tx1.hash,
+            "jjjjjjjj",
+            "ssssssssssssssss"
+        ), "revert");
+
+        let tokenId1 = await this.vintageInvestmentReceiptERC721.investmentIdToTokenId(proposalId, this.owner.address);
+        let tokenId2 = await this.vintageInvestmentReceiptERC721.investmentIdToTokenId(proposalId, this.investor1.address);
+
+        let investmentProposalId1 = await this.vintageInvestmentReceiptERC721.tokenIdToInvestmentProposalId(tokenId1);
+        let investmentProposalId2 = await this.vintageInvestmentReceiptERC721.tokenIdToInvestmentProposalId(tokenId2);
+
+        console.log(`
+            tokenId1   ${tokenId1}    
+            tokenId2   ${tokenId2}    
+            investmentProposalId1   ${investmentProposalId1}
+            investmentProposalId2   ${investmentProposalId2}
+        `);
+
+        await this.vintageInvestmentReceiptERC721.transferFrom(this.owner.address, this.investor2.address, tokenId1);
+        tokenId1 = await this.vintageInvestmentReceiptERC721.investmentIdToTokenId(proposalId, this.owner.address);
+        let tokenId3 = await this.vintageInvestmentReceiptERC721.investmentIdToTokenId(proposalId, this.investor2.address);
+        console.log(`
+            tokenId1   ${tokenId1}    
+            tokenId3   ${tokenId3}    
+        `);
         const a = await this.vintageInvestmentReceiptERC721.tokenIdToInvestmentProposalInfo(1);
         // console.log(a);
         const tokenURI1 = await this.vintageInvestmentReceiptERC721.tokenURI(1);
@@ -803,8 +841,8 @@ describe("vesting...", () => {
         const svg1 = await this.vintageInvestmentReceiptERC721Helper.getSvg(1, this.vintageInvestmentReceiptERC721.address);
         const svg2 = await this.vintageInvestmentReceiptERC721Helper.getSvg(2, this.vintageInvestmentReceiptERC721.address);
 
-        console.log(tokenURI1);
-        console.log(svg2);
+        // console.log(tokenURI1);
+        // console.log(svg2);
 
     });
 
