@@ -173,6 +173,7 @@ contract ManualVesting {
     error InValidBatchVesting2Param();
     error CREATED();
     error UN_ELIGIBLE();
+    error INSUFFICIENT_FUND();
 
     mapping(uint256 => Vest) public vests;
     mapping(address => mapping(uint256 => uint256)) public tokenIdToVestId; //erc721 address => tokenId => vestId
@@ -293,13 +294,17 @@ contract ManualVesting {
             batchVestInfo[batchId].timeInfo.end == 0 ||
             batchVestInfo[batchId].timeInfo.stepDuration == 0
         ) revert InValidVestingTimeParam();
-        vars.depositedShares = _depositToken(
-            batchVestInfo[batchId].vestInfo.token,
-            batchVestInfo[batchId].vestInfo.owner,
-            address(this),
-            eligibleVestUsers[batchId][msg.sender].amount,
-            false
-        );
+
+        // vars.depositedShares = _depositToken(
+        //     batchVestInfo[batchId].vestInfo.token,
+        //     batchVestInfo[batchId].vestInfo.owner,
+        //     address(this),
+        //     eligibleVestUsers[batchId][msg.sender].amount,
+        //     false
+        // );
+
+        vars.depositedShares = eligibleVestUsers[batchId][msg.sender].amount;
+
         vars.duration =
             batchVestInfo[batchId].timeInfo.end -
             (batchVestInfo[batchId].timeInfo.start +
@@ -444,7 +449,7 @@ contract ManualVesting {
 
         uint256 canClaim = _balanceOf(vest) - vest.claimed;
 
-        if (canClaim == 0) return;
+        if (canClaim == 0) revert INSUFFICIENT_FUND();
 
         vest.claimed += uint128(canClaim);
 
@@ -557,6 +562,7 @@ contract ManualVesting {
         InvestmentReceiptERC721 receiptCon;
         uint256 startVestId;
         uint256 batchIds;
+        uint256 depositedShares;
     }
 
     function batchCreate(
@@ -617,23 +623,6 @@ contract ManualVesting {
                     false,
                     vars.batchIds
                 );
-
-                // createVesting(
-                //     CreateVestingParams(
-                //         params.startTime,
-                //         params.cliffEndTime,
-                //         params.endTime,
-                //         params.vestingInterval,
-                //         params.paybackToken,
-                //         investors[i],
-                //         vars.depositAmount,
-                //         params.cliffVestingAmount,
-                //         params.nftEnable,
-                //         params.erc721,
-                //         params.name,
-                //         params.description
-                //     )
-                // );
             }
         }
 
@@ -658,25 +647,16 @@ contract ManualVesting {
                     false,
                     vars.batchIds
                 );
-
-                // createVesting(
-                //     CreateVestingParams(
-                //         params.startTime,
-                //         params.cliffEndTime,
-                //         params.endTime,
-                //         params.vestingInterval,
-                //         params.paybackToken,
-                //         holders[i],
-                //         vars.depositAmount,
-                //         params.cliffVestingAmount,
-                //         params.nftEnable,
-                //         params.erc721,
-                //         params.name,
-                //         params.description
-                //     )
-                // );
             }
         }
+
+        vars.depositedShares = _depositToken(
+            batchVestInfo[vars.batchIds].vestInfo.token,
+            batchVestInfo[vars.batchIds].vestInfo.owner,
+            address(this),
+            batchVestInfo[vars.batchIds].total,
+            false
+        );
 
         emit BatchVesting1(investors, holders, total, vars.batchIds);
     }
@@ -755,6 +735,15 @@ contract ManualVesting {
                 params.paybackToken
             )
         );
+
+        vars.depositedShares = _depositToken(
+            batchVestInfo[vars.batchIds].vestInfo.token,
+            batchVestInfo[vars.batchIds].vestInfo.owner,
+            address(this),
+            batchVestInfo[vars.batchIds].total,
+            false
+        );
+
         emit BatchVesting2(receivers, vars.totalAmount, vars.batchIds);
     }
 

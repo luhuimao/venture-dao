@@ -889,32 +889,38 @@ describe("flex investment receipt NFT...", () => {
             evu2 amount ${hre.ethers.utils.formatEther(evu2.amount)}
         `)
 
-        // console.log("2 ", ss.events[1].event);
-        // console.log("3 ", ss.events[2].event);
-        // console.log("4 ", ss.events[3].args);
-        // console.log("5 ", ss.events[4].event);
-        // console.log("6 ", ss.events[5].event);
-        // console.log("7 ", ss.events[6].event);
-        // console.log("8 ", ss.events[7].args);
-        // console.log("9 ", ss.events[8].args);
-
-        const currentvestId = await this.manualVesting.vestIds();
+        let currentvestId = await this.manualVesting.vestIds();
         console.log("currentvestId ", currentvestId);
 
         await this.manualVesting.connect(this.investor1).createVesting2(ss.events[ss.events.length - 1].args.batchId);
         await this.manualVesting.connect(this.owner).createVesting2(ss.events[ss.events.length - 1].args.batchId);
 
         console.log("crated...");
+        currentvestId = await this.manualVesting.vestIds();
+        console.log("currentvestId ", currentvestId);
 
         let vestInfo1 = await this.manualVesting.vests(1);
         let vestInfo2 = await this.manualVesting.vests(2);
 
+        // console.log(vestInfo2);
 
         console.log(
             `
             vest1 total  ${hre.ethers.utils.formatEther(vestInfo1.total)}
             vest2 total ${hre.ethers.utils.formatEther(vestInfo2.total)}
+
+            claimed1 
+            ${hre.ethers.utils.formatEther(vestInfo1.claimed)}
+            claimed2
+            ${hre.ethers.utils.formatEther(vestInfo2.claimed)}
         `);
+
+        block_timestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(vendTime) > block_timestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(vendTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+
 
         await this.manualVesting.connect(this.investor1).withdraw(1);
         await this.manualVesting.connect(this.owner).withdraw(2);
@@ -927,7 +933,8 @@ describe("flex investment receipt NFT...", () => {
             claimed1 
             ${hre.ethers.utils.formatEther(vestInfo1.claimed)}
             claimed2
-            ${hre.ethers.utils.formatEther(vestInfo2.total)}`
+            ${hre.ethers.utils.formatEther(vestInfo2.total)}
+        `
         );
 
     });

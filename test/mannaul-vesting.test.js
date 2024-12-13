@@ -164,6 +164,15 @@ describe("mannual vesting...", () => {
 
         console.log("manualVesting ", manualVesting.address);
 
+        const manualVesting2 = await ManualVesting.deploy(
+            this.bentoBoxV1.address,
+            investmentReceiptERC721.address
+        );
+        await manualVesting2.deployed();
+        this.manualVesting2 = manualVesting2;
+
+        console.log("manualVesting2 ", manualVesting2.address);
+
 
         const ManualVestingERC721SVGHelper = await hre.ethers.getContractFactory("ManualVestingERC721SVGHelper");
         const manualVestingERC721SVGHelper = await ManualVestingERC721SVGHelper.deploy();
@@ -356,14 +365,14 @@ describe("mannual vesting...", () => {
         let vestInfo2 = await this.manualVesting.vests(event_vestId2);
 
         console.log(`
-            vestBal     ${vestBal}
-            vestBal2     ${vestBal2}
+            vestBal     ${hre.ethers.utils.formatEther(vestBal)}
+            vestBal2     ${hre.ethers.utils.formatEther(vestBal2)}
 
-            vestInfo.claimed  ${vestInfo.claimed}
-            vestInfo2.claimed  ${vestInfo2.claimed}
+            vestInfo.claimed  ${hre.ethers.utils.formatEther(vestInfo.claimed)}
+            vestInfo2.claimed  ${hre.ethers.utils.formatEther(vestInfo2.claimed)}
 
-            vestInfo.total  ${vestInfo.total}
-            vestInfo2.total  ${vestInfo2.total}
+            vestInfo.total  ${hre.ethers.utils.formatEther(vestInfo.total)}
+            vestInfo2.total  ${hre.ethers.utils.formatEther(vestInfo2.total)}
         `);
     });
 
