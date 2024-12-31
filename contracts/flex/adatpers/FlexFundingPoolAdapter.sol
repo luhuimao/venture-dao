@@ -58,6 +58,8 @@ contract FlexInvestmentPoolAdapterContract is
     error LessMinDepositAmount();
     error ExceedMaxFundingAmount();
     error MaxInvestorReach();
+    error IN_VALID_AMOUNT();
+    error ACCESS_DENIED();
 
     mapping(address => EnumerableSet.AddressSet) investorWhiteList;
     mapping(address => mapping(bytes32 => InvestorMembershipInfo))
@@ -112,7 +114,7 @@ contract FlexInvestmentPoolAdapterContract is
                 dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
             );
         uint256 balance = flexInvestmentPool.balanceOf(proposalId, msg.sender);
-        require(balance > 0 && amount <= balance, "!amount");
+        if (amount <= 0 || balance < amount) revert IN_VALID_AMOUNT();
         FlexFundingAdapterContract flexInvestment = FlexFundingAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
         );
@@ -163,50 +165,16 @@ contract FlexInvestmentPoolAdapterContract is
         emit WithDraw(address(dao), proposalId, amount, msg.sender);
     }
 
-    // function createInvestorMembership(
-    //     DaoRegistry dao,
-    //     uint8 varifyType,
-    //     uint256 minHolding,
-    //     address tokenAddress,
-    //     uint256 tokenId
-    // ) external {
-    //     require(
-    //         msg.sender ==
-    //             dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER) ||
-    //             dao.isMember(msg.sender),
-    //         "!access"
-    //     );
-    //     bytes32 hashedName = TypeConver.bytesToBytes32(abi.encodePacked(name));
-    //     require(
-    //         !investorMemberShips[address(dao)][hashedName].created,
-    //         string(
-    //             abi.encodePacked(
-    //                 "name ",
-    //                 name,
-    //                 " Investor Membership name already taken"
-    //             )
-    //         )
-    //     );
-    //     investorMemberShips[address(dao)][hashedName] = InvestorMembershipInfo(
-    //         true,
-    //         varifyType,
-    //         minHolding,
-    //         tokenAddress,
-    //         tokenId
-    //     );
-    //     emit InvestorMembershipCreated(address(dao), name, hashedName);
-    // }
-
     function registerInvestorWhiteList(
         DaoRegistry dao,
         address account
     ) external {
-        require(
-            msg.sender ==
+        if (
+            !(msg.sender ==
                 dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER) ||
-                dao.isMember(msg.sender),
-            "!access"
-        );
+                dao.isMember(msg.sender))
+        ) revert ACCESS_DENIED();
+
         // bytes32 hashedName = TypeConver.bytesToBytes32(abi.encodePacked(name));
         if (!investorWhiteList[address(dao)].contains(account)) {
             investorWhiteList[address(dao)].add(account);
@@ -214,11 +182,10 @@ contract FlexInvestmentPoolAdapterContract is
     }
 
     function clearInvestorWhitelist(DaoRegistry dao) external {
-        require(
-            msg.sender ==
-                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER),
-            "!access"
-        );
+        if (
+            msg.sender !=
+            dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
+        ) revert ACCESS_DENIED();
         address[] memory tem;
         tem = investorWhiteList[address(dao)].values();
         uint256 len = tem.length;
@@ -296,7 +263,7 @@ contract FlexInvestmentPoolAdapterContract is
             block.timestamp > vars.fundRaiseEndTime
         ) revert NotInFundRaise();
 
-        require(amount > 0, "!amount");
+        if (amount <= 0) revert IN_VALID_AMOUNT();
 
         vars.fundRaiseType = vars.flexFundingHelper.getfundRaiseType(
             dao,
@@ -309,8 +276,12 @@ contract FlexInvestmentPoolAdapterContract is
         (vars.minDepositAmount, vars.maxDepositAmount) = vars
             .flexFundingHelper
             .getDepositAmountLimit(dao, proposalId);
-        if (vars.minDepositAmount > 0 && amount < vars.minDepositAmount)
-            revert LessMinDepositAmount();
+
+        if (
+            vars.minDepositAmount > 0 &&
+            balanceOf(dao, proposalId, msg.sender) + amount <
+            vars.minDepositAmount
+        ) revert LessMinDepositAmount();
 
         if (
             vars.maxDepositAmount > 0 &&
@@ -343,8 +314,6 @@ contract FlexInvestmentPoolAdapterContract is
         vars.flexFundingHelper = FlexFundingHelperAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_HELPER_ADAPTER)
         );
-        // if (vars.flexFunding.isPriorityDepositer(dao, proposalId, msg.sender))
-        //     freeINPriorityDeposits[address(dao)][proposalId] += amount;
 
         if (
             vars.flexFundingHelper.isPriorityDepositer(
@@ -373,10 +342,9 @@ contract FlexInvestmentPoolAdapterContract is
         DaoRegistry dao,
         bytes32 proposalId
     ) external {
-        require(
-            msg.sender == dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT),
-            "!access"
-        );
+        if (msg.sender != dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT))
+            revert ACCESS_DENIED();
+
         EscrowFundLocalVars memory vars;
         vars.flexFundingHelper = FlexFundingHelperAdapterContract(
             dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_HELPER_ADAPTER)
@@ -555,28 +523,6 @@ contract FlexInvestmentPoolAdapterContract is
     ) external view returns (bool) {
         return investorWhiteList[address(dao)].contains(account);
     }
-
-    // function getInvestorMembershipInfo(
-    //     DaoRegistry dao
-    // )
-    //     external
-    //     view
-    //     returns (
-    //         bool created,
-    //         uint8 varifyType,
-    //         uint256 minHolding,
-    //         address tokenAddress,
-    //         uint256 tokenId
-    //     )
-    // {
-    //     bytes32 hashedName = TypeConver.bytesToBytes32(abi.encodePacked(name));
-
-    //     created = investorMemberShips[address(dao)].created;
-    //     varifyType = investorMemberShips[address(dao)].varifyType;
-    //     minHolding = investorMemberShips[address(dao)].minHolding;
-    //     tokenAddress = investorMemberShips[address(dao)].tokenAddress;
-    //     tokenId = investorMemberShips[address(dao)].tokenId;
-    // }
 
     function isPriorityDepositWhitelist(
         DaoRegistry dao,

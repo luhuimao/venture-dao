@@ -86,11 +86,10 @@ contract VintageGovernorVotingAssetAllocationProposalAdapterContract is
         if (govs.length != allocs.length) revert INVALID_PARAMS();
         varifyGovernor(dao, govs);
         dao.increaseVinGovernorVotingAssetAllocationId();
-
         bytes32 proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
                 bytes8(uint64(uint160(address(dao)))),
-                "Vintage Governor Allocation #",
+                "VinGovAlloc#",
                 Strings.toString(
                     dao.getCurrentVinGovernorVotingAssetAllocationId()
                 )
@@ -145,17 +144,16 @@ contract VintageGovernorVotingAssetAllocationProposalAdapterContract is
 
         if (dao.getProposalFlag(proposalId, DaoRegistry.ProposalFlag.PROCESSED))
             revert PROPOSAL_ALREADY_PROCESSED();
-        IVintageVoting flexVotingContract = IVintageVoting(
+        IVintageVoting vinVotingContract = IVintageVoting(
             dao.getAdapterAddress(DaoHelper.VINTAGE_VOTING_ADAPT)
         );
 
-        if (address(flexVotingContract) == address(0))
-            revert ADAPTER_NOT_FUND();
+        if (address(vinVotingContract) == address(0)) revert ADAPTER_NOT_FUND();
 
         IVintageVoting.VotingState voteResult;
         uint256 nbYes;
         uint256 nbNo;
-        (voteResult, nbYes, nbNo) = flexVotingContract.voteResult(
+        (voteResult, nbYes, nbNo) = vinVotingContract.voteResult(
             dao,
             proposalId
         );

@@ -376,8 +376,10 @@ contract VintageFundingPoolAdapterContract is
         );
         vars.fundRaiseCap = dao.getConfiguration(DaoHelper.FUND_RAISING_MAX);
 
-        if (vars.minDepositAmount > 0 && amount < vars.minDepositAmount)
-            revert LESS_THAN_MIN_DEPOSIT_AMOUNT();
+        if (
+            vars.minDepositAmount > 0 &&
+            amount + balanceOf(dao, msg.sender) < vars.minDepositAmount
+        ) revert LESS_THAN_MIN_DEPOSIT_AMOUNT();
 
         if (
             vars.maxDepositAmount > 0 &&

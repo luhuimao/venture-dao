@@ -212,8 +212,13 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
 
         vars.fundRaiseCap = dao.getConfiguration(DaoHelper.FUND_RAISING_MAX);
         if (vars.minDepositAmount > 0) {
-            if (amount < vars.minDepositAmount)
-                revert LESS_MIN_DEPOSIT_AMOUNT();
+            if (
+                amount +
+                    investorsDepositAmountByFundRaise[address(dao)][
+                        fundRaiseProposalId
+                    ][msg.sender] <
+                vars.minDepositAmount
+            ) revert LESS_MIN_DEPOSIT_AMOUNT();
         }
         if (vars.maxDepositAmount > 0) {
             if (

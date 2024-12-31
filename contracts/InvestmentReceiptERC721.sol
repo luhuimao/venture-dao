@@ -20,16 +20,16 @@ import "./collective/extensions/CollectiveFundingPool.sol";
 import "./helpers/DaoHelper.sol";
 import "./helpers/InvestmentReceiptERC721Helper.sol";
 import "./flex/adatpers/FlexFreeInEscrowFund.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
 import "hardhat/console.sol";
 
 contract InvestmentReceiptERC721 is ERC721 {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
+    using EnumerableSet for EnumerableSet.UintSet;
 
     address public _owner;
-    // address public flexInvestmentContrAddress;
-    // address public vintageInvestmentContrAddress;
-    // address public collectiveInvestmentContrAddress;
     address public receiptERC721HelperContrAddress;
     /// @dev Global max total supply of NFTs.
     uint256 public maxTotalSupply;
@@ -38,14 +38,13 @@ contract InvestmentReceiptERC721 is ERC721 {
 
     /// @dev Emitted when the global max supply of tokens is updated.
     // event MaxTotalSupplyUpdated(uint256 maxTotalSupply);
-    // mapping(bytes32 => mapping(address => bool)) public mintedInfo;
-    mapping(bytes32 => mapping(address => uint256))
-        public investmentIdToTokenId;
+    // mapping(bytes32 => mapping(address => uint256))
+    //     public investmentIdToTokenId;
     mapping(uint256 => bytes32) public tokenIdToInvestmentProposalId;
-    // mapping(address => uint256) public holderToTokenId;
     mapping(uint256 => InvestmentReceiptInfo)
         public tokenIdToInvestmentProposalInfo;
     mapping(bytes32 => mapping(address => bool)) public mintedAccounts;
+    mapping(bytes32 => mapping(address => EnumerableSet.UintSet)) proposalId_tokenIds;
 
     struct InvestmentReceiptInfo {
         address daoAddress;
@@ -250,7 +249,8 @@ contract InvestmentReceiptERC721 is ERC721 {
 
         _safeMint(msg.sender, newItemId);
         mintedAccounts[investmentProposalId][msg.sender] = true;
-        investmentIdToTokenId[investmentProposalId][msg.sender] = newItemId;
+        // investmentIdToTokenId[investmentProposalId][msg.sender] = newItemId;
+        proposalId_tokenIds[investmentProposalId][msg.sender].add(newItemId);
         tokenIdToInvestmentProposalId[newItemId] = investmentProposalId;
         // holderToTokenId[msg.sender] = newItemId;
         maxTotalSupply += 1;
@@ -322,8 +322,14 @@ contract InvestmentReceiptERC721 is ERC721 {
         // holderToTokenId[to] = id;
 
         bytes32 investmentProposalId = tokenIdToInvestmentProposalId[id];
-        investmentIdToTokenId[investmentProposalId][from] = 0;
-        investmentIdToTokenId[investmentProposalId][to] = id;
+        // investmentIdToTokenId[investmentProposalId][from] = 0;
+        // investmentIdToTokenId[investmentProposalId][to] = id;
+
+        if (!proposalId_tokenIds[investmentProposalId][to].contains(id))
+            proposalId_tokenIds[investmentProposalId][to].add(id);
+
+        if (proposalId_tokenIds[investmentProposalId][from].contains(id))
+            proposalId_tokenIds[investmentProposalId][from].remove(id);
 
         ERC721.transferFrom(from, to, id);
     }
@@ -352,5 +358,12 @@ contract InvestmentReceiptERC721 is ERC721 {
 
     function totalSupply() external view returns (uint256) {
         return maxTotalSupply;
+    }
+
+    function getTokenIds(
+        bytes32 investmentProposalId,
+        address account
+    ) external view returns (uint256[] memory) {
+        return proposalId_tokenIds[investmentProposalId][account].values();
     }
 }

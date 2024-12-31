@@ -563,6 +563,7 @@ contract ManualVesting {
         uint256 startVestId;
         uint256 batchIds;
         uint256 depositedShares;
+        uint256[] tokenIds;
     }
 
     function batchCreate(
@@ -628,25 +629,41 @@ contract ManualVesting {
 
         if (holders.length > 0) {
             for (uint8 i = 0; i < holders.length; i++) {
-                (, , , , vars.totalAmount, vars.investedAmount, , , , ) = vars
-                    .receiptCon
-                    .tokenIdToInvestmentProposalInfo(
-                        vars.receiptCon.investmentIdToTokenId(
-                            proposalId,
-                            holders[i]
-                        )
-                    );
-
-                vars.depositAmount =
-                    (total * vars.investedAmount) /
-                    vars.totalAmount;
-
-                eligibleVestUsers[vars.batchIds][holders[i]] = EligibleVestUser(
-                    holders[i],
-                    vars.depositAmount,
-                    false,
-                    vars.batchIds
+                vars.tokenIds = vars.receiptCon.getTokenIds(
+                    proposalId,
+                    holders[i]
                 );
+                if (vars.tokenIds.length > 0) {
+                    for (uint8 j = 0; j < vars.tokenIds.length; j++) {
+                        (
+                            ,
+                            ,
+                            ,
+                            ,
+                            vars.totalAmount,
+                            vars.investedAmount,
+                            ,
+                            ,
+                            ,
+
+                        ) = vars.receiptCon.tokenIdToInvestmentProposalInfo(
+                            vars.tokenIds[j]
+                        );
+
+                        vars.depositAmount +=
+                            (total * vars.investedAmount) /
+                            vars.totalAmount;
+                    }
+
+                    eligibleVestUsers[vars.batchIds][
+                        holders[i]
+                    ] = EligibleVestUser(
+                        holders[i],
+                        vars.depositAmount,
+                        false,
+                        vars.batchIds
+                    );
+                }
             }
         }
 
