@@ -155,6 +155,7 @@ library GovernanceHelper {
             DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ADDRESS
         );
         if (votingWeightedType == 1) {
+            //quantity
             uint256 bal = 0;
             if (etype == 0) {
                 //0 ERC20
@@ -226,19 +227,20 @@ library GovernanceHelper {
                 // return 1;
             } else if (etype == 4) {
                 //DEPOSIT
-                if (
-                    fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
-                    DaoHelper.FundRaiseState.DONE &&
-                    block.timestamp <
-                    dao.getConfiguration(DaoHelper.FUND_END_TIME) &&
-                    newFundAdapt.createdFundCounter(address(dao)) >= 1
-                ) {
-                    votingWeight = fundingPoolAdapt.balanceOf(dao, account) > 0
-                        ? 1
-                        : 0;
-                } else {
-                    return 1;
-                }
+                // if (
+                //     fundingPoolAdapt.daoFundRaisingStates(address(dao)) ==
+                //     DaoHelper.FundRaiseState.DONE &&
+                //     block.timestamp <
+                //     dao.getConfiguration(DaoHelper.FUND_END_TIME) &&
+                //     newFundAdapt.createdFundCounter(address(dao)) >= 1
+                // ) {
+                //     votingWeight = fundingPoolAdapt.balanceOf(dao, account) > 0
+                //         ? 1
+                //         : 0;
+                // } else {
+                //     return 1;
+                // }
+                return 1;
             } else {
                 return 0;
             }
