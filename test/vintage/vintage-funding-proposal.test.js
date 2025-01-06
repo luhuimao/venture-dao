@@ -728,14 +728,14 @@ describe("funding...", () => {
             .paybackTokenAmount;
         console.log(approveAmount);
         console.log(requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price));
-        // await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, approveAmount);
+        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, approveAmount);
 
-        // await this.vintageFundingReturnTokenAdapterContract.setFundingApprove(
-        //     this.daoAddr1,
-        //     proposalId,
-        //     this.testtoken2.address,
-        //     approveAmount
-        // );
+        await this.vintageFundingReturnTokenAdapterContract.setFundingApprove(
+            this.daoAddr1,
+            proposalId,
+            this.testtoken2.address,
+            approveAmount
+        );
 
         await vintageFundingAdapterContract.startVotingProcess(this.daoAddr1, proposalId);
         investmentProposal = await this.vintageFundingAdapterContract.proposals(this.daoAddr1,
@@ -744,8 +744,14 @@ describe("funding...", () => {
         console.log(`
         proposal state  ${investmentProposal.status}
         `);
-        await vintageFundingAdapterContract.processProposal(this.daoAddr1, proposalId);
-        
+
+        await this.vintageVotingAdapterContract.connect(this.genesis_raiser1).submitVote(this.daoAddr1, proposalId, 1);
+        await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr1, proposalId, 1);
+        await this.vintageVotingAdapterContract.submitVote(this.daoAddr1, proposalId, 1);
+
+
+        // await vintageFundingAdapterContract.processProposal(this.daoAddr1, proposalId);
+
         blocknum = (await hre.ethers.provider.getBlock("latest")).number;
         priorBal1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.testtoken1.address, parseInt(blocknum) - 1);
         priorBal2 = await vintageFundingPoolExtContrct.getPriorAmount(this.investor1.address, this.testtoken1.address, parseInt(blocknum) - 1);
@@ -755,9 +761,6 @@ describe("funding...", () => {
         priorBal2 ${hre.ethers.utils.formatEther(priorBal2)}
         `);
 
-        await this.vintageVotingAdapterContract.connect(this.genesis_raiser1).submitVote(this.daoAddr1, proposalId, 1);
-        await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr1, proposalId, 1);
-        await this.vintageVotingAdapterContract.submitVote(this.daoAddr1, proposalId, 1);
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         const fundingstopVoteTime = parseInt(blocktimestamp) + 60 * 10;

@@ -813,10 +813,10 @@ describe("collective investment receipt NFT...", () => {
             rntokenId ${rntokenId}
          `);
 
-        const tokenId1 = await this.investmentReceiptERC721.investmentIdToTokenId(proposalId, this.owner.address);
-        const tokenId2 = await this.investmentReceiptERC721.investmentIdToTokenId(proposalId, this.investor1.address);
-        const r1 = await this.investmentReceiptERC721.tokenIdToInvestmentProposalInfo(tokenId1);
-        const r2 = await this.investmentReceiptERC721.tokenIdToInvestmentProposalInfo(tokenId1);
+        let tokenId1 = await this.investmentReceiptERC721.getTokenIds(proposalId, this.owner.address);
+        let tokenId2 = await this.investmentReceiptERC721.getTokenIds(proposalId, this.investor1.address);
+        // const r1 = await this.investmentReceiptERC721.tokenIdToInvestmentProposalInfo(tokenId1);
+        // const r2 = await this.investmentReceiptERC721.tokenIdToInvestmentProposalInfo(tokenId1);
 
         // console.log(r1);
         console.log(`
@@ -829,16 +829,24 @@ describe("collective investment receipt NFT...", () => {
         // const svg = await this.investmentReceiptERC721Helper.getSvg(1, this.investmentReceiptERC721.address);
         // // const svg2 = await this.investmentReceiptERC721Helper.getSvg(2, this.investmentReceiptERC721.address);
 
-        // txs = await this.investmentReceiptERC721.connect(this.owner).transferFrom(this.owner.address, this.investor2.address, 1);
-        // ss = await txs.wait();
-        // let ffrom = ss.events[ss.events.length - 1].args.from;
-        // let tto = ss.events[ss.events.length - 1].args.to;
-        // let iid = ss.events[ss.events.length - 1].args.id;
-        // console.log(`
-        //     ffrom ${ffrom}
-        //     tto   ${tto}
-        //     iid   ${iid}
-        // `);
+        txs = await this.investmentReceiptERC721.connect(this.owner).transferFrom(this.owner.address, this.investor1.address, 1);
+        ss = await txs.wait();
+        let ffrom = ss.events[ss.events.length - 1].args.from;
+        let tto = ss.events[ss.events.length - 1].args.to;
+        let iid = ss.events[ss.events.length - 1].args.id;
+        console.log(`
+            ffrom ${ffrom}
+            tto   ${tto}
+            iid   ${iid}
+        `);
+
+        tokenId1 = await this.investmentReceiptERC721.getTokenIds(proposalId, this.owner.address);
+        tokenId2 = await this.investmentReceiptERC721.getTokenIds(proposalId, this.investor1.address);
+
+        console.log(`
+            tokenId1   ${tokenId1}
+            tokenId2   ${tokenId2}
+        `);
         // console.log(tokenId1);
         // console.log(tokenId2);
         // console.log(tokenURI);
@@ -901,7 +909,6 @@ describe("collective investment receipt NFT...", () => {
 
         console.log("len ", ss.events.length);
 
-        console.log("1 ", ss.events[0].event);
         console.log("investors ", ss.events[ss.events.length - 1].args.investors);
         console.log("holders ", ss.events[ss.events.length - 1].args.holders);
         console.log("totalAmount ", hre.ethers.utils.formatEther(ss.events[ss.events.length - 1].args.totalAmount));
@@ -925,7 +932,7 @@ describe("collective investment receipt NFT...", () => {
         console.log("currentvestId ", currentvestId);
 
         await this.manualVesting.connect(this.investor1).createVesting2(ss.events[ss.events.length - 1].args.batchId);
-        await this.manualVesting.connect(this.owner).createVesting2(ss.events[ss.events.length - 1].args.batchId);
+        // await this.manualVesting.connect(this.owner).createVesting2(ss.events[ss.events.length - 1].args.batchId);
 
         console.log("crated...");
 
@@ -941,7 +948,7 @@ describe("collective investment receipt NFT...", () => {
         `);
 
         await this.manualVesting.connect(this.investor1).withdraw(1);
-        await this.manualVesting.connect(this.owner).withdraw(2);
+        // await this.manualVesting.connect(this.owner).withdraw(2);
 
         vestInfo1 = await this.manualVesting.vests(1);
         vestInfo2 = await this.manualVesting.vests(2);

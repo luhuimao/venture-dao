@@ -58,7 +58,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
     mapping(address => mapping(bytes32 => mapping(address => bool)))
         public priorityDepositers;
     mapping(address => uint256) public liquidationId;
-    mapping(bytes32 => mapping(address => uint256)) public graceWithdrawAmount;
+    mapping(address => mapping(address => uint256)) public graceWithdrawAmount;
 
     uint256 public protocolFee = (3 * 1e18) / 1000; // 0.3%
 
@@ -94,10 +94,10 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         ) {
             revert INVESTMENT_GRACE_PERIOD();
         } else {
-            bytes32 investmentProposalId = ColletiveFundingProposalAdapterContract(
-                    dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
-                ).ongoingProposal(address(dao));
-            graceWithdrawAmount[investmentProposalId][msg.sender] += amount;
+            // bytes32 investmentProposalId = ColletiveFundingProposalAdapterContract(
+            //         dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
+            //     ).ongoingProposal(address(dao));
+            graceWithdrawAmount[address(dao)][msg.sender] += amount;
         }
 
         CollectiveInvestmentPoolExtension fundingpool = CollectiveInvestmentPoolExtension(
@@ -793,11 +793,11 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         DaoRegistry dao,
         address account
     ) public view returns (uint256) {
-        bytes32 investmentProposalId = ColletiveFundingProposalAdapterContract(
-            dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
-        ).ongoingProposal(address(dao));
+        // bytes32 investmentProposalId = ColletiveFundingProposalAdapterContract(
+        //     dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
+        // ).ongoingProposal(address(dao));
 
-        return graceWithdrawAmount[investmentProposalId][account];
+        return graceWithdrawAmount[address(dao)][account];
     }
 
     function getInvestorsByFundRaise(

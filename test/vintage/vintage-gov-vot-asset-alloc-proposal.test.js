@@ -430,6 +430,16 @@ describe("daoset proposal...", () => {
     it("governor voting asset allocation proposal", async () => {
         const gov = [this.owner.address, this.genesis_raiser1.address, this.genesis_raiser2.address];
         const alloc = [390, 200, 400];
+
+
+        for (var i = 0; i < 10000; i++) {
+            await this.vintageGovernorVotingAssetAllocationProposalAdapterContract.submitProposal(
+                this.daoAddr1,
+                gov,
+                alloc
+            );
+        }
+
         const tx = await this.vintageGovernorVotingAssetAllocationProposalAdapterContract.submitProposal(
             this.daoAddr1,
             gov,

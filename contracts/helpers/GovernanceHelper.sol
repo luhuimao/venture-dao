@@ -558,16 +558,19 @@ library GovernanceHelper {
         }
 
         if (votingWeightedType == 1) {
+            //log2
             uint256 bal = 0;
             if (etype == 0) {
                 //0 deposit
-                bal =
-                    (fundingiPoolAdapt.balanceOf(dao, account) +
-                        fundingiPoolAdapt.getGraceWithdrawAmount(
-                            dao,
-                            account
-                        )) /
-                    10 ** 18;
+                // bal =
+                //     (fundingiPoolAdapt.balanceOf(dao, account) +
+                //         fundingiPoolAdapt.getGraceWithdrawAmount(
+                //             dao,
+                //             account
+                //         )) /
+                //     10 ** 18;
+
+                bal = fundingiPoolAdapt.balanceOf(dao, account) / 10 ** 18;
             } else {
                 return 0;
             }
@@ -582,11 +585,12 @@ library GovernanceHelper {
             uint128 votingWeight = 0;
             if (etype == 0) {
                 //0 deposit
-                votingWeight = fundingiPoolAdapt.balanceOf(dao, account) +
-                    fundingiPoolAdapt.getGraceWithdrawAmount(dao, account) >
-                    0
-                    ? 1
-                    : 0;
+                // votingWeight = fundingiPoolAdapt.balanceOf(dao, account) +
+                //     fundingiPoolAdapt.getGraceWithdrawAmount(dao, account) >
+                //     0
+                //     ? 1
+                //     : 0;
+                return 1;
             } else {
                 return 0;
             }
@@ -596,13 +600,7 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 deposit
-                bal =
-                    (fundingiPoolAdapt.balanceOf(dao, account) +
-                        fundingiPoolAdapt.getGraceWithdrawAmount(
-                            dao,
-                            account
-                        )) /
-                    10 ** 18;
+                bal = fundingiPoolAdapt.balanceOf(dao, account) / 10 ** 18;
             } else {
                 return 0;
             }
