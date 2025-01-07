@@ -313,14 +313,38 @@ contract VintageFundingPoolAdapterContract is
                                 DaoHelper.VINTAGE_ESCROW_FUND_ADAPTER
                             )
                         );
-                    //1. escrow Fund From Funding Pool
-                    escrowFundAdapter.escrowFundFromFundingPool(
-                        dao,
-                        fundRoundCounter,
-                        tokenAddr,
-                        allInvestors[i],
-                        bal
-                    );
+                    //1. escrow Fund From Liquidation
+                    // escrowFundAdapter.escrowFundFromFundingPool(
+                    //     dao,
+                    //     fundRoundCounter,
+                    //     tokenAddr,
+                    //     allInvestors[i],
+                    //     bal
+                    // );
+                    if (
+                        daoFundRaisingStates[address(dao)] ==
+                        DaoHelper.FundRaiseState.FAILED
+                    ) {
+                        escrowFundAdapter.escrowFundFromFailedFundRaising(
+                            dao,
+                            fundRoundCounter,
+                            tokenAddr,
+                            allInvestors[i],
+                            bal
+                        );
+                    } else {
+                        escrowFundAdapter.escrowFundFromLiquidation(
+                            dao,
+                            fundRoundCounter,
+                            tokenAddr,
+                            allInvestors[i],
+                            bal
+                        );
+
+                        daoFundRaisingStates[address(dao)] = DaoHelper
+                            .FundRaiseState
+                            .NOT_STARTED;
+                    }
                     //2. send fund to escrow fund contract
                     fundingpool.distributeFunds(
                         dao.getAdapterAddress(
@@ -339,9 +363,6 @@ contract VintageFundingPoolAdapterContract is
                 }
             }
 
-            daoFundRaisingStates[address(dao)] = DaoHelper
-                .FundRaiseState
-                .NOT_STARTED;
             emit ClearFund(address(dao), escrwoAmount, msg.sender);
         }
     }
@@ -541,6 +562,7 @@ contract VintageFundingPoolAdapterContract is
         VintageFundRaiseAdapterContract fundRaiseContract;
         uint256 fundRoundCounter;
         VintageFreeInEscrowFundAdapterContract freeInEscrowFundAdapter;
+        VintageEscrowFundAdapterContract escrowFundAdaptContr;
         uint256 maxFund;
         uint256 priorityFunds;
         uint256 poolFunds;
@@ -550,7 +572,7 @@ contract VintageFundingPoolAdapterContract is
     function escorwExtraFreeInFund(DaoRegistry dao) internal {
         EscrowFreeInFundLocalVars memory vars;
         if (
-            dao.getConfiguration(DaoHelper.VINTAGE_FUNDRAISE_STYLE) == 1 &&
+            dao.getConfiguration(DaoHelper.VINTAGE_FUNDRAISE_STYLE) == 1 && //
             poolBalance(dao) > dao.getConfiguration(DaoHelper.FUND_RAISING_MAX)
         ) {
             vars.fundingpool = VintageFundingPoolExtension(
@@ -565,11 +587,14 @@ contract VintageFundingPoolAdapterContract is
             vars.fundRoundCounter = vars.fundRaiseContract.createdFundCounter(
                 address(dao)
             );
-            vars
-                .freeInEscrowFundAdapter = VintageFreeInEscrowFundAdapterContract(
-                dao.getAdapterAddress(
-                    DaoHelper.VINTAGE_FREE_IN_ESCROW_FUND_ADAPTER
-                )
+            // vars
+            //     .freeInEscrowFundAdapter = VintageFreeInEscrowFundAdapterContract(
+            //     dao.getAdapterAddress(
+            //         DaoHelper.VINTAGE_FREE_IN_ESCROW_FUND_ADAPTER
+            //     )
+            // );
+            vars.escrowFundAdaptContr = VintageEscrowFundAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_ESCROW_FUND_ADAPTER)
             );
             vars.maxFund = dao.getConfiguration(DaoHelper.FUND_RAISING_MAX);
             vars.fundRaiseProposalId = vars.fundRaiseContract.lastProposalIds(
@@ -607,8 +632,15 @@ contract VintageFundingPoolAdapterContract is
                 }
 
                 if (vars.extraFund > 0) {
-                    //1. escrow Fund From Funding Pool
-                    vars.freeInEscrowFundAdapter.escrowFundFromFundingPool(
+                    //1. escrow Fund From Over Raised
+                    // vars.freeInEscrowFundAdapter.escrowFundFromFundingPool(
+                    //     dao,
+                    //     vars.fundRoundCounter,
+                    //     vars.tokenAddr,
+                    //     allInvestors[i],
+                    //     vars.extraFund
+                    // );
+                    vars.escrowFundAdaptContr.escrowFundFromOverRaised(
                         dao,
                         vars.fundRoundCounter,
                         vars.tokenAddr,
@@ -618,7 +650,7 @@ contract VintageFundingPoolAdapterContract is
                     //2. send fund to free in escrow fund contract
                     vars.fundingpool.distributeFunds(
                         dao.getAdapterAddress(
-                            DaoHelper.VINTAGE_FREE_IN_ESCROW_FUND_ADAPTER
+                            DaoHelper.VINTAGE_ESCROW_FUND_ADAPTER
                         ),
                         vars.tokenAddr,
                         vars.extraFund

@@ -582,7 +582,7 @@ library GovernanceHelper {
             return votingWeight;
         } else if (votingWeightedType == 2) {
             //1 voter 1 vote
-            uint128 votingWeight = 0;
+            // uint128 votingWeight = 0;
             if (etype == 0) {
                 //0 deposit
                 // votingWeight = fundingiPoolAdapt.balanceOf(dao, account) +
@@ -594,7 +594,7 @@ library GovernanceHelper {
             } else {
                 return 0;
             }
-            return votingWeight;
+            // return votingWeight;
         } else if (votingWeightedType == 0) {
             //quantity
             uint256 bal = 0;

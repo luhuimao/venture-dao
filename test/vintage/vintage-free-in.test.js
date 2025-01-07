@@ -577,7 +577,7 @@ describe("fund establishment...", () => {
             true, //bool enable;
             5 //uint256 maxParticipantsAmount;
         ];
-      
+
         const vintageDaoBackerMembershipInfo1 = [
             1, // bool enable;
             "vintageDaoBackerMembershipInfo1",
@@ -694,9 +694,13 @@ describe("fund establishment...", () => {
         depositBal3 = await this.vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.investor2.address);
 
 
-        let freeInEscrowAmount1 = await this.vintageFreeInEscrowFundAdapterContract.escrowFunds(this.daoAddr1, 1, this.owner.address);
-        let freeInEscrowAmount2 = await this.vintageFreeInEscrowFundAdapterContract.escrowFunds(this.daoAddr1, 1, this.investor1.address);
-        let freeInEscrowAmount3 = await this.vintageFreeInEscrowFundAdapterContract.escrowFunds(this.daoAddr1, 1, this.investor2.address);
+        // let freeInEscrowAmount1 = await this.vintageFreeInEscrowFundAdapterContract.escrowFunds(this.daoAddr1, 1, this.owner.address);
+        // let freeInEscrowAmount2 = await this.vintageFreeInEscrowFundAdapterContract.escrowFunds(this.daoAddr1, 1, this.investor1.address);
+        // let freeInEscrowAmount3 = await this.vintageFreeInEscrowFundAdapterContract.escrowFunds(this.daoAddr1, 1, this.investor2.address);
+
+        let freeInEscrowAmount1 = await this.vintageEscrowFundAdapterContract.escrowFundsFromOverRaised(this.daoAddr1, this.testtoken1.address, this.owner.address, 1);
+        let freeInEscrowAmount2 = await this.vintageEscrowFundAdapterContract.escrowFundsFromOverRaised(this.daoAddr1, this.testtoken1.address, this.investor1.address, 1);
+        let freeInEscrowAmount3 = await this.vintageEscrowFundAdapterContract.escrowFundsFromOverRaised(this.daoAddr1, this.testtoken1.address, this.investor2.address, 1);
 
         console.log(`
         executed...
@@ -709,9 +713,9 @@ describe("fund establishment...", () => {
         poolBal      ${hre.ethers.utils.formatEther(poolBal)}
         priorityDepositAmount  ${hre.ethers.utils.formatEther(priorityDepositAmount)}
 
-        freeInEscrowAmount1  ${hre.ethers.utils.formatEther(freeInEscrowAmount1.amount)}
-        freeInEscrowAmount2  ${hre.ethers.utils.formatEther(freeInEscrowAmount2.amount)}
-        freeInEscrowAmount3  ${hre.ethers.utils.formatEther(freeInEscrowAmount3.amount)}
+        freeInEscrowAmount1  ${hre.ethers.utils.formatEther(freeInEscrowAmount1)}
+        freeInEscrowAmount2  ${hre.ethers.utils.formatEther(freeInEscrowAmount2)}
+        freeInEscrowAmount3  ${hre.ethers.utils.formatEther(freeInEscrowAmount3)}
 
         `);
     });
