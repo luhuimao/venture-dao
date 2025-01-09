@@ -155,11 +155,40 @@ contract CollectiveVotingAdapterContract is
             vote.nbNo += votingWeight;
         }
 
-        uint256 currentQuorum = (vote.nbYes + vote.nbNo) == 0
-            ? 0
-            : (vote.nbYes * 100) / (vote.nbYes + vote.nbNo);
-        uint256 currentSupport = (((vote.nbYes + vote.nbNo) * 100) /
-            DaoHelper.getActiveMemberNb(dao));
+        // 0. - YES / (YES + NO) > X%
+        // 1. - YES - NO > X
+        // uint256 supportType = dao.getConfiguration(
+        //     DaoHelper.FLEX_VOTING_SUPPORT_TYPE
+        // );
+        // 0. - (YES + NO) / Total > X%
+        // 1. - YES + NO > X
+        // uint256 quorumType = dao.getConfiguration(
+        //     DaoHelper.FLEX_VOTING_QUORUM_TYPE
+        // );
+        // uint128 allWeight = getAllGovernorWeight(dao);
+        // console.log(getAllGovernorWeight(dao));
+        uint256 currentQuorum = dao.getConfiguration(
+            DaoHelper.FLEX_VOTING_QUORUM_TYPE
+        ) == 1
+            ? (vote.nbYes + vote.nbNo)
+            : ((vote.nbYes + vote.nbNo) * 100) /
+                (
+                    getAllGovernorWeight(dao) == 0
+                        ? 1
+                        : getAllGovernorWeight(dao)
+                );
+
+        // console.log("currentQuorum ", currentQuorum);
+        // console.log("vote.nbYes + vote.nbNo ", vote.nbYes + vote.nbNo);
+
+        uint256 currentSupport = dao.getConfiguration(
+            DaoHelper.FLEX_VOTING_SUPPORT_TYPE
+        ) == 1
+            ? (vote.nbYes < vote.nbNo ? 0 : (vote.nbYes - vote.nbNo))
+            : (vote.nbYes * 100) /
+                ((vote.nbYes + vote.nbNo) == 0 ? 1 : (vote.nbYes + vote.nbNo));
+
+        // console.log("currentSupport ", currentSupport);
         emit SubmitVote(
             address(dao),
             proposalId,

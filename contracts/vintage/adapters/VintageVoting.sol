@@ -221,12 +221,42 @@ contract VintageVotingContract is
         } else if (voteValue == 2) {
             vote.nbNo = vote.nbNo + votingWeight;
         }
+        // 0. - YES / (YES + NO) > X%
+        // 1. - YES - NO > X
+        // uint256 vintageSupportType = dao.getConfiguration(
+        //     DaoHelper.VINTAGE_VOTING_SUPPORT_TYPE
+        // );
+        // 0. - (YES + NO) / Total > X%
+        // 1. - YES + NO > X
+        // uint256 vintageQuorumType = dao.getConfiguration(
+        //     DaoHelper.VINTAGE_VOTING_QUORUM_TYPE
+        // );
 
-        uint256 currentQuorum = (vote.nbYes + vote.nbNo) == 0
-            ? 0
-            : (vote.nbYes * 100) / (vote.nbYes + vote.nbNo);
-        uint256 currentSupport = (((vote.nbYes + vote.nbNo) * 100) /
-            DaoHelper.getActiveMemberNb(dao));
+        uint256 currentQuorum = dao.getConfiguration(
+            DaoHelper.VINTAGE_VOTING_QUORUM_TYPE
+        ) == 1
+            ? (vote.nbYes + vote.nbNo)
+            : (vote.nbYes * 100) /
+                (
+                    GovernanceHelper
+                        .getVintageAllGovernorVotingWeightByProposalId(
+                            dao,
+                            proposalId
+                        ) == 0
+                        ? 1
+                        : GovernanceHelper
+                            .getVintageAllGovernorVotingWeightByProposalId(
+                                dao,
+                                proposalId
+                            )
+                );
+
+        uint256 currentSupport = dao.getConfiguration(
+            DaoHelper.VINTAGE_VOTING_SUPPORT_TYPE
+        ) == 1
+            ? (vote.nbYes < vote.nbNo ? 0 : (vote.nbYes - vote.nbNo))
+            : (vote.nbYes * 100) /
+                ((vote.nbYes + vote.nbNo) == 0 ? 1 : (vote.nbYes + vote.nbNo));
 
         emit SubmitVote(
             address(dao),
@@ -341,10 +371,11 @@ contract VintageVotingContract is
         }
     }
 
-    function getAllGovernorWeight(DaoRegistry dao) public view returns (uint128) {
-        uint128 allGPsWeight = GovernanceHelper.getAllVintageGovernorVotingWeight(
-            dao
-        );
+    function getAllGovernorWeight(
+        DaoRegistry dao
+    ) public view returns (uint128) {
+        uint128 allGPsWeight = GovernanceHelper
+            .getAllVintageGovernorVotingWeight(dao);
         return allGPsWeight;
     }
 

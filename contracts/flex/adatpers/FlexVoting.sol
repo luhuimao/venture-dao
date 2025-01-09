@@ -158,11 +158,42 @@ contract FlexVotingContract is
             vote.nbNo += votingWeight;
         }
 
-        uint256 currentQuorum = (vote.nbYes + vote.nbNo) == 0
-            ? 0
-            : (vote.nbYes * 100) / (vote.nbYes + vote.nbNo);
-        uint256 currentSupport = (((vote.nbYes + vote.nbNo) * 100) /
-            DaoHelper.getActiveMemberNb(dao));
+        // 0. - YES / (YES + NO) > X%
+        // 1. - YES - NO > X
+        // uint256 supportType = dao.getConfiguration(
+        //     DaoHelper.FLEX_VOTING_SUPPORT_TYPE
+        // );
+        // 0. - (YES + NO) / Total > X%
+        // 1. - YES + NO > X
+        // uint256 quorumType = dao.getConfiguration(
+        //     DaoHelper.FLEX_VOTING_QUORUM_TYPE
+        // );
+        // console.log("getAllGovernorWeight(dao) ", getAllGovernorWeight(dao));
+        // console.log("vote.nbYes + vote.nbNo ", vote.nbYes + vote.nbNo);
+        // console.log("vote.nbYes ", vote.nbYes);
+        // console.log("vote.nbNo ", vote.nbNo);
+
+        uint256 currentQuorum = dao.getConfiguration(
+            DaoHelper.FLEX_VOTING_QUORUM_TYPE
+        ) == 1
+            ? (vote.nbYes + vote.nbNo)
+            : ((vote.nbYes + vote.nbNo) * 100) /
+                (
+                    getAllGovernorWeight(dao) == 0
+                        ? 1
+                        : getAllGovernorWeight(dao)
+                );
+
+        uint256 currentSupport = dao.getConfiguration(
+            DaoHelper.FLEX_VOTING_SUPPORT_TYPE
+        ) == 1
+            ? (vote.nbYes < vote.nbNo ? 0 : (vote.nbYes - vote.nbNo))
+            : (vote.nbYes * 100) /
+                ((vote.nbYes + vote.nbNo) == 0 ? 1 : (vote.nbYes + vote.nbNo));
+
+        // console.log("currentQuorum ", currentQuorum);
+        // console.log("currentSupport ", currentSupport);
+
         emit SubmitVote(
             address(dao),
             proposalId,
@@ -276,7 +307,9 @@ contract FlexVotingContract is
     function getAllGovernorWeight(
         DaoRegistry dao
     ) public view returns (uint128) {
-        uint128 allWeight = GovernanceHelper.getAllFlexGovernorVotingWeight(dao);
+        uint128 allWeight = GovernanceHelper.getAllFlexGovernorVotingWeight(
+            dao
+        );
         return allWeight;
     }
 
