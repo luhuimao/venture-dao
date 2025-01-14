@@ -117,4 +117,50 @@ contract VintageFundingPoolAdapterHelperContract {
         }
         return bal;
     }
+
+    function ifInRedemptionPeriod(
+        DaoRegistry dao,
+        uint256 timeStamp
+    ) external view returns (bool) {
+        uint256 fundStartTime = dao.getConfiguration(DaoHelper.FUND_START_TIME);
+        uint256 fundEndTime = dao.getConfiguration(DaoHelper.FUND_END_TIME);
+        uint256 redemptionPeriod = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_REDEMPTION_PERIOD
+        );
+        uint256 redemptionDuration = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_REDEMPTION_DURATION
+        );
+        uint256 fundDuration = fundEndTime - fundStartTime;
+        if (
+            redemptionPeriod <= 0 ||
+            redemptionDuration <= 0 ||
+            fundDuration <= 0
+        ) {
+            return false;
+        }
+
+        uint256 steps;
+        steps = fundDuration / redemptionDuration;
+
+        uint256 redemptionEndTime;
+        uint256 redemptionStartTime;
+        uint256 i = 0;
+
+        while (i <= steps) {
+            redemptionEndTime = redemptionEndTime == 0
+                ? fundStartTime + redemptionDuration
+                : redemptionEndTime + redemptionDuration;
+            redemptionStartTime = redemptionEndTime - redemptionPeriod;
+            if (
+                timeStamp > redemptionStartTime &&
+                timeStamp < redemptionEndTime &&
+                timeStamp > fundStartTime &&
+                timeStamp < fundEndTime
+            ) {
+                return true;
+            }
+            i += 1;
+        }
+        return false;
+    }
 }

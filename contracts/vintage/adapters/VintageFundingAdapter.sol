@@ -249,11 +249,17 @@ contract VintageFundingAdapterContract is
         // make sure there is no proposal in progress during redempt duration
 
         if (
-            vars.investmentPoolAdapt.ifInRedemptionPeriod(
-                dao,
-                vars._propsalStopVotingTimestamp +
-                    dao.getConfiguration(DaoHelper.PROPOSAL_EXECUTE_DURATION)
-            )
+            VintageFundingPoolAdapterHelperContract(
+                dao.getAdapterAddress(
+                    DaoHelper.VINTAGE_INVESTMENT_POOL_HELPER_ADAPT
+                )
+            ).ifInRedemptionPeriod(
+                    dao,
+                    vars._propsalStopVotingTimestamp +
+                        dao.getConfiguration(
+                            DaoHelper.PROPOSAL_EXECUTE_DURATION
+                        )
+                )
         ) revert HIT_REDEMPTION_PERIOD();
 
         if (proposal.status != InvestmentLibrary.ProposalState.IN_QUEUE)

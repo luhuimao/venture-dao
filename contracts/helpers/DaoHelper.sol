@@ -407,6 +407,8 @@ library DaoHelper {
      */
     bytes32 internal constant VINTAGE_INVESTMENT_POOL_ADAPT =
         keccak256("vintage-funding-pool-adatper");
+    bytes32 internal constant VINTAGE_INVESTMENT_POOL_HELPER_ADAPT =
+        keccak256("vintage-funding-pool-adatper-helper");
     bytes32 internal constant VINTAGE_VOTING_ADAPT =
         keccak256("vintage-voting");
     bytes32 internal constant VINTAGE_GOVERNOR_MANAGEMENT =

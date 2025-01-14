@@ -19,15 +19,15 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         address token;
         uint128 amount;
     }
-    // daoaddress => tokenAddress => account => fund round => amount
+    // daoaddress => tokenAddress => account => fundRaiseId => amount
     mapping(address => mapping(address => mapping(address => mapping(uint256 => uint256))))
         public escrowFundsFromLiquidation;
 
-    // daoaddress => tokenAddress => account => fund round => amount
+    // daoaddress => tokenAddress => account => fundRaiseId => amount
     mapping(address => mapping(address => mapping(address => mapping(uint256 => uint256))))
         public escrowFundsFromFailedFundRaise;
 
-    // daoaddress => tokenAddress => account => fund round => amount
+    // daoaddress => tokenAddress => account => fundRaiseId => amount
     mapping(address => mapping(address => mapping(address => mapping(uint256 => uint256))))
         public escrowFundsFromOverRaised;
 
@@ -36,7 +36,7 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         address token,
         address account,
         uint256 amount,
-        uint256 fundRound
+        uint256 fundRaiseId
     );
 
     event WithdrawFromFailedFundRaising(
@@ -44,7 +44,7 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         address token,
         address account,
         uint256 amount,
-        uint256 fundRound
+        uint256 fundRaiseId
     );
 
     event WithdrawFromOverRaised(
@@ -52,19 +52,19 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         address token,
         address account,
         uint256 amount,
-        uint256 fundRound
+        uint256 fundRaiseId
     );
 
     event WithDraw(
         address dao,
-        uint256 fundRound,
+        uint256 fundRaiseId,
         address token,
         address account,
         uint256 amount
     );
     event EscrowFund(
         address dao,
-        uint256 fundRound,
+        uint256 fundRaiseId,
         address token,
         address account,
         uint256 amount
@@ -75,7 +75,7 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         address token,
         address account,
         uint256 amount,
-        uint256 fundRound
+        uint256 fundRaiseId
     );
 
     event EscrowFundFromFailedFundRaising(
@@ -83,7 +83,7 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         address token,
         address account,
         uint256 amount,
-        uint256 fundRound
+        uint256 fundRaiseId
     );
 
     event EscrowFundFromOverRaised(
@@ -91,7 +91,7 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         address token,
         address account,
         uint256 amount,
-        uint256 fundRound
+        uint256 fundRaiseId
     );
 
     error ACCESS_DENIED();
@@ -99,9 +99,9 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
 
     function withdraw(
         DaoRegistry dao,
-        uint256 fundRound
+        uint256 fundRaiseId
     ) external reimbursable(dao) {
-        Checkpoint storage ck = escrowFunds[address(dao)][fundRound][
+        Checkpoint storage ck = escrowFunds[address(dao)][fundRaiseId][
             msg.sender
         ];
         if (ck.amount <= 0) revert NO_FUND_TO_WITHDRAW();
@@ -113,7 +113,7 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         ck.amount = 0;
         emit WithDraw(
             address(dao),
-            fundRound,
+            fundRaiseId,
             ck.token,
             msg.sender,
             exactAmount
@@ -123,11 +123,11 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
     function withdrawFromLiquidation(
         DaoRegistry dao,
         address token,
-        uint256 fundRound
+        uint256 fundRaiseId
     ) external reimbursable(dao) {
         uint256 escrowedAmount = escrowFundsFromLiquidation[address(dao)][
             token
-        ][msg.sender][fundRound];
+        ][msg.sender][fundRaiseId];
 
         if (escrowedAmount <= 0) revert NO_FUND_TO_WITHDRAW();
         uint256 exactAmount = escrowedAmount;
@@ -136,25 +136,25 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         }
         IERC20(token).safeTransfer(msg.sender, exactAmount);
         escrowFundsFromLiquidation[address(dao)][token][msg.sender][
-            fundRound
+            fundRaiseId
         ] = 0;
         emit WithdrawFromLiquidation(
             address(dao),
             token,
             msg.sender,
             exactAmount,
-            fundRound
+            fundRaiseId
         );
     }
 
     function withdrawFromFailedFundRaising(
         DaoRegistry dao,
         address token,
-        uint256 fundRound
+        uint256 fundRaiseId
     ) external reimbursable(dao) {
         uint256 escrowedAmount = escrowFundsFromFailedFundRaise[address(dao)][
             token
-        ][msg.sender][fundRound];
+        ][msg.sender][fundRaiseId];
 
         if (escrowedAmount <= 0) revert NO_FUND_TO_WITHDRAW();
         uint256 exactAmount = escrowedAmount;
@@ -164,7 +164,7 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         }
         IERC20(token).safeTransfer(msg.sender, exactAmount);
         escrowFundsFromFailedFundRaise[address(dao)][token][msg.sender][
-            fundRound
+            fundRaiseId
         ] = 0;
 
         emit WithdrawFromFailedFundRaising(
@@ -172,18 +172,18 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
             token,
             msg.sender,
             exactAmount,
-            fundRound
+            fundRaiseId
         );
     }
 
     function withdrawFromOverRaised(
         DaoRegistry dao,
         address token,
-        uint256 fundRound
+        uint256 fundRaiseId
     ) external reimbursable(dao) {
         uint256 escrowedAmount = escrowFundsFromOverRaised[address(dao)][token][
             msg.sender
-        ][fundRound];
+        ][fundRaiseId];
 
         if (escrowedAmount <= 0) revert NO_FUND_TO_WITHDRAW();
         uint256 exactAmount = escrowedAmount;
@@ -193,7 +193,7 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         }
         IERC20(token).safeTransfer(msg.sender, exactAmount);
         escrowFundsFromOverRaised[address(dao)][token][msg.sender][
-            fundRound
+            fundRaiseId
         ] = 0;
 
         emit WithdrawFromOverRaised(
@@ -201,13 +201,13 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
             token,
             msg.sender,
             exactAmount,
-            fundRound
+            fundRaiseId
         );
     }
 
     function escrowFundFromFundingPool(
         DaoRegistry dao,
-        uint256 fundRound,
+        uint256 fundRaiseId,
         address token,
         address account,
         uint256 amount
@@ -217,15 +217,15 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
             dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
         ) revert ACCESS_DENIED();
 
-        escrowFunds[address(dao)][fundRound][account].amount += uint128(amount);
-        escrowFunds[address(dao)][fundRound][account].token = token;
+        escrowFunds[address(dao)][fundRaiseId][account].amount += uint128(amount);
+        escrowFunds[address(dao)][fundRaiseId][account].token = token;
 
-        emit EscrowFund(address(dao), fundRound, token, account, amount);
+        emit EscrowFund(address(dao), fundRaiseId, token, account, amount);
     }
 
     function escrowFundFromLiquidation(
         DaoRegistry dao,
-        uint256 fundRound,
+        uint256 fundRaiseId,
         address token,
         address account,
         uint256 amount
@@ -236,7 +236,7 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         ) revert ACCESS_DENIED();
 
         escrowFundsFromLiquidation[address(dao)][token][account][
-            fundRound
+            fundRaiseId
         ] += amount;
 
         emit EscrowFundFromLiquidation(
@@ -244,13 +244,13 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
             token,
             account,
             amount,
-            fundRound
+            fundRaiseId
         );
     }
 
     function escrowFundFromFailedFundRaising(
         DaoRegistry dao,
-        uint256 fundRound,
+        uint256 fundRaiseId,
         address token,
         address account,
         uint256 amount
@@ -261,7 +261,7 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         ) revert ACCESS_DENIED();
 
         escrowFundsFromFailedFundRaise[address(dao)][token][account][
-            fundRound
+            fundRaiseId
         ] += amount;
 
         emit EscrowFundFromFailedFundRaising(
@@ -269,13 +269,13 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
             token,
             account,
             amount,
-            fundRound
+            fundRaiseId
         );
     }
 
     function escrowFundFromOverRaised(
         DaoRegistry dao,
-        uint256 fundRound,
+        uint256 fundRaiseId,
         address token,
         address account,
         uint256 amount
@@ -286,7 +286,7 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         ) revert ACCESS_DENIED();
 
         escrowFundsFromOverRaised[address(dao)][token][account][
-            fundRound
+            fundRaiseId
         ] += amount;
 
         emit EscrowFundFromOverRaised(
@@ -294,16 +294,16 @@ contract VintageEscrowFundAdapterContract is AdapterGuard, Reimbursable {
             token,
             account,
             amount,
-            fundRound
+            fundRaiseId
         );
     }
 
     function getEscrowAmount(
         DaoRegistry dao,
-        uint256 fundRound,
+        uint256 fundRaiseId,
         address account
     ) public view returns (address, uint256) {
-        Checkpoint storage ck = escrowFunds[address(dao)][fundRound][account];
+        Checkpoint storage ck = escrowFunds[address(dao)][fundRaiseId][account];
         return (ck.token, ck.amount);
     }
 }

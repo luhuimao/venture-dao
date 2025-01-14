@@ -6,6 +6,7 @@ import "../../../core/DaoRegistry.sol";
 import "../../../helpers/DaoHelper.sol";
 import "../VintageFundingPoolAdapter.sol";
 import "../VintageVoting.sol";
+import "../VintageFundingPoolAdapterHelper.sol";
 import "./IVintageVoting.sol";
 import "../../extensions/fundingpool/VintageFundingPool.sol";
 import "../../libraries/fundingLibrary.sol";
@@ -104,6 +105,7 @@ interface IVintageInvestment {
         bytes32 ongongingPrposalId;
         VintageFundingPoolExtension investmentpoolExt;
         VintageFundingPoolAdapterContract investmentPoolAdapt;
+        VintageFundingPoolAdapterHelperContract fundingPoolHelperAdapt;
         uint256 _propsalStartVotingTimestamp;
         uint256 _propsalStopVotingTimestamp;
         bool rel;
