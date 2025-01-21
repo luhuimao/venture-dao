@@ -394,4 +394,11 @@ contract VintageVotingContract is
     ) public view returns (uint128) {
         return GovernanceHelper.getVintageVotingWeight(dao, account);
     }
+
+    function getVintageVotingWeightToBeAllocated(
+        DaoRegistry dao,
+        uint256 alloc
+    ) external view returns (uint128) {
+        return GovernanceHelper.getVintageVotingWeightToBeAllocated(dao, alloc);
+    }
 }

@@ -328,4 +328,11 @@ contract FlexVotingContract is
     ) public view returns (uint128) {
         return GovernanceHelper.getFlexVotingWeight(dao, account);
     }
+
+    function getFlexVotingWeightToBeAllocated(
+        DaoRegistry dao,
+        uint256 alloc
+    ) external view returns (uint128) {
+        return GovernanceHelper.getFlexVotingWeightToBeAllocated(dao, alloc);
+    }
 }

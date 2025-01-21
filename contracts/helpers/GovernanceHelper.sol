@@ -92,40 +92,6 @@ library GovernanceHelper {
         return allStewardweight;
     }
 
-    function getAllFlexGovernorVotingWeight(
-        DaoRegistry dao
-    ) internal view returns (uint128) {
-        address[] memory steards = DaoHelper.getAllActiveMember(dao);
-        uint128 allStewardweight;
-        for (uint8 i = 0; i < steards.length; i++) {
-            allStewardweight += getFlexVotingWeight(dao, steards[i]);
-        }
-        return allStewardweight;
-    }
-
-    function getAllFlexGovernorVotingWeightByProposalId(
-        DaoRegistry dao,
-        bytes32 proposalId
-    ) internal view returns (uint128) {
-        address[] memory steards = DaoHelper.getAllActiveMember(dao);
-        uint128 allStewardweight;
-        FlexVotingContract flexVoting = FlexVotingContract(
-            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
-        );
-        for (uint8 i = 0; i < steards.length; i++) {
-            if (flexVoting.checkIfVoted(dao, proposalId, steards[i])) {
-                allStewardweight += flexVoting.voteWeights(
-                    address(dao),
-                    proposalId,
-                    steards[i]
-                );
-            } else {
-                allStewardweight += getFlexVotingWeight(dao, steards[i]);
-            }
-        }
-        return allStewardweight;
-    }
-
     function getVintageVotingWeight(
         DaoRegistry dao,
         address account
@@ -267,6 +233,66 @@ library GovernanceHelper {
         } else {
             return 0;
         }
+    }
+
+    function getVintageVotingWeightToBeAllocated(
+        DaoRegistry dao,
+        uint256 alloc
+    ) internal view returns (uint128) {
+        uint256 votingWeightedType = dao.getConfiguration(
+            DaoHelper.VINTAGE_VOTING_WEIGHTED_TYPE
+        ); // 0. quantity 1. log2 2. 1 voter 1 vote
+
+        if (votingWeightedType == 0) {
+            // 0. quantity
+            return uint128(alloc);
+        } else if (votingWeightedType == 1) {
+            // log2
+            if (alloc <= 0) return 0;
+            if (alloc >= 9223372036854775807) return 50;
+            uint128 votingWeight = ABDKMath64x64.toUInt(
+                ABDKMath64x64.log_2(ABDKMath64x64.fromUInt(alloc))
+            );
+
+            return votingWeight;
+        } else if (votingWeightedType == 2) {
+            //1 voter 1 vote
+            return alloc > 0 ? 1 : 0;
+        } else return 0;
+    }
+
+    function getAllFlexGovernorVotingWeight(
+        DaoRegistry dao
+    ) internal view returns (uint128) {
+        address[] memory steards = DaoHelper.getAllActiveMember(dao);
+        uint128 allStewardweight;
+        for (uint8 i = 0; i < steards.length; i++) {
+            allStewardweight += getFlexVotingWeight(dao, steards[i]);
+        }
+        return allStewardweight;
+    }
+
+    function getAllFlexGovernorVotingWeightByProposalId(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) internal view returns (uint128) {
+        address[] memory steards = DaoHelper.getAllActiveMember(dao);
+        uint128 allStewardweight;
+        FlexVotingContract flexVoting = FlexVotingContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_VOTING_ADAPT)
+        );
+        for (uint8 i = 0; i < steards.length; i++) {
+            if (flexVoting.checkIfVoted(dao, proposalId, steards[i])) {
+                allStewardweight += flexVoting.voteWeights(
+                    address(dao),
+                    proposalId,
+                    steards[i]
+                );
+            } else {
+                allStewardweight += getFlexVotingWeight(dao, steards[i]);
+            }
+        }
+        return allStewardweight;
     }
 
     function getFlexVotingWeight(
@@ -460,6 +486,32 @@ library GovernanceHelper {
         } else {
             return 0;
         }
+    }
+
+    function getFlexVotingWeightToBeAllocated(
+        DaoRegistry dao,
+        uint256 alloc
+    ) internal view returns (uint128) {
+        uint256 votingWeightedType = dao.getConfiguration(
+            DaoHelper.FLEX_VOTING_WEIGHTED_TYPE
+        ); // 0. quantity 1. log2 2. 1 voter 1 vote
+
+        if (votingWeightedType == 0) {
+            // 0. quantity
+            return uint128(alloc);
+        } else if (votingWeightedType == 1) {
+            // log2
+            if (alloc <= 0) return 0;
+            if (alloc >= 9223372036854775807) return 50;
+            uint128 votingWeight = ABDKMath64x64.toUInt(
+                ABDKMath64x64.log_2(ABDKMath64x64.fromUInt(alloc))
+            );
+
+            return votingWeight;
+        } else if (votingWeightedType == 2) {
+            //1 voter 1 vote
+            return alloc > 0 ? 1 : 0;
+        } else return 0;
     }
 
     function getAllCollectiveGovernorVotingWeight(
