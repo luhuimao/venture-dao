@@ -403,4 +403,11 @@ contract ColletiveFundRaiseProposalAdapterContract is
         }
         return false;
     }
+
+    function getProposalState(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external view returns (ICollectiveFundRaise.ProposalState) {
+        return proposals[dao][proposalId].state;
+    }
 }

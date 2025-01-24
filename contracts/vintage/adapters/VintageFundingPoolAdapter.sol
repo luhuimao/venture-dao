@@ -55,7 +55,8 @@ contract VintageFundingPoolAdapterContract is
         public freeINPriorityDeposits; // dao=>new fund proposalid => amount
     mapping(address => mapping(bytes32 => mapping(address => bool)))
         public priorityDepositers;
-
+    mapping(address => mapping(bytes32 => mapping(address => uint256)))
+        public depositInFundRaising;
     uint256 public protocolFee = (3 * 1e18) / 1000; // 0.3%
 
     error MAX_PATICIPANT_AMOUNT_REACH();
@@ -133,16 +134,6 @@ contract VintageFundingPoolAdapterContract is
         _;
     }
 
-    // /**
-    //  * @notice Updates the DAO registry with the new configurations if valid.
-    //  * @notice Updated the Bank extension with the new potential tokens if valid.
-    //  */
-    // function configureDao(
-    //     DaoRegistry dao,
-    //     uint32 quorum,
-    //     uint32 superMajority
-    // ) external onlyAdapter(dao) {}
-
     function setProtocolFee(
         DaoRegistry dao,
         uint256 feeProtocol
@@ -183,6 +174,17 @@ contract VintageFundingPoolAdapterContract is
         }
     }
 
+    struct withdrawLocalVars {
+        DaoHelper.FundRaiseState fundRaiseState;
+        uint256 fundRaiseEnd;
+        uint256 fundRaiseBegin;
+        VintageFundingPoolExtension fundingpool;
+        address tokenAddr;
+        // uint256 redemptionFee;
+        bytes32 fundRaiseProposalId;
+        VintageFundRaiseAdapterContract fundRaiseContract;
+    }
+
     /**
      * @notice Allows the member/advisor of the DAO to withdraw the funds from their internal foundingpool account.
      * @notice Only accounts that are not reserved can withdraw the funds.
@@ -194,45 +196,46 @@ contract VintageFundingPoolAdapterContract is
         DaoRegistry dao,
         uint256 amount
     ) external reimbursable(dao) {
+        withdrawLocalVars memory vars;
         processFundRaise(dao);
         //1. during fund raising 2. after fund raising end and failed 3. fund raising succeed and in redempte period
         //4. after fund end
+        vars.fundRaiseState = daoFundRaisingStates[address(dao)];
+        vars.fundRaiseEnd = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_WINDOW_END
+        );
+        vars.fundRaiseBegin = dao.getConfiguration(
+            DaoHelper.FUND_RAISING_WINDOW_BEGIN
+        );
         require(
-            (daoFundRaisingStates[address(dao)] ==
-                DaoHelper.FundRaiseState.IN_PROGRESS &&
-                block.timestamp <
-                dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) &&
-                block.timestamp >
-                dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_BEGIN)) ||
-                daoFundRaisingStates[address(dao)] ==
-                DaoHelper.FundRaiseState.FAILED ||
-                (daoFundRaisingStates[address(dao)] ==
-                    DaoHelper.FundRaiseState.DONE &&
+            (vars.fundRaiseState == DaoHelper.FundRaiseState.IN_PROGRESS &&
+                block.timestamp < vars.fundRaiseEnd &&
+                block.timestamp > vars.fundRaiseBegin) ||
+                vars.fundRaiseState == DaoHelper.FundRaiseState.FAILED ||
+                (vars.fundRaiseState == DaoHelper.FundRaiseState.DONE &&
                     VintageFundingPoolAdapterHelperContract(
                         dao.getAdapterAddress(
                             DaoHelper.VINTAGE_INVESTMENT_POOL_HELPER_ADAPT
                         )
                     ).ifInRedemptionPeriod(dao, block.timestamp)) ||
-                (daoFundRaisingStates[address(dao)] ==
-                    DaoHelper.FundRaiseState.DONE &&
+                (vars.fundRaiseState == DaoHelper.FundRaiseState.DONE &&
                     block.timestamp >
                     dao.getConfiguration(DaoHelper.FUND_END_TIME)),
             "!withdraw"
         );
-        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
+        vars.fundingpool = VintageFundingPoolExtension(
             dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
         );
 
-        address tokenAddr = fundingpool.getFundRaisingTokenAddress();
-        uint256 balance = balanceOf(dao, msg.sender);
+        vars.tokenAddr = vars.fundingpool.getFundRaisingTokenAddress();
+        // uint256 balance = balanceOf(dao, msg.sender);
         // require(amount > 0, "!amount");
         if (amount <= 0) revert INVALID_AMOUNT();
         // require(amount <= balance, ">balance");
-        if (amount > balance) revert INSUFFICIENT_BALANCE();
+        if (amount > balanceOf(dao, msg.sender)) revert INSUFFICIENT_BALANCE();
         uint256 redemptionFee = 0;
         if (
-            daoFundRaisingStates[address(dao)] ==
-            DaoHelper.FundRaiseState.DONE &&
+            vars.fundRaiseState == DaoHelper.FundRaiseState.DONE &&
             VintageFundingPoolAdapterHelperContract(
                 dao.getAdapterAddress(
                     DaoHelper.VINTAGE_INVESTMENT_POOL_HELPER_ADAPT
@@ -245,13 +248,13 @@ contract VintageFundingPoolAdapterContract is
                 1e18;
 
             if (redemptionFee > 0)
-                fundingpool.distributeFunds(
+                vars.fundingpool.distributeFunds(
                     address(
                         dao.getAddressConfiguration(
                             DaoHelper.REDEMPTION_FEE_RECEIVER
                         )
                     ),
-                    tokenAddr,
+                    vars.tokenAddr,
                     redemptionFee
                 );
             emit RedeptionFeeCharged(
@@ -262,39 +265,59 @@ contract VintageFundingPoolAdapterContract is
             );
         }
 
-        fundingpool.withdraw(msg.sender, amount - redemptionFee);
+        vars.fundingpool.withdraw(msg.sender, amount - redemptionFee);
 
-        fundingpool.subtractFromBalance(msg.sender, tokenAddr, amount);
-        VintageFundRaiseAdapterContract fundRaiseContract = VintageFundRaiseAdapterContract(
-                dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
-            );
-        bytes32 fundRaiseProposalId = fundRaiseContract.lastProposalIds(
+        vars.fundingpool.subtractFromBalance(
+            msg.sender,
+            vars.tokenAddr,
+            amount
+        );
+        vars.fundRaiseContract = VintageFundRaiseAdapterContract(
+            dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
+        );
+        vars.fundRaiseProposalId = vars.fundRaiseContract.lastProposalIds(
             address(dao)
         );
+        if (
+            block.timestamp < vars.fundRaiseEnd &&
+            block.timestamp > vars.fundRaiseBegin
+        )
+            depositInFundRaising[address(dao)][vars.fundRaiseProposalId][
+                msg.sender
+            ] -= amount;
+
         if (balanceOf(dao, msg.sender) <= 0) {
-            uint256 fundRoundCounter = fundRaiseContract.createdFundCounter(
-                address(dao)
+            // uint256 fundRoundCounter = fundRaiseContract.createdFundCounter(
+            //     address(dao)
+            // );
+            _removeFundInvestor(
+                dao,
+                msg.sender,
+                vars.fundRaiseContract.createdFundCounter(address(dao))
             );
-            _removeFundInvestor(dao, msg.sender, fundRoundCounter);
         }
         if (
-            priorityDepositers[address(dao)][fundRaiseProposalId][msg.sender] &&
-            block.timestamp <
-            dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END)
-        ) freeINPriorityDeposits[address(dao)][fundRaiseProposalId] -= amount;
+            priorityDepositers[address(dao)][vars.fundRaiseProposalId][
+                msg.sender
+            ] && block.timestamp < vars.fundRaiseEnd
+        )
+            freeINPriorityDeposits[address(dao)][
+                vars.fundRaiseProposalId
+            ] -= amount;
 
         emit WithDraw(address(dao), amount - redemptionFee, msg.sender);
     }
 
     function clearFund(DaoRegistry dao) public reimbursable(dao) {
+        DaoHelper.FundRaiseState fundRaiseState = daoFundRaisingStates[
+            address(dao)
+        ];
         require(
-            (daoFundRaisingStates[address(dao)] ==
-                DaoHelper.FundRaiseState.FAILED &&
+            (fundRaiseState == DaoHelper.FundRaiseState.FAILED &&
                 block.timestamp >
                 dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END)) ||
                 // + dao.getConfiguration(DaoHelper.RETURN_DURATION)
-                (daoFundRaisingStates[address(dao)] ==
-                    DaoHelper.FundRaiseState.DONE &&
+                (fundRaiseState == DaoHelper.FundRaiseState.DONE &&
                     block.timestamp >
                     dao.getConfiguration(DaoHelper.FUND_END_TIME) +
                         dao.getConfiguration(DaoHelper.RETURN_DURATION)),
@@ -331,10 +354,7 @@ contract VintageFundingPoolAdapterContract is
                     //     allInvestors[i],
                     //     bal
                     // );
-                    if (
-                        daoFundRaisingStates[address(dao)] ==
-                        DaoHelper.FundRaiseState.FAILED
-                    ) {
+                    if (fundRaiseState == DaoHelper.FundRaiseState.FAILED) {
                         escrowFundAdapter.escrowFundFromFailedFundRaising(
                             dao,
                             dao.getCurrentFundEstablishmentProposalId(),
@@ -464,6 +484,10 @@ contract VintageFundingPoolAdapterContract is
         vars.fundingpool.addToBalance(msg.sender, amount);
         _addFundInvestor(dao, msg.sender, vars.fundRounds);
 
+        depositInFundRaising[address(dao)][
+            vars.fundRaiseContract.lastProposalIds(address(dao))
+        ][msg.sender] += amount;
+
         if (
             vars.fundRaiseContract.isPriorityDepositer(
                 dao,
@@ -484,19 +508,23 @@ contract VintageFundingPoolAdapterContract is
     }
 
     function processFundRaise(DaoRegistry dao) public returns (bool) {
-        uint256 fundRaiseTarget = dao.getConfiguration(
-            DaoHelper.FUND_RAISING_TARGET
-        );
-        uint256 fundRaiseEndTime = dao.getConfiguration(
-            DaoHelper.FUND_RAISING_WINDOW_END
-        );
+        // uint256 fundRaiseTarget = dao.getConfiguration(
+        //     DaoHelper.FUND_RAISING_TARGET
+        // );
+        // uint256 fundRaiseEndTime = dao.getConfiguration(
+        //     DaoHelper.FUND_RAISING_WINDOW_END
+        // );
         VintageFundRaiseAdapterContract fundRaiseContract = VintageFundRaiseAdapterContract(
                 dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
             );
+
+        DaoHelper.FundRaiseState fundRaiseState = daoFundRaisingStates[
+            address(dao)
+        ];
         if (
-            block.timestamp > fundRaiseEndTime &&
-            daoFundRaisingStates[address(dao)] ==
-            DaoHelper.FundRaiseState.IN_PROGRESS
+            block.timestamp >
+            dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) &&
+            fundRaiseState == DaoHelper.FundRaiseState.IN_PROGRESS
         ) {
             if (
                 dao.getConfiguration(DaoHelper.VINTAGE_VOTING_ASSET_TYPE) ==
@@ -515,7 +543,10 @@ contract VintageFundingPoolAdapterContract is
                     false
                 );
             } else {
-                if (poolBalance(dao) >= fundRaiseTarget) {
+                if (
+                    poolBalance(dao) >=
+                    dao.getConfiguration(DaoHelper.FUND_RAISING_TARGET)
+                ) {
                     dao.setConfiguration(
                         DaoHelper.FUND_START_TIME,
                         block.timestamp
@@ -555,7 +586,7 @@ contract VintageFundingPoolAdapterContract is
             emit ProcessFundRaise(
                 address(dao),
                 fundRaiseContract.createdFundCounter(address(dao)),
-                uint256(daoFundRaisingStates[address(dao)]),
+                uint256(fundRaiseState),
                 poolBalance(dao)
             );
         }
@@ -580,7 +611,7 @@ contract VintageFundingPoolAdapterContract is
         VintageFundRaiseAdapterContract fundRaiseContract;
         uint256 fundRoundCounter;
         VintageFreeInEscrowFundAdapterContract freeInEscrowFundAdapter;
-        VintageEscrowFundAdapterContract escrowFundAdaptContr;
+        // VintageEscrowFundAdapterContract escrowFundAdaptContr;
         uint256 maxFund;
         uint256 priorityFunds;
         uint256 poolFunds;
@@ -599,25 +630,25 @@ contract VintageFundingPoolAdapterContract is
             address[] memory allInvestors = vars.fundingpool.getInvestors();
             vars.extraFund = 0;
             vars.tokenAddr = vars.fundingpool.getFundRaisingTokenAddress();
-            vars.fundRaiseContract = VintageFundRaiseAdapterContract(
-                dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
-            );
-            vars.fundRoundCounter = vars.fundRaiseContract.createdFundCounter(
-                address(dao)
-            );
+            // vars.fundRaiseContract = VintageFundRaiseAdapterContract(
+            //     dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
+            // );
+            // vars.fundRoundCounter = vars.fundRaiseContract.createdFundCounter(
+            //     address(dao)
+            // );
             // vars
             //     .freeInEscrowFundAdapter = VintageFreeInEscrowFundAdapterContract(
             //     dao.getAdapterAddress(
             //         DaoHelper.VINTAGE_FREE_IN_ESCROW_FUND_ADAPTER
             //     )
             // );
-            vars.escrowFundAdaptContr = VintageEscrowFundAdapterContract(
-                dao.getAdapterAddress(DaoHelper.VINTAGE_ESCROW_FUND_ADAPTER)
-            );
+            // vars.escrowFundAdaptContr = VintageEscrowFundAdapterContract(
+            //     dao.getAdapterAddress(DaoHelper.VINTAGE_ESCROW_FUND_ADAPTER)
+            // );
             vars.maxFund = dao.getConfiguration(DaoHelper.FUND_RAISING_MAX);
-            vars.fundRaiseProposalId = vars.fundRaiseContract.lastProposalIds(
-                address(dao)
-            );
+            vars.fundRaiseProposalId = VintageFundRaiseAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
+            ).lastProposalIds(address(dao));
             vars.priorityFunds = freeINPriorityDeposits[address(dao)][
                 vars.fundRaiseProposalId
             ];
@@ -658,13 +689,17 @@ contract VintageFundingPoolAdapterContract is
                     //     allInvestors[i],
                     //     vars.extraFund
                     // );
-                    vars.escrowFundAdaptContr.escrowFundFromOverRaised(
-                        dao,
-                        dao.getCurrentFundEstablishmentProposalId(),
-                        vars.tokenAddr,
-                        allInvestors[i],
-                        vars.extraFund
-                    );
+                    VintageEscrowFundAdapterContract(
+                        dao.getAdapterAddress(
+                            DaoHelper.VINTAGE_ESCROW_FUND_ADAPTER
+                        )
+                    ).escrowFundFromOverRaised(
+                            dao,
+                            dao.getCurrentFundEstablishmentProposalId(),
+                            vars.tokenAddr,
+                            allInvestors[i],
+                            vars.extraFund
+                        );
                     //2. send fund to free in escrow fund contract
                     vars.fundingpool.distributeFunds(
                         dao.getAdapterAddress(
@@ -704,71 +739,34 @@ contract VintageFundingPoolAdapterContract is
         DaoRegistry dao,
         address investorAddr
     ) public view returns (uint256) {
-        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
-        );
-        return fundingpool.balanceOf(investorAddr);
+        // VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
+        //     dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
+        // );
+        return
+            VintageFundingPoolExtension(
+                dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
+            ).balanceOf(investorAddr);
     }
 
     function poolBalance(DaoRegistry dao) public view returns (uint256) {
-        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
-        );
-        return fundingpool.balanceOf(address(DaoHelper.DAOSQUARE_TREASURY));
+        // VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
+        //     dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
+        // );
+        return
+            VintageFundingPoolExtension(
+                dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
+            ).balanceOf(address(DaoHelper.DAOSQUARE_TREASURY));
     }
 
     function governorBalance(DaoRegistry dao) public view returns (uint256) {
-        VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
-            dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
-        );
-        return fundingpool.balanceOf(address(DaoHelper.GP_POOL));
+        // VintageFundingPoolExtension fundingpool = VintageFundingPoolExtension(
+        //     dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
+        // );
+        return
+            VintageFundingPoolExtension(
+                dao.getExtensionAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_EXT)
+            ).balanceOf(address(DaoHelper.GP_POOL));
     }
-
-    // function ifInRedemptionPeriod(
-    //     DaoRegistry dao,
-    //     uint256 timeStamp
-    // ) public view returns (bool) {
-    //     uint256 fundStartTime = dao.getConfiguration(DaoHelper.FUND_START_TIME);
-    //     uint256 fundEndTime = dao.getConfiguration(DaoHelper.FUND_END_TIME);
-    //     uint256 redemptionPeriod = dao.getConfiguration(
-    //         DaoHelper.FUND_RAISING_REDEMPTION_PERIOD
-    //     );
-    //     uint256 redemptionDuration = dao.getConfiguration(
-    //         DaoHelper.FUND_RAISING_REDEMPTION_DURATION
-    //     );
-    //     uint256 fundDuration = fundEndTime - fundStartTime;
-    //     if (
-    //         redemptionPeriod <= 0 ||
-    //         redemptionDuration <= 0 ||
-    //         fundDuration <= 0
-    //     ) {
-    //         return false;
-    //     }
-
-    //     uint256 steps;
-    //     steps = fundDuration / redemptionDuration;
-
-    //     uint256 redemptionEndTime;
-    //     uint256 redemptionStartTime;
-    //     uint256 i = 0;
-
-    //     while (i <= steps) {
-    //         redemptionEndTime = redemptionEndTime == 0
-    //             ? fundStartTime + redemptionDuration
-    //             : redemptionEndTime + redemptionDuration;
-    //         redemptionStartTime = redemptionEndTime - redemptionPeriod;
-    //         if (
-    //             timeStamp > redemptionStartTime &&
-    //             timeStamp < redemptionEndTime &&
-    //             timeStamp > fundStartTime &&
-    //             timeStamp < fundEndTime
-    //         ) {
-    //             return true;
-    //         }
-    //         i += 1;
-    //     }
-    //     return false;
-    // }
 
     function getInvestorMembershipWhiteList(
         DaoRegistry dao

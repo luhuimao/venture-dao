@@ -329,4 +329,15 @@ contract CollectiveVotingAdapterContract is
     ) public view returns (uint128) {
         return GovernanceHelper.getVotingWeightByDepositAmount(dao, amount);
     }
+
+    function getCollectiveVotingWeightByConfirmedDeposit(
+        DaoRegistry dao,
+        address account
+    ) external view returns (uint128) {
+        return
+            GovernanceHelper.getCollectiveVotingWeightByConfirmedDeposit(
+                dao,
+                account
+            );
+    }
 }

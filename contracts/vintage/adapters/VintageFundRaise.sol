@@ -115,7 +115,7 @@ contract VintageFundRaiseAdapterContract is
 
         if (vars.investmentPoolAdapt.poolBalance(params.dao) > 0)
             revert NOT_CLEAR_FUND();
-        console.log(vars.lastFundEndTime + vars.refundDuration);
+        // console.log(vars.lastFundEndTime + vars.refundDuration);
         require(
             vars.investmentPoolAdapt.daoFundRaisingStates(
                 address(params.dao)
@@ -717,5 +717,12 @@ contract VintageFundRaiseAdapterContract is
 
     function allDone(DaoRegistry dao) external view returns (bool) {
         return unDoneProposals[address(dao)].length() > 0 ? false : true;
+    }
+
+    function getProposalState(
+        DaoRegistry dao,
+        bytes32 proposalId
+    ) external view returns (IVintageFundRaise.ProposalState) {
+        return Proposals[address(dao)][proposalId].state;
     }
 }

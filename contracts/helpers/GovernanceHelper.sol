@@ -237,28 +237,290 @@ library GovernanceHelper {
 
     function getVintageVotingWeightToBeAllocated(
         DaoRegistry dao,
+        address account,
         uint256 alloc
     ) internal view returns (uint128) {
+        VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
+            );
+        VintageRaiserAllocationAdapter vintageRaiserAllocAdapt = VintageRaiserAllocationAdapter(
+                dao.getAdapterAddress(
+                    DaoHelper.VINTAGE_GOVERNOR_ALLOCATION_ADAPTER
+                )
+            );
+        uint256 etype = dao.getConfiguration(
+            DaoHelper.VINTAGE_VOTING_ASSET_TYPE
+        ); // 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
         uint256 votingWeightedType = dao.getConfiguration(
             DaoHelper.VINTAGE_VOTING_WEIGHTED_TYPE
         ); // 0. quantity 1. log2 2. 1 voter 1 vote
 
-        if (votingWeightedType == 0) {
-            // 0. quantity
-            return uint128(alloc);
-        } else if (votingWeightedType == 1) {
-            // log2
-            if (alloc <= 0) return 0;
-            if (alloc >= 9223372036854775807) return 50;
+        uint256 tokenId = dao.getConfiguration(
+            DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ID
+        );
+        address tokenAddress = dao.getAddressConfiguration(
+            DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ADDRESS
+        );
+        if (votingWeightedType == 1) {
+            //log2
+            uint256 bal = 0;
+            if (etype == 0) {
+                //0 ERC20
+                bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+            } else if (etype == 1) {
+                //ERC721
+                bal = IERC721(tokenAddress).balanceOf(account);
+            } else if (etype == 2) {
+                //ERC1155
+                bal = IERC1155(tokenAddress).balanceOf(account, tokenId);
+            } else if (etype == 3) {
+                //allocation
+                bal = alloc;
+            } else if (etype == 4) {
+                //DEPOSIT
+                if (fundingPoolAdapt.poolBalance(dao) > 0) {
+                    bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;
+                } else {
+                    return 1;
+                }
+            } else {
+                return 0;
+            }
+            if (bal <= 0) return 0;
+            if (bal >= 9223372036854775807) return 50;
             uint128 votingWeight = ABDKMath64x64.toUInt(
-                ABDKMath64x64.log_2(ABDKMath64x64.fromUInt(alloc))
+                ABDKMath64x64.log_2(ABDKMath64x64.fromUInt(bal))
             );
-
             return votingWeight;
         } else if (votingWeightedType == 2) {
             //1 voter 1 vote
-            return alloc > 0 ? 1 : 0;
-        } else return 0;
+            uint128 votingWeight = 0;
+            if (etype == 0) {
+                //0 ERC20
+                votingWeight = IERC20(tokenAddress).balanceOf(account) > 0
+                    ? 1
+                    : 0;
+            } else if (etype == 1) {
+                //ERC721
+                votingWeight = IERC721(tokenAddress).balanceOf(account) > 0
+                    ? 1
+                    : 0;
+            } else if (etype == 2) {
+                //ERC1155
+                votingWeight = IERC1155(tokenAddress).balanceOf(
+                    account,
+                    tokenId
+                ) > 0
+                    ? 1
+                    : 0;
+            } else if (etype == 3) {
+                //allocation
+                votingWeight = alloc > 0 ? 1 : 0;
+                // return 1;
+            } else if (etype == 4) {
+                //DEPOSIT
+                if (fundingPoolAdapt.poolBalance(dao) > 0) {
+                    if (fundingPoolAdapt.balanceOf(dao, account) > 0) return 1;
+                    else return 0;
+                } else {
+                    return 1;
+                }
+            } else {
+                return 0;
+            }
+            return votingWeight;
+        } else if (votingWeightedType == 0) {
+            //quantity
+            uint256 bal = 0;
+            if (etype == 0) {
+                //0 ERC20
+                bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+            } else if (etype == 1) {
+                //ERC721
+                bal = IERC721(tokenAddress).balanceOf(account);
+            } else if (etype == 2) {
+                //ERC1155
+                bal = IERC1155(tokenAddress).balanceOf(account, tokenId);
+            } else if (etype == 3) {
+                //allocation
+                bal = alloc;
+                // return 1;
+            } else if (etype == 4) {
+                //DEPOSIT
+                if (fundingPoolAdapt.poolBalance(dao) > 0) {
+                    bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;
+                } else {
+                    return 1;
+                }
+            } else {
+                return 0;
+            }
+            return uint128(bal);
+        } else {
+            return 0;
+        }
+    }
+
+    function getVintageVotingWeightByConfirmedDeposit(
+        DaoRegistry dao,
+        address account
+    ) internal view returns (uint128) {
+        VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
+            );
+
+        VintageRaiserAllocationAdapter vintageRaiserAllocAdapt = VintageRaiserAllocationAdapter(
+                dao.getAdapterAddress(
+                    DaoHelper.VINTAGE_GOVERNOR_ALLOCATION_ADAPTER
+                )
+            );
+        uint256 etype = dao.getConfiguration(
+            DaoHelper.VINTAGE_VOTING_ASSET_TYPE
+        ); // 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
+        uint256 votingWeightedType = dao.getConfiguration(
+            DaoHelper.VINTAGE_VOTING_WEIGHTED_TYPE
+        ); // 0. quantity 1. log2 2. 1 voter 1 vote
+
+        uint256 tokenId = dao.getConfiguration(
+            DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ID
+        );
+        address tokenAddress = dao.getAddressConfiguration(
+            DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ADDRESS
+        );
+        uint256 confirmedDepositAmount = 0;
+        uint256 depositAmount = fundingPoolAdapt.balanceOf(dao, account);
+        bytes32 fundRaiseProposalId = VintageFundRaiseAdapterContract(
+            dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
+        ).lastProposalIds(address(dao));
+
+        if (
+            VintageFundRaiseAdapterContract(
+                dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
+            ).getProposalState(dao, fundRaiseProposalId) ==
+            IVintageFundRaise.ProposalState.FundRaising
+        ) {
+            confirmedDepositAmount =
+                depositAmount -
+                fundingPoolAdapt.depositInFundRaising(
+                    address(dao),
+                    fundRaiseProposalId,
+                    account
+                );
+        } else confirmedDepositAmount = depositAmount;
+
+        if (votingWeightedType == 1) {
+            //log2
+            uint256 bal = 0;
+            if (etype == 0) {
+                //0 ERC20
+                bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+            } else if (etype == 1) {
+                //ERC721
+                bal = IERC721(tokenAddress).balanceOf(account);
+            } else if (etype == 2) {
+                //ERC1155
+                bal = IERC1155(tokenAddress).balanceOf(account, tokenId);
+            } else if (etype == 3) {
+                //allocation
+                bal = vintageRaiserAllocAdapt.getAllocation(
+                    address(dao),
+                    account
+                );
+                // return 1;
+            } else if (etype == 4) {
+                //DEPOSIT
+                if (fundingPoolAdapt.poolBalance(dao) > 0) {
+                    bal = confirmedDepositAmount / 10 ** 18;
+                } else {
+                    if (dao.isMember(account)) return 1;
+                    else return 0;
+                }
+            } else {
+                return 0;
+            }
+            if (bal <= 0) return 0;
+            if (bal >= 9223372036854775807) return 50;
+            uint128 votingWeight = ABDKMath64x64.toUInt(
+                ABDKMath64x64.log_2(ABDKMath64x64.fromUInt(bal))
+            );
+            return votingWeight;
+        } else if (votingWeightedType == 2) {
+            //1 voter 1 vote
+            uint128 votingWeight = 0;
+            if (etype == 0) {
+                //0 ERC20
+                votingWeight = IERC20(tokenAddress).balanceOf(account) > 0
+                    ? 1
+                    : 0;
+            } else if (etype == 1) {
+                //ERC721
+                votingWeight = IERC721(tokenAddress).balanceOf(account) > 0
+                    ? 1
+                    : 0;
+            } else if (etype == 2) {
+                //ERC1155
+                votingWeight = IERC1155(tokenAddress).balanceOf(
+                    account,
+                    tokenId
+                ) > 0
+                    ? 1
+                    : 0;
+            } else if (etype == 3) {
+                //allocation
+                votingWeight = vintageRaiserAllocAdapt.getAllocation(
+                    address(dao),
+                    account
+                ) > 0
+                    ? 1
+                    : 0;
+                // return 1;
+            } else if (etype == 4) {
+                //DEPOSIT
+                if (fundingPoolAdapt.poolBalance(dao) > 0) {
+                    if (confirmedDepositAmount > 0) return 1;
+                    else return 0;
+                } else {
+                    if (dao.isMember(account)) return 1;
+                    else return 0;
+                }
+            } else {
+                return 0;
+            }
+            return votingWeight;
+        } else if (votingWeightedType == 0) {
+            //quantity
+            uint256 bal = 0;
+            if (etype == 0) {
+                //0 ERC20
+                bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+            } else if (etype == 1) {
+                //ERC721
+                bal = IERC721(tokenAddress).balanceOf(account);
+            } else if (etype == 2) {
+                //ERC1155
+                bal = IERC1155(tokenAddress).balanceOf(account, tokenId);
+            } else if (etype == 3) {
+                //allocation
+                bal = vintageRaiserAllocAdapt.getAllocation(
+                    address(dao),
+                    account
+                );
+                // return 1;
+            } else if (etype == 4) {
+                //DEPOSIT
+                if (fundingPoolAdapt.poolBalance(dao) > 0) {
+                    bal = confirmedDepositAmount / 10 ** 18;
+                } else {
+                    if (dao.isMember(account)) return 1;
+                    else return 0;
+                }
+            } else {
+                return 0;
+            }
+            return uint128(bal);
+        } else {
+            return 0;
+        }
     }
 
     function getAllFlexGovernorVotingWeight(
@@ -616,6 +878,89 @@ library GovernanceHelper {
             if (etype == 0) {
                 //0 deposit
                 bal = fundingiPoolAdapt.balanceOf(dao, account) / 10 ** 18;
+            } else {
+                return 0;
+            }
+            return uint128(bal);
+        } else {
+            return 0;
+        }
+    }
+
+    function getCollectiveVotingWeightByConfirmedDeposit(
+        DaoRegistry dao,
+        address account
+    ) internal view returns (uint128) {
+        uint256 etype = dao.getConfiguration(
+            DaoHelper.COLLECTIVE_VOTING_ASSET_TYPE
+        ); // 0. deposit
+        uint256 votingWeightedType = dao.getConfiguration(
+            DaoHelper.COLLECTIVE_VOTING_WEIGHTED_TYPE
+        ); // 0. quantity 1. log2 2. 1 voter 1 vote
+        ColletiveFundingPoolAdapterContract fundingiPoolAdapt = ColletiveFundingPoolAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+                )
+            );
+
+        ColletiveFundRaiseProposalAdapterContract fundRaiseContr = ColletiveFundRaiseProposalAdapterContract(
+                dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
+            );
+
+        bytes32 fundRaiseId = fundRaiseContr.lastProposalIds(address(dao));
+
+        if (fundingiPoolAdapt.poolBalance(dao) <= 0) {
+            if (dao.isMember(account)) return 1;
+            else return 0;
+        }
+        uint256 confirmedDeposit = 0;
+        if (
+            fundRaiseContr.getProposalState(dao, fundRaiseId) ==
+            ICollectiveFundRaise.ProposalState.FundRaising
+        ) {
+            confirmedDeposit =
+                fundingiPoolAdapt.balanceOf(dao, account) -
+                fundingiPoolAdapt.investorsDepositAmountByFundRaise(
+                    address(dao),
+                    fundRaiseId,
+                    account
+                );
+        } else {
+            confirmedDeposit = fundingiPoolAdapt.balanceOf(dao, account);
+        }
+
+        if (votingWeightedType == 1) {
+            //log2
+            uint256 bal = 0;
+            if (etype == 0) {
+                //0 deposit
+                bal = confirmedDeposit / 10 ** 18;
+            } else {
+                return 0;
+            }
+            if (bal <= 0) return 0;
+            if (bal >= 9223372036854775807) return 50;
+            uint128 votingWeight = ABDKMath64x64.toUInt(
+                ABDKMath64x64.log_2(ABDKMath64x64.fromUInt(bal))
+            );
+            return votingWeight;
+        } else if (votingWeightedType == 2) {
+            //1 voter 1 vote
+
+            // uint128 votingWeight = 0;
+            if (etype == 0) {
+                //0 deposit
+                uint128 votingWeight = confirmedDeposit > 0 ? 1 : 0;
+                return votingWeight;
+            } else {
+                return 0;
+            }
+        } else if (votingWeightedType == 0) {
+            //quantity
+            uint256 bal = 0;
+            if (etype == 0) {
+                //0 deposit
+                bal = confirmedDeposit / 10 ** 18;
             } else {
                 return 0;
             }
