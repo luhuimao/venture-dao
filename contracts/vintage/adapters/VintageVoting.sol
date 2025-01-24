@@ -418,4 +418,12 @@ contract VintageVotingContract is
                 account
             );
     }
+
+    function getAllVintageGovernorVotingWeightByConfirmedDeposit(
+        DaoRegistry dao
+    ) external view returns (uint128) {
+        return
+            GovernanceHelper
+                .getAllVintageGovernorVotingWeightByConfirmedDeposit(dao);
+    }
 }

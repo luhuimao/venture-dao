@@ -243,11 +243,11 @@ library GovernanceHelper {
         VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
                 dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
             );
-        VintageRaiserAllocationAdapter vintageRaiserAllocAdapt = VintageRaiserAllocationAdapter(
-                dao.getAdapterAddress(
-                    DaoHelper.VINTAGE_GOVERNOR_ALLOCATION_ADAPTER
-                )
-            );
+        // VintageRaiserAllocationAdapter vintageRaiserAllocAdapt = VintageRaiserAllocationAdapter(
+        //         dao.getAdapterAddress(
+        //             DaoHelper.VINTAGE_GOVERNOR_ALLOCATION_ADAPTER
+        //         )
+        //     );
         uint256 etype = dao.getConfiguration(
             DaoHelper.VINTAGE_VOTING_ASSET_TYPE
         ); // 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
@@ -359,6 +359,17 @@ library GovernanceHelper {
         } else {
             return 0;
         }
+    }
+
+    function getAllVintageGovernorVotingWeightByConfirmedDeposit(
+        DaoRegistry dao
+    ) internal view returns (uint128) {
+        address[] memory allGovernors = dao.getAllSteward();
+        uint128 allStewardweight;
+        for (uint8 i = 0; i < allGovernors.length; i++) {
+            allStewardweight += getVintageVotingWeightByConfirmedDeposit(dao, allGovernors[i]);
+        }
+        return allStewardweight;
     }
 
     function getVintageVotingWeightByConfirmedDeposit(
@@ -885,6 +896,18 @@ library GovernanceHelper {
         } else {
             return 0;
         }
+    }
+
+  function getAllCollectiveGovernorVotingWeightByConfirmedDeposit(
+        DaoRegistry dao
+    ) internal view returns (uint128) {
+        address[] memory governors = dao.getAllSteward();
+
+        uint128 allStewardweight;
+        for (uint8 i = 0; i < governors.length; i++) {
+            allStewardweight += getCollectiveVotingWeightByConfirmedDeposit(dao, governors[i]);
+        }
+        return allStewardweight;
     }
 
     function getCollectiveVotingWeightByConfirmedDeposit(

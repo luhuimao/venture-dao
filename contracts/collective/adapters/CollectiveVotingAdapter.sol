@@ -340,4 +340,12 @@ contract CollectiveVotingAdapterContract is
                 account
             );
     }
+
+    function getAllCollectiveGovernorVotingWeightByConfirmedDeposit(
+        DaoRegistry dao
+    ) external view returns (uint128) {
+        return
+            GovernanceHelper
+                .getAllCollectiveGovernorVotingWeightByConfirmedDeposit(dao);
+    }
 }
