@@ -43,6 +43,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
     error NOT_IN_FUND_RAISE_WINDOW();
     error INVALID_AMOUNT();
     error AMOUNT_EXCEED_FUND_RAISING_DEPOSIT();
+    error CAN_NOT_WITHDRAW();
 
     mapping(address => EnumerableSet.AddressSet) fundInvestors;
     mapping(address => mapping(bytes32 => EnumerableSet.AddressSet)) investorsByFundRaise;
@@ -85,8 +86,14 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         DaoRegistry dao,
         uint256 amount
     ) external reimbursable(dao) {
-        //investment grace period
+        //所有资金在fundraising 提案的募资期结束之后到募资期结束之后的execute之前的这个时间段，不允许withdraw
+        if (
+            block.timestamp >
+            dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) &&
+            fundState[address(dao)] == FundState.IN_PROGRESS
+        ) revert CAN_NOT_WITHDRAW();
 
+        //investment grace period
         if (
             !ColletiveFundingProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
