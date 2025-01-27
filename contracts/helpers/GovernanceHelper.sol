@@ -367,15 +367,26 @@ library GovernanceHelper {
         address[] memory allGovernors = dao.getAllSteward();
         uint128 allStewardweight;
         for (uint8 i = 0; i < allGovernors.length; i++) {
-            allStewardweight += getVintageVotingWeightByConfirmedDeposit(dao, allGovernors[i]);
+            allStewardweight += getVintageVotingWeightByConfirmedDeposit(
+                dao,
+                allGovernors[i]
+            );
         }
         return allStewardweight;
+    }
+
+    struct LocalParams {
+        uint256 confirmedDepositAmount;
+        uint256 confirmedPoolBal;
+        uint256 depositAmount;
+        bytes32 fundRaiseProposalId;
     }
 
     function getVintageVotingWeightByConfirmedDeposit(
         DaoRegistry dao,
         address account
     ) internal view returns (uint128) {
+        LocalParams memory vars;
         VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
                 dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
             );
@@ -398,26 +409,37 @@ library GovernanceHelper {
         address tokenAddress = dao.getAddressConfiguration(
             DaoHelper.VINTAGE_VOTING_ASSET_TOKEN_ADDRESS
         );
-        uint256 confirmedDepositAmount = 0;
-        uint256 depositAmount = fundingPoolAdapt.balanceOf(dao, account);
-        bytes32 fundRaiseProposalId = VintageFundRaiseAdapterContract(
+        // var confirmedDepositAmount = 0;
+        // uint256 confirmedPoolBal = 0;
+        vars.depositAmount = fundingPoolAdapt.balanceOf(dao, account);
+        vars.fundRaiseProposalId = VintageFundRaiseAdapterContract(
             dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
         ).lastProposalIds(address(dao));
 
         if (
             VintageFundRaiseAdapterContract(
                 dao.getAdapterAddress(DaoHelper.VINTAGE_FUND_RAISE_ADAPTER)
-            ).getProposalState(dao, fundRaiseProposalId) ==
+            ).getProposalState(dao, vars.fundRaiseProposalId) ==
             IVintageFundRaise.ProposalState.FundRaising
         ) {
-            confirmedDepositAmount =
-                depositAmount -
+            vars.confirmedDepositAmount =
+                vars.depositAmount -
                 fundingPoolAdapt.depositInFundRaising(
                     address(dao),
-                    fundRaiseProposalId,
+                    vars.fundRaiseProposalId,
                     account
                 );
-        } else confirmedDepositAmount = depositAmount;
+
+            vars.confirmedPoolBal =
+                fundingPoolAdapt.poolBalance(dao) -
+                fundingPoolAdapt.fundRaisingByFundRaisePId(
+                    address(dao),
+                    vars.fundRaiseProposalId
+                );
+        } else {
+            vars.confirmedDepositAmount = vars.depositAmount;
+            vars.confirmedPoolBal = fundingPoolAdapt.poolBalance(dao);
+        }
 
         if (votingWeightedType == 1) {
             //log2
@@ -440,8 +462,8 @@ library GovernanceHelper {
                 // return 1;
             } else if (etype == 4) {
                 //DEPOSIT
-                if (fundingPoolAdapt.poolBalance(dao) > 0) {
-                    bal = confirmedDepositAmount / 10 ** 18;
+                if (vars.confirmedPoolBal > 0) {
+                    bal = vars.confirmedDepositAmount / 10 ** 18;
                 } else {
                     if (dao.isMember(account)) return 1;
                     else return 0;
@@ -487,8 +509,8 @@ library GovernanceHelper {
                 // return 1;
             } else if (etype == 4) {
                 //DEPOSIT
-                if (fundingPoolAdapt.poolBalance(dao) > 0) {
-                    if (confirmedDepositAmount > 0) return 1;
+                if (vars.confirmedPoolBal > 0) {
+                    if (vars.confirmedDepositAmount > 0) return 1;
                     else return 0;
                 } else {
                     if (dao.isMember(account)) return 1;
@@ -519,8 +541,8 @@ library GovernanceHelper {
                 // return 1;
             } else if (etype == 4) {
                 //DEPOSIT
-                if (fundingPoolAdapt.poolBalance(dao) > 0) {
-                    bal = confirmedDepositAmount / 10 ** 18;
+                if (vars.confirmedPoolBal > 0) {
+                    bal = vars.confirmedDepositAmount / 10 ** 18;
                 } else {
                     if (dao.isMember(account)) return 1;
                     else return 0;
@@ -898,14 +920,17 @@ library GovernanceHelper {
         }
     }
 
-  function getAllCollectiveGovernorVotingWeightByConfirmedDeposit(
+    function getAllCollectiveGovernorVotingWeightByConfirmedDeposit(
         DaoRegistry dao
     ) internal view returns (uint128) {
         address[] memory governors = dao.getAllSteward();
 
         uint128 allStewardweight;
         for (uint8 i = 0; i < governors.length; i++) {
-            allStewardweight += getCollectiveVotingWeightByConfirmedDeposit(dao, governors[i]);
+            allStewardweight += getCollectiveVotingWeightByConfirmedDeposit(
+                dao,
+                governors[i]
+            );
         }
         return allStewardweight;
     }
@@ -932,11 +957,8 @@ library GovernanceHelper {
 
         bytes32 fundRaiseId = fundRaiseContr.lastProposalIds(address(dao));
 
-        if (fundingiPoolAdapt.poolBalance(dao) <= 0) {
-            if (dao.isMember(account)) return 1;
-            else return 0;
-        }
         uint256 confirmedDeposit = 0;
+        uint256 confirmedPoolBal = 0;
         if (
             fundRaiseContr.getProposalState(dao, fundRaiseId) ==
             ICollectiveFundRaise.ProposalState.FundRaising
@@ -948,8 +970,20 @@ library GovernanceHelper {
                     fundRaiseId,
                     account
                 );
+            confirmedPoolBal =
+                fundingiPoolAdapt.poolBalance(dao) -
+                fundingiPoolAdapt.fundRaisedByProposalId(
+                    address(dao),
+                    fundRaiseId
+                );
         } else {
             confirmedDeposit = fundingiPoolAdapt.balanceOf(dao, account);
+            confirmedPoolBal = fundingiPoolAdapt.poolBalance(dao);
+        }
+
+        if (confirmedPoolBal <= 0) {
+            if (dao.isMember(account)) return 1;
+            else return 0;
         }
 
         if (votingWeightedType == 1) {
