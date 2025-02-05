@@ -158,17 +158,17 @@ contract CollectiveVotingAdapterContract is
         // 0. - YES / (YES + NO) > X%
         // 1. - YES - NO > X
         // uint256 supportType = dao.getConfiguration(
-        //     DaoHelper.FLEX_VOTING_SUPPORT_TYPE
+        //     DaoHelper.COLLECTIVE_VOTING_SUPPORT_TYPE
         // );
         // 0. - (YES + NO) / Total > X%
         // 1. - YES + NO > X
         // uint256 quorumType = dao.getConfiguration(
-        //     DaoHelper.FLEX_VOTING_QUORUM_TYPE
+        //     DaoHelper.COLLECTIVE_VOTING_QUORUM_TYPE
         // );
         // uint128 allWeight = getAllGovernorWeight(dao);
         // console.log(getAllGovernorWeight(dao));
         uint256 currentQuorum = dao.getConfiguration(
-            DaoHelper.FLEX_VOTING_QUORUM_TYPE
+            DaoHelper.COLLECTIVE_VOTING_QUORUM_TYPE
         ) == 1
             ? (vote.nbYes + vote.nbNo)
             : ((vote.nbYes + vote.nbNo) * 100) /
@@ -182,7 +182,7 @@ contract CollectiveVotingAdapterContract is
         // console.log("vote.nbYes + vote.nbNo ", vote.nbYes + vote.nbNo);
 
         uint256 currentSupport = dao.getConfiguration(
-            DaoHelper.FLEX_VOTING_SUPPORT_TYPE
+            DaoHelper.COLLECTIVE_VOTING_SUPPORT_TYPE
         ) == 1
             ? (vote.nbYes < vote.nbNo ? 0 : (vote.nbYes - vote.nbNo))
             : (vote.nbYes * 100) /
@@ -240,21 +240,21 @@ contract CollectiveVotingAdapterContract is
         // 0. - YES / (YES + NO) > X%
         // 1. - YES - NO > X
         uint256 supportType = dao.getConfiguration(
-            DaoHelper.FLEX_VOTING_SUPPORT_TYPE
+            DaoHelper.COLLECTIVE_VOTING_SUPPORT_TYPE
         );
         // 0. - (YES + NO) / Total > X%
         // 1. - YES + NO > X
         uint256 quorumType = dao.getConfiguration(
-            DaoHelper.FLEX_VOTING_QUORUM_TYPE
+            DaoHelper.COLLECTIVE_VOTING_QUORUM_TYPE
         );
         uint128 allWeight = getAllGovernorWeight(dao);
-
         if (quorumType == 0) {
             uint256 minVotes = (allWeight *
                 dao.getConfiguration(DaoHelper.QUORUM)) / 100;
 
             unchecked {
                 uint256 totalvotes = vote.nbYes + vote.nbNo;
+
                 if (totalvotes <= minVotes)
                     return (VotingState.NOT_PASS, vote.nbYes, vote.nbNo);
             }
