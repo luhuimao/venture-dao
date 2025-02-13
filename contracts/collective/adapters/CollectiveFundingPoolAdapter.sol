@@ -164,7 +164,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         fundingpool.withdraw(msg.sender, tokenAddr, amount - redemptionFee);
         fundingpool.subtractFromBalance(msg.sender, tokenAddr, amount);
         if (balanceOf(dao, msg.sender) <= 0) {
-            _removeFundInvestor(dao, msg.sender);
+            // _removeFundInvestor(dao, msg.sender);
             investorsByFundRaise[address(dao)][lastFundRaiseProposalId].remove(
                 msg.sender
             );
@@ -375,7 +375,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             depositedBal - redemptionFeeAmount
         );
         fundingpoolExt.subtractFromBalance(account, tokenAddr, depositedBal);
-        _removeFundInvestor(dao, account);
+        // _removeFundInvestor(dao, account);
 
         if (redemptionFeeAmount > 0)
             escrowRedemptionFee(dao, tokenAddr, redemptionFeeAmount); //  distributeRedemptionFee(dao, tokenAddr, redemptionFee);
@@ -442,7 +442,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                     escrwoAmount += bal;
                 }
 
-                _removeFundInvestor(dao, allInvestors[i]);
+                // _removeFundInvestor(dao, allInvestors[i]);
             }
 
             fundState[address(dao)] = FundState.NOT_STARTED;
@@ -455,7 +455,22 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
             fundInvestors[address(dao)].add(account);
     }
 
-    function _removeFundInvestor(DaoRegistry dao, address account) internal {
+    // function _removeFundInvestor(DaoRegistry dao, address account) internal {
+    //     fundInvestors[address(dao)].remove(account);
+
+    //     if (dao.isMember(account) && dao.daoCreator() != account)
+    //         dao.removeMember(account);
+    // }
+
+    function removeFundInvestorFromExtension(
+        DaoRegistry dao,
+        address account
+    ) external {
+        if (
+            msg.sender !=
+            dao.getExtensionAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT)
+        ) revert ACCESS_DENIED();
+
         fundInvestors[address(dao)].remove(account);
 
         if (dao.isMember(account) && dao.daoCreator() != account)

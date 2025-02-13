@@ -634,6 +634,7 @@ contract ManualVesting {
                     holders[i]
                 );
                 if (vars.tokenIds.length > 0) {
+                    vars.depositAmount = 0;
                     for (uint8 j = 0; j < vars.tokenIds.length; j++) {
                         (
                             ,
@@ -654,6 +655,10 @@ contract ManualVesting {
                             (total * vars.investedAmount) /
                             vars.totalAmount;
                     }
+
+                    vars.depositAmount += eligibleVestUsers[vars.batchIds][
+                        holders[i]
+                    ].amount; //incase holders[i] is investor too
 
                     eligibleVestUsers[vars.batchIds][
                         holders[i]

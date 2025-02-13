@@ -890,15 +890,15 @@ const configureDao = async ({
         log("configure Extension Access ...");
         const withAccess = Object.values(contracts).reduce((accessRequired, c) => {
             const configs = c.configs;
-            // console.log(`extension/adapter name: ${configs.name}`);
+            console.log(`extension/adapter name: ${configs.name}`);
             accessRequired.push(
                 extension.configs.buildAclFlag(configs.type == ContractType.Extension ? c.address : c.instance.address, configs.acls)
             );
             return accessRequired;
         }, []);
         if (withAccess.length > 0) {
-            // console.log("extension.address: ", extension.address);
-            // console.log("withAccess: ", withAccess);
+            console.log("extension.address: ", extension.address);
+            console.log("withAccess: ", withAccess);
 
             const tx = await daoFactory.instance.configureExtension(
                 dao.address,

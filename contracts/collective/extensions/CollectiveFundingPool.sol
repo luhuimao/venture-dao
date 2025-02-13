@@ -2,17 +2,14 @@ pragma solidity ^0.8.0;
 
 // SPDX-License-Identifier: MIT
 
-// import "../../core/DaoRegistry.sol";
+import "../adapters/CollectiveFundingPoolAdapter.sol";
 import "../../extensions/IExtension.sol";
 import "../../guards/AdapterGuard.sol";
 import "../../guards/MemberGuard.sol";
-// import "../../helpers/DaoHelper.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-// import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-
 import "hardhat/console.sol";
 
 /**
@@ -366,8 +363,13 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         );
         _createNewAmountCheckpoint(member, token, newAmount);
 
-        // if (dao.isMember(member) && dao.daoCreator() != member)
-        //     dao.removeMember(member);
+        if (balanceOf(member) <= 0) {
+            ColletiveFundingPoolAdapterContract(
+                dao.getAdapterAddress(
+                    DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+                )
+            ).removeFundInvestorFromExtension(dao, member);
+        }
     }
 
     function subtractAllFromBalance(
