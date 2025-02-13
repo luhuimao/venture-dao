@@ -604,7 +604,7 @@ describe("fund establishment...", () => {
         return proposalId;
     };
 
-    it.only("fund establish...", async () => {
+    it("fund establish...", async () => {
         const vintageFundingAdapterContract = this.vintageFundingAdapterContract;
         const vintageFundingPoolAdapterContract = this.vintageFundingPoolAdapterContract;
         const vintageVotingAdapterContract = this.vintageVotingAdapterContract;
@@ -775,7 +775,8 @@ describe("fund establishment...", () => {
         const VINTAGE_INVESTOR_MEMBERSHIP_TOKEN_ADDRESS = await this.daoContract.getAddressConfiguration("0xe373ab56628c86db3f0e36774c2c5e0393f9272ff5c976bc3f0db2db60cdbc14");
         const VINTAGE_INVESTOR_MEMBERSHIP_TOKENID = await this.daoContract.getConfiguration("0x6cb5bc3796b0717ca4ff665886c96fb0178d6341366eb7b6c737fe79083b836a");
 
-        let overRaisedEscA = await this.vintageEscrowFundAdapterContract.escrowFundsFromOverRaised(this.daoAddr1, this.testtoken1.address, this.owner.address, 1);
+        let fundRaiseId = await this.daoContract.getCurrentFundEstablishmentProposalId();
+        let overRaisedEscA = await this.vintageEscrowFundAdapterContract.escrowFundsFromOverRaised(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRaiseId);
         console.log(`
         executed...
         fund raise state ${fundRaiseProposalInfo.state}
@@ -795,8 +796,8 @@ describe("fund establishment...", () => {
         withdraw over raised fund ...   
         `);
 
-        await this.vintageEscrowFundAdapterContract.connect(this.owner).withdrawFromOverRaised(this.daoAddr1, this.testtoken1.address, 1);
-        overRaisedEscA = await this.vintageEscrowFundAdapterContract.escrowFundsFromOverRaised(this.daoAddr1, this.testtoken1.address, this.owner.address, 1);
+        await this.vintageEscrowFundAdapterContract.connect(this.owner).withdrawFromOverRaised(this.daoAddr1, this.testtoken1.address, fundRaiseId);
+        overRaisedEscA = await this.vintageEscrowFundAdapterContract.escrowFundsFromOverRaised(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRaiseId);
 
         console.log(`
             over raised amount ${hre.ethers.utils.formatEther(overRaisedEscA)}    
@@ -908,7 +909,8 @@ describe("fund establishment...", () => {
             `
         );
         const fundRound = await this.vintageFundRaiseAdapterContract.createdFundCounter(this.daoAddr1);
-        let liquidEscrowFundA = await this.vintageEscrowFundAdapterContract.escrowFundsFromLiquidation(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRound);
+        fundRaiseId = await this.daoContract.getCurrentFundEstablishmentProposalId();
+        let liquidEscrowFundA = await this.vintageEscrowFundAdapterContract.escrowFundsFromLiquidation(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRaiseId);
         let poolbal = await this.vintageFundingPoolAdapterContract.poolBalance(this.daoAddr1);
         console.log(`
                 poolbal  ${hre.ethers.utils.formatEther(poolbal)}
@@ -916,7 +918,7 @@ describe("fund establishment...", () => {
                 clear fund....
         `);
         await vintageFundingPoolAdapterContract.clearFund(this.daoAddr1);
-         liquidEscrowFundA = await this.vintageEscrowFundAdapterContract.escrowFundsFromLiquidation(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRound);
+        liquidEscrowFundA = await this.vintageEscrowFundAdapterContract.escrowFundsFromLiquidation(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRaiseId);
 
         poolbal = await this.vintageFundingPoolAdapterContract.poolBalance(this.daoAddr1);
 
@@ -925,8 +927,20 @@ describe("fund establishment...", () => {
             fund clear...
             poolbal  ${hre.ethers.utils.formatEther(poolbal)}
             liquidEscrowFundA  ${hre.ethers.utils.formatEther(liquidEscrowFundA)}
+            refund...
             `
         );
+
+        const txwithdraw = await this.vintageEscrowFundAdapterContract.connect(this.owner).withdrawFromLiquidation(this.daoAddr1, this.testtoken1.address, fundRaiseId);
+        const txrel = await txwithdraw.wait();
+        liquidEscrowFundA = await this.vintageEscrowFundAdapterContract.escrowFundsFromLiquidation(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRaiseId);
+        console.log(
+            `
+            liquidEscrowFundA  ${hre.ethers.utils.formatEther(liquidEscrowFundA)}
+            `
+        );
+
+        console.log(txrel.events[txrel.events.length - 1].args);
 
         await expectRevert(createFundRaiseProposal(this.vintageFundRaiseAdapterContract, this.owner, fundRaiseParams), "revert");
 
@@ -1249,6 +1263,7 @@ describe("fund establishment...", () => {
         process new fund proposal...
         `);
         await this.vintageFundRaiseAdapterContract.processProposal(this.daoAddr1, newFundProposalId);
+
         fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, newFundProposalId);
 
         fundState = await vintageFundingPoolAdapterContract.daoFundRaisingStates(this.daoAddr1);
@@ -1278,7 +1293,8 @@ describe("fund establishment...", () => {
         fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, newFundProposalId);
         const poolbal = await this.vintageFundingPoolAdapterContract.poolBalance(this.daoAddr1);
         const fundRound = await this.vintageFundRaiseAdapterContract.createdFundCounter(this.daoAddr1);
-        let failedFundRaiseEscrowA = await this.vintageEscrowFundAdapterContract.escrowFundsFromFailedFundRaise(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRound);
+        let fundRaiseId = await this.daoContract.getCurrentFundEstablishmentProposalId();
+        let failedFundRaiseEscrowA = await this.vintageEscrowFundAdapterContract.escrowFundsFromFailedFundRaise(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRaiseId);
         console.log(`
             fund raise state ${fundRaiseProposalInfo.state}
     
@@ -1288,8 +1304,8 @@ describe("fund establishment...", () => {
             failedFundRaiseEscrowA  ${hre.ethers.utils.formatEther(failedFundRaiseEscrowA)}
             withdraw escrow failed raise fund
         `);
-        await this.vintageEscrowFundAdapterContract.connect(this.owner).withdrawFromFailedFundRaising(this.daoAddr1, this.testtoken1.address, fundRound);
-        failedFundRaiseEscrowA = await this.vintageEscrowFundAdapterContract.escrowFundsFromFailedFundRaise(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRound);
+        await this.vintageEscrowFundAdapterContract.connect(this.owner).withdrawFromFailedFundRaising(this.daoAddr1, this.testtoken1.address, fundRaiseId);
+        failedFundRaiseEscrowA = await this.vintageEscrowFundAdapterContract.escrowFundsFromFailedFundRaise(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRaiseId);
         console.log(`
             failedFundRaiseEscrowA  ${hre.ethers.utils.formatEther(failedFundRaiseEscrowA)}
         `);

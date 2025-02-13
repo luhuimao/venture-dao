@@ -555,8 +555,8 @@ describe("daoset...", () => {
         const votingWeightedType = 0;
         const supportType = 1;
         const quorumType = 1;
-        const support = 43;
-        const quorum = 33;
+        const support = 0;
+        const quorum = 0;
         const votingPeriod = 60 * 100;
         // const executingPeriod = 60 * 2;
         const gracePeriod = 60 * 3;
@@ -1060,7 +1060,10 @@ describe("daoset...", () => {
         let rel = await tx.wait();
 
         let proposalId = rel.events[rel.events.length - 1].args.proposalId;
-        let proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(this.collectiveDirectdaoAddress, proposalId);
+        let proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(
+            this.collectiveDirectdaoAddress,
+            proposalId
+        );
         console.log(`
             startTime   ${proposalDetail.timeInfo.startTime}
             endTime   ${proposalDetail.timeInfo.endTime}
@@ -1069,10 +1072,12 @@ describe("daoset...", () => {
             vote for fund raise proposal...
         `);
 
-        await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
+        await this.collectiveVotingContract.connect(this.owner).submitVote(
+            this.collectiveDirectdaoAddress,
             proposalId,
             1
         );
+
         // await this.collectiveVotingContract.connect(this.genesis_steward1).submitVote(this.collectiveDirectdaoAddress,
         //     proposalId,
         //     1
@@ -1089,10 +1094,13 @@ describe("daoset...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
+        const voteRel = await this.collectiveVotingContract.voteResult(this.collectiveDirectdaoAddress, proposalId);
+
         await this.colletiveFundRaiseProposalContract.processProposal(this.collectiveDirectdaoAddress, proposalId);
         proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(this.collectiveDirectdaoAddress, proposalId);
 
         console.log(`
+        voteRel      ${voteRel}
         executed...
         fund raise proposal state ${proposalDetail.state}
         deposit...

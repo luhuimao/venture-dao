@@ -178,8 +178,8 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
      * @param creator The DAO's creator, who will be an initial member
      */
     function initialize(DaoRegistry _dao, address creator) external override {
-        require(!initialized, "flex funding pool already initialized");
-        require(_dao.isMember(creator), "flex funding pool::not member");
+        require(!initialized, "collective funding pool already initialized");
+        require(_dao.isMember(creator), "collective funding pool::not member");
         dao = _dao;
         initialized = true;
     }
@@ -345,32 +345,29 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
     ) public hasExtensionAccess(AclFlag.SUB_FROM_BALANCE) {
         require(
             balanceOf(member) >= amount &&
-                balanceOf(DaoHelper.DAOSQUARE_TREASURY) >= amount,
+                balanceOf(DaoHelper.DAOSQUARE_TREASURY) >= balanceOf(member),
             "FundingPool::subtractFromBalance::Insufficient Fund"
         );
+
         uint256 newAmount = balanceOf(member) - amount;
         uint256 newTotalFund = balanceOf(DaoHelper.DAOSQUARE_TREASURY) - amount;
+
+        if (newAmount <= 9 && newAmount > 0) {
+            newAmount = 0;
+            newTotalFund =
+                balanceOf(DaoHelper.DAOSQUARE_TREASURY) -
+                balanceOf(member);
+        }
+
         _createNewAmountCheckpoint(
             DaoHelper.DAOSQUARE_TREASURY,
             token,
             newTotalFund
         );
-        // if (dao.isMember(member)) {
-        //     uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL));
-        //     uint256 newGPFunds;
-        //     unchecked {
-        //         newGPFunds = totalGPFunds - amount;
-        //     }
-        //     _createNewAmountCheckpoint(
-        //         address(DaoHelper.GP_POOL),
-        //         token,
-        //         newGPFunds
-        //     );
-        // }
-        // if (newAmount <= 0) {
-        //     _removeInvestor(member);
-        // }
         _createNewAmountCheckpoint(member, token, newAmount);
+
+        // if (dao.isMember(member) && dao.daoCreator() != member)
+        //     dao.removeMember(member);
     }
 
     function subtractAllFromBalance(
@@ -381,6 +378,7 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
             address(DaoHelper.DAOSQUARE_TREASURY)
         );
         address[] memory tem = investors.values();
+
         for (uint8 i = 0; i < tem.length; i++) {
             address investorAddr = tem[i];
             if (balanceOf(investorAddr) > 0) {

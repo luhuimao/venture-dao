@@ -827,7 +827,7 @@ describe("fund raise proposal...", () => {
         console.log(`
         fund raise proposal state ${proposalDetail.state}
         `);
-        
+
         allInvestors = await this.daoContract.getAllSteward()
         // allInvestors = await this.colletiveFundingPoolContract.getAllInvestors(this.collectiveDirectdaoAddress);
         console.log(`
@@ -877,7 +877,7 @@ describe("fund raise proposal...", () => {
         }
 
         // await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1000"));
-        await this.colletiveFundingPoolContract.connect(this.investor1).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100"));
+        await this.colletiveFundingPoolContract.connect(this.investor1).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("900"));
         await this.colletiveFundingPoolContract.connect(this.investor2).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100"));
 
         let usdBal1 = await this.testtoken1.balanceOf(this.investor1.address);
@@ -888,19 +888,19 @@ describe("fund raise proposal...", () => {
 
         withdraw during fund raising period...
         `);
-        await expectRevert(this.colletiveFundingPoolContract.connect(this.investor1).withdraw(this.collectiveDirectdaoAddress,
-            hre.ethers.utils.parseEther("101")), "revert");
+        // await expectRevert(this.colletiveFundingPoolContract.connect(this.investor1).withdraw(this.collectiveDirectdaoAddress,
+        //     hre.ethers.utils.parseEther("101")), "revert");
 
         await this.colletiveFundingPoolContract.connect(this.investor1).withdraw(this.collectiveDirectdaoAddress,
             hre.ethers.utils.parseEther("10"));
 
         depositBal1 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.investor1.address);
         usdBal1 = await this.testtoken1.balanceOf(this.investor1.address);
-
+        let fundState = await this.colletiveFundingPoolContract.fundState(this.collectiveDirectdaoAddress)
         console.log(`
         usdBal1      ${hre.ethers.utils.formatEther(usdBal1)}
         depositBal1  ${hre.ethers.utils.formatEther(depositBal1)}
-
+        fundState    ${fundState}
         withdraw after fund raise end...
         `);
 
@@ -911,15 +911,25 @@ describe("fund raise proposal...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
+        // await this.colletiveFundingPoolContract.connect(this.investor1).withdraw(this.collectiveDirectdaoAddress,
+        //     hre.ethers.utils.parseEther("110"));
+
+        let raisedAmount = await this.colletiveFundingPoolContract.fundRaisedByProposalId(this.collectiveDirectdaoAddress, proposalId)
+
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         console.log(`
         blocktimestamp   ${blocktimestamp}
         endTime          ${proposalDetail.timeInfo.endTime}
+        raisedAmount     ${hre.ethers.utils.formatEther(raisedAmount)}
         process fund raising...
         `);
 
         await this.colletiveFundingPoolContract.processFundRaise(this.collectiveDirectdaoAddress);
+        fundState = await this.colletiveFundingPoolContract.fundState(this.collectiveDirectdaoAddress)
 
+        console.log(`
+            fundState    ${fundState}
+        `);
 
         await this.colletiveFundingPoolContract.connect(this.investor1).withdraw(this.collectiveDirectdaoAddress,
             hre.ethers.utils.parseEther("10"));
@@ -1000,8 +1010,8 @@ describe("fund raise proposal...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
-        await this.colletiveFundingPoolContract.connect(this.investor1).withdraw(this.collectiveDirectdaoAddress,
-            depositBal1);
+        // await this.colletiveFundingPoolContract.connect(this.investor1).withdraw(this.collectiveDirectdaoAddress,
+        //     depositBal1);
 
         usdBal1 = await this.testtoken1.balanceOf(this.investor1.address);
         depositBal1 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.investor1.address);

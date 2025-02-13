@@ -295,9 +295,22 @@ contract FlexInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         address member,
         uint256 amount
     ) public hasExtensionAccess(AclFlag.SUB_FROM_BALANCE) {
+        require(
+            balanceOf(proposalId, member) >= amount &&
+                balanceOf(proposalId, DaoHelper.TOTAL) >=
+                balanceOf(proposalId, member),
+            "< 0"
+        );
         uint256 newAmount = balanceOf(proposalId, member) - amount;
         uint256 newTotalAmount = balanceOf(proposalId, DaoHelper.TOTAL) -
             amount;
+
+        if (newAmount <= 9 && newAmount > 0) {
+            newAmount = 0;
+            newTotalAmount =
+                balanceOf(proposalId, DaoHelper.TOTAL) -
+                balanceOf(proposalId, member);
+        }
 
         _createNewAmountCheckpoint(proposalId, member, newAmount);
         if (balanceOf(proposalId, member) <= 0)

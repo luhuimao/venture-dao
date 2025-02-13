@@ -409,22 +409,37 @@ contract VintageFundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
     ) public hasExtensionAccess(AclFlag.SUB_FROM_BALANCE) {
         require(
             balanceOf(member) >= amount &&
-                balanceOf(DaoHelper.DAOSQUARE_TREASURY) >= amount,
+                balanceOf(DaoHelper.DAOSQUARE_TREASURY) >= balanceOf(member),
             "FundingPool::subtractFromBalance::Insufficient Fund"
         );
         uint256 newAmount = balanceOf(member) - amount;
         uint256 newTotalFund = balanceOf(DaoHelper.DAOSQUARE_TREASURY) - amount;
-        _createNewAmountCheckpoint(
-            DaoHelper.DAOSQUARE_TREASURY,
-            token,
-            newTotalFund
-        );
+        uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL));
+
+        if (newAmount <= 9 && newAmount > 0) {
+            newAmount = 0;
+            newTotalFund =
+                balanceOf(DaoHelper.DAOSQUARE_TREASURY) -
+                balanceOf(member);
+        }
+
         if (dao.isMember(member)) {
-            uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL));
-            uint256 newGPFunds;
-            unchecked {
+            // uint256 totalGPFunds = balanceOf(address(DaoHelper.GP_POOL));
+            uint256 newGPFunds = totalGPFunds;
+            if (totalGPFunds >= amount) {
                 newGPFunds = totalGPFunds - amount;
+                if (
+                    balanceOf(member) - amount <= 9 &&
+                    balanceOf(member) - amount > 0 &&
+                    totalGPFunds >= balanceOf(member)
+                ) {
+                    newGPFunds = totalGPFunds - balanceOf(member);
+                }
             }
+
+            // unchecked {
+            //     newGPFunds = totalGPFunds - amount;
+            // }
             _createNewAmountCheckpoint(
                 address(DaoHelper.GP_POOL),
                 token,
@@ -434,6 +449,11 @@ contract VintageFundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         if (newAmount <= 0) {
             _removeInvestor(member);
         }
+        _createNewAmountCheckpoint(
+            DaoHelper.DAOSQUARE_TREASURY,
+            token,
+            newTotalFund
+        );
         _createNewAmountCheckpoint(member, token, newAmount);
     }
 

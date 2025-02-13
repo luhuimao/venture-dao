@@ -673,17 +673,17 @@ describe("grace...", () => {
         );
 
         let graceWithdrawAmount = await this.colletiveFundingPoolContract.graceWithdrawAmount(
-            investmentProposalId,
+            this.collectiveDirectdaoAddress,
             this.owner.address
         );
 
         let graceWithdrawAmount2 = await this.colletiveFundingPoolContract.graceWithdrawAmount(
-            investmentProposalId,
+            this.collectiveDirectdaoAddress,
             this.investor1.address
         );
 
         let graceWithdrawAmount3 = await this.colletiveFundingPoolContract.graceWithdrawAmount(
-            investmentProposalId,
+            this.collectiveDirectdaoAddress,
             this.investor2.address
         );
 
@@ -745,17 +745,17 @@ describe("grace...", () => {
         );
 
         graceWithdrawAmount = await this.colletiveFundingPoolContract.graceWithdrawAmount(
-            investmentProposalId,
+            this.collectiveDirectdaoAddress,
             this.owner.address
         );
 
         graceWithdrawAmount2 = await this.colletiveFundingPoolContract.graceWithdrawAmount(
-            investmentProposalId,
+            this.collectiveDirectdaoAddress,
             this.investor1.address
         );
 
         graceWithdrawAmount3 = await this.colletiveFundingPoolContract.graceWithdrawAmount(
-            investmentProposalId,
+            this.collectiveDirectdaoAddress,
             this.investor2.address
         );
 
