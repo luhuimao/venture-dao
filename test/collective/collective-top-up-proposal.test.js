@@ -165,6 +165,7 @@ describe("topup proposal...", () => {
         this.colletiveFundingProposalContract = adapters.colletiveFundingProposalContract.instance;
         this.collectiveVotingContract = adapters.collectiveVotingContract.instance;
         this.colletiveFundingPoolContract = adapters.colletiveFundingPoolContract.instance;
+        this.collectiveFundingPoolHelperContract = adapters.collectiveFundingPoolHelperAdapterContract.instance;
         this.colletiveFundRaiseProposalContract = adapters.colletiveFundRaiseProposalContract.instance;
         this.bentoBoxV1 = adapters.bentoBoxV1.instance;
         this.collectivePaybackTokenAdapterContract = this.adapters.collectivePaybackTokenAdapterContract.instance;
@@ -208,6 +209,11 @@ describe("topup proposal...", () => {
                 id: '0x8f5b4aabbdb8527d420a29cc90ae207773ad49b73c632c3cfd2f29eb8776f2ea', //colletiveFundingPoolContract
                 addr: this.colletiveFundingPoolContract.address,
                 flags: 200
+            },
+            {
+                id: '0xabfafd6b613afcca7174c893807d7a2eb4271cd9c3bbe5ae051c2c378863d745', //collectiveFundingPoolHelperContract
+                addr: this.collectiveFundingPoolHelperContract.address,
+                flags: 0
             },
             {
                 id: '0x3a06648a49edffe95b8384794dfe9cf3ab34782fab0130b4c91bfd53f3407e6b', //colletiveFundRaiseProposalContract
@@ -284,6 +290,11 @@ describe("topup proposal...", () => {
                 id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
                 addr: this.colletiveFundingPoolContract.address, //collectiveFundingPoolAdapterContract
                 flags: 23
+            },
+            {
+                id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',
+                addr: this.collectiveFundingPoolHelperContract.address, //collectiveFundingPoolHelperContract
+                flags: 18
             },
             {
                 id: '0x3909e87234f428ccb8748126e2c93f66a62f92a70d315fa5803dec6362be07ab',

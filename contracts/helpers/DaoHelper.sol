@@ -500,6 +500,8 @@ library DaoHelper {
         keccak256("collective-daoset-adapter");
     bytes32 internal constant COLLECTIVE_INVESTMENT_POOL_ADAPTER =
         keccak256("collective-funding-pool-adapter");
+    bytes32 internal constant COLLECTIVE_INVESTMENT_POOL_HELPER_ADAPTER =
+        keccak256("collective-funding-pool-helper-adapter");
     bytes32 internal constant COLLECTIVE_GOVERNOR_MANAGEMENT_ADAPTER =
         keccak256("collective-governor-management-adapter");
     bytes32 internal constant COLLECTIVE_DAO_SET_HELPER_ADAPTER =

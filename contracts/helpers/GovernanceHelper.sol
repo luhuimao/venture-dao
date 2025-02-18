@@ -17,6 +17,7 @@ import "../flex/adatpers/FlexVoting.sol";
 import "../flex/adatpers/FlexStewardAllocation.sol";
 import "../collective/adapters/CollectiveVotingAdapter.sol";
 import "../collective/adapters/CollectiveFundingPoolAdapter.sol";
+import "../collective/adapters/CollectiveFundRaiseProposalAdapter.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import "hardhat/console.sol";

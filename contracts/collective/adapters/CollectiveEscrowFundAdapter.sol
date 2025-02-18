@@ -181,9 +181,14 @@ contract CollectiveEscrowFundAdapterContract is AdapterGuard, Reimbursable {
         uint256 amount,
         uint256 liquidationId
     ) external {
+        // if (
+        //     msg.sender !=
+        //     dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER)
+        // ) revert ACCESS_DENIED();
+
         if (
             msg.sender !=
-            dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER)
+            dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_HELPER_ADAPTER)
         ) revert ACCESS_DENIED();
 
         escrowFundsFromLiquidation[address(dao)][token][account][
