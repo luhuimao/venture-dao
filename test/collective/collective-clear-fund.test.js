@@ -514,20 +514,26 @@ describe("clear fund proposal...", () => {
             await hre.network.provider.send("evm_mine");
         }
 
+        let investors = await this.colletiveFundingPoolContract.getAllInvestors(this.collectiveDirectdaoAddress)
+        let poolbal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
         await this.colletiveClearFundProposalAdapterContract.processClearFundProposal(
             this.collectiveDirectdaoAddress
             , proposalId);
-
+        console.log(`
+             poolbal   ${poolbal}
+             investors  ${investors}
+             `);
         clearFundProposalDetail = await this.colletiveClearFundProposalAdapterContract.proposals(
             this.collectiveDirectdaoAddress
             , proposalId);
 
+        poolbal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
         console.log(`
         proposal state ${clearFundProposalDetail.state}
+        poolbal   ${poolbal}
         `);
 
     });
-
 
     it("cant submit new clear fund proposal if operation proposals not finished...", async () => {
         await submitFundingProposal();
@@ -629,13 +635,22 @@ describe("clear fund proposal...", () => {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.timeInfo.endTime) + 1]);
             await hre.network.provider.send("evm_mine");
         }
+        let poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
+        let investors = await this.colletiveFundingPoolContract.getAllInvestors(this.collectiveDirectdaoAddress);
+
+        console.log(`
+            poolBal     ${poolBal}
+            investors   ${investors}
+        `);
         await this.colletiveFundingPoolContract.processFundRaise(this.collectiveDirectdaoAddress);
         const fundState = await this.colletiveFundingPoolContract.fundState(this.collectiveDirectdaoAddress);
+        poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
 
-        console.log("executed...");
-        console.log("fundState...", fundState);
-
-
+        console.log(`
+            executed...
+            fundState   ${fundState}
+            poolBal     ${poolBal}
+            `);
 
         const clearFundProposalId = await submitClearFundProposal();
 
@@ -655,7 +670,7 @@ describe("clear fund proposal...", () => {
         }
         let liquidationId = await this.colletiveFundingPoolContract.liquidationId(this.collectiveDirectdaoAddress);
 
-        let poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
+        poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
         let escrowedFund = await this.collectiveEscrowFundAdapterContract.escrowFundsFromLiquidation(this.collectiveDirectdaoAddress,
             this.testtoken1.address,
             this.owner.address,

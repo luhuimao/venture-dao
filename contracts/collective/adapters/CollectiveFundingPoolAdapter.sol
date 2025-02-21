@@ -457,7 +457,7 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                 DaoHelper.COLLECTIVE_INVESTMENT_POOL_HELPER_ADAPTER
             )
         ).clearFund(dao);
-
+        
         // if (
         //     block.timestamp <
         //     dao.getConfiguration(DaoHelper.FUND_RAISING_WINDOW_END) &&
