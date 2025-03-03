@@ -223,6 +223,11 @@ describe("fund establishment...", () => {
         await vestingERC721.deployed();
         this.vestingERC721 = vestingERC721;
 
+        const ERC20TokenDecimals = await hre.ethers.getContractFactory("ERC20TokenDecimals");
+        const eRC20TokenDecimals = await ERC20TokenDecimals.deploy(100000000, 6);
+        await eRC20TokenDecimals.deployed();
+        this.erc20TokenDecimals = eRC20TokenDecimals;
+
         const daoFactoriesAddress = [
             this.daoFactory.address, //daoFactory address
             this.vintageFundingPoolFactory.address //vintageFundingPoolFactory
@@ -609,10 +614,10 @@ describe("fund establishment...", () => {
         const vintageFundingPoolAdapterContract = this.vintageFundingPoolAdapterContract;
         const vintageVotingAdapterContract = this.vintageVotingAdapterContract;
         const vintageVesting = this.vintageVesting;
-        const fundRaiseMinTarget = hre.ethers.utils.parseEther("10000");
-        const fundRaiseMaxCap = hre.ethers.utils.parseEther("20000");
-        const lpMinDepositAmount = hre.ethers.utils.parseEther("100");
-        const lpMaxDepositAmount = hre.ethers.utils.parseEther("200000");
+        const fundRaiseMinTarget = toBN("10000000000");
+        const fundRaiseMaxCap = toBN("20000000000");
+        const lpMinDepositAmount = toBN("100000000");
+        const lpMaxDepositAmount = toBN("200000000000");
         const fundRaiseType = 1; // 0 FCFS 1 Free In
 
         //submit fund raise proposal
@@ -653,7 +658,7 @@ describe("fund establishment...", () => {
 
         const managementFeeAddress = this.user1.address;
         const redemptionFeeReceiver = this.user2.address;
-        const fundRaiseTokenAddress = this.testtoken1.address;
+        const fundRaiseTokenAddress = this.erc20TokenDecimals.address;
         const proposalAddressInfo = [
             managementFeeAddress,
             redemptionFeeReceiver,
@@ -747,14 +752,15 @@ describe("fund establishment...", () => {
         `);
 
         await this.testtoken1.approve(this.vintageFundingPoolAdapterContract.address, hre.ethers.utils.parseEther("200000"));
+        await this.erc20TokenDecimals.approve(this.vintageFundingPoolAdapterContract.address, toBN("200000000000"));
 
         console.log(`
         deposit...
         `);
-        await this.vintageFundingPoolAdapterContract.deposit(this.daoAddr1, hre.ethers.utils.parseEther("26000"));
+        await this.vintageFundingPoolAdapterContract.deposit(this.daoAddr1, toBN("26000000000"));
         const debal = await this.vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.owner.address);
         console.log(`
-            deposit balance ${hre.ethers.utils.formatEther(debal)}    
+            deposit balance ${(debal)}    
         `);
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
@@ -776,7 +782,12 @@ describe("fund establishment...", () => {
         const VINTAGE_INVESTOR_MEMBERSHIP_TOKENID = await this.daoContract.getConfiguration("0x6cb5bc3796b0717ca4ff665886c96fb0178d6341366eb7b6c737fe79083b836a");
 
         let fundRaiseId = await this.daoContract.getCurrentFundEstablishmentProposalId();
-        let overRaisedEscA = await this.vintageEscrowFundAdapterContract.escrowFundsFromOverRaised(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRaiseId);
+        let overRaisedEscA = await this.vintageEscrowFundAdapterContract.escrowFundsFromOverRaised(
+            this.daoAddr1,
+            this.erc20TokenDecimals.address,
+            this.owner.address,
+            fundRaiseId
+        );
         console.log(`
         executed...
         fund raise state ${fundRaiseProposalInfo.state}
@@ -792,19 +803,26 @@ describe("fund establishment...", () => {
 
         fund State ${fundState}
 
-        over raised amount ${hre.ethers.utils.formatEther(overRaisedEscA)} 
+        over raised amount ${(overRaisedEscA)} 
         withdraw over raised fund ...   
         `);
 
-        await this.vintageEscrowFundAdapterContract.connect(this.owner).withdrawFromOverRaised(this.daoAddr1, this.testtoken1.address, fundRaiseId);
-        overRaisedEscA = await this.vintageEscrowFundAdapterContract.escrowFundsFromOverRaised(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRaiseId);
+        await this.vintageEscrowFundAdapterContract.connect(this.owner).withdrawFromOverRaised(
+            this.daoAddr1,
+            this.erc20TokenDecimals.address,
+            fundRaiseId);
+        overRaisedEscA = await this.vintageEscrowFundAdapterContract.escrowFundsFromOverRaised(
+            this.daoAddr1,
+            this.erc20TokenDecimals.address,
+            this.owner.address,
+            fundRaiseId);
 
         console.log(`
-            over raised amount ${hre.ethers.utils.formatEther(overRaisedEscA)}    
+            over raised amount ${(overRaisedEscA)}    
         `);
 
         // Submit funding proposal
-        const requestedFundAmount = hre.ethers.utils.parseEther("2000");
+        const requestedFundAmount = toBN("2000000000");
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("5000");
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
@@ -843,7 +861,7 @@ describe("fund establishment...", () => {
 
         const fundingInfo = [
             requestedFundAmount,
-            this.testtoken1.address,
+            this.erc20TokenDecimals.address,
             receiver
         ]
 
@@ -882,13 +900,13 @@ describe("fund establishment...", () => {
          proposalId ${proposalId}
          `);
 
-        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price));
+        await this.testtoken2.approve(this.vintageFundingReturnTokenAdapterContract.address, requestedFundAmount.mul(10 ** 12).mul(hre.ethers.utils.parseEther("1")).div(price));
 
         await this.vintageFundingReturnTokenAdapterContract.setFundingApprove(
             this.daoAddr1,
             proposalId,
             this.testtoken2.address,
-            requestedFundAmount.mul(hre.ethers.utils.parseEther("1")).div(price)
+            requestedFundAmount.mul(10 ** 12).mul(hre.ethers.utils.parseEther("1")).div(price)
         );
 
         await vintageFundingAdapterContract.startVotingProcess(this.daoAddr1, proposalId);
@@ -910,30 +928,46 @@ describe("fund establishment...", () => {
         );
         const fundRound = await this.vintageFundRaiseAdapterContract.createdFundCounter(this.daoAddr1);
         fundRaiseId = await this.daoContract.getCurrentFundEstablishmentProposalId();
-        let liquidEscrowFundA = await this.vintageEscrowFundAdapterContract.escrowFundsFromLiquidation(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRaiseId);
+        let liquidEscrowFundA = await this.vintageEscrowFundAdapterContract.escrowFundsFromLiquidation(
+            this.daoAddr1,
+            this.erc20TokenDecimals.address,
+            this.owner.address,
+            fundRaiseId
+        );
         let poolbal = await this.vintageFundingPoolAdapterContract.poolBalance(this.daoAddr1);
         console.log(`
-                poolbal  ${hre.ethers.utils.formatEther(poolbal)}
-                liquidEscrowFundA  ${hre.ethers.utils.formatEther(liquidEscrowFundA)}
+                poolbal  ${(poolbal)}
+                liquidEscrowFundA  ${(liquidEscrowFundA)}
                 clear fund....
         `);
         await vintageFundingPoolAdapterContract.clearFund(this.daoAddr1);
-        liquidEscrowFundA = await this.vintageEscrowFundAdapterContract.escrowFundsFromLiquidation(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRaiseId);
+        liquidEscrowFundA = await this.vintageEscrowFundAdapterContract.escrowFundsFromLiquidation(
+            this.daoAddr1,
+            this.erc20TokenDecimals.address,
+            this.owner.address,
+            fundRaiseId);
 
         poolbal = await this.vintageFundingPoolAdapterContract.poolBalance(this.daoAddr1);
 
         console.log(
             `
             fund clear...
-            poolbal  ${hre.ethers.utils.formatEther(poolbal)}
-            liquidEscrowFundA  ${hre.ethers.utils.formatEther(liquidEscrowFundA)}
+            poolbal  ${(poolbal)}
+            liquidEscrowFundA  ${(liquidEscrowFundA)}
             refund...
             `
         );
 
-        const txwithdraw = await this.vintageEscrowFundAdapterContract.connect(this.owner).withdrawFromLiquidation(this.daoAddr1, this.testtoken1.address, fundRaiseId);
+        const txwithdraw = await this.vintageEscrowFundAdapterContract.connect(this.owner).withdrawFromLiquidation(
+            this.daoAddr1,
+            this.erc20TokenDecimals.address,
+            fundRaiseId);
         const txrel = await txwithdraw.wait();
-        liquidEscrowFundA = await this.vintageEscrowFundAdapterContract.escrowFundsFromLiquidation(this.daoAddr1, this.testtoken1.address, this.owner.address, fundRaiseId);
+        liquidEscrowFundA = await this.vintageEscrowFundAdapterContract.escrowFundsFromLiquidation(
+            this.daoAddr1,
+            this.erc20TokenDecimals.address,
+            this.owner.address,
+            fundRaiseId);
         console.log(
             `
             liquidEscrowFundA  ${hre.ethers.utils.formatEther(liquidEscrowFundA)}
@@ -1036,7 +1070,7 @@ describe("fund establishment...", () => {
             executed...
             fund raise state ${fundRaiseProposalInfo.state}
             investorWl    ${investorWl}
-            fund State ${fundState}
+            fund State ${fundRaiseState}
             `);
 
     });
@@ -1247,7 +1281,7 @@ describe("fund establishment...", () => {
         await this.vintageVotingAdapterContract.submitVote(this.daoAddr1, newFundProposalId, 1);
 
         let fundRaiseProposalInfo = await this.vintageFundRaiseAdapterContract.Proposals(this.daoAddr1, newFundProposalId);
-        console.log(fundRaiseProposalInfo);
+        // console.log(fundRaiseProposalInfo);
         let stopVoteTime = fundRaiseProposalInfo.stopVoteTime;
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
@@ -1270,7 +1304,7 @@ describe("fund establishment...", () => {
         expect(fundState == 3, true);
         console.log(`
         executed...
-        fund raise state ${fundRaiseProposalInfo.state}
+        fund raise proposal state ${fundRaiseProposalInfo.state}
 
         fund State ${fundState}
         `);

@@ -1,6 +1,7 @@
 pragma solidity ^0.8.0;
 import "../adapters/VintageFundingPoolAdapter.sol";
 import "../../helpers/DaoHelper.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 // SPDX-License-Identifier: MIT
 
@@ -137,11 +138,27 @@ library InvestmentLibrary {
             if (proposal.price <= 0) revert PRICE_LESS_THEN_ZERO();
             uint256 paybackTokenAmount = (proposal.investmentAmount *
                 PERCENTAGE_PRECISION) / proposal.price;
-
             if (proposal.vestInfo.vestingCliffLockAmount > PERCENTAGE_PRECISION)
                 revert INVALID_VESTING_CLIFF_AMOUNT();
 
             if (paybackTokenAmount <= 0) revert INVALID_RETURN_TOKEN_AMOUNT();
+
+            uint8 decimals1 = ERC20(proposal.investmentToken).decimals();
+            uint8 decimals2 = ERC20(
+                proposal.proposalPaybackTokenInfo.paybackToken
+            ).decimals();
+
+            if (decimals1 > decimals2) {
+                paybackTokenAmount =
+                    paybackTokenAmount /
+                    10 ** (decimals1 - decimals2);
+            }
+            if (decimals1 < decimals2) {
+                paybackTokenAmount =
+                    paybackTokenAmount *
+                    10 ** (decimals2 - decimals1);
+            }
+
             proposal
                 .proposalPaybackTokenInfo
                 .paybackTokenAmount = paybackTokenAmount;

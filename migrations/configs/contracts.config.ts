@@ -526,7 +526,7 @@ export const contracts: Array<ContractConfig> = [
     type: ContractType.Extension,
     buildAclFlag: entryCollectiveFundingPool,
     acls: {
-      dao: [],
+      dao: [daoAccessFlagsMap.REMOVE_MEMBER],
       extensions: {},
     },
   },
@@ -1567,6 +1567,25 @@ export const contracts: Array<ContractConfig> = [
           collectiveFundingPoolExtensionAclFlagsMap.SUB_FROM_BALANCE,
           collectiveFundingPoolExtensionAclFlagsMap.ADD_TO_BALANCE,
           collectiveFundingPoolExtensionAclFlagsMap.UPDATE_TOKEN,
+        ],
+      },
+    },
+  },
+  {
+    id: adaptersIdsMap.COLLECTIVE_FUNDING_POOL_HELPER_ADAPTER,
+    name: "ColletiveFundingPoolHelperAdapterContract",
+    alias: "collectiveFundingPoolHelperAdapterContract",
+    path: "../../contracts/adapters/ColletiveFundingPoolHelperAdapterContract",
+    enabled: true,
+    version: "1.0.0",
+    type: ContractType.Adapter,
+    acls: {
+      dao: [
+      ],
+      extensions: {
+        [extensionsIdsMap.COLLECTIVE_FUNDING_POOL_EXT]: [
+          collectiveFundingPoolExtensionAclFlagsMap.DISTRIBUTE_FUNDS,
+          collectiveFundingPoolExtensionAclFlagsMap.SUB_FROM_BALANCE,
         ],
       },
     },

@@ -208,6 +208,15 @@ describe("clear fund proposal...", () => {
         await vestingERC721.deployed();
         this.vestingERC721 = vestingERC721;
 
+        const ERC20TokenDecimals = await hre.ethers.getContractFactory("ERC20TokenDecimals");
+        const eRC20TokenDecimals = await ERC20TokenDecimals.deploy(100000000, 6);
+        await eRC20TokenDecimals.deployed();
+        this.erc20TokenDecimals = eRC20TokenDecimals;
+        const decimals = await eRC20TokenDecimals.decimals();
+        const bal = await eRC20TokenDecimals.balanceOf(this.owner.address);
+        console.log("ERC20TokenDecimals deployed...");
+        console.log("decimals ", decimals);
+        console.log("bal ", bal);
 
         const daoFactoriesAddress = [
             this.daoFactory.address,
@@ -590,8 +599,18 @@ describe("clear fund proposal...", () => {
     });
 
     it("clear fund proposal...", async () => {
+        let poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
+        console.log(`
+            poolBal     ${poolBal}
+        `)
         const proposalId = await submitFundRaiseProposal();
+        const decimals = await this.erc20TokenDecimals.decimals();
         await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
+            proposalId,
+            1
+        );
+
+        await this.collectiveVotingContract.connect(this.user1).submitVote(this.collectiveDirectdaoAddress,
             proposalId,
             1
         );
@@ -622,20 +641,21 @@ describe("clear fund proposal...", () => {
             await hre.network.provider.send("evm_mine");
         }
         await this.testtoken1.approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
+        await this.erc20TokenDecimals.approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
+
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         console.log(`
         blocktimestamp                     ${blocktimestamp}
         proposalDetail.timeInfo.endTime  ${proposalDetail.timeInfo.endTime}
         `);
-        await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1000"));
-
+        await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, toBN(1000 * 10 ** 6));
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(proposalDetail.timeInfo.endTime) > blocktimestamp) {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.timeInfo.endTime) + 1]);
             await hre.network.provider.send("evm_mine");
         }
-        let poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
+        poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
         let investors = await this.colletiveFundingPoolContract.getAllInvestors(this.collectiveDirectdaoAddress);
 
         console.log(`
@@ -653,8 +673,21 @@ describe("clear fund proposal...", () => {
             `);
 
         const clearFundProposalId = await submitClearFundProposal();
+        const governors = await this.daoContract.getAllSteward();
+        console.log(governors);
+        console.log(this.owner.address);
+        console.log(this.user1.address);
+        console.log(this.investor1.address);
 
         await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
+            clearFundProposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.user1).submitVote(this.collectiveDirectdaoAddress,
+            clearFundProposalId,
+            1
+        );
+        await this.collectiveVotingContract.connect(this.investor1).submitVote(this.collectiveDirectdaoAddress,
             clearFundProposalId,
             1
         );
@@ -672,71 +705,100 @@ describe("clear fund proposal...", () => {
 
         poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
         let escrowedFund = await this.collectiveEscrowFundAdapterContract.escrowFundsFromLiquidation(this.collectiveDirectdaoAddress,
-            this.testtoken1.address,
+            this.erc20TokenDecimals.address,
             this.owner.address,
             liquidationId);
-
+        investors = await this.colletiveFundingPoolContract.getAllInvestors(this.collectiveDirectdaoAddress);
+        let depbal1 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress,
+            investors[0]
+        );
+        let depbal2 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress,
+            investors[1]
+        );
         let escrowedFund1 = await this.collectiveEscrowFundAdapterContract.escrowFundsFromLiquidation(this.collectiveDirectdaoAddress,
-            this.testtoken1.address,
+            this.erc20TokenDecimals.address,
             this.investor1.address, liquidationId);
+        const FundRaisingTokenAddress = await this.collectiveFundingPoolExtContract.getFundRaisingTokenAddress();
         console.log(`
-        poolBal        ${hre.ethers.utils.formatEther(poolBal)}
-        escrowedFund   ${hre.ethers.utils.formatEther(escrowedFund)}
-        escrowedFund1  ${hre.ethers.utils.formatEther(escrowedFund1)}
-        execute proposal...
+        poolBal        ${poolBal}
+        investors    ${investors}
+        depbal1   ${depbal1}
+        depbal2   ${depbal2}
+        liquidationId   ${liquidationId}
+        FundRaisingTokenAddress   ${FundRaisingTokenAddress}
+        erc20TokenDecimal         ${this.erc20TokenDecimals.address}
+        escrowedFund   ${escrowedFund}
+        escrowedFund1  ${escrowedFund1}
+        execute clear fund proposal...
         `);
+
         await this.colletiveClearFundProposalAdapterContract.processClearFundProposal(
+            this.collectiveDirectdaoAddress,
+            clearFundProposalId
+        );
+
+        clearFundProposalDetail = await this.colletiveClearFundProposalAdapterContract.proposals(
             this.collectiveDirectdaoAddress
             , clearFundProposalId);
+
+
         liquidationId = await this.colletiveFundingPoolContract.liquidationId(this.collectiveDirectdaoAddress);
 
         poolBal = await this.colletiveFundingPoolContract.poolBalance(this.collectiveDirectdaoAddress);
-        escrowedFund = await this.collectiveEscrowFundAdapterContract.escrowFundsFromLiquidation(this.collectiveDirectdaoAddress,
-            this.testtoken1.address,
-            this.owner.address, liquidationId);
+        escrowedFund = await this.collectiveEscrowFundAdapterContract.escrowFundsFromLiquidation(
+            this.collectiveDirectdaoAddress,
+            this.erc20TokenDecimals.address,
+            this.owner.address,
+            liquidationId
+        );
         escrowedFund1 = await this.collectiveEscrowFundAdapterContract.escrowFundsFromLiquidation(
             this.collectiveDirectdaoAddress,
-            this.testtoken1.address,
-            this.investor1.address, liquidationId);
-        let bal1 = await this.testtoken1.balanceOf(this.owner.address);
-        let bal2 = await this.testtoken1.balanceOf(this.investor1.address);
+            this.erc20TokenDecimals.address,
+            this.investor1.address,
+            liquidationId
+        );
+        let bal1 = await this.erc20TokenDecimals.balanceOf(this.owner.address);
+        let bal2 = await this.erc20TokenDecimals.balanceOf(this.investor1.address);
         console.log(`
-            poolBal        ${hre.ethers.utils.formatEther(poolBal)}
-            escrowedFund   ${hre.ethers.utils.formatEther(escrowedFund)}
-            escrowedFund1  ${hre.ethers.utils.formatEther(escrowedFund1)}
-            bal1           ${hre.ethers.utils.formatEther(bal1)}
-            bal2           ${hre.ethers.utils.formatEther(bal2)}
+            clear fund proposal state ${clearFundProposalDetail.state}
+            poolBal        ${poolBal}
+            escrowedFund   ${escrowedFund}
+            escrowedFund1  ${escrowedFund1}
+            bal1           ${bal1}
+            bal2           ${bal2}
             withdraw escrow fund...
         `);
 
 
         await this.collectiveEscrowFundAdapterContract.withdrawFromLiquidation(
             this.collectiveDirectdaoAddress,
-            this.testtoken1.address, liquidationId
-        );
-
-        await this.collectiveEscrowFundAdapterContract.connect(this.investor1).withdrawFromLiquidation(
-            this.collectiveDirectdaoAddress,
-            this.testtoken1.address,
+            this.erc20TokenDecimals.address,
             liquidationId
         );
 
-        escrowedFund = await this.collectiveEscrowFundAdapterContract.escrowFunds(this.collectiveDirectdaoAddress,
-            this.testtoken1.address,
+        // await this.collectiveEscrowFundAdapterContract.connect(this.investor1).withdrawFromLiquidation(
+        //     this.collectiveDirectdaoAddress,
+        //     this.erc20TokenDecimals.address,
+        //     liquidationId
+        // );
+
+        escrowedFund = await this.collectiveEscrowFundAdapterContract.escrowFunds(
+            this.collectiveDirectdaoAddress,
+            this.erc20TokenDecimals.address,
             this.owner.address);
         escrowedFund1 = await this.collectiveEscrowFundAdapterContract.escrowFunds(
             this.collectiveDirectdaoAddress,
-            this.testtoken1.address,
+            this.erc20TokenDecimals.address,
             this.investor1.address);
 
-        bal1 = await this.testtoken1.balanceOf(this.owner.address);
-        bal2 = await this.testtoken1.balanceOf(this.investor1.address);
+        bal1 = await this.erc20TokenDecimals.balanceOf(this.owner.address);
+        bal2 = await this.erc20TokenDecimals.balanceOf(this.investor1.address);
 
         console.log(`
-            escrowedFund   ${hre.ethers.utils.formatEther(escrowedFund)}
-            escrowedFund1  ${hre.ethers.utils.formatEther(escrowedFund1)}
-            bal1           ${hre.ethers.utils.formatEther(bal1)}
-            bal2           ${hre.ethers.utils.formatEther(bal2)}
+            escrowedFund   ${escrowedFund}
+            escrowedFund1  ${escrowedFund1}
+            bal1           ${bal1}
+            bal2           ${bal2}
             `);
 
 
@@ -788,7 +850,10 @@ describe("clear fund proposal...", () => {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.timeInfo.startTime) + 1]);
             await hre.network.provider.send("evm_mine");
         }
+
         await this.testtoken1.approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
+        await this.erc20TokenDecimals.approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
+
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         console.log(`
         blocktimestamp                    ${blocktimestamp}
@@ -796,7 +861,7 @@ describe("clear fund proposal...", () => {
         proposalDetail.timeInfo.endTime   ${proposalDetail.timeInfo.endTime}
         `);
 
-        await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("1000"));
+        await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, toBN(1000 * 10 ** 6));
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(proposalDetail.timeInfo.endTime) > blocktimestamp) {
@@ -1106,11 +1171,17 @@ describe("clear fund proposal...", () => {
 
     const submitFundRaiseProposal = async () => {
         const dao = this.collectiveDirectdaoAddress;
-        const tokenAddress = this.testtoken1.address;
-        const miniTarget = hre.ethers.utils.parseEther("1000");
-        const maxCap = hre.ethers.utils.parseEther("2000");
-        const miniDeposit = hre.ethers.utils.parseEther("10");
-        const maxDeposit = hre.ethers.utils.parseEther("20000");
+        // const tokenAddress = this.testtoken1.address;
+        const tokenAddress = this.erc20TokenDecimals.address;
+        const decimals = await this.erc20TokenDecimals.decimals();
+        // const miniTarget = hre.ethers.utils.parseEther("1000");
+        const miniTarget = toBN(1000 * 10 ** decimals);
+        // const maxCap = hre.ethers.utils.parseEther("2000");
+        const maxCap = toBN(2000 * 10 ** decimals);
+        // const miniDeposit = hre.ethers.utils.parseEther("10");
+        const miniDeposit = toBN(10 * 10 ** decimals);
+        // const maxDeposit = hre.ethers.utils.parseEther("20000");
+        const maxDeposit = toBN(20000 * 10 ** decimals);
 
         const fundInfo = [
             tokenAddress,

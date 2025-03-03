@@ -53,6 +53,7 @@ contract FlexVesting is IFlexVesting {
         (, vars.investmentInfo, vars.vestInfo, , , , , , ) = vars
             .flexFundingAdapt
             .Proposals(address(dao), proposalId);
+
         if (
             vars.vestInfo.vestingCliffLockAmount >
             vars.investmentInfo.paybackTokenAmount

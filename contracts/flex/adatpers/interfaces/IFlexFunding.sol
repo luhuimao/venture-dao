@@ -75,6 +75,9 @@ interface IFlexFunding {
         uint256 totalSendOutAmount;
         uint256 paybackTokenAmount;
         address[] investors;
+        uint8 decimals1;
+        uint8 decimals2;
+        uint8 decimalsChanged;
     }
 
     struct SubmitProposalLocalVars {

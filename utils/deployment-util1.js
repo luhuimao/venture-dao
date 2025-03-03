@@ -897,8 +897,8 @@ const configureDao = async ({
             return accessRequired;
         }, []);
         if (withAccess.length > 0) {
-            console.log("extension.address: ", extension.address);
-            console.log("withAccess: ", withAccess);
+            // console.log("extension.address: ", extension.address);
+            // console.log("withAccess: ", withAccess);
 
             const tx = await daoFactory.instance.configureExtension(
                 dao.address,

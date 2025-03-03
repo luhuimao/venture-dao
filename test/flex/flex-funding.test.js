@@ -213,6 +213,11 @@ describe("funding...", () => {
         await vestingERC721.deployed();
         this.vestingERC721 = vestingERC721;
 
+        const ERC20TokenDecimals = await hre.ethers.getContractFactory("ERC20TokenDecimals");
+        const eRC20TokenDecimals = await ERC20TokenDecimals.deploy(100000000, 6);
+        await eRC20TokenDecimals.deployed();
+        this.erc20TokenDecimals = eRC20TokenDecimals;
+
         this.summonDao = this.adapters.summonDao.instance;
 
         const daoFactoriesAddress = [
@@ -515,9 +520,13 @@ describe("funding...", () => {
         const fundingpoolextensionAddr = await dao.getExtensionAddress(sha3("flex-funding-pool-ext"));
         const flexFundingPoolExtContract = (await hre.ethers.getContractFactory("FlexInvestmentPoolExtension")).attach(fundingpoolextensionAddr);
 
-        let tokenAddress = this.testtoken1.address;
-        let minFundingAmount = hre.ethers.utils.parseEther("100");
-        let maxFundingAmount = hre.ethers.utils.parseEther("100");
+        // let tokenAddress = this.testtoken1.address;
+        let tokenAddress = this.erc20TokenDecimals.address;
+
+        // let minFundingAmount = hre.ethers.utils.parseEther("100");
+        let minFundingAmount = toBN(100 * 10 ** 6);
+        // let maxFundingAmount = hre.ethers.utils.parseEther("100");
+        let maxFundingAmount = toBN(100 * 10 ** 6);
         let escrow = true;
         let returnTokenAddr = this.testtoken2.address;
         let returnTokenAmount = hre.ethers.utils.parseEther("50");
@@ -569,8 +578,10 @@ describe("funding...", () => {
         let fundRaiseType = 1;
         let fundRaiseStartTime = blocktimestamp;
         let fundRaiseEndTime = fundRaiseStartTime + 100000;
-        let minDepositAmount = hre.ethers.utils.parseEther("1");
-        let maxDepositAmount = hre.ethers.utils.parseEther("200");
+        // let minDepositAmount = hre.ethers.utils.parseEther("1");
+        let minDepositAmount = toBN(1 * 10 ** 6);
+        // let maxDepositAmount = hre.ethers.utils.parseEther("200");
+        let maxDepositAmount = toBN(200 * 10 ** 6);
         let backerIdentification = false;
 
         let bType = 0;
@@ -641,7 +652,9 @@ describe("funding...", () => {
             created...
             flex funding ProposalId: ${proposalId}
             state ${flexFundingProposalInfo.state}
-            deposite fund...
+            paybackTokenAmount       ${flexFundingProposalInfo.investmentInfo.paybackTokenAmount}
+            vestingCliffLockAmount   ${flexFundingProposalInfo.vestInfo.vestingCliffLockAmount}
+            deposit fund...
             `);
 
         const flexFundingPoolAdapt = this.flexFundingPoolAdapterContract;
@@ -671,18 +684,22 @@ describe("funding...", () => {
         await USDT.approve(flexFundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
         await USDT.connect(this.investor1).approve(flexFundingPoolAdapt.address, hre.ethers.utils.parseEther("100000000000"));
 
+        await this.erc20TokenDecimals.transfer(this.investor1.address, toBN("100000000000"));
+        await this.erc20TokenDecimals.approve(flexFundingPoolAdapt.address, toBN("100000000000000000"));
+        await this.erc20TokenDecimals.connect(this.investor1).approve(flexFundingPoolAdapt.address, toBN("100000000000000000"));
+
         await expectRevert(flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("0.1")), "revert");
-        await flexFundingPoolAdapt.deposit(dao.address, proposalId, hre.ethers.utils.parseEther("160"));
-        await flexFundingPoolAdapt.connect(this.investor1).deposit(dao.address, proposalId, hre.ethers.utils.parseEther("15"));
+        await flexFundingPoolAdapt.deposit(dao.address, proposalId, toBN("160000000"));
+        await flexFundingPoolAdapt.connect(this.investor1).deposit(dao.address, proposalId, toBN("15000000"));
 
         const investors = await flexFundingPoolExtContract.getInvestorsByProposalId(proposalId);
         console.log("investors: ", investors);
         let depositeBal = await flexFundingPoolAdapt.balanceOf(dao.address, proposalId, this.owner.address);
         console.log(`
-            deposit balance   ${hre.ethers.utils.formatEther(depositeBal.toString())}
+            deposit balance   ${depositeBal.toString()}
             whitdraw...
             `);
-        await flexFundingPoolAdapt.withdraw(dao.address, proposalId, hre.ethers.utils.parseEther("10"));
+        await flexFundingPoolAdapt.withdraw(dao.address, proposalId, toBN("10000000"));
         depositeBal = await flexFundingPoolAdapt.balanceOf(dao.address, proposalId, this.owner.address);
         console.log(`
             deposit balance   ${hre.ethers.utils.formatEther(depositeBal.toString())}
@@ -706,15 +723,15 @@ describe("funding...", () => {
             div(hre.ethers.utils.parseEther("1"));
         const receivedReturnTokenManangementFeeAmount = await this.testtoken2.balanceOf(managementFeeAddress);
         const protocolAddress = await flexFundingAdapterContract.protocolAddress();
-        const protocolFee = await USDT.balanceOf(protocolAddress);
-        const managementFee = await USDT.balanceOf(managementFeeAddress);
+        const protocolFee = await this.erc20TokenDecimals.balanceOf(protocolAddress);
+        const managementFee = await this.erc20TokenDecimals.balanceOf(managementFeeAddress);
         const proposerReturnTokenRewardAmount = toBN(paybacktokenamount)
             .mul(tokenRewardAmount)
             .div(hre.ethers.utils.parseEther("1"));
         const proposerReceivedReturnTokenAmount = await this.testtoken2.balanceOf(this.funding_proposer1_whitelist.address);
-        const proposerreward = await USDT.balanceOf(this.funding_proposer1_whitelist.address);
-        const receiveAmount = await USDT.balanceOf(recipientAddr);
-        const allTributedAmount = toBN(protocolFee.toString()).
+        const proposerreward = await this.erc20TokenDecimals.balanceOf(this.funding_proposer1_whitelist.address);
+        const receiveAmount = await this.erc20TokenDecimals.balanceOf(recipientAddr);
+        const allTributeAmount = toBN(protocolFee.toString()).
             add(toBN(managementFee.toString())).
             add(toBN(proposerreward.toString())).
             add(toBN(receiveAmount.toString()));
@@ -729,25 +746,25 @@ describe("funding...", () => {
                 toBN(proposerreward.toString())
             );
 
-        const totalPayback = totalFunding.mul(toBN(hre.ethers.utils.parseEther("1"))).div(toBN(price));
-
+        // const totalPayback = totalFunding.mul(toBN(hre.ethers.utils.parseEther("1"))).div(toBN(price));
+        const totalPayback = flexFundingProposalInfo.investmentInfo.paybackTokenAmount
         console.log(`
             processed...
             state ${flexFundingProposalInfo.state}
             price ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.price)}
-            finalRaiseAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.finalRaisedAmount)}
+            finalRaiseAmount ${flexFundingProposalInfo.investmentInfo.finalRaisedAmount}
             paybackTokenAmount ${hre.ethers.utils.formatEther(flexFundingProposalInfo.investmentInfo.paybackTokenAmount)}
-            protocol Fee ${hre.ethers.utils.formatEther(protocolFee)}
-            management Fee ${hre.ethers.utils.formatEther(managementFee)}
-            totalFunding ${hre.ethers.utils.formatEther(totalFunding)}
-            totalPayback ${hre.ethers.utils.formatEther(totalPayback)}
+            protocol Fee ${protocolFee}
+            management Fee ${managementFee}
+            totalFunding ${totalFunding}
+            totalPayback ${totalPayback}
             proposerReturnTokenRewardAmount ${hre.ethers.utils.formatEther(proposerReturnTokenRewardAmount)}
             proposerReceivedReturnTokenAmount ${hre.ethers.utils.formatEther(proposerReceivedReturnTokenAmount)}
-            proposer reward ${hre.ethers.utils.formatEther(proposerreward)}
-            receive Amount ${hre.ethers.utils.formatEther(receiveAmount)}
+            proposer reward ${proposerreward}
+            receive Amount ${receiveAmount}
             returnTokenManagementFeeAmount ${hre.ethers.utils.formatEther(returnTokenManagementFeeAmount)}
             receivedReturnTokenManangementFeeAmount ${hre.ethers.utils.formatEther(receivedReturnTokenManangementFeeAmount)}
-            total tributed amount ${hre.ethers.utils.formatEther(allTributedAmount)}
+            total tribute amount ${allTributeAmount}
             create vesting...
             `);
 

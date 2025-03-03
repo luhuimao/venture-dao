@@ -243,6 +243,11 @@ describe("funding...", () => {
         await vestingERC721.deployed();
         this.vestingERC721 = vestingERC721;
 
+        const ERC20TokenDecimals = await hre.ethers.getContractFactory("ERC20TokenDecimals");
+        const eRC20TokenDecimals = await ERC20TokenDecimals.deploy(100000000, 6);
+        await eRC20TokenDecimals.deployed();
+        this.erc20TokenDecimals = eRC20TokenDecimals;
+
         const daoFactoriesAddress = [
             this.daoFactory.address,
             this.vintageFundingPoolFactory.address
@@ -472,10 +477,11 @@ describe("funding...", () => {
         const vintageVotingAdapterContract = this.vintageVotingAdapterContract;
         const vintageAllocationAdapterContract = this.vintageAllocationAdapterContract;
         const vintageVesting = this.vintageVesting;
-        const fundRaiseMinTarget = hre.ethers.utils.parseEther("10000");
-        const fundRaiseMaxCap = hre.ethers.utils.parseEther("20000");
-        const lpMinDepositAmount = hre.ethers.utils.parseEther("100");
-        const lpMaxDepositAmount = hre.ethers.utils.parseEther("200000");
+
+        const fundRaiseMinTarget = toBN("10000000000");//10000
+        const fundRaiseMaxCap = toBN("20000000000");//20000
+        const lpMinDepositAmount = toBN("100000000");//100
+        const lpMaxDepositAmount = toBN("200000000000");//200000
         const fundRaiseType = 1; // 0 FCFS 1 Free In
 
         //submit fund raise proposal
@@ -517,7 +523,9 @@ describe("funding...", () => {
         const managementFeeAddress = this.user1.address;
         const redemptionFeeReceiver = this.user2.address, // redemption fee receiver
 
-        const fundRaiseTokenAddress = this.testtoken1.address;
+        // const fundRaiseTokenAddress = this.testtoken1.address;
+        const fundRaiseTokenAddress = this.erc20TokenDecimals.address;
+
         const proposalAddressInfo = [
             managementFeeAddress,
             redemptionFeeReceiver,
@@ -609,32 +617,52 @@ describe("funding...", () => {
         await this.testtoken1.approve(this.vintageFundingPoolAdapterContract.address, hre.ethers.utils.parseEther("200000"));
         await this.testtoken1.connect(this.investor1).approve(this.vintageFundingPoolAdapterContract.address, hre.ethers.utils.parseEther("200000"));
 
+        await this.erc20TokenDecimals.transfer(this.investor1.address, toBN("10000000000"));
+        await this.erc20TokenDecimals.approve(this.vintageFundingPoolAdapterContract.address, toBN("200000000000"));
+        await this.erc20TokenDecimals.connect(this.investor1).approve(this.vintageFundingPoolAdapterContract.address, toBN("200000000000"));
+
         console.log(`
         deposit...
         `);
-        await this.vintageFundingPoolAdapterContract.deposit(this.daoAddr1, hre.ethers.utils.parseEther("26000"));
-        await this.vintageFundingPoolAdapterContract.connect(this.investor1).deposit(this.daoAddr1, hre.ethers.utils.parseEther("2000"));
+        await this.vintageFundingPoolAdapterContract.deposit(
+            this.daoAddr1,
+            toBN("26000000000"));//26000
+        await this.vintageFundingPoolAdapterContract.connect(this.investor1).deposit(
+            this.daoAddr1,
+            toBN("2000000000"));//2000
 
         let currentBal1 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.owner.address);
+        let currentBal2 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.investor1.address);
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         if (parseInt(endTime) > blocktimestamp) {
             await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(endTime) + 1])
             await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
         }
-
+        console.log(`
+            currentBal1 ${(currentBal1)}
+            currentBal2 ${(currentBal2)}
+            process fund raise...
+        `);
         await this.vintageFundingPoolAdapterContract.processFundRaise(this.daoAddr1);
         fundState = await vintageFundingPoolAdapterContract.daoFundRaisingStates(this.daoAddr1);
         let blocknum = (await hre.ethers.provider.getBlock("latest")).number;
         console.log("blocknum ", blocknum);
-        let priorBal1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.testtoken1.address, parseInt(blocknum) - 1);
-        let priorBal2 = await vintageFundingPoolExtContrct.getPriorAmount(this.investor1.address, this.testtoken1.address, parseInt(blocknum) - 1);
+        // let priorBal1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.testtoken1.address, parseInt(blocknum) - 1);
+        // let priorBal2 = await vintageFundingPoolExtContrct.getPriorAmount(this.investor1.address, this.testtoken1.address, parseInt(blocknum) - 1);
+        currentBal1 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.owner.address);
+        currentBal2 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.investor1.address);
 
+        let priorBal1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.erc20TokenDecimals.address, parseInt(blocknum) - 1);
+        let priorBal2 = await vintageFundingPoolExtContrct.getPriorAmount(this.investor1.address, this.erc20TokenDecimals.address, parseInt(blocknum) - 1);
+        let poolBal = await vintageFundingPoolAdapterContract.poolBalance(this.daoAddr1);
         console.log(`
-        priorBal1 ${hre.ethers.utils.formatEther(priorBal1)}
-        priorBal2 ${hre.ethers.utils.formatEther(priorBal2)}
+        priorBal1 ${(priorBal1)}
+        priorBal2 ${(priorBal2)}
 
-        currentBal1 ${hre.ethers.utils.formatEther(currentBal1)}
+        currentBal1 ${(currentBal1)}
+        currentBal2 ${(currentBal2)}
+        poolBal     ${poolBal}
         `);
         console.log(`
         executed...
@@ -642,7 +670,9 @@ describe("funding...", () => {
         `);
 
         // Submit funding proposal
-        const requestedFundAmount = hre.ethers.utils.parseEther("2000");
+        // const requestedFundAmount = hre.ethers.utils.parseEther("2000");
+        const requestedFundAmount = toBN("2000000000");//2000
+
         const tradingOffTokenAmount = hre.ethers.utils.parseEther("5000");
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
@@ -682,7 +712,8 @@ describe("funding...", () => {
 
         const fundingInfo = [
             requestedFundAmount,
-            this.testtoken1.address,
+            // this.testtoken1.address,
+            this.erc20TokenDecimals.address,
             receiver
         ]
 
@@ -753,12 +784,16 @@ describe("funding...", () => {
         // await vintageFundingAdapterContract.processProposal(this.daoAddr1, proposalId);
 
         blocknum = (await hre.ethers.provider.getBlock("latest")).number;
-        priorBal1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.testtoken1.address, parseInt(blocknum) - 1);
-        priorBal2 = await vintageFundingPoolExtContrct.getPriorAmount(this.investor1.address, this.testtoken1.address, parseInt(blocknum) - 1);
+        // priorBal1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.testtoken1.address, parseInt(blocknum) - 1);
+        // priorBal2 = await vintageFundingPoolExtContrct.getPriorAmount(this.investor1.address, this.testtoken1.address, parseInt(blocknum) - 1);
+
+        priorBal1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.erc20TokenDecimals.address, parseInt(blocknum) - 1);
+        priorBal2 = await vintageFundingPoolExtContrct.getPriorAmount(this.investor1.address, this.erc20TokenDecimals.address, parseInt(blocknum) - 1);
+
 
         console.log(`
-        priorBal1 ${hre.ethers.utils.formatEther(priorBal1)}
-        priorBal2 ${hre.ethers.utils.formatEther(priorBal2)}
+        priorBal1 ${(priorBal1)}
+        priorBal2 ${(priorBal2)}
         `);
 
 
@@ -776,15 +811,46 @@ describe("funding...", () => {
         const executedInvestors = ff.events[ff.events.length - 1].args.investors;
         console.log("executedInvestors ", executedInvestors);
 
+        currentBal1 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.owner.address);
+        currentBal2 = await vintageFundingPoolAdapterContract.balanceOf(this.daoAddr1, this.investor1.address);
+
+        priorBal1 = await vintageFundingPoolExtContrct.getPriorAmount(this.owner.address, this.erc20TokenDecimals.address, parseInt(blocknum) - 1);
+        priorBal2 = await vintageFundingPoolExtContrct.getPriorAmount(this.investor1.address, this.erc20TokenDecimals.address, parseInt(blocknum) - 1);
+        poolBal = await vintageFundingPoolAdapterContract.poolBalance(this.daoAddr1);
+
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(blocktimestamp) + 60])
         await hre.network.provider.send("evm_mine") // this one will have 2021-07-01 12:00 AM as its timestamp, no matter what the previous block has
 
         let fundingProposalInfo = await vintageFundingAdapterContract.proposals(this.daoAddr1, proposalId);
+        const proposerRewardAmount = await this.erc20TokenDecimals.balanceOf(proposer.address);
+        const protocolfee = await this.erc20TokenDecimals.balanceOf(DaoSquareAddr);
+        const managementfee = await this.erc20TokenDecimals.balanceOf(GPAddr);
 
         console.log(
             `
-        state ${fundingProposalInfo.status}
+            state ${fundingProposalInfo.status}
+            proposerRewardAmount  ${proposerRewardAmount}
+            protocolfee    ${protocolfee}
+            managementfee   ${managementfee}
+                         ${proposerRewardAmount.add(protocolfee).add(managementfee)}
+            currentBal1  ${currentBal1}
+            changed1     ${toBN("18571428571").sub(currentBal1)}
+
+            currentBal2  ${currentBal2}
+            changed1     ${toBN("1428571428").sub(currentBal2)}
+
+            priorBal1  ${priorBal1}
+            priorBal2  ${priorBal2}
+
+            poolBal   ${poolBal}
+                      ${currentBal1.add(currentBal2)}
+            sendout   ${toBN("19999999999").sub(poolBal)}
+                      ${toBN("18571428571").sub(currentBal1).add(toBN("1428571428").sub(currentBal2))}
+            total amount ${fundingProposalInfo.totalAmount}
+            investment Amount ${fundingProposalInfo.investmentAmount}
+
+            paybackTokenAmount    ${fundingProposalInfo.proposalPaybackTokenInfo.paybackTokenAmount}
         `);
 
     });

@@ -126,5 +126,5 @@ interface ICollectiveVesting {
     error NotVestReceiver();
     error InValidVestingTimeParam();
     error ALREADY_CREATED();
-    error UNELIGIBLE_FOR_THIS_PROPOSAL();
+    error UN_ELIGIBLE_FOR_THIS_PROPOSAL();
 }

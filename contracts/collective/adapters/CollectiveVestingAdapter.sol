@@ -34,11 +34,7 @@ contract CollectiveVestingAdapterContract is ICollectiveVesting {
             "uneligible of this proposalId"
         );
         if (!vars.allocAdapter.ifEligible(dao, recipientAddr, proposalId))
-            revert UNELIGIBLE_FOR_THIS_PROPOSAL();
-        // require(
-        //     !vars.allocAdapter.isVestCreated(dao, proposalId, recipientAddr),
-        //     "Already Created"
-        // );
+            revert UN_ELIGIBLE_FOR_THIS_PROPOSAL();
 
         if (vars.allocAdapter.isVestCreated(dao, proposalId, recipientAddr))
             revert ALREADY_CREATED();

@@ -198,6 +198,10 @@ describe("mannual vesting...", () => {
         this.manualVestingERC721 = manualVestingERC721;
         console.log("manualVestingERC721 ", manualVestingERC721.address);
 
+        const ERC20TokenDecimals = await hre.ethers.getContractFactory("ERC20TokenDecimals");
+        const eRC20TokenDecimals = await ERC20TokenDecimals.deploy(100000000, 6);
+        await eRC20TokenDecimals.deployed();
+        this.erc20TokenDecimals = eRC20TokenDecimals;
     });
 
     it("nft enable...", async () => {
@@ -207,9 +211,9 @@ describe("mannual vesting...", () => {
         const vendTime = toBN(vstartTime).add(toBN(60 * 60 * 500));
         const vcliffEndTime = toBN(vstartTime).add(toBN(60 * 60 * 1));
         const vvestingInterval = 60 * 60 * 1;
-        const vpaybackToken = this.testtoken2.address;
+        const vpaybackToken = this.erc20TokenDecimals.address;
         const vrecipientAddr = this.user1.address;
-        const vdepositAmount = hre.ethers.utils.parseEther("234.543");
+        const vdepositAmount = toBN("234543000");
         const vcliffVestingAmount = hre.ethers.utils.parseEther("0.032");
         const vnftEnable = true;
         const verc721 = this.manualVestingERC721.address;
@@ -233,7 +237,7 @@ describe("mannual vesting...", () => {
         ];
 
 
-        await this.testtoken2.approve(this.bentoBoxV1.address, vdepositAmount);
+        await this.erc20TokenDecimals.approve(this.bentoBoxV1.address, vdepositAmount);
         console.log("approved...");
         await this.manualVesting.createVesting(CreateVestingParams);
 
@@ -241,17 +245,27 @@ describe("mannual vesting...", () => {
         console.log(vestId);
         const URI = await this.manualVestingERC721.tokenURI(1);
         const svg = await this.manualVestingERC721.getSvg(1);
+        let vestInfo4 = await this.manualVesting.vests(vestId);
+        console.log(`
+          total  ${vestInfo4.total}
+           claimed ${vestInfo4.claimed}
+        `)
 
-        // console.log(svg)
-        await this.testtoken2.approve(this.bentoBoxV1.address, hre.ethers.utils.parseEther("1692"));
+        await this.erc20TokenDecimals.approve(
+            this.bentoBoxV1.address,
+            toBN("1692000000"));
 
         const receivers = [this.user1.address, this.user2.address, this.investor1.address, this.investor2.address];
-        const amounts = [hre.ethers.utils.parseEther("423"), hre.ethers.utils.parseEther("423"), hre.ethers.utils.parseEther("423"), hre.ethers.utils.parseEther("423")]
+        const amounts = [
+            toBN("423000000"),
+            toBN("423000000"),
+            toBN("423000000"),
+            toBN("423000000")]
         const tx = await this.manualVesting.batchCreate2(receivers, amounts, CreateVestingParams);
         const result = await tx.wait();
         console.log(result.events[result.events.length - 1].args);
         console.log(`
-            totalAmount  ${hre.ethers.utils.formatEther(result.events[result.events.length - 1].args.totalAmount)}
+            totalAmount  ${(result.events[result.events.length - 1].args.totalAmount)}
         `)
         const batchId = result.events[result.events.length - 1].args.batchId;
         await this.manualVesting.connect(this.user1).createVesting2(batchId)

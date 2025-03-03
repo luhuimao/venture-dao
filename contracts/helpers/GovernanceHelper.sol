@@ -19,6 +19,7 @@ import "../collective/adapters/CollectiveVotingAdapter.sol";
 import "../collective/adapters/CollectiveFundingPoolAdapter.sol";
 import "../collective/adapters/CollectiveFundRaiseProposalAdapter.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import "hardhat/console.sol";
 
@@ -126,7 +127,9 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 ERC20
-                bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                bal =
+                    ERC20(tokenAddress).balanceOf(account) /
+                    (10 ** ERC20(tokenAddress).decimals());
             } else if (etype == 1) {
                 //ERC721
                 bal = IERC721(tokenAddress).balanceOf(account);
@@ -143,7 +146,15 @@ library GovernanceHelper {
             } else if (etype == 4) {
                 //DEPOSIT
                 if (fundingPoolAdapt.poolBalance(dao) > 0) {
-                    bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;
+                    // bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;
+                    bal =
+                        fundingPoolAdapt.balanceOf(dao, account) /
+                        (10 **
+                            ERC20(
+                                dao.getAddressConfiguration(
+                                    DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+                                )
+                            ).decimals());
                 } else {
                     if (dao.isMember(account)) return 1;
                     else return 0;
@@ -205,7 +216,10 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 ERC20
-                bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                // bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                bal =
+                    ERC20(tokenAddress).balanceOf(account) /
+                    (10 ** ERC20(tokenAddress).decimals());
             } else if (etype == 1) {
                 //ERC721
                 bal = IERC721(tokenAddress).balanceOf(account);
@@ -222,7 +236,15 @@ library GovernanceHelper {
             } else if (etype == 4) {
                 //DEPOSIT
                 if (fundingPoolAdapt.poolBalance(dao) > 0) {
-                    bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;
+                    // bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;
+                    bal =
+                        fundingPoolAdapt.balanceOf(dao, account) /
+                        (10 **
+                            ERC20(
+                                dao.getAddressConfiguration(
+                                    DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+                                )
+                            ).decimals());
                 } else {
                     if (dao.isMember(account)) return 1;
                     else return 0;
@@ -267,7 +289,10 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 ERC20
-                bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                // bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                bal =
+                    ERC20(tokenAddress).balanceOf(account) /
+                    (10 ** ERC20(tokenAddress).decimals());
             } else if (etype == 1) {
                 //ERC721
                 bal = IERC721(tokenAddress).balanceOf(account);
@@ -280,7 +305,15 @@ library GovernanceHelper {
             } else if (etype == 4) {
                 //DEPOSIT
                 if (fundingPoolAdapt.poolBalance(dao) > 0) {
-                    bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;
+                    // bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;
+                    bal =
+                        fundingPoolAdapt.balanceOf(dao, account) /
+                        (10 **
+                            ERC20(
+                                dao.getAddressConfiguration(
+                                    DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+                                )
+                            ).decimals());
                 } else {
                     return 1;
                 }
@@ -335,7 +368,10 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 ERC20
-                bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                // bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                bal =
+                    ERC20(tokenAddress).balanceOf(account) /
+                    (10 ** ERC20(tokenAddress).decimals());
             } else if (etype == 1) {
                 //ERC721
                 bal = IERC721(tokenAddress).balanceOf(account);
@@ -349,7 +385,15 @@ library GovernanceHelper {
             } else if (etype == 4) {
                 //DEPOSIT
                 if (fundingPoolAdapt.poolBalance(dao) > 0) {
-                    bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;
+                    // bal = fundingPoolAdapt.balanceOf(dao, account) / 10 ** 18;
+                    bal =
+                        fundingPoolAdapt.balanceOf(dao, account) /
+                        (10 **
+                            ERC20(
+                                dao.getAddressConfiguration(
+                                    DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+                                )
+                            ).decimals());
                 } else {
                     return 1;
                 }
@@ -447,7 +491,10 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 ERC20
-                bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                // bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                bal =
+                    ERC20(tokenAddress).balanceOf(account) /
+                    (10 ** ERC20(tokenAddress).decimals());
             } else if (etype == 1) {
                 //ERC721
                 bal = IERC721(tokenAddress).balanceOf(account);
@@ -464,7 +511,16 @@ library GovernanceHelper {
             } else if (etype == 4) {
                 //DEPOSIT
                 if (vars.confirmedPoolBal > 0) {
-                    bal = vars.confirmedDepositAmount / 10 ** 18;
+                    // bal = vars.confirmedDepositAmount / 10 ** 18;
+
+                    bal =
+                        vars.confirmedDepositAmount /
+                        (10 **
+                            ERC20(
+                                dao.getAddressConfiguration(
+                                    DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+                                )
+                            ).decimals());
                 } else {
                     if (dao.isMember(account)) return 1;
                     else return 0;
@@ -526,7 +582,10 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 ERC20
-                bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                // bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                bal =
+                    ERC20(tokenAddress).balanceOf(account) /
+                    (10 ** ERC20(tokenAddress).decimals());
             } else if (etype == 1) {
                 //ERC721
                 bal = IERC721(tokenAddress).balanceOf(account);
@@ -543,7 +602,16 @@ library GovernanceHelper {
             } else if (etype == 4) {
                 //DEPOSIT
                 if (vars.confirmedPoolBal > 0) {
-                    bal = vars.confirmedDepositAmount / 10 ** 18;
+                    // bal = vars.confirmedDepositAmount / 10 ** 18;
+
+                    bal =
+                        vars.confirmedDepositAmount /
+                        (10 **
+                            ERC20(
+                                dao.getAddressConfiguration(
+                                    DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+                                )
+                            ).decimals());
                 } else {
                     if (dao.isMember(account)) return 1;
                     else return 0;
@@ -614,7 +682,10 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 ERC20
-                bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                // bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                bal =
+                    ERC20(tokenAddress).balanceOf(account) /
+                    (10 ** ERC20(tokenAddress).decimals());
             } else if (etype == 1) {
                 //ERC721
                 bal = IERC721(tokenAddress).balanceOf(account);
@@ -675,7 +746,10 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 ERC20
-                bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                // bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                bal =
+                    ERC20(tokenAddress).balanceOf(account) /
+                    (10 ** ERC20(tokenAddress).decimals());
             } else if (etype == 1) {
                 //ERC721
                 bal = IERC721(tokenAddress).balanceOf(account);
@@ -720,7 +794,10 @@ library GovernanceHelper {
             if (tokenAddress == address(0x0)) return 0;
             if (etype == 0) {
                 //0 ERC20
-                bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                // bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                bal =
+                    ERC20(tokenAddress).balanceOf(account) /
+                    (10 ** ERC20(tokenAddress).decimals());
             } else if (etype == 1) {
                 //ERC721
                 bal = IERC721(tokenAddress).balanceOf(account);
@@ -768,7 +845,10 @@ library GovernanceHelper {
 
             if (etype == 0) {
                 //0 ERC20
-                bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                // bal = IERC20(tokenAddress).balanceOf(account) / 10 ** 18;
+                bal =
+                    ERC20(tokenAddress).balanceOf(account) /
+                    (10 ** ERC20(tokenAddress).decimals());
             } else if (etype == 1) {
                 //ERC721
                 bal = IERC721(tokenAddress).balanceOf(account);
@@ -869,7 +949,9 @@ library GovernanceHelper {
                     DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
                 )
             );
-
+        uint8 decimals = ERC20(
+            dao.getAddressConfiguration(DaoHelper.FUND_RAISING_CURRENCY_ADDRESS)
+        ).decimals();
         if (fundingiPoolAdapt.poolBalance(dao) <= 0) {
             if (dao.isMember(account)) return 1;
             else return 0;
@@ -880,7 +962,7 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 deposit
-                bal = fundingiPoolAdapt.balanceOf(dao, account) / 10 ** 18;
+                bal = fundingiPoolAdapt.balanceOf(dao, account) / decimals;
             } else {
                 return 0;
             }
@@ -911,7 +993,7 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 deposit
-                bal = fundingiPoolAdapt.balanceOf(dao, account) / 10 ** 18;
+                bal = fundingiPoolAdapt.balanceOf(dao, account) / decimals;
             } else {
                 return 0;
             }
@@ -955,7 +1037,9 @@ library GovernanceHelper {
         ColletiveFundRaiseProposalAdapterContract fundRaiseContr = ColletiveFundRaiseProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
             );
-
+        uint8 decimals = ERC20(
+            dao.getAddressConfiguration(DaoHelper.FUND_RAISING_CURRENCY_ADDRESS)
+        ).decimals();
         bytes32 fundRaiseId = fundRaiseContr.lastProposalIds(address(dao));
 
         uint256 confirmedDeposit = 0;
@@ -992,7 +1076,7 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 deposit
-                bal = confirmedDeposit / 10 ** 18;
+                bal = confirmedDeposit / decimals;
             } else {
                 return 0;
             }
@@ -1018,7 +1102,7 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 deposit
-                bal = confirmedDeposit / 10 ** 18;
+                bal = confirmedDeposit / decimals;
             } else {
                 return 0;
             }
@@ -1038,12 +1122,14 @@ library GovernanceHelper {
         uint256 votingWeightedType = dao.getConfiguration(
             DaoHelper.COLLECTIVE_VOTING_WEIGHTED_TYPE
         ); // 0. quantity 1. log2 2. 1 voter 1 vote
-
+        uint8 decimals = ERC20(
+            dao.getAddressConfiguration(DaoHelper.FUND_RAISING_CURRENCY_ADDRESS)
+        ).decimals();
         if (votingWeightedType == 1) {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 deposit
-                bal = amount / 10 ** 18;
+                bal = amount / 10 ** decimals;
             } else {
                 return 0;
             }
@@ -1068,7 +1154,7 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 deposit
-                bal = amount / 10 ** 18;
+                bal = amount / 10 ** decimals;
             } else {
                 return 0;
             }

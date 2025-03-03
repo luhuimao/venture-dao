@@ -201,4 +201,77 @@ contract FlexFundingHelperAdapterContract {
         }
         return false;
     }
+
+    error NOT_MEET_ERC20_REQUIREMENT();
+    error NOT_MEET_ERC721_REQUIREMENT();
+    error NOT_MEET_ERC1155_REQUIREMENT();
+    error NOT_IN_WHITELIST();
+
+    function IsProposer(
+        DaoRegistry dao,
+        address account
+    ) external view returns (bool) {
+        if (dao.getConfiguration(DaoHelper.FLEX_PROPOSER_ENABLE) == 1) {
+            //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
+            if (
+                dao.getConfiguration(
+                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+                ) == 0
+            ) {
+                if (
+                    IERC20(
+                        dao.getAddressConfiguration(
+                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+                        )
+                    ).balanceOf(account) <
+                    dao.getConfiguration(DaoHelper.FLEX_PROPOSER_MIN_HOLDING)
+                ) revert NOT_MEET_ERC20_REQUIREMENT();
+            }
+            if (
+                dao.getConfiguration(
+                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+                ) == 1
+            ) {
+                if (
+                    IERC721(
+                        dao.getAddressConfiguration(
+                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+                        )
+                    ).balanceOf(account) <
+                    dao.getConfiguration(DaoHelper.FLEX_PROPOSER_MIN_HOLDING)
+                ) revert NOT_MEET_ERC721_REQUIREMENT();
+            }
+            if (
+                dao.getConfiguration(
+                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+                ) == 2
+            ) {
+                if (
+                    IERC1155(
+                        dao.getAddressConfiguration(
+                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+                        )
+                    ).balanceOf(
+                            account,
+                            dao.getConfiguration(
+                                DaoHelper.FLEX_PROPOSER_TOKENID
+                            )
+                        ) <
+                    dao.getConfiguration(DaoHelper.FLEX_PROPOSER_MIN_HOLDING)
+                ) revert NOT_MEET_ERC1155_REQUIREMENT();
+            }
+            if (
+                dao.getConfiguration(
+                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+                ) == 3
+            ) {
+                if (
+                    !FlexFundingAdapterContract(
+                        dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_ADAPT)
+                    ).isProposerWhiteList(dao, account)
+                ) revert NOT_IN_WHITELIST();
+            }
+        }
+        return true;
+    }
 }

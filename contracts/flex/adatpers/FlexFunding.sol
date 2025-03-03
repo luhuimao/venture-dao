@@ -7,7 +7,9 @@ import "../../guards/MemberGuard.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "./FlexFundingReturnTokenAdapter.sol";
 import "./FlexDaoSetAdapter.sol";
+import "./FlexFundingHelper.sol";
 import "./FlexPollingVoting.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../utils/TypeConver.sol";
 
 contract FlexFundingAdapterContract is
@@ -39,110 +41,67 @@ contract FlexFundingAdapterContract is
         _;
     }
 
-    modifier onlyProposer(DaoRegistry dao) {
-        if (dao.getConfiguration(DaoHelper.FLEX_PROPOSER_ENABLE) == 1) {
-            //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
-            if (
-                dao.getConfiguration(
-                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
-                ) == 0
-            ) {
-                // require(
-                //     IERC20(
-                //         dao.getAddressConfiguration(
-                //             DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
-                //         )
-                //     ).balanceOf(msg.sender) >=
-                //         dao.getConfiguration(
-                //             DaoHelper.FLEX_PROPOSER_MIN_HOLDING
-                //         ),
-                //     "< min erc20 requirment"
-                // );
-                if (
-                    IERC20(
-                        dao.getAddressConfiguration(
-                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
-                        )
-                    ).balanceOf(msg.sender) <
-                    dao.getConfiguration(DaoHelper.FLEX_PROPOSER_MIN_HOLDING)
-                ) revert NOT_MEET_ERC20_REQUIREMENT();
-            }
-            if (
-                dao.getConfiguration(
-                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
-                ) == 1
-            ) {
-                // require(
-                //     IERC721(
-                //         dao.getAddressConfiguration(
-                //             DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
-                //         )
-                //     ).balanceOf(msg.sender) >=
-                //         dao.getConfiguration(
-                //             DaoHelper.FLEX_PROPOSER_MIN_HOLDING
-                //         ),
-                //     "< erc721 requirment"
-                // );
-                if (
-                    IERC721(
-                        dao.getAddressConfiguration(
-                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
-                        )
-                    ).balanceOf(msg.sender) <
-                    dao.getConfiguration(DaoHelper.FLEX_PROPOSER_MIN_HOLDING)
-                ) revert NOT_MEET_ERC721_REQUIREMENT();
-            }
-            if (
-                dao.getConfiguration(
-                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
-                ) == 2
-            ) {
-                // require(
-                //     IERC1155(
-                //         dao.getAddressConfiguration(
-                //             DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
-                //         )
-                //     ).balanceOf(
-                //             msg.sender,
-                //             dao.getConfiguration(
-                //                 DaoHelper.FLEX_PROPOSER_TOKENID
-                //             )
-                //         ) >=
-                //         dao.getConfiguration(
-                //             DaoHelper.FLEX_PROPOSER_MIN_HOLDING
-                //         ),
-                //     "< erc1155 requirment"
-                // );
-                if (
-                    IERC1155(
-                        dao.getAddressConfiguration(
-                            DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
-                        )
-                    ).balanceOf(
-                            msg.sender,
-                            dao.getConfiguration(
-                                DaoHelper.FLEX_PROPOSER_TOKENID
-                            )
-                        ) <
-                    dao.getConfiguration(DaoHelper.FLEX_PROPOSER_MIN_HOLDING)
-                ) revert NOT_MEET_ERC1155_REQUIRMENT();
-            }
-            if (
-                dao.getConfiguration(
-                    DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
-                ) == 3
-            ) {
-                // require(
-                //     isProposerWhiteList(dao, msg.sender),
-                //     "not in whitelist"
-                // );
-
-                if (!isProposerWhiteList(dao, msg.sender))
-                    revert NOT_IN_WHITELIST();
-            }
-        }
-        _;
-    }
+    // modifier onlyProposer(DaoRegistry dao) {
+    //     if (dao.getConfiguration(DaoHelper.FLEX_PROPOSER_ENABLE) == 1) {
+    //         //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIST
+    //         if (
+    //             dao.getConfiguration(
+    //                 DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+    //             ) == 0
+    //         ) {
+    //             if (
+    //                 IERC20(
+    //                     dao.getAddressConfiguration(
+    //                         DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+    //                     )
+    //                 ).balanceOf(msg.sender) <
+    //                 dao.getConfiguration(DaoHelper.FLEX_PROPOSER_MIN_HOLDING)
+    //             ) revert NOT_MEET_ERC20_REQUIREMENT();
+    //         }
+    //         if (
+    //             dao.getConfiguration(
+    //                 DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+    //             ) == 1
+    //         ) {
+    //             if (
+    //                 IERC721(
+    //                     dao.getAddressConfiguration(
+    //                         DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+    //                     )
+    //                 ).balanceOf(msg.sender) <
+    //                 dao.getConfiguration(DaoHelper.FLEX_PROPOSER_MIN_HOLDING)
+    //             ) revert NOT_MEET_ERC721_REQUIREMENT();
+    //         }
+    //         if (
+    //             dao.getConfiguration(
+    //                 DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+    //             ) == 2
+    //         ) {
+    //             if (
+    //                 IERC1155(
+    //                     dao.getAddressConfiguration(
+    //                         DaoHelper.FLEX_PROPOSER_TOKEN_ADDRESS
+    //                     )
+    //                 ).balanceOf(
+    //                         msg.sender,
+    //                         dao.getConfiguration(
+    //                             DaoHelper.FLEX_PROPOSER_TOKENID
+    //                         )
+    //                     ) <
+    //                 dao.getConfiguration(DaoHelper.FLEX_PROPOSER_MIN_HOLDING)
+    //             ) revert NOT_MEET_ERC1155_REQUIRMENT();
+    //         }
+    //         if (
+    //             dao.getConfiguration(
+    //                 DaoHelper.FLEX_PROPOSER_IDENTIFICATION_TYPE
+    //             ) == 3
+    //         ) {
+    //             if (!isProposerWhiteList(dao, msg.sender))
+    //                 revert NOT_IN_WHITELIST();
+    //         }
+    //     }
+    //     _;
+    // }
 
     function setProtocolAddress(
         DaoRegistry dao,
@@ -213,13 +172,20 @@ contract FlexFundingAdapterContract is
     function submitProposal(
         DaoRegistry dao,
         ProposalParams calldata params
-    ) external override reimbursable(dao) onlyProposer(dao) {
-        FlexDaoSetHelperAdapterContract daosethelper = FlexDaoSetHelperAdapterContract(
-                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
-            );
+    ) external override reimbursable(dao) {
+        FlexFundingHelperAdapterContract(
+            dao.getAdapterAddress(DaoHelper.FLEX_FUNDING_HELPER_ADAPTER)
+        ).IsProposer(dao, msg.sender);
+
+        // FlexDaoSetHelperAdapterContract daosethelper = FlexDaoSetHelperAdapterContract(
+        //         dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
+        //     );
         // require(daosethelper.isProposalAllDone(dao), "UnDone Daoset Proposal");
-        if (!daosethelper.isProposalAllDone(dao))
-            revert UNDONE_DAO_SET_PROPOSAL();
+        if (
+            !FlexDaoSetHelperAdapterContract(
+                dao.getAdapterAddress(DaoHelper.FLEX_DAO_SET_HELPER_ADAPTER)
+            ).isProposalAllDone(dao)
+        ) revert UNDONE_DAO_SET_PROPOSAL();
         if (
             (params.investmentInfo.maxInvestmentAmount > 0 &&
                 params.investmentInfo.maxInvestmentAmount <
@@ -250,9 +216,9 @@ contract FlexFundingAdapterContract is
 
         SubmitProposalLocalVars memory vars;
 
-        vars.flexVotingContract = IFlexVoting(
-            dao.getAdapterAddress(DaoHelper.FLEX_POLLING_VOTING_ADAPT)
-        );
+        // vars.flexVotingContract = IFlexVoting(
+        //     dao.getAdapterAddress(DaoHelper.FLEX_POLLING_VOTING_ADAPT)
+        // );
         dao.increaseInvestmentId();
         vars.proposalId = TypeConver.bytesToBytes32(
             abi.encodePacked(
@@ -352,11 +318,8 @@ contract FlexFundingAdapterContract is
             );
 
         // Starts the voting process for the proposal.
-        vars.flexVotingContract.startNewVotingForProposal(
-            dao,
-            vars.proposalId,
-            bytes("")
-        );
+        IFlexVoting(dao.getAdapterAddress(DaoHelper.FLEX_POLLING_VOTING_ADAPT))
+            .startNewVotingForProposal(dao, vars.proposalId, bytes(""));
 
         // Sponsors the guild kick proposal.
         dao.sponsorProposal(
@@ -364,13 +327,13 @@ contract FlexFundingAdapterContract is
             dao.getAdapterAddress(DaoHelper.FLEX_POLLING_VOTING_ADAPT)
         );
         // register proposalId into investment pool
-        vars.flexInvestmentPoolExt = FlexInvestmentPoolExtension(
-            dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
-        );
+        // vars.flexInvestmentPoolExt = FlexInvestmentPoolExtension(
+        //     dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
+        // );
         if (_investmentType == InvestmentType.DIRECT) {
-            vars.flexInvestmentPoolExt.registerPotentialNewInvestmentProposal(
-                vars.proposalId
-            );
+            FlexInvestmentPoolExtension(
+                dao.getExtensionAddress(DaoHelper.FLEX_INVESTMENT_POOL_EXT)
+            ).registerPotentialNewInvestmentProposal(vars.proposalId);
         }
         unDoneProposals[address(dao)].add(vars.proposalId);
         emit ProposalCreated(address(dao), vars.proposalId, msg.sender);
@@ -450,11 +413,17 @@ contract FlexFundingAdapterContract is
 
                 if (proposal.investmentInfo.escrow) {
                     // calculate && update payback token amount
-                    vars.paybackTokenAmount = (((vars.poolBalance -
-                        vars.protocolFee -
-                        vars.managementFee -
-                        vars.proposerReward) * RETRUN_TOKEN_AMOUNT_PRECISION) /
+                    vars.decimals1 = ERC20(proposal.investmentInfo.tokenAddress)
+                        .decimals();
+                    vars.decimals2 = ERC20(
+                        proposal.investmentInfo.paybackTokenAddr
+                    ).decimals();
+
+                    vars.paybackTokenAmount = ((proposal
+                        .investmentInfo
+                        .investedAmount * RETRUN_TOKEN_AMOUNT_PRECISION) /
                         proposal.investmentInfo.price);
+
                     if (
                         vars.paybackTokenAmount >
                         (proposal.investmentInfo.maxInvestmentAmount *
@@ -465,6 +434,19 @@ contract FlexFundingAdapterContract is
                             (proposal.investmentInfo.maxInvestmentAmount *
                                 RETRUN_TOKEN_AMOUNT_PRECISION) /
                             proposal.investmentInfo.price;
+
+                    if (vars.decimals1 > vars.decimals2) {
+                        vars.decimalsChanged = vars.decimals1 - vars.decimals2;
+                        vars.paybackTokenAmount =
+                            vars.paybackTokenAmount /
+                            10 ** vars.decimalsChanged;
+                    }
+                    if (vars.decimals1 < vars.decimals2) {
+                        vars.decimalsChanged = vars.decimals2 - vars.decimals1;
+                        vars.paybackTokenAmount =
+                            vars.paybackTokenAmount *
+                            10 ** vars.decimalsChanged;
+                    }
 
                     proposal.investmentInfo.paybackTokenAmount = vars
                         .paybackTokenAmount;

@@ -72,7 +72,6 @@ contract ColletiveFundingPoolHelperAdapterContract {
             msg.sender !=
             dao.getAdapterAddress(DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER)
         ) revert ACCESS_DENIED();
-
         ClearFundLocalVariable memory vars;
 
         vars.fundingpool = CollectiveInvestmentPoolExtension(
@@ -104,7 +103,7 @@ contract ColletiveFundingPoolHelperAdapterContract {
         if (vars.allInvestors.length > 0) {
             uint256 escrwoAmount = 0;
             // liquidationId[address(dao)] += 1;
-          
+
             for (uint8 i = 0; i < vars.allInvestors.length; i++) {
                 uint256 bal = balanceOf(dao, vars.allInvestors[i]);
                 if (bal > 0) {

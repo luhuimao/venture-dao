@@ -813,25 +813,27 @@ describe("vesting...", () => {
             "ssssssssssssssss"
         ), "revert");
 
-        let tokenId1 = await this.vintageInvestmentReceiptERC721.investmentIdToTokenId(proposalId, this.owner.address);
-        let tokenId2 = await this.vintageInvestmentReceiptERC721.investmentIdToTokenId(proposalId, this.investor1.address);
+        // let tokenId1 = await this.vintageInvestmentReceiptERC721.investmentIdToTokenId(proposalId, this.owner.address);
+        // let tokenId2 = await this.vintageInvestmentReceiptERC721.investmentIdToTokenId(proposalId, this.investor1.address);
+        let tokenId1s = await this.vintageInvestmentReceiptERC721.getTokenIds(proposalId, this.owner.address);
+        let tokenId2s = await this.vintageInvestmentReceiptERC721.getTokenIds(proposalId, this.investor1.address);
 
-        let investmentProposalId1 = await this.vintageInvestmentReceiptERC721.tokenIdToInvestmentProposalId(tokenId1);
-        let investmentProposalId2 = await this.vintageInvestmentReceiptERC721.tokenIdToInvestmentProposalId(tokenId2);
+        let investmentProposalId1 = await this.vintageInvestmentReceiptERC721.tokenIdToInvestmentProposalId(tokenId1s[0]);
+        let investmentProposalId2 = await this.vintageInvestmentReceiptERC721.tokenIdToInvestmentProposalId(tokenId2s[0]);
 
         console.log(`
-            tokenId1   ${tokenId1}    
-            tokenId2   ${tokenId2}    
+            tokenId1   ${tokenId1s}    
+            tokenId2   ${tokenId2s}    
             investmentProposalId1   ${investmentProposalId1}
             investmentProposalId2   ${investmentProposalId2}
         `);
 
-        await this.vintageInvestmentReceiptERC721.transferFrom(this.owner.address, this.investor2.address, tokenId1);
-        tokenId1 = await this.vintageInvestmentReceiptERC721.investmentIdToTokenId(proposalId, this.owner.address);
-        let tokenId3 = await this.vintageInvestmentReceiptERC721.investmentIdToTokenId(proposalId, this.investor2.address);
+        await this.vintageInvestmentReceiptERC721.transferFrom(this.owner.address, this.investor2.address, tokenId1s[0]);
+        tokenId1s = await this.vintageInvestmentReceiptERC721.getTokenIds(proposalId, this.owner.address);
+        let tokenId3s = await this.vintageInvestmentReceiptERC721.getTokenIds(proposalId, this.investor2.address);
         console.log(`
-            tokenId1   ${tokenId1}    
-            tokenId3   ${tokenId3}    
+            tokenId1   ${tokenId1s}    
+            tokenId3   ${tokenId3s}    
         `);
         const a = await this.vintageInvestmentReceiptERC721.tokenIdToInvestmentProposalInfo(1);
         // console.log(a);
