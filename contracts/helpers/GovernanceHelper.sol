@@ -266,11 +266,7 @@ library GovernanceHelper {
         VintageFundingPoolAdapterContract fundingPoolAdapt = VintageFundingPoolAdapterContract(
                 dao.getAdapterAddress(DaoHelper.VINTAGE_INVESTMENT_POOL_ADAPT)
             );
-        // VintageRaiserAllocationAdapter vintageRaiserAllocAdapt = VintageRaiserAllocationAdapter(
-        //         dao.getAdapterAddress(
-        //             DaoHelper.VINTAGE_GOVERNOR_ALLOCATION_ADAPTER
-        //         )
-        //     );
+
         uint256 etype = dao.getConfiguration(
             DaoHelper.VINTAGE_VOTING_ASSET_TYPE
         ); // 0. ERC20 1. ERC721, 2. ERC1155 3.allocation 4.deposit
@@ -962,7 +958,9 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 deposit
-                bal = fundingiPoolAdapt.balanceOf(dao, account) / decimals;
+                bal =
+                    fundingiPoolAdapt.balanceOf(dao, account) /
+                    (10 ** decimals);
             } else {
                 return 0;
             }
@@ -993,7 +991,9 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 deposit
-                bal = fundingiPoolAdapt.balanceOf(dao, account) / decimals;
+                bal =
+                    fundingiPoolAdapt.balanceOf(dao, account) /
+                    (10 ** decimals);
             } else {
                 return 0;
             }
@@ -1076,7 +1076,7 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 deposit
-                bal = confirmedDeposit / decimals;
+                bal = confirmedDeposit / (10 ** decimals);
             } else {
                 return 0;
             }
@@ -1102,7 +1102,7 @@ library GovernanceHelper {
             uint256 bal = 0;
             if (etype == 0) {
                 //0 deposit
-                bal = confirmedDeposit / decimals;
+                bal = confirmedDeposit / (10 ** decimals);
             } else {
                 return 0;
             }

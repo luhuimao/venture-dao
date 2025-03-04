@@ -147,6 +147,7 @@ describe("topup proposal...", () => {
         // this.flexVestingERC721 = utilContracts.flexVestingERC721.instance;
         this.flexAllocationAdapterContract = adapters.flexAllocationAdapterContract.instance;
         this.flexFundingPoolAdapterContract = adapters.flexFundingPoolAdapterContract.instance;
+        this.collectiveFundingPoolHelperContract = adapters.collectiveFundingPoolHelperAdapterContract.instance;
         this.flexVotingContract = adapters.flexVotingContract.instance;
         this.flexFundingAdapterContract = adapters.flexFundingAdapterContract.instance;
         this.flexStewardAllocation = adapters.flexStewardAllocation.instance;
@@ -179,6 +180,17 @@ describe("topup proposal...", () => {
         this.colletiveClearFundProposalAdapterContract = this.adapters.colletiveClearFundProposalAdapterContract.instance;
         this.collectiveRedemptionFeeEscrowAdapterContract = this.adapters.collectiveRedemptionFeeEscrowAdapterContract.instance;
         this.colletiveSetRiceReceiverProposalAdapterContract = this.adapters.colletiveSetRiceReceiverProposalAdapterContract.instance;
+
+
+        const ERC20TokenDecimals = await hre.ethers.getContractFactory("ERC20TokenDecimals");
+        const eRC20TokenDecimals = await ERC20TokenDecimals.deploy(100000000, 6);
+        await eRC20TokenDecimals.deployed();
+        this.erc20TokenDecimals = eRC20TokenDecimals;
+        const decimals = await eRC20TokenDecimals.decimals();
+        const bal = await eRC20TokenDecimals.balanceOf(this.owner.address);
+        console.log("ERC20TokenDecimals deployed...");
+        console.log("decimals ", decimals);
+        console.log("bal ", bal);
 
         this.summonCollectiveDao = this.adapters.summonCollectiveDao.instance;
 
@@ -385,7 +397,7 @@ describe("topup proposal...", () => {
             this.genesis_steward1.address,
             this.genesis_steward2.address
         ];
-        const currency = this.testtoken1.address;
+        const currency = this.erc20TokenDecimals.address;
         const riceRewardReceiver = this.user1.address;
 
         const CollectiveDaoInfo = [
@@ -439,8 +451,8 @@ describe("topup proposal...", () => {
     };
 
     it("submit topup proposal...", async () => {
-        const token = this.testtoken1.address;
-        const amount = hre.ethers.utils.parseEther("10000");
+        const token = this.erc20TokenDecimals.address;
+        const amount = toBN("10000000000");
         const tx = await this.colletiveTopUpProposalContract.summbitProposal(
             this.collectiveDirectdaoAddress,
             token,
@@ -454,7 +466,7 @@ describe("topup proposal...", () => {
             approve...
         `);
 
-        await this.testtoken1.approve(this.colletiveTopUpProposalContract.address, amount);
+        await this.erc20TokenDecimals.approve(this.colletiveTopUpProposalContract.address, amount);
 
         console.log(`
             approved...
@@ -465,11 +477,13 @@ describe("topup proposal...", () => {
             proposalId
         ), "revert");
 
-        await this.colletiveTopUpProposalContract.startVoting(this.collectiveDirectdaoAddress,
+        await this.colletiveTopUpProposalContract.startVoting(
+            this.collectiveDirectdaoAddress,
             proposalId
         );
 
-        let proposalInfo = await this.colletiveTopUpProposalContract.proposals(this.collectiveDirectdaoAddress,
+        let proposalInfo = await this.colletiveTopUpProposalContract.proposals(
+            this.collectiveDirectdaoAddress,
             proposalId
         );
 
@@ -478,7 +492,8 @@ describe("topup proposal...", () => {
             voting...
         `);
 
-        await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
+        await this.collectiveVotingContract.connect(this.owner).submitVote(
+            this.collectiveDirectdaoAddress,
             proposalId,
             1
         );
@@ -491,7 +506,11 @@ describe("topup proposal...", () => {
         //     proposalId,
         //     1
         // );
-        let depositAmount = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.owner.address);
+        let depositAmount = await this.collectiveFundingPoolHelperContract.balanceOfToken(
+            this.collectiveDirectdaoAddress,
+            this.erc20TokenDecimals.address,
+            this.owner.address
+        );
 
         console.log("voted, execute...");
 
@@ -509,7 +528,7 @@ describe("topup proposal...", () => {
         );
 
         console.log(`
-        depositAmount ${hre.ethers.utils.formatEther(depositAmount)}
+        depositAmount ${(depositAmount)}
         voteRel ${voteRel}
         `);
 
@@ -521,19 +540,25 @@ describe("topup proposal...", () => {
             proposalId
         );
 
-        depositAmount = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.owner.address);
+        depositAmount = await this.collectiveFundingPoolHelperContract.balanceOfToken(
+            this.collectiveDirectdaoAddress,
+            this.erc20TokenDecimals.address,
+            this.owner.address
+        );
 
         console.log(`
             executed...
             state ${proposalInfo.state}
-            depositAmount ${hre.ethers.utils.formatEther(depositAmount)}
+            depositAmount ${(depositAmount)}
         `);
 
-        await this.colletiveFundingPoolContract.withdraw(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("200"));
-        depositAmount = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress, this.owner.address);
+        await this.colletiveFundingPoolContract.withdraw(this.collectiveDirectdaoAddress, toBN("200000000"));
+        depositAmount = await this.colletiveFundingPoolContract.balanceOf(
+            this.collectiveDirectdaoAddress,
+            this.owner.address
+        );
         console.log(`
-       
-        depositAmount ${hre.ethers.utils.formatEther(depositAmount)}
+        depositAmount ${toBN(depositAmount)}
     `);
 
         const approver = this.user2.address;
@@ -578,15 +603,15 @@ describe("topup proposal...", () => {
         console.log(`
         executed...
         proposal state ${proposalDetail.state}
-        ir   ${hre.ethers.utils.formatEther(ir)}
+        ir   ${(ir)}
         `);
 
     });
 
     const submitFundingProposal = async () => {
         let dao = this.collectiveDirectdaoAddress;
-        const token = this.testtoken1.address;
-        const fundingAmount = hre.ethers.utils.parseEther("1000");
+        const token = this.erc20TokenDecimals.address;
+        const fundingAmount = toBN("1000000000");
         const totalAmount = hre.ethers.utils.parseEther("0");
         const receiver = this.user1.address;
 
@@ -596,7 +621,7 @@ describe("topup proposal...", () => {
         const paybackToken = this.testtoken2.address;
 
         const price = hre.ethers.utils.parseEther("1");
-        const paybackAmount = fundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price);
+        const paybackAmount = fundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price).mul(toBN(10 ** 12));
         const approver = this.user2.address;
         const escrowInfo = [
             escrow,

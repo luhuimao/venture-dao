@@ -199,7 +199,7 @@ describe("mannual vesting...", () => {
         console.log("manualVestingERC721 ", manualVestingERC721.address);
 
         const ERC20TokenDecimals = await hre.ethers.getContractFactory("ERC20TokenDecimals");
-        const eRC20TokenDecimals = await ERC20TokenDecimals.deploy(100000000, 6);
+        const eRC20TokenDecimals = await ERC20TokenDecimals.deploy(100000000, 0);
         await eRC20TokenDecimals.deployed();
         this.erc20TokenDecimals = eRC20TokenDecimals;
     });
@@ -213,7 +213,7 @@ describe("mannual vesting...", () => {
         const vvestingInterval = 60 * 60 * 1;
         const vpaybackToken = this.erc20TokenDecimals.address;
         const vrecipientAddr = this.user1.address;
-        const vdepositAmount = toBN("234543000");
+        const vdepositAmount = toBN("23454");
         const vcliffVestingAmount = hre.ethers.utils.parseEther("0.032");
         const vnftEnable = true;
         const verc721 = this.manualVestingERC721.address;
@@ -236,7 +236,8 @@ describe("mannual vesting...", () => {
             vdes
         ];
 
-
+        const bal = await this.erc20TokenDecimals.balanceOf(this.owner.address);
+        console.log(bal);
         await this.erc20TokenDecimals.approve(this.bentoBoxV1.address, vdepositAmount);
         console.log("approved...");
         await this.manualVesting.createVesting(CreateVestingParams);
@@ -245,10 +246,11 @@ describe("mannual vesting...", () => {
         console.log(vestId);
         const URI = await this.manualVestingERC721.tokenURI(1);
         const svg = await this.manualVestingERC721.getSvg(1);
+        // console.log(svg);
         let vestInfo4 = await this.manualVesting.vests(vestId);
         console.log(`
-          total  ${vestInfo4.total}
-           claimed ${vestInfo4.claimed}
+            total  ${vestInfo4.total}
+            claimed ${vestInfo4.claimed}
         `)
 
         await this.erc20TokenDecimals.approve(
@@ -257,10 +259,10 @@ describe("mannual vesting...", () => {
 
         const receivers = [this.user1.address, this.user2.address, this.investor1.address, this.investor2.address];
         const amounts = [
-            toBN("423000000"),
-            toBN("423000000"),
-            toBN("423000000"),
-            toBN("423000000")]
+            toBN("423000"),
+            toBN("423000"),
+            toBN("423000"),
+            toBN("423000")]
         const tx = await this.manualVesting.batchCreate2(receivers, amounts, CreateVestingParams);
         const result = await tx.wait();
         console.log(result.events[result.events.length - 1].args);
@@ -272,7 +274,11 @@ describe("mannual vesting...", () => {
         await this.manualVesting.connect(this.user2).createVesting2(batchId)
         await this.manualVesting.connect(this.investor1).createVesting2(batchId)
         await this.manualVesting.connect(this.investor2).createVesting2(batchId)
-
+        const svg2 = await this.manualVestingERC721.getSvg(2);
+        const svg3 = await this.manualVestingERC721.getSvg(3);
+        const svg4 = await this.manualVestingERC721.getSvg(4);
+        const svg5 = await this.manualVestingERC721.getSvg(5);
+        console.log(svg3);
     });
 
     it("batch create manual vesting...", async () => {

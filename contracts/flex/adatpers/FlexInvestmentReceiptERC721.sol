@@ -170,6 +170,7 @@ contract FlexInvestmentReceiptERC721 is ERC721 {
                     info.projectName,
                     info.erc20.tokenSymbol,
                     info.investmentProposalLink,
+                    ERC20(info.erc20.tokenAddress).decimals(),
                     info.totalInvestedAmount,
                     info.myInvestedAmount,
                     info.description

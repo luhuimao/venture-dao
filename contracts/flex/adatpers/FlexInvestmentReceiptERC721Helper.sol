@@ -36,6 +36,7 @@ contract FlexInvestmentReceiptERC721Helper {
                 executedTxHash,
                 projectName,
                 erc20.tokenSymbol,
+                ERC20(erc20.tokenAddress).decimals(),
                 totalInvestedAmount,
                 myInvestedAmount
             );
@@ -46,6 +47,7 @@ contract FlexInvestmentReceiptERC721Helper {
         string memory projectName,
         string memory tokenSymbol,
         string memory investmentProposalLink,
+        uint8 decimals,
         uint256 totalInvestedAmount,
         uint256 myInvestedAmount,
         string memory _collectionDescription
@@ -55,6 +57,7 @@ contract FlexInvestmentReceiptERC721Helper {
                 executedTxHash,
                 projectName,
                 tokenSymbol,
+                decimals,
                 totalInvestedAmount,
                 myInvestedAmount,
                 _collectionDescription,

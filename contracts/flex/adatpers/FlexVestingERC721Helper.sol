@@ -77,7 +77,7 @@ contract FlexVestingERC721Helper {
             _tokenId
         );
 
-        console.log("total_", total_);
+        // console.log("total_", total_);
         string memory proposalLink = string(
             abi.encodePacked(
                 "https://graph.phoenix.fi/venturedaos/flex/",

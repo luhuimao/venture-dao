@@ -85,6 +85,7 @@ library LibManualVestingTokenUri {
         string memory txHash,
         string memory projectName,
         string memory symbol,
+        uint8 decimals,
         uint256 totalInvestedAmount,
         uint256 myInvestedAmount
     ) internal pure returns (string memory output) {
@@ -93,6 +94,7 @@ library LibManualVestingTokenUri {
                 txHash,
                 projectName,
                 symbol,
+                decimals,
                 totalInvestedAmount,
                 myInvestedAmount
             );
@@ -102,6 +104,7 @@ library LibManualVestingTokenUri {
         string memory txHash,
         string memory projectName,
         string memory symbol,
+        uint8 decimals,
         uint256 totalInvestedAmount,
         uint256 myInvestedAmount
     ) internal pure returns (string memory) {
@@ -109,6 +112,7 @@ library LibManualVestingTokenUri {
             txHash,
             projectName,
             symbol,
+            decimals,
             totalInvestedAmount,
             myInvestedAmount
         );
@@ -138,6 +142,7 @@ library LibManualVestingTokenUri {
         string memory txHash,
         string memory projectName,
         string memory symbol,
+        uint8 decimals,
         uint256 totalInvestedAmount,
         uint256 myInvestedAmount,
         string memory description,
@@ -147,6 +152,7 @@ library LibManualVestingTokenUri {
             txHash,
             projectName,
             symbol,
+            decimals,
             totalInvestedAmount,
             myInvestedAmount
         );
@@ -158,6 +164,7 @@ library LibManualVestingTokenUri {
                 projectName,
                 symbol,
                 txHash,
+                decimals,
                 myInvestedAmount,
                 totalInvestedAmount
             );

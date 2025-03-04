@@ -168,7 +168,7 @@ describe("collective investment receipt NFT...", () => {
         this.colletiveFundingProposalContract = adapters.colletiveFundingProposalContract.instance;
         this.collectiveVotingContract = adapters.collectiveVotingContract.instance;
         this.colletiveFundingPoolContract = adapters.colletiveFundingPoolContract.instance;
-        this.collectiveFundingPoolHelperContract = adapters.collectiveFundingPoolHelperAdapterContract.instance;        this.colletiveFundRaiseProposalContract = adapters.colletiveFundRaiseProposalContract.instance;
+        this.collectiveFundingPoolHelperContract = adapters.collectiveFundingPoolHelperAdapterContract.instance; this.colletiveFundRaiseProposalContract = adapters.colletiveFundRaiseProposalContract.instance;
         this.bentoBoxV1 = adapters.bentoBoxV1.instance;
         this.collectivePaybackTokenAdapterContract = this.adapters.collectivePaybackTokenAdapterContract.instance;
         this.collectiveAllocationAdapterContract = this.adapters.collectiveAllocationAdapterContract.instance;
@@ -230,6 +230,16 @@ describe("collective investment receipt NFT...", () => {
         );
         await manualVesting.deployed();
         this.manualVesting = manualVesting;
+
+        const ERC20TokenDecimals = await hre.ethers.getContractFactory("ERC20TokenDecimals");
+        const eRC20TokenDecimals = await ERC20TokenDecimals.deploy(100000000, 6);
+        await eRC20TokenDecimals.deployed();
+        this.erc20TokenDecimals = eRC20TokenDecimals;
+        const decimals = await eRC20TokenDecimals.decimals();
+        const bal = await eRC20TokenDecimals.balanceOf(this.owner.address);
+        console.log("ERC20TokenDecimals deployed...");
+        console.log("decimals ", decimals);
+        console.log("bal ", bal);
 
         const daoFactoriesAddress = [
             this.daoFactory.address,
@@ -425,7 +435,7 @@ describe("collective investment receipt NFT...", () => {
             this.genesis_steward1.address,
             this.genesis_steward2.address
         ];
-        const currency = this.testtoken1.address;
+        const currency = this.erc20TokenDecimals.address;
         const riceRewardReceiver = this.user1.address;
 
         const CollectiveDaoInfo = [
@@ -484,14 +494,14 @@ describe("collective investment receipt NFT...", () => {
 
     it("collective investment receipt NFT...", async () => {
         let dao = this.collectiveDirectdaoAddress;
-        let tokenAddress = this.testtoken1.address;
+        let tokenAddress = this.erc20TokenDecimals.address;
         const fundingpoolextensionAddr = await this.daoContract.getExtensionAddress(sha3("collective-funding-pool-ext"));
         const collectiveFundingPoolExtContract = (await hre.ethers.getContractFactory("CollectiveInvestmentPoolExtension")).attach(fundingpoolextensionAddr);
 
-        let miniTarget = hre.ethers.utils.parseEther("1000");
-        let maxCap = hre.ethers.utils.parseEther("2000");
-        let miniDeposit = hre.ethers.utils.parseEther("10");
-        let maxDeposit = hre.ethers.utils.parseEther("1000");
+        let miniTarget = toBN("1000234000");
+        let maxCap = toBN("2000234000000");
+        let miniDeposit = toBN("10000000");
+        let maxDeposit = toBN("2000234000000");
 
         const fundInfo = [
             tokenAddress,
@@ -554,7 +564,7 @@ describe("collective investment receipt NFT...", () => {
             proposalId,
             1
         );
-       
+
         console.log("voted, execute...");
         const stopVoteTime = proposalDetail.stopVoteTime;
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
@@ -576,16 +586,53 @@ describe("collective investment receipt NFT...", () => {
         await this.testtoken1.connect(this.investor1).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
         await this.testtoken1.connect(this.investor2).approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
 
-        await this.testtoken1.transfer(this.investor1.address, hre.ethers.utils.parseEther("2000"));
-        await this.testtoken1.transfer(this.investor2.address, hre.ethers.utils.parseEther("2000"));
+        await this.erc20TokenDecimals.approve(
+            this.colletiveFundingPoolContract.address,
+            toBN("2000234000000")
+        );
+        await this.erc20TokenDecimals.connect(this.investor1).approve(
+            this.colletiveFundingPoolContract.address,
+            toBN("2000234000000")
+        );
+        await this.erc20TokenDecimals.connect(this.investor2).approve(
+            this.colletiveFundingPoolContract.address,
+            toBN("2000234000000")
+        );
+
+        await this.testtoken1.transfer(
+            this.investor1.address,
+            hre.ethers.utils.parseEther("2000")
+        );
+        await this.testtoken1.transfer(
+            this.investor2.address,
+            hre.ethers.utils.parseEther("2000")
+        );
+
+        await this.erc20TokenDecimals.transfer(
+            this.investor1.address,
+            toBN("1000234000000")
+        );
+        await this.erc20TokenDecimals.transfer(
+            this.investor2.address,
+            toBN("1000234000000")
+        );
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
         console.log(`
         blocktimestamp ${blocktimestamp}
         `);
-        await this.colletiveFundingPoolContract.deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("800"));
-        await this.colletiveFundingPoolContract.connect(this.investor1).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("500"));
-        await this.colletiveFundingPoolContract.connect(this.investor2).deposit(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("100"));
+        await this.colletiveFundingPoolContract.deposit(
+            this.collectiveDirectdaoAddress,
+            toBN("231230000000")
+        );
+        await this.colletiveFundingPoolContract.connect(this.investor1).deposit(
+            this.collectiveDirectdaoAddress,
+            toBN("131230000000")
+        );
+        await this.colletiveFundingPoolContract.connect(this.investor2).deposit(
+            this.collectiveDirectdaoAddress,
+            toBN("335230000000")
+        );
 
 
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
@@ -597,6 +644,7 @@ describe("collective investment receipt NFT...", () => {
         await this.colletiveFundingPoolContract.processFundRaise(this.collectiveDirectdaoAddress);
         let currentBlockNum = (await hre.ethers.provider.getBlock("latest")).number;
 
+        let fundState = await this.colletiveFundingPoolContract.fundState(this.collectiveDirectdaoAddress);
         let depositBal1 = await collectiveFundingPoolExtContract.getPriorAmount(
             this.owner.address,
             this.testtoken1.address,
@@ -615,30 +663,32 @@ describe("collective investment receipt NFT...", () => {
             currentBlockNum - 1
         );
 
-        let bal1 = await await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress,
+        let bal1 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress,
             this.owner.address
         );
-        let bal2 = await await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress,
+        let bal2 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress,
             this.investor1.address
         );
 
-        let bal3 = await await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress,
+        let bal3 = await this.colletiveFundingPoolContract.balanceOf(this.collectiveDirectdaoAddress,
             this.investor2.address
         );
 
         console.log(`
-        depositBal1 ${hre.ethers.utils.formatEther(depositBal1)}
-        depositBal2 ${hre.ethers.utils.formatEther(depositBal2)}
-        depositBal3 ${hre.ethers.utils.formatEther(depositBal3)}
+        executed fund raise...
+        state ${fundState}
+        depositBal1 ${(depositBal1)}
+        depositBal2 ${(depositBal2)}
+        depositBal3 ${(depositBal3)}
 
-        final bal1  ${hre.ethers.utils.formatEther(bal1)}
-        final bal2  ${hre.ethers.utils.formatEther(bal2)}
-        final bal3  ${hre.ethers.utils.formatEther(bal3)}
+        final bal1  ${(bal1)}
+        final bal2  ${(bal2)}
+        final bal3  ${(bal3)}
         `);
 
         //funding proposal
-        const token = this.testtoken1.address;
-        const fundingAmount = hre.ethers.utils.parseEther("1000");
+        const token = this.erc20TokenDecimals.address;
+        const fundingAmount = toBN("100000000000");
         const totalAmount = hre.ethers.utils.parseEther("0");
         const receiver = this.user1.address;
 
@@ -648,7 +698,7 @@ describe("collective investment receipt NFT...", () => {
         const paybackToken = this.testtoken2.address;
 
         const price = hre.ethers.utils.parseEther("1.2");
-        const paybackAmount = fundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price);
+        const paybackAmount = fundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price).mul(toBN(10 ** 12));
         const approver = this.user2.address;
 
         const escrowInfo = [
@@ -696,7 +746,9 @@ describe("collective investment receipt NFT...", () => {
         proposalId ${proposalId}
         proposalDetail ${proposalDetail}
         `);
-        await this.testtoken2.connect(this.user2).approve(this.collectivePaybackTokenAdapterContract.address, paybackAmount);
+        await this.testtoken2.connect(this.user2).approve(
+            this.collectivePaybackTokenAdapterContract.address,
+            paybackAmount);
         await this.testtoken2.transfer(approver, paybackAmount);
         await this.collectivePaybackTokenAdapterContract.connect(this.user2).setFundingApprove(
             dao,
@@ -706,12 +758,16 @@ describe("collective investment receipt NFT...", () => {
         );
         const paybackBal = await this.testtoken2.balanceOf(approver);
         const allowanceAmount = await this.testtoken2.allowance(approver, this.collectivePaybackTokenAdapterContract.address);
-        const approvalAmount = await this.collectivePaybackTokenAdapterContract.approvedInfos(dao, proposalId, approver, this.testtoken2.address)
+        const approvalAmount = await this.collectivePaybackTokenAdapterContract.approvedInfos(dao, proposalId, approver, this.testtoken2.address);
+        proposalDetail = await this.colletiveFundingProposalContract.proposals(dao, proposalId);
+        let poolBal = await this.colletiveFundingPoolContract.poolBalance(dao);
         console.log(`
         paybackBal ${paybackBal}
         allowanceAmount ${allowanceAmount}
-        approvalAmount ${approvalAmount}
-        paybackAmount ${paybackAmount}
+        approvalAmount  ${approvalAmount}
+        paybackAmount   ${paybackAmount}
+        totalAmount     ${proposalDetail.fundingInfo.totalAmount}
+        poolBal         ${poolBal}
         start voting...
         `);
         await this.colletiveFundingProposalContract.startVotingProcess(dao,
@@ -731,7 +787,7 @@ describe("collective investment receipt NFT...", () => {
             proposalId,
             1
         );
-       
+
         console.log(`
         voted...
         executing...
@@ -833,10 +889,12 @@ describe("collective investment receipt NFT...", () => {
         tokenId3   ${tokenId3}
         `);
 
-        // const tokenURI = await this.investmentReceiptERC721.tokenURI(1);
-        // const svg = await this.investmentReceiptERC721Helper.getSvg(1, this.investmentReceiptERC721.address);
-        // // const svg2 = await this.investmentReceiptERC721Helper.getSvg(2, this.investmentReceiptERC721.address);
+        const tokenURI = await this.investmentReceiptERC721.tokenURI(1);
+        const svg = await this.investmentReceiptERC721Helper.getSvg(1, this.investmentReceiptERC721.address);
+        const svg2 = await this.investmentReceiptERC721Helper.getSvg(2, this.investmentReceiptERC721.address);
+        // const svg3 = await this.investmentReceiptERC721Helper.getSvg(3, this.investmentReceiptERC721.address);
 
+        console.log(svg);
         txs = await this.investmentReceiptERC721.connect(this.owner).transferFrom(this.owner.address, this.investor2.address, 1);
         ss = await txs.wait();
         let ffrom = ss.events[ss.events.length - 1].args.from;
@@ -857,7 +915,7 @@ describe("collective investment receipt NFT...", () => {
             tokenId2   ${tokenId2}
             tokenId3   ${tokenId3}
         `);
-    
+
         blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
 
         const vstartTime = toBN(blocktimestamp).add(toBN(60 * 1));

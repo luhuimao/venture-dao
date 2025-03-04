@@ -28,7 +28,6 @@ contract ManualVestingERC721SVGHelper {
             vestingNFTAddress,
             tokenId
         );
-
         return
             LibTokenUri.svg(
                 ERC20(vars.vestToken).symbol(),

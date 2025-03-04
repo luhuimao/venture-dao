@@ -110,9 +110,6 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
         ) {
             revert INVESTMENT_GRACE_PERIOD();
         } else {
-            // bytes32 investmentProposalId = ColletiveFundingProposalAdapterContract(
-            //         dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUNDING_ADAPTER)
-            //     ).ongoingProposal(address(dao));
             graceWithdrawAmount[address(dao)][msg.sender] += amount;
         }
 
@@ -121,10 +118,6 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                     DaoHelper.COLLECTIVE_INVESTMENT_POOL_EXT
                 )
             );
-
-        // ColletiveFundRaiseProposalAdapterContract fundRaiseContract = ColletiveFundRaiseProposalAdapterContract(
-        //         dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)
-        //     );
 
         bytes32 lastFundRaiseProposalId = ColletiveFundRaiseProposalAdapterContract(
                 dao.getAdapterAddress(DaoHelper.COLLECTIVE_FUND_RAISE_ADAPTER)

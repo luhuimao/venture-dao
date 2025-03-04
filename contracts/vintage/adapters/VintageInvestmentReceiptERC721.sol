@@ -168,6 +168,7 @@ contract VintageInvestmentReceiptERC721 is ERC721 {
                     info.projectName,
                     info.erc20.tokenSymbol,
                     info.proposalLink,
+                    ERC20(info.erc20.tokenAddress).decimals(),
                     info.totalInvestedAmount,
                     info.myInvestedAmount,
                     info.description

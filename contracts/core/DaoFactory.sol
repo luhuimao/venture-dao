@@ -122,7 +122,7 @@ contract DaoFactory is CloneFactory {
             dao.state() == DaoRegistry.DaoState.CREATION,
             "this DAO has already been setup"
         );
-        console.log("addAdapters");
+        // console.log("addAdapters");
         if (adapters.length > 0) {
             for (uint256 i = 0; i < adapters.length; i++) {
                 //slither-disable-next-line calls-loop
@@ -134,7 +134,7 @@ contract DaoFactory is CloneFactory {
                     new uint256[](0)
                 );
             }
-            console.log("adapter added");
+            // console.log("adapter added");
         }
     }
 

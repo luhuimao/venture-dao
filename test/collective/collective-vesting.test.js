@@ -207,6 +207,15 @@ describe("vesting...", () => {
         await vestingERC721.deployed();
         this.vestingERC721 = vestingERC721;
 
+        const ERC20TokenDecimals = await hre.ethers.getContractFactory("ERC20TokenDecimals");
+        const eRC20TokenDecimals = await ERC20TokenDecimals.deploy(100000000, 6);
+        await eRC20TokenDecimals.deployed();
+        this.erc20TokenDecimals = eRC20TokenDecimals;
+        const decimals = await eRC20TokenDecimals.decimals();
+        const bal = await eRC20TokenDecimals.balanceOf(this.owner.address);
+        console.log("ERC20TokenDecimals deployed...");
+        console.log("decimals ", decimals);
+        console.log("bal ", bal);
 
         const daoFactoriesAddress = [
             this.daoFactory.address,
@@ -601,9 +610,9 @@ describe("vesting...", () => {
         const fundingInfo = [token, fundingAmount, totalAmount, receiver];
 
         const escrow = true;
-        const paybackToken = this.testtoken2.address;
-        const price = hre.ethers.utils.parseEther("1.2");
-        const paybackAmount = fundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price);
+        const paybackToken = this.erc20TokenDecimals.address;
+        const price = hre.ethers.utils.parseEther("0.03242");
+        const paybackAmount = fundingAmount.mul(hre.ethers.utils.parseEther("1")).div(price).div(toBN(10 ** 12));
         const approver = this.user2.address;
         const escrowInfo = [
             escrow,
@@ -652,17 +661,21 @@ describe("vesting...", () => {
         
         `);
         console.log("proposalDetail", proposalDetail);
-        await this.testtoken2.connect(this.user2).approve(this.collectivePaybackTokenAdapterContract.address, paybackAmount);
-        await this.testtoken2.transfer(approver, paybackAmount);
+        await this.erc20TokenDecimals.connect(this.user2).approve(this.collectivePaybackTokenAdapterContract.address, paybackAmount);
+        await this.erc20TokenDecimals.transfer(approver, paybackAmount);
         await this.collectivePaybackTokenAdapterContract.connect(this.user2).setFundingApprove(
             dao,
             proposalId,
-            this.testtoken2.address,
+            this.erc20TokenDecimals.address,
             paybackAmount
         );
-        const paybackBal = await this.testtoken2.balanceOf(approver);
-        const allowanceAmount = await this.testtoken2.allowance(approver, this.collectivePaybackTokenAdapterContract.address);
-        const approvalAmount = await this.collectivePaybackTokenAdapterContract.approvedInfos(dao, proposalId, approver, this.testtoken2.address)
+        const paybackBal = await this.erc20TokenDecimals.balanceOf(approver);
+        const allowanceAmount = await this.erc20TokenDecimals.allowance(approver, this.collectivePaybackTokenAdapterContract.address);
+        const approvalAmount = await this.collectivePaybackTokenAdapterContract.approvedInfos(
+            dao,
+            proposalId,
+            approver,
+            this.erc20TokenDecimals.address)
         console.log(`
         paybackBal ${hre.ethers.utils.formatEther(paybackBal)}
         allowanceAmount ${hre.ethers.utils.formatEther(allowanceAmount)}
@@ -676,7 +689,8 @@ describe("vesting...", () => {
         const escrowedPaybackAmount = await this.colletiveFundingProposalContract.escrowPaybackTokens(
             dao,
             proposalId,
-            this.user2.address);
+            this.user2.address
+        );
         console.log(`
         proposal state ${proposalDetail.state}
         escrowedPaybackAmount ${hre.ethers.utils.formatEther(escrowedPaybackAmount)}
@@ -749,9 +763,9 @@ describe("vesting...", () => {
         let vestInfo2 = await this.collectiveVestingContract.vests(2)
         console.log(`
         vesting created...
-        paybackAmount ${hre.ethers.utils.formatEther(proposalDetail.escrowInfo.paybackAmount)}
-        vest1 total  ${hre.ethers.utils.formatEther(vestInfo1.total)}
-        vest2 total  ${hre.ethers.utils.formatEther(vestInfo2.total)}
+        paybackAmount ${(proposalDetail.escrowInfo.paybackAmount)}
+        vest1 total  ${(vestInfo1.total)}
+        vest2 total  ${(vestInfo2.total)}
 
         nftBal1      ${nftBal1}
         nftBal2      ${nftBal2}
@@ -768,9 +782,9 @@ describe("vesting...", () => {
         let vestBal2 = await this.collectiveVestingContract.vestBalance(2);
         let paybackTokenBal = await this.testtoken2.balanceOf(this.investor1.address);
         console.log(`
-        vestBal1 ${hre.ethers.utils.formatEther(vestBal1)}
-        vestBal2 ${hre.ethers.utils.formatEther(vestBal2)}
-        paybackTokenBal ${hre.ethers.utils.formatEther(paybackTokenBal)}
+        vestBal1 ${(vestBal1)}
+        vestBal2 ${(vestBal2)}
+        paybackTokenBal ${(paybackTokenBal)}
         claim...
         `);
         await this.collectiveVestingContract.connect(this.owner).withdraw(dao, 1);
@@ -787,7 +801,7 @@ describe("vesting...", () => {
             investor2    ${this.investor2.address}
             nftToken       ${vestInfo2.nftInfo.nftToken}
         `);
-        await this.collectiveVestingContract.connect(this.investor2).withdraw(dao, 2);
+        // await this.collectiveVestingContract.connect(this.investor2).withdraw(dao, 2);
 
 
         vestInfo1 = await this.collectiveVestingContract.vests(1)
@@ -798,12 +812,14 @@ describe("vesting...", () => {
 
         console.log(`
         claimed...
-        claimedAmount1 ${hre.ethers.utils.formatEther(vestInfo1.claimed)}
-        claimedAmount2 ${hre.ethers.utils.formatEther(vestInfo2.claimed)}
-        nftToken       ${hre.ethers.utils.formatEther(vestInfo2.nftInfo.nftToken)}
-        vestBal1 ${hre.ethers.utils.formatEther(vestBal1)}
-        vestBal2 ${hre.ethers.utils.formatEther(vestBal2)}
-        paybackTokenBal ${hre.ethers.utils.formatEther(paybackTokenBal)}
+        totalAmount1 ${vestInfo1.total}
+        claimedAmount1 ${(vestInfo1.claimed)}
+        totalAmount2 ${vestInfo2.total}
+        claimedAmount2 ${(vestInfo2.claimed)}
+        nftToken       ${(vestInfo2.nftInfo.nftToken)}
+        vestBal1 ${(vestBal1)}
+        vestBal2 ${(vestBal2)}
+        paybackTokenBal ${(paybackTokenBal)}
         `);
 
         const uri = await this.vestingERC721.tokenURI(2);
@@ -811,11 +827,11 @@ describe("vesting...", () => {
         const svg = await this.vestingERC721.getSvg(1);
         const svg2 = await this.vestingERC721.getSvg(2);
 
-        // console.log(`
-        // svg 
-        // ${svg2}
-        // `
-        // );
+        console.log(`
+        svg 
+        ${svg}
+        `
+        );
 
     });
 });

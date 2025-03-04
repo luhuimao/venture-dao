@@ -51,11 +51,11 @@ library LibTokenUri {
         string memory attributes = NFTDescriptor.generateNFTAttributes(
             symbol,
             tokenAddr,
-            uint256Params[1],
-            uint256Params[2],
-            uint256Params[0],
-            uint256Params[3],
-            uint256Params[4]
+            uint256Params[1], //remaining_
+            uint256Params[2], //total_
+            uint256Params[0], //interval
+            uint256Params[3], //cliffTime
+            uint256Params[4] //endTime
         );
 
         return
@@ -88,6 +88,7 @@ library LibTokenUri {
         string memory txHash,
         string memory projectName,
         string memory symbol,
+        uint8 decimals,
         uint256 totalInvestedAmount,
         uint256 myInvestedAmount
     ) internal pure returns (string memory output) {
@@ -96,6 +97,7 @@ library LibTokenUri {
                 txHash,
                 projectName,
                 symbol,
+                decimals,
                 totalInvestedAmount,
                 myInvestedAmount
             );
@@ -105,6 +107,7 @@ library LibTokenUri {
         string memory txHash,
         string memory projectName,
         string memory symbol,
+        uint8 decimals,
         uint256 totalInvestedAmount,
         uint256 myInvestedAmount
     ) internal pure returns (string memory) {
@@ -112,6 +115,7 @@ library LibTokenUri {
             txHash,
             projectName,
             symbol,
+            decimals,
             totalInvestedAmount,
             myInvestedAmount
         );
@@ -141,6 +145,7 @@ library LibTokenUri {
         string memory txHash,
         string memory projectName,
         string memory symbol,
+        uint8 decimals,
         uint256 totalInvestedAmount,
         uint256 myInvestedAmount,
         string memory description,
@@ -150,6 +155,7 @@ library LibTokenUri {
             txHash,
             projectName,
             symbol,
+            decimals,
             totalInvestedAmount,
             myInvestedAmount
         );
@@ -161,6 +167,7 @@ library LibTokenUri {
                 projectName,
                 symbol,
                 txHash,
+                decimals,
                 myInvestedAmount,
                 totalInvestedAmount
             );

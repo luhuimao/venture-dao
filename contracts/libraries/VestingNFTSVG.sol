@@ -6,6 +6,7 @@ import "base64-sol/base64.sol";
 import "./NFTDescriptor.sol";
 import "./DateTime.sol";
 import "hardhat/console.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 library VestingNFTSVG {
     using Strings for uint256;
@@ -20,13 +21,15 @@ library VestingNFTSVG {
         address tokenAddr,
         uint256[5] memory uint256Params
     ) internal view returns (string memory svg) {
+        uint8 decimals = ERC20(tokenAddr).decimals();
         svg = string(
             abi.encodePacked(
-                generateSVGTop(),
+                generateSVGTop(decimals),
                 generateSVGScroll(symbol, tokenAddr),
-                generateSVGHead(symbol, uint256Params[0]),
+                generateSVGHead(symbol, decimals, uint256Params[0]),
                 generateSVGStatic(),
                 generateSVGVestingInfo(
+                    tokenAddr,
                     [
                         uint256Params[3],
                         uint256Params[4],
@@ -39,7 +42,7 @@ library VestingNFTSVG {
         );
     }
 
-    function generateSVGTop() internal pure returns (string memory svg) {
+    function generateSVGTop(uint8 decimals) internal pure returns (string memory svg) {
         svg = string(
             abi.encodePacked(
                 '<svg width="290" height="500" viewBox="0 0 290 500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">',
@@ -118,9 +121,13 @@ library VestingNFTSVG {
 
     function generateSVGHead(
         string memory tokenName,
+        uint8 decimals,
         uint256 remaining_
     ) internal pure returns (string memory svg) {
-        string memory _remaining = NFTDescriptor.integerToString(remaining_);
+        string memory _remaining = NFTDescriptor.integerToString(
+            decimals,
+            remaining_
+        );
         string memory tokenname = string(abi.encodePacked("$", tokenName));
 
         svg = string(
@@ -168,6 +175,7 @@ library VestingNFTSVG {
     //         uint256Params[2] interval,
     //         uint256Params[3] total
     function generateSVGVestingInfo(
+        address erc20Addr,
         uint256[4] memory uint256Params
     ) internal view returns (string memory svg) {
         SVGVestingVars memory vars;
@@ -175,7 +183,10 @@ library VestingNFTSVG {
             uint256Params[0],
             uint256Params[1]
         );
-        vars.totalAmount = NFTDescriptor.integerToString(uint256Params[3]);
+        vars.totalAmount = NFTDescriptor.integerToString(
+            ERC20(erc20Addr).decimals(),
+            uint256Params[3]
+        );
         // console.log(" vars.totalAmount ", vars.totalAmount);
         (vars.year, vars.month, vars.day) = DateTime.timestampToDate(
             uint256Params[0]
@@ -311,6 +322,7 @@ library VestingNFTSVG {
         uint256 cliffEndTime,
         uint256 endTime
     ) internal view returns (string memory svg) {
+        uint8 decimals = ERC20(tokenAddr).decimals();
         svg = string(
             abi.encodePacked(
                 des,
@@ -319,9 +331,9 @@ library VestingNFTSVG {
                 "\\nVesting Token Contract: ",
                 addressToString(tokenAddr),
                 "\\nRemaining: ",
-                NFTDescriptor.integerToString(remaining),
+                NFTDescriptor.integerToString(decimals, remaining),
                 "\\nTotal: ",
-                NFTDescriptor.integerToString(total),
+                NFTDescriptor.integerToString(decimals, total),
                 "\\nState: ",
                 NFTDescriptor.vestingStateString(cliffEndTime, endTime),
                 "\\nInterval: ",

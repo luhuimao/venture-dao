@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "base64-sol/base64.sol";
 import "./NFTDescriptor.sol";
 import "./DateTime.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "hardhat/console.sol";
 
 library VestingReceiptNFTSVG {
@@ -14,18 +15,20 @@ library VestingReceiptNFTSVG {
         string memory txHash,
         string memory projectName,
         string memory symbol,
+        uint8 decimals,
         uint256 totalInvestedAmount,
         uint256 myInvestedAmount
     ) internal pure returns (string memory svg) {
         svg = string(
             abi.encodePacked(
-                generateSVGTop(symbol, myInvestedAmount),
+                generateSVGTop(decimals, symbol, myInvestedAmount),
                 generateSVGScroll(txHash),
                 generateAngleImage(),
                 generateInvestmentAttributes(
                     projectName,
                     totalInvestedAmount,
-                    myInvestedAmount
+                    myInvestedAmount,
+                    decimals
                 ),
                 generateSVGStatic(),
                 "</svg>"
@@ -34,10 +37,12 @@ library VestingReceiptNFTSVG {
     }
 
     function generateSVGTop(
+        uint8 decimals,
         string memory symbol,
         uint256 myInvestedAmount
     ) internal pure returns (string memory svg) {
         string memory _myInvestedAmount = NFTDescriptor.integerToString(
+            decimals,
             myInvestedAmount
         );
         svg = string(
@@ -200,9 +205,11 @@ library VestingReceiptNFTSVG {
     function generateInvestmentAttributes(
         string memory projectName,
         uint256 totalInvestedAmount,
-        uint256 myInvestedAmount
+        uint256 myInvestedAmount,
+        uint8 decimals
     ) internal pure returns (string memory svg) {
         string memory _totalInvested = NFTDescriptor.integerToString(
+            decimals,
             totalInvestedAmount
         );
         string memory percentage = NFTDescriptor.pencentageString(
@@ -350,6 +357,7 @@ library VestingReceiptNFTSVG {
         uint256 cliffEndTime,
         uint256 endTime
     ) internal view returns (string memory svg) {
+        uint8 decimals = ERC20(tokenAddr).decimals();
         svg = string(
             abi.encodePacked(
                 des,
@@ -358,9 +366,9 @@ library VestingReceiptNFTSVG {
                 "\\nVesting Token Contract: ",
                 addressToString(tokenAddr),
                 "\\nRemaining: ",
-                NFTDescriptor.integerToString(remaining),
+                NFTDescriptor.integerToString(decimals, remaining),
                 "\\nTotal: ",
-                NFTDescriptor.integerToString(total),
+                NFTDescriptor.integerToString(decimals, total),
                 "\\nState: ",
                 NFTDescriptor.vestingStateString(cliffEndTime, endTime),
                 "\\nInterval: ",

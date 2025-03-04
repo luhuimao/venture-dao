@@ -128,9 +128,10 @@ contract NFTDescriptorTest {
     // }
 
     function integerToString(
-        uint256 amount
+        uint256 amount,
+        uint8 decimals
     ) public pure returns (string memory) {
-        return NFTDescriptor.integerToString(amount);
+        return NFTDescriptor.integerToString(decimals, amount);
     }
 
     // function addressToString(address _address) public pure returns (string memory) {

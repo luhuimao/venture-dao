@@ -96,9 +96,10 @@ contract ColletiveFundingPoolHelperAdapterContract {
         ) revert NOT_CLEAR_FUND_TIME();
 
         vars.tokenAddr = vars.fundingpool.getFundRaisingTokenAddress();
-        vars.allInvestors = vars
-            .colletiveFundingPoolAdapterContract
-            .getAllInvestors(dao);
+        // vars.allInvestors = vars
+        //     .colletiveFundingPoolAdapterContract
+        //     .getAllInvestors(dao);
+        vars.allInvestors = dao.getAllSteward();
 
         if (vars.allInvestors.length > 0) {
             uint256 escrwoAmount = 0;

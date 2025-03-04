@@ -9,6 +9,7 @@ import "@uniswap/v3-core-optimism/contracts/libraries/BitMath.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/math/SignedSafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "base64-sol/base64.sol";
 import "./HexStrings.sol";
 import "./NFTSVG.sol";
@@ -24,424 +25,6 @@ library NFTDescriptor {
     using HexStrings for uint256;
 
     uint256 constant sqrt10X128 = 1076067327063303206878105757264492625226;
-
-    // struct ConstructTokenURIParams {
-    //     uint256 tokenId;
-    //     address quoteTokenAddress;
-    //     address baseTokenAddress;
-    //     string quoteTokenSymbol;
-    //     string baseTokenSymbol;
-    //     uint8 quoteTokenDecimals;
-    //     uint8 baseTokenDecimals;
-    //     bool flipRatio;
-    //     int24 tickLower;
-    //     int24 tickUpper;
-    //     int24 tickCurrent;
-    //     int24 tickSpacing;
-    //     uint24 fee;
-    //     address poolAddress;
-    // }
-
-    // function constructTokenURI(ConstructTokenURIParams memory params) public pure returns (string memory) {
-    //     string memory name = generateName(params, feeToPercentString(params.fee));
-    //     string memory descriptionPartOne =
-    //         generateDescriptionPartOne(
-    //             escapeQuotes(params.quoteTokenSymbol),
-    //             escapeQuotes(params.baseTokenSymbol),
-    //             addressToString(params.poolAddress)
-    //         );
-    //     string memory descriptionPartTwo =
-    //         generateDescriptionPartTwo(
-    //             params.tokenId.toString(),
-    //             escapeQuotes(params.baseTokenSymbol),
-    //             addressToString(params.quoteTokenAddress),
-    //             addressToString(params.baseTokenAddress),
-    //             feeToPercentString(params.fee)
-    //         );
-    //     string memory image = Base64.encode(bytes(generateSVGImage(params)));
-
-    //     return
-    //         string(
-    //             abi.encodePacked(
-    //                 'data:application/json;base64,',
-    //                 Base64.encode(
-    //                     bytes(
-    //                         abi.encodePacked(
-    //                             '{"name":"',
-    //                             name,
-    //                             '", "description":"',
-    //                             descriptionPartOne,
-    //                             descriptionPartTwo,
-    //                             '", "image": "',
-    //                             'data:image/svg+xml;base64,',
-    //                             image,
-    //                             '"}'
-    //                         )
-    //                     )
-    //                 )
-    //             )
-    //         );
-    // }
-
-    // function escapeQuotes(
-    //     string memory symbol
-    // ) internal pure returns (string memory) {
-    //     bytes memory symbolBytes = bytes(symbol);
-    //     uint8 quotesCount = 0;
-    //     for (uint8 i = 0; i < symbolBytes.length; i++) {
-    //         if (symbolBytes[i] == '"') {
-    //             quotesCount++;
-    //         }
-    //     }
-    //     if (quotesCount > 0) {
-    //         bytes memory escapedBytes = new bytes(
-    //             symbolBytes.length + (quotesCount)
-    //         );
-    //         uint256 index;
-    //         for (uint8 i = 0; i < symbolBytes.length; i++) {
-    //             if (symbolBytes[i] == '"') {
-    //                 escapedBytes[index++] = "\\";
-    //             }
-    //             escapedBytes[index++] = symbolBytes[i];
-    //         }
-    //         return string(escapedBytes);
-    //     }
-    //     return symbol;
-    // }
-
-    // function generateDescriptionPartOne(
-    //     string memory quoteTokenSymbol,
-    //     string memory baseTokenSymbol,
-    //     string memory poolAddress
-    // ) private pure returns (string memory) {
-    //     return
-    //         string(
-    //             abi.encodePacked(
-    //                 "This NFT represents a liquidity position in a Uniswap V3 ",
-    //                 quoteTokenSymbol,
-    //                 "-",
-    //                 baseTokenSymbol,
-    //                 " pool. ",
-    //                 "The owner of this NFT can modify or redeem the position.\\n",
-    //                 "\\nPool Address: ",
-    //                 poolAddress,
-    //                 "\\n",
-    //                 quoteTokenSymbol
-    //             )
-    //         );
-    // }
-
-    // function generateDescriptionPartTwo(
-    //     string memory tokenId,
-    //     string memory baseTokenSymbol,
-    //     string memory quoteTokenAddress,
-    //     string memory baseTokenAddress,
-    //     string memory feeTier
-    // ) private pure returns (string memory) {
-    //     return
-    //         string(
-    //             abi.encodePacked(
-    //                 " Address: ",
-    //                 quoteTokenAddress,
-    //                 "\\n",
-    //                 baseTokenSymbol,
-    //                 " Address: ",
-    //                 baseTokenAddress,
-    //                 "\\nFee Tier: ",
-    //                 feeTier,
-    //                 "\\nToken ID: ",
-    //                 tokenId,
-    //                 "\\n\\n",
-    //                 unicode"⚠️ DISCLAIMER: Due diligence is imperative when assessing this NFT. Make sure token addresses match the expected tokens, as token symbols may be imitated."
-    //             )
-    //         );
-    // }
-
-    // function generateName(ConstructTokenURIParams memory params, string memory feeTier)
-    //     private
-    //     pure
-    //     returns (string memory)
-    // {
-    //     return
-    //         string(
-    //             abi.encodePacked(
-    //                 'Uniswap - ',
-    //                 feeTier,
-    //                 ' - ',
-    //                 escapeQuotes(params.quoteTokenSymbol),
-    //                 '/',
-    //                 escapeQuotes(params.baseTokenSymbol),
-    //                 ' - ',
-    //                 tickToDecimalString(
-    //                     !params.flipRatio ? params.tickLower : params.tickUpper,
-    //                     params.tickSpacing,
-    //                     params.baseTokenDecimals,
-    //                     params.quoteTokenDecimals,
-    //                     params.flipRatio
-    //                 ),
-    //                 '<>',
-    //                 tickToDecimalString(
-    //                     !params.flipRatio ? params.tickUpper : params.tickLower,
-    //                     params.tickSpacing,
-    //                     params.baseTokenDecimals,
-    //                     params.quoteTokenDecimals,
-    //                     params.flipRatio
-    //                 )
-    //             )
-    //         );
-    // }
-
-    // struct DecimalStringParams {
-    //     // significant figures of decimal
-    //     uint256 sigfigs;
-    //     // length of decimal string
-    //     uint8 bufferLength;
-    //     // ending index for significant figures (funtion works backwards when copying sigfigs)
-    //     uint8 sigfigIndex;
-    //     // index of decimal place (0 if no decimal)
-    //     uint8 decimalIndex;
-    //     // start index for trailing/leading 0's for very small/large numbers
-    //     uint8 zerosStartIndex;
-    //     // end index for trailing/leading 0's for very small/large numbers
-    //     uint8 zerosEndIndex;
-    //     // true if decimal number is less than one
-    //     bool isLessThanOne;
-    //     // true if string should include "%"
-    //     bool isPercent;
-    // }
-
-    // function generateDecimalString(
-    //     DecimalStringParams memory params
-    // ) private pure returns (string memory) {
-    //     bytes memory buffer = new bytes(params.bufferLength);
-    //     if (params.isPercent) {
-    //         buffer[buffer.length - 1] = "%";
-    //     }
-    //     if (params.isLessThanOne) {
-    //         buffer[0] = "0";
-    //         buffer[1] = ".";
-    //     }
-
-    //     // add leading/trailing 0's
-    //     for (
-    //         uint256 zerosCursor = params.zerosStartIndex;
-    //         zerosCursor < params.zerosEndIndex.add(1);
-    //         zerosCursor++
-    //     ) {
-    //         buffer[zerosCursor] = bytes1(uint8(48));
-    //     }
-    //     console.log("bufferLength ", params.bufferLength);
-    //     console.log("params.sigfigIndex ", params.sigfigIndex);
-
-    //     // add sigfigs
-    //     while (params.sigfigs > 0) {
-    //         if (
-    //             params.decimalIndex > 0 &&
-    //             params.sigfigIndex == params.decimalIndex
-    //         ) {
-    //             buffer[params.sigfigIndex--] = ".";
-    //         }
-    //         buffer[params.sigfigIndex--] = bytes1(
-    //             uint8(uint256(48).add(params.sigfigs % 10))
-    //         );
-    //         console.log("params.sigfigs ", params.sigfigs);
-
-    //         params.sigfigs /= 10;
-    //     }
-    //     return string(buffer);
-    // }
-
-    // function tickToDecimalString(
-    //     int24 tick,
-    //     int24 tickSpacing,
-    //     uint8 baseTokenDecimals,
-    //     uint8 quoteTokenDecimals,
-    //     bool flipRatio
-    // ) internal pure returns (string memory) {
-    //     if (tick == (TickMath.MIN_TICK / tickSpacing) * tickSpacing) {
-    //         return !flipRatio ? 'MIN' : 'MAX';
-    //     } else if (tick == (TickMath.MAX_TICK / tickSpacing) * tickSpacing) {
-    //         return !flipRatio ? 'MAX' : 'MIN';
-    //     } else {
-    //         uint160 sqrtRatioX96 = TickMath.getSqrtRatioAtTick(tick);
-    //         if (flipRatio) {
-    //             sqrtRatioX96 = uint160(uint256(1 << 192).div(sqrtRatioX96));
-    //         }
-    //         return fixedPointToDecimalString(sqrtRatioX96, baseTokenDecimals, quoteTokenDecimals);
-    //     }
-    // }
-
-    // function sigfigsRounded(
-    //     uint256 value,
-    //     uint8 digits
-    // ) private pure returns (uint256, bool) {
-    //     bool extraDigit;
-    //     if (digits > 5) {
-    //         value = value.div((10 ** (digits - 5)));
-    //     }
-    //     bool roundUp = value % 10 > 4;
-    //     value = value.div(10);
-    //     if (roundUp) {
-    //         value = value + 1;
-    //     }
-    //     // 99999 -> 100000 gives an extra sigfig
-    //     if (value == 100000) {
-    //         value /= 10;
-    //         extraDigit = true;
-    //     }
-    //     return (value, extraDigit);
-    // }
-
-    // function adjustForDecimalPrecision(
-    //     uint160 sqrtRatioX96,
-    //     uint8 baseTokenDecimals,
-    //     uint8 quoteTokenDecimals
-    // ) private pure returns (uint256 adjustedSqrtRatioX96) {
-    //     uint256 difference = abs(int256(baseTokenDecimals).sub(int256(quoteTokenDecimals)));
-    //     if (difference > 0 && difference <= 18) {
-    //         if (baseTokenDecimals > quoteTokenDecimals) {
-    //             adjustedSqrtRatioX96 = sqrtRatioX96.mul(10**(difference.div(2)));
-    //             if (difference % 2 == 1) {
-    //                 adjustedSqrtRatioX96 = FullMath.mulDiv(adjustedSqrtRatioX96, sqrt10X128, 1 << 128);
-    //             }
-    //         } else {
-    //             adjustedSqrtRatioX96 = sqrtRatioX96.div(10**(difference.div(2)));
-    //             if (difference % 2 == 1) {
-    //                 adjustedSqrtRatioX96 = FullMath.mulDiv(adjustedSqrtRatioX96, 1 << 128, sqrt10X128);
-    //             }
-    //         }
-    //     } else {
-    //         adjustedSqrtRatioX96 = uint256(sqrtRatioX96);
-    //     }
-    // }
-
-    // function abs(int256 x) private pure returns (uint256) {
-    //     return uint256(x >= 0 ? x : -x);
-    // }
-
-    // @notice Returns string that includes first 5 significant figures of a decimal number
-    // @param sqrtRatioX96 a sqrt price
-    // function fixedPointToDecimalString(
-    //     uint160 sqrtRatioX96,
-    //     uint8 baseTokenDecimals,
-    //     uint8 quoteTokenDecimals
-    // ) internal pure returns (string memory) {
-    //     uint256 adjustedSqrtRatioX96 = adjustForDecimalPrecision(sqrtRatioX96, baseTokenDecimals, quoteTokenDecimals);
-    //     uint256 value = FullMath.mulDiv(adjustedSqrtRatioX96, adjustedSqrtRatioX96, 1 << 64);
-
-    //     bool priceBelow1 = adjustedSqrtRatioX96 < 2**96;
-    //     if (priceBelow1) {
-    //         // 10 ** 43 is precision needed to retreive 5 sigfigs of smallest possible price + 1 for rounding
-    //         value = FullMath.mulDiv(value, 10**44, 1 << 128);
-    //     } else {
-    //         // leave precision for 4 decimal places + 1 place for rounding
-    //         value = FullMath.mulDiv(value, 10**5, 1 << 128);
-    //     }
-
-    //     // get digit count
-    //     uint256 temp = value;
-    //     uint8 digits;
-    //     while (temp != 0) {
-    //         digits++;
-    //         temp /= 10;
-    //     }
-    //     // don't count extra digit kept for rounding
-    //     digits = digits - 1;
-
-    //     // address rounding
-    //     (uint256 sigfigs, bool extraDigit) = sigfigsRounded(value, digits);
-    //     if (extraDigit) {
-    //         digits++;
-    //     }
-
-    //     DecimalStringParams memory params;
-    //     if (priceBelow1) {
-    //         // 7 bytes ( "0." and 5 sigfigs) + leading 0's bytes
-    //         params.bufferLength = uint8(uint8(7).add(uint8(43).sub(digits)));
-    //         params.zerosStartIndex = 2;
-    //         params.zerosEndIndex = uint8(uint256(43).sub(digits).add(1));
-    //         params.sigfigIndex = uint8(params.bufferLength.sub(1));
-    //     } else if (digits >= 9) {
-    //         // no decimal in price string
-    //         params.bufferLength = uint8(digits.sub(4));
-    //         params.zerosStartIndex = 5;
-    //         params.zerosEndIndex = uint8(params.bufferLength.sub(1));
-    //         params.sigfigIndex = 4;
-    //     } else {
-    //         // 5 sigfigs surround decimal
-    //         params.bufferLength = 6;
-    //         params.sigfigIndex = 5;
-    //         params.decimalIndex = uint8(digits.sub(5).add(1));
-    //     }
-    //     params.sigfigs = sigfigs;
-    //     params.isLessThanOne = priceBelow1;
-    //     params.isPercent = false;
-
-    //     return generateDecimalString(params);
-    // }
-
-    // @notice Returns string as decimal percentage of fee amount.
-    // @param fee fee amount
-    // function feeToPercentString(
-    //     uint24 fee
-    // ) internal pure returns (string memory) {
-    //     if (fee == 0) {
-    //         return "0%";
-    //     }
-    //     uint24 temp = fee;
-    //     uint256 digits;
-    //     uint8 numSigfigs;
-    //     while (temp != 0) {
-    //         if (numSigfigs > 0) {
-    //             // count all digits preceding least significant figure
-    //             numSigfigs++;
-    //         } else if (temp % 10 != 0) {
-    //             numSigfigs++;
-    //         }
-    //         digits++;
-    //         temp /= 10;
-    //     }
-    //     console.log("digits ", digits);
-    //     console.log("numSigfigs ", numSigfigs);
-
-    //     DecimalStringParams memory params;
-    //     uint256 nZeros;
-    //     if (digits >= 5) {
-    //         // if decimal > 1 (5th digit is the ones place)
-    //         uint256 decimalPlace = digits.sub(numSigfigs) >= 4 ? 0 : 1;
-    //         console.log("decimalPlace ", decimalPlace);
-    //         nZeros = digits.sub(5) < (numSigfigs.sub(1))
-    //             ? 0
-    //             : digits.sub(5).sub(numSigfigs.sub(1));
-    //         console.log("nZeros ", nZeros);
-    //         params.zerosStartIndex = numSigfigs;
-    //         params.zerosEndIndex = uint8(
-    //             params.zerosStartIndex.add(nZeros).sub(1)
-    //         );
-    //         params.sigfigIndex = uint8(
-    //             params.zerosStartIndex.sub(1).add(decimalPlace)
-    //         );
-    //         params.bufferLength = uint8(
-    //             nZeros.add(numSigfigs.add(1)).add(decimalPlace)
-    //         );
-    //     } else {
-    //         // else if decimal < 1
-    //         nZeros = uint256(5).sub(digits);
-    //         params.zerosStartIndex = 2;
-    //         params.zerosEndIndex = uint8(
-    //             nZeros.add(params.zerosStartIndex).sub(1)
-    //         );
-    //         params.bufferLength = uint8(nZeros.add(numSigfigs.add(2)));
-    //         params.sigfigIndex = uint8((params.bufferLength).sub(2));
-    //         params.isLessThanOne = true;
-    //     }
-    //     params.sigfigs = uint256(fee).div(10 ** (digits.sub(numSigfigs)));
-    //     params.isPercent = true;
-    //     params.decimalIndex = digits > 4 ? uint8(digits.sub(4)) : 0;
-    //     console.log("decimalIndex ", params.decimalIndex);
-
-    //     return generateDecimalString(params);
-    // }
 
     function uintToString(uint256 value) internal pure returns (string memory) {
         // Inspired by OraclizeAPI's implementation - MIT license
@@ -466,6 +49,7 @@ library NFTDescriptor {
     }
 
     function integerToString(
+        uint8 decimals,
         uint256 amount
     ) internal pure returns (string memory) {
         uint256 tem;
@@ -473,18 +57,33 @@ library NFTDescriptor {
         uint256 tem2;
         uint256 tem3;
         uint256 tem4;
+        // console.log("decimals ", decimals);
+        // console.log("amount ", amount);
 
-        if (amount < 1000 * 10 ** 18) {
+        // if (amount < 1000 * 10 ** 18) {
+        if (amount < 1000 * 10 ** decimals) {
+            //< 1000.00000
             //< 1000 100.9914
             //80919048000000000000
-            tem = amount / 10 ** 15;
-            tem1 = tem / 100000;
+            // tem = amount / 10 ** 15;
+            // tem1 = tem / 100000;
 
-            tem1 = amount / (10 ** 18); //integer
-            tem2 = (((amount / 10 ** 17) % 1000) % 100) % 10; //
-            tem3 = ((((amount / 10 ** 16) % 10000) % 1000) % 100) % 10;
+            // tem1 = amount / (10 ** 18); //integer整数部分
+            tem1 = amount / (10 ** decimals); //integer整数部分
+            // tem2 = (((amount / 10 ** 17) % 1000) % 100) % 10; //
+            tem2 = (((amount / 10 ** (decimals - 1)) % 1000) % 100) % 10; //
+
+            // tem3 = ((((amount / 10 ** 16) % 10000) % 1000) % 100) % 10;
+            tem3 =
+                ((((amount / 10 ** (decimals - 2)) % 10000) % 1000) % 100) %
+                10;
+
+            // tem4 =
+            //     (((((amount / 10 ** 15) % 100000) % 10000) % 1000) % 100) %
+            //     10;
             tem4 =
-                (((((amount / 10 ** 15) % 100000) % 10000) % 1000) % 100) %
+                (((((amount / 10 ** (decimals - 3)) % 100000) % 10000) % 1000) %
+                    100) %
                 10;
 
             // console.log("tem1 ", tem1);
@@ -519,13 +118,26 @@ library NFTDescriptor {
                 );
         } else if (
             //1999.991400000000000000
-            amount >= 1000 * 10 ** 18 && amount < 10 ** 6 * 10 ** 18 //>= 1K < 1M
+            // amount >= 1000 * 10 ** 18 && amount < 10 ** 6 * 10 ** 18 //>= 1K < 1M
+            amount >= 1000 * 10 ** decimals && amount < 10 ** 6 * 10 ** decimals //>= 1K < 1M
         ) {
             // 1001 00000000000000000
-            tem = amount / (1000 * 10 ** 18);
-            tem1 = (amount / 10 ** 18 - tem * 1000) / 100;
-            tem2 = (amount / 10 ** 18 - tem * 1000 - tem1 * 100) / 10;
-            tem3 = (amount / 10 ** 18 - tem * 1000 - tem1 * 100 - tem2 * 10);
+            // tem = amount / (1000 * 10 ** 18);
+            tem = amount / (1000 * 10 ** decimals);
+            // tem1 = (amount / 10 ** 18 - tem * 1000) / 100;
+            tem1 = (amount / 10 ** decimals - tem * 1000) / 100;
+            // tem2 = (amount / 10 ** 18 - tem * 1000 - tem1 * 100) / 10;
+            tem2 = (amount / 10 ** decimals - tem * 1000 - tem1 * 100) / 10;
+            // tem3 = (amount / 10 ** 18 - tem * 1000 - tem1 * 100 - tem2 * 10);
+            tem3 = (amount /
+                10 ** decimals -
+                tem *
+                1000 -
+                tem1 *
+                100 -
+                tem2 *
+                10);
+
             if (tem3 >= 5) {
                 if (tem2 < 9) tem2 += 1;
                 else {
@@ -549,11 +161,15 @@ library NFTDescriptor {
                     )
                 );
         } else if (
-            amount >= 10 ** 6 * 10 ** 18 && amount < 10 ** 9 * 10 ** 18 // >=1M < 1B
+            // amount >= 10 ** 6 * 10 ** 18 && amount < 10 ** 9 * 10 ** 18 // >=1M < 1B
+            amount >= 10 ** 6 * 10 ** decimals &&
+            amount < 10 ** 9 * 10 ** decimals // >=1M < 1B
         ) {
             // >=1M < 1B
-            tem = amount / 10 ** 18;
-            tem1 = amount / 10 ** 18 / 1000000; //integer
+            // tem = amount / 10 ** 18;
+            tem = amount / 10 ** decimals;
+            // tem1 = amount / 10 ** 18 / 1000000; //integer
+            tem1 = amount / 10 ** decimals / 1000000; //integer
             tem2 = (tem % 1000000) / 100000;
             tem3 = (tem % 100000) / 10000;
             tem4 = (tem % 10000) / 1000;
@@ -586,10 +202,13 @@ library NFTDescriptor {
                     )
                 );
         } else if (
-            amount >= 10 ** 9 * 10 ** 18 && amount < 10 ** 12 * 10 ** 18 // >= 1B < 1T
+            // amount >= 10 ** 9 * 10 ** 18 && amount < 10 ** 12 * 10 ** 18 // >= 1B < 1T
+            amount >= 10 ** 9 * 10 ** decimals &&
+            amount < 10 ** 12 * 10 ** decimals // >= 1B < 1T
         ) {
             // >= 1B < 1T
-            tem = amount / 10 ** 18;
+            // tem = amount / 10 ** 18;
+            tem = amount / 10 ** decimals;
             tem1 = tem / 1000000000; //integer
             tem2 = (tem % 10 ** 9) / 10 ** 8;
             tem3 = (tem % 10 ** 8) / 10 ** 7;
@@ -625,7 +244,8 @@ library NFTDescriptor {
                 );
         } else {
             // >=1T
-            tem = amount / 10 ** 18;
+            // tem = amount / 10 ** 18;
+            tem = amount / 10 ** decimals;
             tem1 = tem / 10 ** 12;
             tem2 = (tem % 10 ** 12) / 10 ** 11;
             tem3 = (tem % 10 ** 11) / 10 ** 10;
@@ -792,11 +412,12 @@ library NFTDescriptor {
         uint256 cliffEndTime,
         uint256 endTime
     ) internal view returns (string memory attributes) {
+        uint8 decimals = ERC20(tokenAddr).decimals();
         attributes = string(
             abi.encodePacked(
                 "[",
                 generateNFTAttribute1(symbol, tokenAddr),
-                generateNFTAttribute2(remaining, total),
+                generateNFTAttribute2(decimals, remaining, total),
                 generateNFTAttribute3(interval, cliffEndTime, endTime),
                 "]"
             )
@@ -829,6 +450,7 @@ library NFTDescriptor {
     }
 
     function generateNFTAttribute2(
+        uint8 decimals,
         uint256 remaining,
         uint256 total
     ) internal pure returns (string memory attribute) {
@@ -836,10 +458,10 @@ library NFTDescriptor {
             abi.encodePacked(
                 "{",
                 '"trait_type":"Remaining","value":"',
-                NFTDescriptor.integerToString(remaining),
+                NFTDescriptor.integerToString(decimals, remaining),
                 '"},{',
                 '"trait_type":"Total","value":"',
-                NFTDescriptor.integerToString(total),
+                NFTDescriptor.integerToString(decimals, total),
                 '"},'
             )
         );
@@ -867,6 +489,7 @@ library NFTDescriptor {
         string memory projectName,
         string memory tokenName,
         string memory txHash,
+        uint8 decimals,
         uint256 myInvestedAmount,
         uint256 totalInvestedAmount
     ) internal pure returns (string memory attributes) {
@@ -876,9 +499,14 @@ library NFTDescriptor {
                 generateReceiptAttribute1(projectName, tokenName),
                 generateReceiptAttribute2(
                     myInvestedAmount,
-                    totalInvestedAmount
+                    totalInvestedAmount,
+                    decimals
                 ),
-                generateReceiptAttribute3(totalInvestedAmount, txHash),
+                generateReceiptAttribute3(
+                    totalInvestedAmount,
+                    decimals,
+                    txHash
+                ),
                 "]"
             )
         );
@@ -903,7 +531,8 @@ library NFTDescriptor {
 
     function generateReceiptAttribute2(
         uint256 myInvestedAmount,
-        uint256 totalInvestedAmount
+        uint256 totalInvestedAmount,
+        uint8 decimals
     ) internal pure returns (string memory attribute) {
         string memory percentage = pencentageString(
             myInvestedAmount,
@@ -913,7 +542,7 @@ library NFTDescriptor {
             abi.encodePacked(
                 "{",
                 '"trait_type":"Investor Invested","value":"',
-                integerToString(myInvestedAmount),
+                integerToString(decimals, myInvestedAmount),
                 '"},{',
                 '"trait_type":"% of Total","value":"',
                 percentage,
@@ -924,13 +553,14 @@ library NFTDescriptor {
 
     function generateReceiptAttribute3(
         uint256 totalInvestedAmount,
+        uint8 decimals,
         string memory txHash
     ) internal pure returns (string memory attribute) {
         attribute = string(
             abi.encodePacked(
                 "{",
                 '"trait_type":"Total Invested","value":"',
-                integerToString(totalInvestedAmount),
+                integerToString(decimals, totalInvestedAmount),
                 '"},{',
                 '"trait_type":"Investment Hash","value":"',
                 txHash,

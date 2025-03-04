@@ -88,6 +88,7 @@ contract VestingERC721Helper {
                 vestingNFTAddress,
                 tokenId
             );
+            // console.log("vars.remaining_ ", vars.remaining_);
         } else {}
 
         // console.log("vestInfo.token ", vestInfo.token);
