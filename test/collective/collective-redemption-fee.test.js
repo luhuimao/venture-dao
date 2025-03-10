@@ -224,6 +224,7 @@ describe("redemption fee...", () => {
             this.collectiveFundingPoolFactory.address
         ];
         _daoName = "my_collective_dao002";
+        const _daoName2 = "my_collective_dao003";
 
         const creator = this.owner.address;
 
@@ -426,6 +427,16 @@ describe("redemption fee...", () => {
             riceRewardReceiver
         ];
 
+        const CollectiveDaoInfo2 = [
+            _daoName2,
+            creator,
+            currency,
+            redemptionFee,
+            proposerInvestTokenReward,
+            proposerPaybackTokenReward,
+            riceRewardReceiver
+        ];
+
 
         const collectiveDaoParams = [
             daoFactoriesAddress,
@@ -437,20 +448,33 @@ describe("redemption fee...", () => {
             CollectiveDaoInfo
         ];
 
+        const collectiveDaoParams2 = [
+            daoFactoriesAddress,
+            enalbeAdapters,
+            adapters1,
+            collectiveDaoIvestorCapInfo,
+            collectiveGovernorMembershipInfo,
+            CollectiveDaoVotingInfo,
+            CollectiveDaoInfo2
+        ];
 
-        const {
-            daoAddr,
-            daoName
-        } = await sommonCollectiveDao(this.summonCollectiveDao, this.daoFactory, collectiveDaoParams);
-        const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(daoAddr);
+
+        let rel = await sommonCollectiveDao(this.summonCollectiveDao, this.daoFactory, collectiveDaoParams);
+        console.log(rel);
+        const daoContract = (await hre.ethers.getContractFactory("DaoRegistry")).attach(rel.daoAddr);
 
         console.log(`
-        new dao address ${daoAddr}
-        new dao name ${toUtf8(daoName)}
+        new dao address ${rel.daoAddr}
+        new dao name ${toUtf8(rel.daoName)}
         `)
 
-        this.collectiveDirectdaoAddress = daoAddr;
+        this.collectiveDirectdaoAddress = rel.daoAddr;
         this.daoContract = daoContract;
+
+        rel = await sommonCollectiveDao(this.summonCollectiveDao, this.daoFactory, collectiveDaoParams2);
+        this.collectiveDirectdaoAddress2 = rel.daoAddr;
+        console.log(this.collectiveDirectdaoAddress2);
+
     });
 
     const sommonCollectiveDao = async (summonDaoContract, daoFactoryContract, collectiveDaoParams) => {
@@ -464,15 +488,11 @@ describe("redemption fee...", () => {
         daoAddr ${daoAddr}
         new dao name ${toUtf8(daoName)}
         `);
-        return {
-            daoAddr: daoAddr,
-            daoName: daoName
-        };
+        return { daoAddr, daoName };
     };
 
     it("", async () => {
         const proposalId = await submitFundRaiseProposal();
-
 
         await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress,
             proposalId,
@@ -523,8 +543,14 @@ describe("redemption fee...", () => {
         await this.colletiveFundingPoolContract.processFundRaise(this.collectiveDirectdaoAddress);
 
         let tx = await this.colletiveFundingPoolContract.withdraw(this.collectiveDirectdaoAddress, hre.ethers.utils.parseEther("200"));
-        escrowFeeAmount = await this.collectiveRedemptionFeeEscrowAdapterContract.escrowedRedemptionFees(this.collectiveDirectdaoAddress, this.testtoken1.address);
-        let escrowFeeAmountByBlockNum = await this.collectiveRedemptionFeeEscrowAdapterContract.escrowedRedemptionFeeByBlockNum(this.collectiveDirectdaoAddress, tx.blockNumber);
+        escrowFeeAmount = await this.collectiveRedemptionFeeEscrowAdapterContract.escrowedRedemptionFees(
+            this.collectiveDirectdaoAddress,
+            this.testtoken1.address
+        );
+        let escrowFeeAmountByBlockNum = await this.collectiveRedemptionFeeEscrowAdapterContract.escrowedRedemptionFeeByBlockNum(
+            this.collectiveDirectdaoAddress,
+            tx.blockNumber
+        );
         console.log(`
         escrowFeeAmount            ${hre.ethers.utils.formatEther(escrowFeeAmount)}
         escrowFeeAmountByBlockNum  ${hre.ethers.utils.formatEther(escrowFeeAmountByBlockNum)}
@@ -544,6 +570,11 @@ describe("redemption fee...", () => {
             this.collectiveDirectdaoAddress,
             this.testtoken1.address,
             this.investor1.address);
+        let am3 = await this.collectiveRedemptionFeeEscrowAdapterContract.getRedemptionFeeAmount(
+            this.collectiveDirectdaoAddress,
+            this.testtoken1.address,
+            this.user2.address
+        );
         let UBal = await this.testtoken1.balanceOf(this.owner.address);
         let UBal2 = await this.testtoken1.balanceOf(this.investor1.address);
 
@@ -559,6 +590,7 @@ describe("redemption fee...", () => {
         console.log(`
         redemptionFeeReward   ${hre.ethers.utils.formatEther(am)}
         redemptionFeeReward2   ${hre.ethers.utils.formatEther(am2)}
+        redemptionFeeReward3   ${hre.ethers.utils.formatEther(am3)}
 
         UBal   ${hre.ethers.utils.formatEther(UBal)}
         UBal2   ${hre.ethers.utils.formatEther(UBal2)}
@@ -733,6 +765,204 @@ describe("redemption fee...", () => {
         claimedFeeAmount1   ${hre.ethers.utils.formatEther(claimedFeeAmount1)}
         claimedFeeAmount2   ${hre.ethers.utils.formatEther(claimedFeeAmount2)}
         totalClaimedAmount ${hre.ethers.utils.formatEther(claimedFeeAmount1.add(claimedFeeAmount2))}
+        `);
+    });
+
+    it("one member...", async () => {
+        const dao = this.collectiveDirectdaoAddress2;
+        const tokenAddress = this.testtoken1.address;
+        const miniTarget = hre.ethers.utils.parseEther("1000");
+        const maxCap = hre.ethers.utils.parseEther("2000");
+        const miniDeposit = hre.ethers.utils.parseEther("10");
+        const maxDeposit = hre.ethers.utils.parseEther("20000");
+
+        const fundInfo = [
+            tokenAddress,
+            miniTarget,
+            maxCap,
+            miniDeposit,
+            maxDeposit
+        ];
+
+        let blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+
+        const startTime = blocktimestamp + 60 * 10;
+        const endTime = startTime + 60 * 30;
+        const timeInfo = [startTime, endTime];
+
+        const enable = true;
+        const valifyType = 0;
+        const priorityTokenAddress = this.testtoken2.address;
+        const tokenId = 0;
+        const miniHolding = hre.ethers.utils.parseEther("100");
+        const whitelist = [];
+
+        const priorityDepositor = [
+            enable,
+            valifyType,
+            priorityTokenAddress,
+            tokenId,
+            miniHolding,
+            whitelist
+        ];
+
+        const fundRaiseType = 0;
+        const params = [
+            dao,
+            fundRaiseType,
+            fundInfo,
+            timeInfo,
+            priorityDepositor
+        ];
+
+        let tx = await this.colletiveFundRaiseProposalContract.submitProposal(params);
+        let rel = await tx.wait();
+
+        const proposalId = rel.events[rel.events.length - 1].args.proposalId;
+
+        await this.collectiveVotingContract.connect(this.owner).submitVote(this.collectiveDirectdaoAddress2,
+            proposalId,
+            1
+        );
+
+        console.log("voted, execute...");
+        let proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(
+            this.collectiveDirectdaoAddress2, proposalId);
+        const stopVoteTime = proposalDetail.stopVoteTime;
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(stopVoteTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(stopVoteTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+
+        await this.colletiveFundRaiseProposalContract.processProposal(
+            this.collectiveDirectdaoAddress2, proposalId);
+        proposalDetail = await this.colletiveFundRaiseProposalContract.proposals(
+            this.collectiveDirectdaoAddress2, proposalId);
+
+        console.log(`
+        executed...
+        state ${proposalDetail.state}
+        `);
+
+        await this.testtoken1.approve(this.colletiveFundingPoolContract.address, hre.ethers.utils.parseEther("2000"));
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(proposalDetail.timeInfo.startTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.timeInfo.startTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+        await this.colletiveFundingPoolContract.deposit(
+            this.collectiveDirectdaoAddress2, hre.ethers.utils.parseEther("1000"));
+
+        let escrowFeeAmount = await this.collectiveRedemptionFeeEscrowAdapterContract.escrowedRedemptionFees(
+            this.collectiveDirectdaoAddress2,
+            this.testtoken1.address);
+        console.log(`
+        escrowFeeAmount    ${hre.ethers.utils.formatEther(escrowFeeAmount)}
+        withdraw1...
+        `);
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        if (parseInt(proposalDetail.timeInfo.endTime) > blocktimestamp) {
+            await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(proposalDetail.timeInfo.endTime) + 1]);
+            await hre.network.provider.send("evm_mine");
+        }
+        await this.colletiveFundingPoolContract.processFundRaise(this.collectiveDirectdaoAddress2);
+
+        tx = await this.colletiveFundingPoolContract.withdraw(
+            this.collectiveDirectdaoAddress2, hre.ethers.utils.parseEther("200"));
+        escrowFeeAmount = await this.collectiveRedemptionFeeEscrowAdapterContract.escrowedRedemptionFees(
+            this.collectiveDirectdaoAddress2,
+            this.testtoken1.address
+        );
+        let escrowFeeAmountByBlockNum = await this.collectiveRedemptionFeeEscrowAdapterContract.escrowedRedemptionFeeByBlockNum(
+            this.collectiveDirectdaoAddress2,
+            tx.blockNumber
+        );
+        console.log(`
+        escrowFeeAmount            ${hre.ethers.utils.formatEther(escrowFeeAmount)}
+        escrowFeeAmountByBlockNum  ${hre.ethers.utils.formatEther(escrowFeeAmountByBlockNum)}
+        `);
+
+        blocktimestamp = (await hre.ethers.provider.getBlock("latest")).timestamp;
+        // if (parseInt(proposalDetail.timeInfo.endTime) > blocktimestamp) {
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [parseInt(blocktimestamp) + 1]);
+        await hre.network.provider.send("evm_mine");
+        // }
+
+        let am = await this.collectiveRedemptionFeeEscrowAdapterContract.getRedemptionFeeAmount(
+            this.collectiveDirectdaoAddress2,
+            this.testtoken1.address,
+            this.owner.address);
+        let am2 = await this.collectiveRedemptionFeeEscrowAdapterContract.getRedemptionFeeAmount(
+            this.collectiveDirectdaoAddress2,
+            this.testtoken1.address,
+            this.investor1.address);
+        let am3 = await this.collectiveRedemptionFeeEscrowAdapterContract.getRedemptionFeeAmount(
+            this.collectiveDirectdaoAddress2,
+            this.testtoken1.address,
+            this.user2.address
+        );
+        let UBal = await this.testtoken1.balanceOf(this.owner.address);
+        let UBal2 = await this.testtoken1.balanceOf(this.investor1.address);
+
+        let claimedFeeAmount1 = await this.collectiveRedemptionFeeEscrowAdapterContract.withdrawAmount(
+            this.collectiveDirectdaoAddress2,
+            this.testtoken1.address,
+            this.owner.address);
+
+        let claimedFeeAmount2 = await this.collectiveRedemptionFeeEscrowAdapterContract.withdrawAmount(
+            this.collectiveDirectdaoAddress2,
+            this.testtoken1.address,
+            this.investor1.address);
+
+        let claimedFeeAmount3 = await this.collectiveRedemptionFeeEscrowAdapterContract.withdrawAmount(
+            this.collectiveDirectdaoAddress2,
+            this.testtoken1.address,
+            this.user1.address);
+
+        console.log(`
+        redemptionFeeReward   ${hre.ethers.utils.formatEther(am)}
+        redemptionFeeReward2   ${hre.ethers.utils.formatEther(am2)}
+        redemptionFeeReward3   ${hre.ethers.utils.formatEther(am3)}
+
+        UBal   ${hre.ethers.utils.formatEther(UBal)}
+        UBal2   ${hre.ethers.utils.formatEther(UBal2)}
+
+        claimedFeeAmount1   ${hre.ethers.utils.formatEther(claimedFeeAmount1)}
+        claimedFeeAmount2   ${hre.ethers.utils.formatEther(claimedFeeAmount2)}
+
+        claim redemption fee 1...
+        `);
+
+        await this.collectiveRedemptionFeeEscrowAdapterContract.connect(this.owner).withDrawRedemptionFee(
+            this.collectiveDirectdaoAddress2,
+            this.testtoken1.address);
+
+
+        claimedFeeAmount1 = await this.collectiveRedemptionFeeEscrowAdapterContract.withdrawAmount(
+            this.collectiveDirectdaoAddress2,
+            this.testtoken1.address,
+            this.owner.address);
+
+        claimedFeeAmount2 = await this.collectiveRedemptionFeeEscrowAdapterContract.withdrawAmount(
+            this.collectiveDirectdaoAddress2,
+            this.testtoken1.address,
+            this.investor1.address);
+
+        claimedFeeAmount3 = await this.collectiveRedemptionFeeEscrowAdapterContract.withdrawAmount(
+            this.collectiveDirectdaoAddress2,
+            this.testtoken1.address,
+            this.user1.address);
+
+        console.log(`
+            claimed...
+            claimedFeeAmount1   ${hre.ethers.utils.formatEther(claimedFeeAmount1)}
+            claimedFeeAmount2   ${hre.ethers.utils.formatEther(claimedFeeAmount2)}
+
+            claimedFeeAmount3   ${hre.ethers.utils.formatEther(claimedFeeAmount3)}
         `);
     });
 

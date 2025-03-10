@@ -111,7 +111,10 @@ contract CollectiveRedemptionFeeEscrowAdapterContract {
                     tem[i]
                 );
                 uint256 redemptionFee;
-                if (dao.getAllSteward().length == 1) {
+                if (
+                    dao.getAllSteward().length == 1 &&
+                    dao.getAllSteward()[0] == account
+                ) {
                     redemptionFee = escrowedRedemptionFeeByBlockNum[
                         address(dao)
                     ][tem[i]];

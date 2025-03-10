@@ -691,6 +691,9 @@ contract ColletiveFundingPoolAdapterContract is Reimbursable {
                         vars.extraFund
                     );
                 }
+                if (balanceOf(dao, allInvestors[i]) <= 0)
+                    investorsByFundRaise[address(dao)][vars.fundRaiseProposalId]
+                        .remove(allInvestors[i]);
             }
         }
     }
