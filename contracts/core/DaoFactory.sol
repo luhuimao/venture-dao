@@ -61,8 +61,8 @@ contract DaoFactory is CloneFactory {
 
     function setOwner(address _owner) external {
         require(msg.sender == owner);
-        emit OwnerChanged(owner, _owner);
         owner = _owner;
+        emit OwnerChanged(owner, _owner);
     }
 
     /**

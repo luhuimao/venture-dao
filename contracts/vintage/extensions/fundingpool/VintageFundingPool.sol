@@ -379,6 +379,33 @@ contract VintageFundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         emit DistributeFund(recipientAddr, tokenAddr, exactAmount);
     }
 
+    function distributeProtocolFee(
+        address target,
+        address tokenAddr,
+        uint256 amount
+    ) external hasExtensionAccess(AclFlag.DISTRIBUTE_FUNDS) returns (bool) {
+        require(amount > 0, "FundingPool::distributeFunds::amount must > 0");
+        uint256 exactAmount = amount;
+
+        if (amount > IERC20(tokenAddr).balanceOf(address(this))) {
+            exactAmount = IERC20(tokenAddr).balanceOf(address(this));
+        }
+        IERC20(tokenAddr).safeTransfer(target, exactAmount);
+
+        (bool success, ) = target.call(
+            abi.encodeWithSignature(
+                "receiveProtocolFee(address,uint,address,address)",
+                tokenAddr,
+                amount,
+                address(dao),
+                dao.getAddressConfiguration(DaoHelper.RICE_REWARD_RECEIVER)
+            )
+        );
+        emit DistributeFund(target, tokenAddr, exactAmount);
+
+        return success;
+    }
+
     function updateTotalGPsBalance(
         address token,
         uint256 amount,

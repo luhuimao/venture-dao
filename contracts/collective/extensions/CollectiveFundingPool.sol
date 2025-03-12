@@ -255,6 +255,31 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         emit DistributeFund(recipientAddr, tokenAddr, exactAmount);
     }
 
+    function distributeProtocolFee(
+        uint256 amount,
+        address target,
+        address erc20
+    ) external hasExtensionAccess(AclFlag.DISTRIBUTE_FUNDS) returns (bool) {
+        require(amount > 0, "FundingPool::distributeFunds::amount must > 0");
+        uint256 exactAmount = amount;
+
+        if (amount > IERC20(erc20).balanceOf(address(this))) {
+            exactAmount = IERC20(erc20).balanceOf(address(this));
+        }
+        IERC20(erc20).safeTransfer(target, amount);
+        (bool success, ) = target.call(
+            abi.encodeWithSignature(
+                "receiveProtocolFee(address,uint,address,address)",
+                erc20,
+                amount,
+                address(dao),
+                dao.getAddressConfiguration(DaoHelper.RICE_REWARD_RECEIVER)
+            )
+        );
+        emit DistributeFund(target, erc20, amount);
+        return success;
+    }
+
     /*
      * BANK
      */

@@ -276,7 +276,8 @@ contract ColletiveFundingProposalAdapterContract is
 
     function processProposal(
         DaoRegistry dao,
-        bytes32 proposalId
+        bytes32 proposalId,
+        address target
     ) external reimbursable(dao) returns (bool) {
         ProcessProposalLocalVars memory vars;
         vars.ongoingProposalId = ongoingProposal[address(dao)];
@@ -373,7 +374,8 @@ contract ColletiveFundingProposalAdapterContract is
                         vars.managementFee,
                         vars.protocolFee,
                         vars.proposerFundReward
-                    ]
+                    ],
+                    target
                 );
 
                 if (proposal.escrowInfo.escrow) {

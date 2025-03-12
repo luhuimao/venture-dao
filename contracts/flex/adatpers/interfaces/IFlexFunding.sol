@@ -19,7 +19,8 @@ interface IFlexFunding {
 
     function processProposal(
         DaoRegistry dao,
-        bytes32 proposalId
+        bytes32 proposalId,
+        address target
     ) external returns (bool);
 
     enum InvestmentType {

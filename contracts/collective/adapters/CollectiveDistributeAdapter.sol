@@ -12,7 +12,8 @@ contract CollectiveDistributeAdatperContract {
     function distributeFundByInvestment(
         DaoRegistry dao,
         address[3] calldata _addressArgs,
-        uint256[4] calldata fees
+        uint256[4] calldata fees,
+        address target
     ) external {
         require(
             msg.sender ==
@@ -28,7 +29,12 @@ contract CollectiveDistributeAdatperContract {
         if (fees[1] > 0)
             distributeManagementFeeToGP(dao, fundingpoolExt, fees[1]);
         if (fees[2] > 0)
-            distributeProtocolFee(fundingpoolExt, _addressArgs[1], fees[2]);
+            distributeProtocolFee(
+                fundingpoolExt,
+                // _addressArgs[1],
+                fees[2],
+                target
+            );
         if (fees[3] > 0)
             distributeProposerFundRewardToProposer(
                 fundingpoolExt,
@@ -63,13 +69,20 @@ contract CollectiveDistributeAdatperContract {
 
     function distributeProtocolFee(
         CollectiveInvestmentPoolExtension fundingpoolExt,
-        address protocolAddress,
-        uint256 protocolFee
+        // address protocolAddress,
+        uint256 protocolFee,
+        address target
     ) internal {
-        fundingpoolExt.distributeFunds(
-            protocolAddress,
-            fundingpoolExt.getFundRaisingTokenAddress(),
-            protocolFee
+        // fundingpoolExt.distributeFunds(
+        //     protocolAddress,
+        //     fundingpoolExt.getFundRaisingTokenAddress(),
+        //     protocolFee
+        // );
+
+        fundingpoolExt.distributeProtocolFee(
+            protocolFee,
+            target,
+            fundingpoolExt.getFundRaisingTokenAddress()
         );
     }
 

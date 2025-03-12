@@ -236,6 +236,32 @@ contract FlexInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         );
     }
 
+    function distributeProtocolFee(
+        bytes32 proposalId,
+        address tokenAddr,
+        uint256 amount,
+        address target
+    ) external hasExtensionAccess(AclFlag.WITHDRAW) returns (bool) {
+        require(
+            balanceOf(proposalId, DaoHelper.TOTAL) >= amount,
+            "flex funding pool::withdraw::not enough funds"
+        );
+        IERC20(tokenAddr).safeTransfer(target, amount);
+
+        (bool success, ) = target.call(
+            abi.encodeWithSignature(
+                "receiveProtocolFee(address,uint,address,address)",
+                tokenAddr,
+                amount,
+                address(dao),
+                dao.getAddressConfiguration(DaoHelper.RICE_REWARD_RECEIVER)
+            )
+        );
+        emit WithdrawToFromAll(proposalId, target, tokenAddr, uint160(amount));
+
+        return success;
+    }
+
     /*
      * BANK
      */

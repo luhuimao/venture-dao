@@ -341,7 +341,8 @@ contract FlexFundingAdapterContract is
 
     function processProposal(
         DaoRegistry dao,
-        bytes32 proposalId
+        bytes32 proposalId,
+        address target
     ) external override reimbursable(dao) returns (bool) {
         ProcessProposalLocalVars memory vars;
         ProposalInfo storage proposal = Proposals[address(dao)][proposalId];
@@ -497,11 +498,17 @@ contract FlexFundingAdapterContract is
 
                 //2 protocol fee
                 if (vars.protocolFee > 0) {
-                    vars.flexInvestmentPoolExt.withdrawFromAll(
+                    // vars.flexInvestmentPoolExt.withdrawFromAll(
+                    //     proposalId,
+                    //     protocolAddress,
+                    //     vars.propodalInvestmentToken,
+                    //     vars.protocolFee
+                    // );
+                    vars.flexInvestmentPoolExt.distributeProtocolFee(
                         proposalId,
-                        protocolAddress,
                         vars.propodalInvestmentToken,
-                        vars.protocolFee
+                        vars.protocolFee,
+                        target
                     );
                 }
 

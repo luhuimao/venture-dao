@@ -354,7 +354,8 @@ contract VintageFundingAdapterContract is
     //slither-disable-next-line reentrancy-no-eth
     function processProposal(
         DaoRegistry dao,
-        bytes32 proposalId
+        bytes32 proposalId,
+        address target
     ) external override reimbursable(dao) returns (bool) {
         ProcessProposalLocalVars memory vars;
         vars.ongoingProposalId = ongoingProposal[address(dao)];
@@ -435,11 +436,7 @@ contract VintageFundingAdapterContract is
 
                 distributeCont.distributeFundByInvestment(
                     dao,
-                    [
-                        proposal.recipientAddr,
-                        protocolAddress,
-                        proposal.proposer
-                    ],
+                    [proposal.recipientAddr, target, proposal.proposer],
                     [
                         proposal.investmentAmount,
                         vars.managementFee,

@@ -27,7 +27,7 @@ contract VintageDistributeAdatperContract {
         if (fees[2] > 0)
             distributeProtocolFeeToDaoSquare(
                 fundingpoolExt,
-                _addressArgs[1],
+                _addressArgs[1],//target
                 fees[2]
             );
         if (fees[3] > 0)
@@ -64,11 +64,17 @@ contract VintageDistributeAdatperContract {
 
     function distributeProtocolFeeToDaoSquare(
         VintageFundingPoolExtension fundingpoolExt,
-        address protocolAddress,
+        address target,
         uint256 protocolFee
     ) internal {
-        fundingpoolExt.distributeFunds(
-            protocolAddress,
+        // fundingpoolExt.distributeFunds(
+        //     protocolAddress,
+        //     fundingpoolExt.getFundRaisingTokenAddress(),
+        //     protocolFee
+        // );
+
+        fundingpoolExt.distributeProtocolFee(
+            target,
             fundingpoolExt.getFundRaisingTokenAddress(),
             protocolFee
         );
