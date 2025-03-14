@@ -396,7 +396,7 @@ contract VintageFundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
             abi.encodeWithSignature(
                 "receiveProtocolFee(address,uint,address,address)",
                 tokenAddr,
-                amount,
+                uint(amount),
                 address(dao),
                 dao.getAddressConfiguration(DaoHelper.RICE_REWARD_RECEIVER)
             )

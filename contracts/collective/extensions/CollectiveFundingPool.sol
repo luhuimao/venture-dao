@@ -271,7 +271,7 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
             abi.encodeWithSignature(
                 "receiveProtocolFee(address,uint,address,address)",
                 erc20,
-                amount,
+                uint(amount),
                 address(dao),
                 dao.getAddressConfiguration(DaoHelper.RICE_REWARD_RECEIVER)
             )

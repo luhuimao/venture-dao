@@ -615,7 +615,6 @@ contract ManualVesting {
                 vars.depositAmount =
                     (total * vars.investedAmount) /
                     vars.totalAmount;
-
                 eligibleVestUsers[vars.batchIds][
                     investors[i]
                 ] = EligibleVestUser(
