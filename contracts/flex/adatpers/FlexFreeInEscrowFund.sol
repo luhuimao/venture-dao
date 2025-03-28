@@ -17,6 +17,7 @@ contract FlexFreeInEscrowFundAdapterContract is Reimbursable {
         // A checkpoint for marking number of votes from a given block
         address token;
         uint128 amount;
+        uint128 totalEscrowAmount;
     }
 
     event WithDraw(
@@ -72,6 +73,8 @@ contract FlexFreeInEscrowFundAdapterContract is Reimbursable {
         escrowFunds[address(dao)][proposalId][account].amount += uint128(
             amount
         );
+        escrowFunds[address(dao)][proposalId][account]
+            .totalEscrowAmount += uint128(amount);
         escrowFunds[address(dao)][proposalId][account].token = token;
 
         emit EscrowFund(address(dao), proposalId, token, account, amount);
@@ -83,6 +86,6 @@ contract FlexFreeInEscrowFundAdapterContract is Reimbursable {
         address account
     ) public view returns (address, uint256) {
         Checkpoint storage ck = escrowFunds[address(dao)][proposalId][account];
-        return (ck.token, ck.amount);
+        return (ck.token, ck.totalEscrowAmount);
     }
 }
