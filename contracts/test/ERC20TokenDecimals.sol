@@ -14,7 +14,7 @@ contract ERC20TokenDecimals is ERC20 {
     constructor(
         uint256 _totalSupply,
         uint8 decimals
-    ) ERC20("United States Department of the Treasury", "USDT") {
+    ) ERC20("DAOSquare Test USD", "USDA") {
         _decimals = decimals;
         _mint(msg.sender, _totalSupply * (10 ** uint256(_decimals)));
     }
