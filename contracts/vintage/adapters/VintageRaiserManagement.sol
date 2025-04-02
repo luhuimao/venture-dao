@@ -11,12 +11,13 @@ import "./VintageDaoSetAdapter.sol";
 import "../../adapters/modifiers/Reimbursable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "hardhat/console.sol";
 
 contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.Bytes32Set;
-    
+
     enum ProposalState {
         Voting,
         Executing,
@@ -112,8 +113,21 @@ contract VintageRaiserManagementContract is Reimbursable, MemberGuard {
                     "not in governor whitelist"
                 );
             } else if (varifyType == 4) {
+                uint256 minDepositDecimal = dao.getAddressConfiguration(
+                    DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+                ) == address(0x0)
+                    ? minDeposit
+                    : minDeposit *
+                        10 **
+                            ERC20(
+                                dao.getAddressConfiguration(
+                                    DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+                                )
+                            ).decimals();
+
                 require(
-                    fundingpoolAdapt.balanceOf(dao, account) >= minDeposit,
+                    fundingpoolAdapt.balanceOf(dao, account) >=
+                        minDepositDecimal,
                     "dont meet min depoist requirment"
                 );
             } else {
