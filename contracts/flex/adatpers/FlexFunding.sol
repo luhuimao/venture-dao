@@ -463,7 +463,8 @@ contract FlexFundingAdapterContract is
                     ) {
                         proposal.state = ProposalStatus.FAILED;
                         proposal.executeBlockNum = block.number;
-
+                        if (unDoneProposals[address(dao)].contains(proposalId))
+                            unDoneProposals[address(dao)].remove(proposalId);
                         emit ProposalExecuted(
                             address(dao),
                             proposalId,

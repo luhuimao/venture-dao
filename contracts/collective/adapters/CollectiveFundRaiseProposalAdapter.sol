@@ -36,6 +36,27 @@ contract ColletiveFundRaiseProposalAdapterContract is
     ) external reimbursable(params.dao) onlyMember(params.dao) returns (bool) {
         SubmitProposalLocalVars memory vars;
 
+        vars.investmentPoolAdapt = ColletiveFundingPoolAdapterContract(
+            params.dao.getAdapterAddress(
+                DaoHelper.COLLECTIVE_INVESTMENT_POOL_ADAPTER
+            )
+        );
+        // summon的时候设置了currency。那么用户发起fundraising的时候默认是该币种。如果用户选择别的币种，合约就需要判断:
+        // 如果当前dao资金池=0，则用户可以选择别的币种。
+        // 如果当前dao资金池>0，则用户不可以选择别的币种，仅仅可以用当前币种募资。
+
+        if (
+            params.dao.getAddressConfiguration(
+                DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+            ) !=
+            address(0x0) &&
+            params.dao.getAddressConfiguration(
+                DaoHelper.FUND_RAISING_CURRENCY_ADDRESS
+            ) !=
+            params.fundInfo.tokenAddress &&
+            vars.investmentPoolAdapt.poolBalance(params.dao) > 0
+        ) revert RAISING_TOKEN_NOT_ALLOW();
+
         if (
             lastProposalIds[address(params.dao)] != bytes32(0x0) &&
             (proposals[params.dao][lastProposalIds[address(params.dao)]]
@@ -49,10 +70,7 @@ contract ColletiveFundRaiseProposalAdapterContract is
         vars.daosetAdapt = ColletiveDaoSetProposalAdapterContract(
             params.dao.getAdapterAddress(DaoHelper.COLLECTIVE_DAO_SET_ADAPTER)
         );
-        // require(
-        //     vars.daosetAdapt.isProposalAllDone(params.dao),
-        //     "DaoSet Proposal Undone"
-        // );
+
         if (!vars.daosetAdapt.isProposalAllDone(params.dao))
             revert DAOSET_PROPOSAL_UNDONE();
 

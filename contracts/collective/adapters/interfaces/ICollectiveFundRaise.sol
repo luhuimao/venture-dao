@@ -97,4 +97,6 @@ interface ICollectiveFundRaise {
     error DAOSET_PROPOSAL_UNDONE();
     error VOTING_ADAPTER_NOT_FOUND();
     error ACCESS_DENIED();
+
+    error RAISING_TOKEN_NOT_ALLOW();
 }
