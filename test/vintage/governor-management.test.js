@@ -370,9 +370,9 @@ describe("raiser allocations...", () => {
         const vintageDaoRaiserMembershipInfo1 = [
             1, // bool enable;
             "vintageDaoRaiserMembershipInfo1",
-            0, // uint256 varifyType;erc20
-            hre.ethers.utils.parseEther("100"), // uint256 minHolding;
-            this.testtoken1.address, // address tokenAddress;
+            4, // uint256 varifyType;  //0 ERC20 1 ERC721 2 ERC1155 3 WHITELIS 4 DEPOSIT
+            1,//  hre.ethers.utils.parseEther("100"), // uint256 minHolding;
+            ZERO_ADDRESS,//    this.testtoken1.address, // address tokenAddress;
             0, // uint256 tokenId;
             [ZERO_ADDRESS] // address[] whiteList;
         ];
@@ -430,6 +430,20 @@ describe("raiser allocations...", () => {
             daoName: daoName
         };
     };
+
+    it("governor in...", async () => {
+        const tx = await this.vintageRaiserManagementContract.submitGovernorInProposal(
+            this.daoAddr,
+            this.investor1.address,
+            10
+        );
+        const result = await tx.wait();
+        const proposalId = result.events[result.events.length - 1].args.proposalId;
+
+        await this.vintageVotingAdapterContract.connect(this.owner).submitVote(this.daoAddr, proposalId, 2);
+        await this.vintageVotingAdapterContract.connect(this.genesis_raiser1).submitVote(this.daoAddr, proposalId, 1);
+        await this.vintageVotingAdapterContract.connect(this.genesis_raiser2).submitVote(this.daoAddr, proposalId, 1);
+    });
 
     it("remove governor...", async () => {
 

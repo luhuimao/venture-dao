@@ -858,25 +858,25 @@ describe("collective investment receipt NFT...", () => {
            rntokenId ${rntokenId}
         `);
 
-        txs = await this.investmentReceiptERC721.connect(this.investor1).
-            safeMint(
-                dao,
-                proposalId,
-                mode,
-                tx1.hash,
-                projectName,
-                description
-            );
-        ss = await txs.wait();
-        ipid = ss.events[ss.events.length - 1].args.proposalId;
-        minter = ss.events[ss.events.length - 1].args.minter;
-        rntokenId = ss.events[ss.events.length - 1].args.tokenId;
+        // txs = await this.investmentReceiptERC721.connect(this.investor1).
+        //     safeMint(
+        //         dao,
+        //         proposalId,
+        //         mode,
+        //         tx1.hash,
+        //         projectName,
+        //         description
+        //     );
+        // ss = await txs.wait();
+        // ipid = ss.events[ss.events.length - 1].args.proposalId;
+        // minter = ss.events[ss.events.length - 1].args.minter;
+        // rntokenId = ss.events[ss.events.length - 1].args.tokenId;
 
-        console.log(`
-            ipid  ${ipid} 
-            minter ${minter}
-            rntokenId ${rntokenId}
-         `);
+        // console.log(`
+        //     ipid  ${ipid} 
+        //     minter ${minter}
+        //     rntokenId ${rntokenId}
+        //  `);
 
         let tokenId1 = await this.investmentReceiptERC721.getTokenIds(proposalId, this.owner.address);
         let tokenId2 = await this.investmentReceiptERC721.getTokenIds(proposalId, this.investor1.address);
@@ -891,15 +891,16 @@ describe("collective investment receipt NFT...", () => {
 
         const tokenURI = await this.investmentReceiptERC721.tokenURI(1);
         const svg = await this.investmentReceiptERC721Helper.getSvg(1, this.investmentReceiptERC721.address);
-        const svg2 = await this.investmentReceiptERC721Helper.getSvg(2, this.investmentReceiptERC721.address);
+        // const svg2 = await this.investmentReceiptERC721Helper.getSvg(2, this.investmentReceiptERC721.address);
         // const svg3 = await this.investmentReceiptERC721Helper.getSvg(3, this.investmentReceiptERC721.address);
 
-        console.log(svg);
+        // console.log(svg);
         txs = await this.investmentReceiptERC721.connect(this.owner).transferFrom(this.owner.address, this.investor2.address, 1);
         ss = await txs.wait();
         let ffrom = ss.events[ss.events.length - 1].args.from;
         let tto = ss.events[ss.events.length - 1].args.to;
         let iid = ss.events[ss.events.length - 1].args.id;
+
         console.log(`
             ffrom ${ffrom}
             tto   ${tto}
@@ -952,8 +953,8 @@ describe("collective investment receipt NFT...", () => {
         const total = hre.ethers.utils.parseEther("100");//1333.333333333333333332
         const vmode = 2;// collective
         txs = await this.manualVesting.batchCreate(
-            [this.investor2.address],//investors
-            [this.investor2.address, this.investor1.address],//holders
+            [this.investor1.address, this.investor2.address],//investors
+            [this.investor2.address],//holders
             CreateVestingParams,
             total,
             vmode,

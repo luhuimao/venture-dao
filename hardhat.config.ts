@@ -137,10 +137,24 @@ module.exports = {
       // url: 'https://public.stackup.sh/api/v1/node/base-sepolia',
       // url: 'https://sepolia.base.org',
       // url: 'https://base-sepolia.blockpi.network/v1/rpc/public',	
-      url: 'https://base-sepolia.g.alchemy.com/v2/TXiR4i-hDsd2Rgoi6TSsc6U5csSMF2b-',
+      // url: 'https://base-sepolia.g.alchemy.com/v2/TXiR4i-hDsd2Rgoi6TSsc6U5csSMF2b-',
+      url: 'https://base-sepolia.infura.io/v3/c7cfed82be5b4142b8ef98e7bdd504cd',
       chainId: 84532,
-      gasPrice: 100000000,
+      // gasPrice: 300000000,
       accounts: [
+        process.env.TEST_PRIVATE_KEY1,
+        process.env.TEST_PRIVATE_KEY2,
+        process.env.TEST_PRIVATE_KEY3,
+        process.env.TEST_PRIVATE_KEY4,
+        process.env.TEST_PRIVATE_KEY5
+      ],
+    },
+    base: {
+      url: 'https://base-mainnet.infura.io/v3/04dd3493f83c48de9735b4b29f108b84',
+      chainId: 8453,
+      // gasPrice: 300000000,
+      accounts: [
+        process.env.TEST_PRIVATE_KEY0,
         process.env.TEST_PRIVATE_KEY1,
         process.env.TEST_PRIVATE_KEY2,
         process.env.TEST_PRIVATE_KEY3,
@@ -180,6 +194,21 @@ module.exports = {
       ]
     }
   },
+  etherscan: {
+    apiKey: {
+      'base-sepolia': 'empty'
+    },
+    customChains: [
+      {
+        network: "base-sepolia",
+        chainId: 84532,
+        urls: {
+          apiURL: "https://base-sepolia.blockscout.com/api",
+          browserURL: "https://base-sepolia.blockscout.com"
+        }
+      }
+    ]
+  },
   // Project Settings
   contractSizer: {
     alphaSort: true,
@@ -196,4 +225,19 @@ module.exports = {
     cache: "./build/cache",
     artifacts: "./build/artifacts",
   },
+  etherscan: {
+    apiKey: {
+      'base_sepolia': 'empty'
+    },
+    customChains: [
+      {
+        network: "base_sepolia",
+        chainId: 84532,
+        urls: {
+          apiURL: "https://base-sepolia.blockscout.com/api",
+          browserURL: "https://base-sepolia.blockscout.com"
+        }
+      }
+    ]
+  }
 };
