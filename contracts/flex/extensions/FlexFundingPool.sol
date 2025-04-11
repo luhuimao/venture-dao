@@ -246,13 +246,13 @@ contract FlexInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
             balanceOf(proposalId, DaoHelper.TOTAL) >= amount,
             "flex funding pool::withdraw::not enough funds"
         );
-        IERC20(tokenAddr).safeTransfer(target, amount);
+        IERC20(tokenAddr).approve(target, amount);
 
         (bool success, ) = target.call(
             abi.encodeWithSignature(
-                "receiveProtocolFee(address,uint,address,address)",
+                "receiveProtocolFee(address,uint256,address,address)",
                 tokenAddr,
-                uint(amount),
+                amount,
                 address(dao),
                 dao.getAddressConfiguration(DaoHelper.RICE_REWARD_RECEIVER)
             )

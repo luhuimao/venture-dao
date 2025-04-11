@@ -266,12 +266,12 @@ contract CollectiveInvestmentPoolExtension is IExtension, MemberGuard, ERC165 {
         if (amount > IERC20(erc20).balanceOf(address(this))) {
             exactAmount = IERC20(erc20).balanceOf(address(this));
         }
-        IERC20(erc20).safeTransfer(target, amount);
+        IERC20(erc20).approve(target, exactAmount);
         (bool success, ) = target.call(
             abi.encodeWithSignature(
-                "receiveProtocolFee(address,uint,address,address)",
+                "receiveProtocolFee(address,uint256,address,address)",
                 erc20,
-                uint(amount),
+                exactAmount,
                 address(dao),
                 dao.getAddressConfiguration(DaoHelper.RICE_REWARD_RECEIVER)
             )

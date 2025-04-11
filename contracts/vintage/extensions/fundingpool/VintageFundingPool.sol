@@ -390,13 +390,13 @@ contract VintageFundingPoolExtension is IExtension, ERC165, ReentrancyGuard {
         if (amount > IERC20(tokenAddr).balanceOf(address(this))) {
             exactAmount = IERC20(tokenAddr).balanceOf(address(this));
         }
-        IERC20(tokenAddr).safeTransfer(target, exactAmount);
+        IERC20(tokenAddr).approve(target, exactAmount);
 
         (bool success, ) = target.call(
             abi.encodeWithSignature(
-                "receiveProtocolFee(address,uint,address,address)",
+                "receiveProtocolFee(address,uint256,address,address)",
                 tokenAddr,
-                uint(amount),
+                exactAmount,
                 address(dao),
                 dao.getAddressConfiguration(DaoHelper.RICE_REWARD_RECEIVER)
             )
